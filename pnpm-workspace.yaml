@@ -7,4 +7,5 @@
 # on every script invocation.
 
 allowBuilds:
+  esbuild: true
   sharp: true

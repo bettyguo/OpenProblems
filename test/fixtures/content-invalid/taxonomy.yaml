@@ -1,0 +1,11 @@
+# Intentionally invalid: duplicate domain id "x".
+# TaxonomySchema's superRefine should reject this.
+domains:
+  - id: x
+    title: First
+    subdomains:
+      - { id: a, title: "A" }
+  - id: x
+    title: Duplicate
+    subdomains:
+      - { id: b, title: "B" }

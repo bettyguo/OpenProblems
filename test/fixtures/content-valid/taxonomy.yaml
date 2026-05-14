@@ -1,0 +1,9 @@
+domains:
+  - id: applications
+    title: Applications
+    subdomains:
+      - { id: computer-vision, title: "Computer Vision" }
+  - id: deep-learning
+    title: Deep Learning
+    subdomains:
+      - { id: large-language-models, title: "Large Language Models" }
