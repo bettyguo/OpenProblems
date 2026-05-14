@@ -13,13 +13,9 @@ describe("validateContent", () => {
   });
 
   it("reports an error for an invalid fixture (duplicate domain id)", async () => {
-    const result = await validateContent(
-      path.join(FIXTURES, "content-invalid"),
-    );
+    const result = await validateContent(path.join(FIXTURES, "content-invalid"));
     expect(result.errors.length).toBeGreaterThan(0);
-    const taxonomyError = result.errors.find((e) =>
-      e.file.endsWith("taxonomy.yaml"),
-    );
+    const taxonomyError = result.errors.find((e) => e.file.endsWith("taxonomy.yaml"));
     expect(taxonomyError).toBeDefined();
     expect(taxonomyError?.schema).toBe("Taxonomy");
   });

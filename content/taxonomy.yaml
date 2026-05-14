@@ -15,109 +15,115 @@ domains:
   - id: applications
     title: Applications
     subdomains:
-      - { id: chem-phys-earth,    title: "Chemistry, Physics & Earth Sciences" }
-      - { id: computer-vision,    title: "Computer Vision" }
-      - { id: energy,             title: "Energy" }
-      - { id: health-medicine,    title: "Health & Medicine" }
-      - { id: language-speech,    title: "Language, Speech & Dialog" }
-      - { id: neuroscience,       title: "Neuroscience & Cognitive Science" }
-      - { id: robotics,           title: "Robotics" }
-      - { id: social-sciences,    title: "Social Sciences" }
-      - { id: time-series,        title: "Time Series" }
+      - { id: chem-phys-earth, title: "Chemistry, Physics & Earth Sciences" }
+      - { id: computer-vision, title: "Computer Vision" }
+      - { id: energy, title: "Energy" }
+      - { id: health-medicine, title: "Health & Medicine" }
+      - { id: language-speech, title: "Language, Speech & Dialog" }
+      - { id: neuroscience, title: "Neuroscience & Cognitive Science" }
+      - { id: robotics, title: "Robotics" }
+      - { id: social-sciences, title: "Social Sciences" }
+      - { id: time-series, title: "Time Series" }
       - { id: applications-other, title: "Everything Else" }
 
   - id: deep-learning
     title: Deep Learning
     subdomains:
-      - { id: algorithms,               title: "Algorithms" }
-      - { id: attention-mechanisms,     title: "Attention Mechanisms" }
-      - { id: foundation-models,        title: "Foundation Models" }
-      - { id: generative-models,        title: "Generative Models & Autoencoders" }
-      - { id: graph-neural-networks,    title: "Graph Neural Networks" }
-      - { id: large-language-models,    title: "Large Language Models" }
-      - { id: representation-learning,  title: "Other Representation Learning" }
-      - { id: robustness,               title: "Robustness" }
+      - { id: algorithms, title: "Algorithms" }
+      - { id: attention-mechanisms, title: "Attention Mechanisms" }
+      - { id: foundation-models, title: "Foundation Models" }
+      - { id: generative-models, title: "Generative Models & Autoencoders" }
+      - { id: graph-neural-networks, title: "Graph Neural Networks" }
+      - { id: large-language-models, title: "Large Language Models" }
+      - { id: representation-learning, title: "Other Representation Learning" }
+      - { id: robustness, title: "Robustness" }
       - { id: self-supervised-learning, title: "Self-Supervised Learning" }
-      - { id: sequential-models,        title: "Sequential Models & Time Series" }
-      - { id: theory,                   title: "Theory" }
-      - { id: dl-other,                 title: "Everything Else" }
+      - { id: sequential-models, title: "Sequential Models & Time Series" }
+      - { id: theory, title: "Theory" }
+      - { id: dl-other, title: "Everything Else" }
 
   - id: general-ml
     title: General Machine Learning
     subdomains:
-      - { id: causality,                       title: "Causality" }
-      - { id: methodology,                     title: "Methodology" }
-      - { id: clustering,                      title: "Clustering" }
-      - { id: data,                            title: "Data" }
-      - { id: evaluation,                      title: "Evaluation" }
-      - { id: hardware-software,               title: "Hardware & Software" }
-      - { id: kernel-methods,                  title: "Kernel Methods" }
-      - { id: online-active-bandits,           title: "Online Learning, Active Learning & Bandits" }
-      - { id: representation-learning,         title: "Representation Learning" }
-      - { id: scalable-algorithms,             title: "Scalable Algorithms" }
-      - { id: sequential-network-time-series,  title: "Sequential, Network & Time-Series Models" }
-      - { id: supervised-learning,             title: "Supervised Learning" }
-      - { id: transfer-multitask-meta,         title: "Transfer, Multi-Task & Meta Learning" }
-      - { id: unsup-semisup,                   title: "Unsupervised & Semi-Supervised Learning" }
-      - { id: general-ml-other,                title: "Everything Else" }
+      - { id: causality, title: "Causality" }
+      - { id: methodology, title: "Methodology" }
+      - { id: clustering, title: "Clustering" }
+      - { id: data, title: "Data" }
+      - { id: evaluation, title: "Evaluation" }
+      - { id: hardware-software, title: "Hardware & Software" }
+      - { id: kernel-methods, title: "Kernel Methods" }
+      - { id: online-active-bandits, title: "Online Learning, Active Learning & Bandits" }
+      - { id: representation-learning, title: "Representation Learning" }
+      - { id: scalable-algorithms, title: "Scalable Algorithms" }
+      - { id: sequential-network-time-series, title: "Sequential, Network & Time-Series Models" }
+      - { id: supervised-learning, title: "Supervised Learning" }
+      - { id: transfer-multitask-meta, title: "Transfer, Multi-Task & Meta Learning" }
+      - { id: unsup-semisup, title: "Unsupervised & Semi-Supervised Learning" }
+      - { id: general-ml-other, title: "Everything Else" }
 
   - id: optimization
     title: Optimization
     subdomains:
-      - { id: convex,                           title: "Convex Optimization" }
-      - { id: discrete-combinatorial,           title: "Discrete & Combinatorial Optimization" }
-      - { id: large-scale-parallel-distributed, title: "Large-Scale, Parallel & Distributed Optimization" }
-      - { id: non-convex,                       title: "Non-Convex Optimization" }
-      - { id: stochastic,                       title: "Stochastic Optimization" }
-      - { id: zero-order-black-box,             title: "Zero-Order & Black-Box Optimization" }
-      - { id: optimization-other,               title: "Everything Else" }
+      - { id: convex, title: "Convex Optimization" }
+      - { id: discrete-combinatorial, title: "Discrete & Combinatorial Optimization" }
+      - {
+          id: large-scale-parallel-distributed,
+          title: "Large-Scale, Parallel & Distributed Optimization",
+        }
+      - { id: non-convex, title: "Non-Convex Optimization" }
+      - { id: stochastic, title: "Stochastic Optimization" }
+      - { id: zero-order-black-box, title: "Zero-Order & Black-Box Optimization" }
+      - { id: optimization-other, title: "Everything Else" }
 
   - id: probabilistic-methods
     title: Probabilistic Methods
     subdomains:
-      - { id: bayesian,              title: "Bayesian Methods" }
-      - { id: gaussian-processes,    title: "Gaussian Processes" }
-      - { id: graphical-models,      title: "Graphical Models" }
-      - { id: monte-carlo-sampling,  title: "Monte Carlo & Sampling Methods" }
-      - { id: spectral-methods,      title: "Spectral Methods" }
-      - { id: structure-learning,    title: "Structure Learning" }
+      - { id: bayesian, title: "Bayesian Methods" }
+      - { id: gaussian-processes, title: "Gaussian Processes" }
+      - { id: graphical-models, title: "Graphical Models" }
+      - { id: monte-carlo-sampling, title: "Monte Carlo & Sampling Methods" }
+      - { id: spectral-methods, title: "Spectral Methods" }
+      - { id: structure-learning, title: "Structure Learning" }
       - { id: variational-inference, title: "Variational Inference" }
-      - { id: probabilistic-other,   title: "Everything Else" }
+      - { id: probabilistic-other, title: "Everything Else" }
 
   - id: reinforcement-learning
     title: Reinforcement Learning
     subdomains:
       - { id: batch-offline, title: "Batch & Offline RL" }
-      - { id: deep-rl,       title: "Deep RL" }
-      - { id: inverse,       title: "Inverse RL" }
-      - { id: multi-agent,   title: "Multi-Agent RL" }
-      - { id: online,        title: "Online RL" }
-      - { id: planning,      title: "Planning" }
+      - { id: deep-rl, title: "Deep RL" }
+      - { id: inverse, title: "Inverse RL" }
+      - { id: multi-agent, title: "Multi-Agent RL" }
+      - { id: online, title: "Online RL" }
+      - { id: planning, title: "Planning" }
       - { id: policy-search, title: "Policy Search" }
-      - { id: rl-other,      title: "Everything Else" }
+      - { id: rl-other, title: "Everything Else" }
 
   - id: theory
     title: Theory
     subdomains:
-      - { id: active-interactive,         title: "Active & Interactive Learning Theory" }
-      - { id: dl-theory,                  title: "Deep Learning Theory" }
+      - { id: active-interactive, title: "Active & Interactive Learning Theory" }
+      - { id: dl-theory, title: "Deep Learning Theory" }
       - { id: domain-adaptation-transfer, title: "Domain Adaptation & Transfer Theory" }
-      - { id: game-theory,                title: "Game Theory" }
-      - { id: learning-theory,            title: "Learning Theory" }
-      - { id: online-bandits,             title: "Online Learning & Bandits Theory" }
-      - { id: optimization-theory,        title: "Optimization Theory" }
-      - { id: probabilistic-theory,       title: "Probabilistic Theory" }
-      - { id: rl-planning-theory,         title: "RL & Planning Theory" }
-      - { id: theory-other,               title: "Everything Else" }
+      - { id: game-theory, title: "Game Theory" }
+      - { id: learning-theory, title: "Learning Theory" }
+      - { id: online-bandits, title: "Online Learning & Bandits Theory" }
+      - { id: optimization-theory, title: "Optimization Theory" }
+      - { id: probabilistic-theory, title: "Probabilistic Theory" }
+      - { id: rl-planning-theory, title: "RL & Planning Theory" }
+      - { id: theory-other, title: "Everything Else" }
 
   - id: social-aspects
     title: Social Aspects
     subdomains:
-      - { id: accountability-transparency-interpretability, title: "Accountability, Transparency & Interpretability" }
-      - { id: alignment,    title: "Alignment" }
-      - { id: fairness,     title: "Fairness" }
-      - { id: privacy,      title: "Privacy" }
-      - { id: robustness,   title: "Robustness" }
-      - { id: safety,       title: "Safety" }
-      - { id: security,     title: "Security" }
+      - {
+          id: accountability-transparency-interpretability,
+          title: "Accountability, Transparency & Interpretability",
+        }
+      - { id: alignment, title: "Alignment" }
+      - { id: fairness, title: "Fairness" }
+      - { id: privacy, title: "Privacy" }
+      - { id: robustness, title: "Robustness" }
+      - { id: safety, title: "Safety" }
+      - { id: security, title: "Security" }
       - { id: social-other, title: "Everything Else" }

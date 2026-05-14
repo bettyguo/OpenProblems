@@ -1,0 +1,20 @@
+node_modules/
+.next/
+out/
+dist/
+build/
+coverage/
+playwright-report/
+test-results/
+storybook-static/
+.lighthouseci/
+pnpm-lock.yaml
+*.min.*
+next-env.d.ts
+
+# User-authored, project constitution. Do not reflow.
+MASTER_PROMPT.md
+docs/adr/**
+
+# Generated CHANGELOG entries — let humans control wrap.
+CHANGELOG.md

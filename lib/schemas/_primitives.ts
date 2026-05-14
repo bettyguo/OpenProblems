@@ -6,10 +6,7 @@ import { z } from "zod";
  */
 export const slug = z
   .string()
-  .regex(
-    /^[a-z0-9-]+$/,
-    "must be kebab-case (lowercase letters, digits, hyphens)",
-  );
+  .regex(/^[a-z0-9-]+$/, "must be kebab-case (lowercase letters, digits, hyphens)");
 
 /**
  * ISO-8601 calendar date string: YYYY-MM-DD. No time component.

@@ -17,9 +17,7 @@ describe("PaperSchema", () => {
   });
 
   it("rejects a tldr longer than 400 characters", () => {
-    expect(
-      PaperSchema.safeParse({ ...VALID, tldr: "x".repeat(401) }).success,
-    ).toBe(false);
+    expect(PaperSchema.safeParse({ ...VALID, tldr: "x".repeat(401) }).success).toBe(false);
   });
 
   it("rejects a future year", () => {
@@ -35,9 +33,7 @@ describe("PaperSchema", () => {
     expect(
       PaperSchema.safeParse({
         ...VALID,
-        contributions: [
-          { problem_slug: "x", evidence: "see paper section 4" },
-        ],
+        contributions: [{ problem_slug: "x", evidence: "see paper section 4" }],
       }).success,
     ).toBe(false);
   });

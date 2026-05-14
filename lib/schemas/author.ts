@@ -15,10 +15,7 @@ export const AuthorSchema = z.object({
   scholar_id: z.string().min(1).optional(),
   orcid: z
     .string()
-    .regex(
-      /^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/,
-      "must be in ORCID format 0000-0000-0000-000X",
-    )
+    .regex(/^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/, "must be in ORCID format 0000-0000-0000-000X")
     .optional(),
 });
 export type Author = z.infer<typeof AuthorSchema>;

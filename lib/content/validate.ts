@@ -58,7 +58,10 @@ function pushIssues(
   errors: ValidationError[],
   file: string,
   schema: string,
-  zodIssues: readonly { readonly path: readonly PropertyKey[]; readonly message: string }[],
+  zodIssues: readonly {
+    readonly path: readonly PropertyKey[];
+    readonly message: string;
+  }[],
 ): void {
   errors.push({
     file,
@@ -129,9 +132,7 @@ function checkProblemTaxonomyFk(
   }
 }
 
-export async function validateContent(
-  contentRoot: string,
-): Promise<ValidationResult> {
+export async function validateContent(contentRoot: string): Promise<ValidationResult> {
   const errors: ValidationError[] = [];
   let filesChecked = 0;
   let taxonomy: Taxonomy | undefined;
@@ -139,12 +140,7 @@ export async function validateContent(
   // 1. Taxonomy (also used for cross-FK below)
   const taxonomyPath = path.join(contentRoot, "taxonomy.yaml");
   if (await pathExists(taxonomyPath)) {
-    const result = await validateAgainst(
-      taxonomyPath,
-      "Taxonomy",
-      TaxonomySchema,
-      errors,
-    );
+    const result = await validateAgainst(taxonomyPath, "Taxonomy", TaxonomySchema, errors);
     if (result !== undefined) taxonomy = result as Taxonomy;
     filesChecked++;
   }
@@ -157,12 +153,7 @@ export async function validateContent(
 
     const problemFile = path.join(problemDir, "problem.yaml");
     if (await pathExists(problemFile)) {
-      const problem = await validateAgainst(
-        problemFile,
-        "OpenProblem",
-        OpenProblemSchema,
-        errors,
-      );
+      const problem = await validateAgainst(problemFile, "OpenProblem", OpenProblemSchema, errors);
       filesChecked++;
       if (problem !== undefined && taxonomy !== undefined) {
         checkProblemTaxonomyFk(
@@ -194,12 +185,7 @@ export async function validateContent(
         for (const [i, entry] of arr.entries()) {
           const result = LeaderboardEntrySchema.safeParse(entry);
           if (!result.success) {
-            pushIssues(
-              errors,
-              `${entriesFile}[${i}]`,
-              "LeaderboardEntry",
-              result.error.issues,
-            );
+            pushIssues(errors, `${entriesFile}[${i}]`, "LeaderboardEntry", result.error.issues);
           }
         }
         filesChecked++;
@@ -218,12 +204,7 @@ export async function validateContent(
   const papersRoot = path.join(contentRoot, "papers");
   for (const file of await listEntries(papersRoot)) {
     if (!file.endsWith(".yaml")) continue;
-    await validateAgainst(
-      path.join(papersRoot, file),
-      "Paper",
-      PaperSchema,
-      errors,
-    );
+    await validateAgainst(path.join(papersRoot, file), "Paper", PaperSchema, errors);
     filesChecked++;
   }
 
@@ -231,12 +212,7 @@ export async function validateContent(
   const authorsRoot = path.join(contentRoot, "authors");
   for (const file of await listEntries(authorsRoot)) {
     if (!file.endsWith(".yaml")) continue;
-    await validateAgainst(
-      path.join(authorsRoot, file),
-      "Author",
-      AuthorSchema,
-      errors,
-    );
+    await validateAgainst(path.join(authorsRoot, file), "Author", AuthorSchema, errors);
     filesChecked++;
   }
 

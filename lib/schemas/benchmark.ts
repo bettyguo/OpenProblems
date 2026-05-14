@@ -1,9 +1,6 @@
 import { z } from "zod";
 
-export const MetricDirectionSchema = z.enum([
-  "higher-is-better",
-  "lower-is-better",
-]);
+export const MetricDirectionSchema = z.enum(["higher-is-better", "lower-is-better"]);
 export type MetricDirection = z.infer<typeof MetricDirectionSchema>;
 
 export const BenchmarkSchema = z.object({

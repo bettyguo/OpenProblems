@@ -19,10 +19,9 @@ describe("OpenProblemSchema", () => {
   });
 
   it("rejects a non-kebab-case slug", () => {
-    expect(
-      OpenProblemSchema.safeParse({ ...VALID, slug: "HallucinationReduction" })
-        .success,
-    ).toBe(false);
+    expect(OpenProblemSchema.safeParse({ ...VALID, slug: "HallucinationReduction" }).success).toBe(
+      false,
+    );
   });
 
   it("rejects a future posed_year", () => {
@@ -35,14 +34,10 @@ describe("OpenProblemSchema", () => {
   });
 
   it("rejects an invalid status enum", () => {
-    expect(
-      OpenProblemSchema.safeParse({ ...VALID, status: "in-progress" }).success,
-    ).toBe(false);
+    expect(OpenProblemSchema.safeParse({ ...VALID, status: "in-progress" }).success).toBe(false);
   });
 
   it("rejects a title shorter than 5 characters", () => {
-    expect(
-      OpenProblemSchema.safeParse({ ...VALID, title: "abc" }).success,
-    ).toBe(false);
+    expect(OpenProblemSchema.safeParse({ ...VALID, title: "abc" }).success).toBe(false);
   });
 });

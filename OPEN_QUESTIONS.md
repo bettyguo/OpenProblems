@@ -10,7 +10,7 @@ Numbering: Q1–Q9 are verbatim from `MASTER_PROMPT.md` §17. Q10+ are added by 
 
 **Status:** open · **Surfaced:** MASTER_PROMPT.md §17 · **Blocks:** Phase 1 visual design (Unit 1.x).
 
-Working title: *LLM OpenProblems*. Alternatives floated: *AIORatings*, *OpenAI-Problems*, *ResearchRatings*. A decision is needed before any logo / typography / accent work in Phase 1.
+Working title: _LLM OpenProblems_. Alternatives floated: _AIORatings_, _OpenAI-Problems_, _ResearchRatings_. A decision is needed before any logo / typography / accent work in Phase 1.
 
 ## Q2. Domain (DNS)
 
@@ -41,7 +41,7 @@ Vermilion vs deep cyan. §17 says "Mock both, decide on the landing v1," but Uni
 
 ## Q6. Bilingual rollout (FR / EN)
 
-**Status:** open · **Surfaced:** §17 · **Blocks:** Phase 1 IA shape if EN-only is *not* the answer.
+**Status:** open · **Surfaced:** §17 · **Blocks:** Phase 1 IA shape if EN-only is _not_ the answer.
 
 Phase 6 default; bring earlier? FR is the realistic primary candidate given Montréal. Decision affects `next-intl` / `next-i18n-router` choice and route shape (`/[locale]/...` vs no-locale).
 
@@ -78,7 +78,7 @@ Appendix A says "summarize the eight phases," but §12 lists 7 rows (0, 1, 2, 3,
 
 **Status:** open · **Surfaced:** Unit 0.0 THINK · **Blocks:** Unit 0.6 (`content/taxonomy.yaml`) and Unit 0.10 (route stubs).
 
-`representation-learning` appears under both `deep-learning` and `general-ml`. `robustness` appears under both `deep-learning` and `social-aspects`. `theory` is itself a top-level domain id *and* a subdomain id (under `deep-learning`). The default URL design `/domains/[domain]/[subdomain]` keeps each id scoped under its parent and is safe. But:
+`representation-learning` appears under both `deep-learning` and `general-ml`. `robustness` appears under both `deep-learning` and `social-aspects`. `theory` is itself a top-level domain id _and_ a subdomain id (under `deep-learning`). The default URL design `/domains/[domain]/[subdomain]` keeps each id scoped under its parent and is safe. But:
 
 - Any flatten-to-global lookup (e.g., a future `/subdomains/[id]` page or a tag system) would collide.
 - Search facets need to disambiguate.

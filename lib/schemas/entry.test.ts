@@ -15,10 +15,7 @@ describe("LeaderboardEntrySchema", () => {
   });
 
   it("rejects a non-ISO date format", () => {
-    expect(
-      LeaderboardEntrySchema.safeParse({ ...VALID, date: "12/01/2025" })
-        .success,
-    ).toBe(false);
+    expect(LeaderboardEntrySchema.safeParse({ ...VALID, date: "12/01/2025" }).success).toBe(false);
   });
 
   it("rejects a missing verified flag", () => {

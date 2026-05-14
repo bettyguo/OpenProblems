@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+set -e
+
+# 1. ADR-0005: rating-action files are immutable.
+node scripts/check-rating-action-immutability.mjs
+
+# 2. Auto-format and auto-fix staged files.
+pnpm exec lint-staged
+
+# 3. Vitest suite (fast; runs in CI too as the backstop).
+pnpm test

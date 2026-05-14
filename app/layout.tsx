@@ -24,20 +24,12 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "LLM OpenProblems",
-  description:
-    "A rated, taxonomy-organized encyclopedia of open problems in LLM and AI research.",
+  description: "A rated, taxonomy-organized encyclopedia of open problems in LLM and AI research.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html
-      lang="en"
-      className={cn(
-        inter.variable,
-        sourceSerif.variable,
-        jetbrainsMono.variable,
-      )}
-    >
+    <html lang="en" className={cn(inter.variable, sourceSerif.variable, jetbrainsMono.variable)}>
       <body>{children}</body>
     </html>
   );

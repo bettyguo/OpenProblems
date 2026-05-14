@@ -1,9 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  DomainSchema,
-  SubdomainSchema,
-  TaxonomySchema,
-} from "@/lib/schemas/taxonomy";
+import { DomainSchema, SubdomainSchema, TaxonomySchema } from "@/lib/schemas/taxonomy";
 
 describe("SubdomainSchema", () => {
   it("accepts a valid kebab-case id", () => {
@@ -16,18 +12,12 @@ describe("SubdomainSchema", () => {
   });
 
   it("rejects an id with uppercase letters or whitespace", () => {
-    expect(
-      SubdomainSchema.safeParse({ id: "LLMs", title: "x" }).success,
-    ).toBe(false);
-    expect(
-      SubdomainSchema.safeParse({ id: "with space", title: "x" }).success,
-    ).toBe(false);
+    expect(SubdomainSchema.safeParse({ id: "LLMs", title: "x" }).success).toBe(false);
+    expect(SubdomainSchema.safeParse({ id: "with space", title: "x" }).success).toBe(false);
   });
 
   it("rejects an empty title", () => {
-    expect(
-      SubdomainSchema.safeParse({ id: "valid-id", title: "" }).success,
-    ).toBe(false);
+    expect(SubdomainSchema.safeParse({ id: "valid-id", title: "" }).success).toBe(false);
   });
 });
 
@@ -43,9 +33,7 @@ describe("DomainSchema", () => {
   });
 
   it("rejects an empty subdomains array", () => {
-    expect(
-      DomainSchema.safeParse({ id: "x", title: "X", subdomains: [] }).success,
-    ).toBe(false);
+    expect(DomainSchema.safeParse({ id: "x", title: "X", subdomains: [] }).success).toBe(false);
   });
 
   it("rejects duplicate subdomain ids within the same domain", () => {

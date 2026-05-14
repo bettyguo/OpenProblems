@@ -16,15 +16,11 @@ describe("InstitutionSchema", () => {
   });
 
   it("rejects an invalid type enum", () => {
-    expect(
-      InstitutionSchema.safeParse({ ...VALID, type: "company" }).success,
-    ).toBe(false);
+    expect(InstitutionSchema.safeParse({ ...VALID, type: "company" }).success).toBe(false);
   });
 
   it("rejects a malformed ROR id", () => {
-    expect(
-      InstitutionSchema.safeParse({ ...VALID, ror_id: "not-a-ror" }).success,
-    ).toBe(false);
+    expect(InstitutionSchema.safeParse({ ...VALID, ror_id: "not-a-ror" }).success).toBe(false);
   });
 
   it("accepts a minimal institution with only slug + display_name", () => {

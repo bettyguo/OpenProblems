@@ -16,21 +16,15 @@ describe("AuthorSchema", () => {
   });
 
   it("rejects an invalid ORCID format", () => {
-    expect(AuthorSchema.safeParse({ ...VALID, orcid: "1234-5678" }).success).toBe(
-      false,
-    );
+    expect(AuthorSchema.safeParse({ ...VALID, orcid: "1234-5678" }).success).toBe(false);
   });
 
   it("accepts a valid ORCID with X check digit", () => {
-    expect(
-      AuthorSchema.safeParse({ ...VALID, orcid: "0000-0001-2345-678X" }).success,
-    ).toBe(true);
+    expect(AuthorSchema.safeParse({ ...VALID, orcid: "0000-0001-2345-678X" }).success).toBe(true);
   });
 
   it("rejects a slug with uppercase letters", () => {
-    expect(
-      AuthorSchema.safeParse({ ...VALID, slug: "Yann-LeCun" }).success,
-    ).toBe(false);
+    expect(AuthorSchema.safeParse({ ...VALID, slug: "Yann-LeCun" }).success).toBe(false);
   });
 
   it("rejects an affiliation with a malformed from date", () => {
