@@ -1,11 +1,19 @@
 @import "tailwindcss";
 
 /*
- * Token layer. Unit 0.3 lands a shadcn-neutral placeholder palette so the
- * styling pipeline is end-to-end testable. Unit 0.4 replaces the OKLCH
- * values below with the project's two-tone foundation (#0B0D10 / #FAFAF7)
- * plus the brand accent resolved by OPEN_QUESTIONS Q5 (vermilion vs deep
- * cyan). Variable names are stable; only values change.
+ * Design tokens — Unit 0.4. See docs/thinking/0.4-design-tokens.md.
+ *
+ * Layer 1 (:root): CSS variables in OKLCH. Light + dark via prefers-color-scheme.
+ * Layer 2 (@theme inline): Tailwind utility aliases (text-foreground, bg-accent,
+ *   text-chart-1, ...). Variable names in Layer 1 are stable; values may change.
+ *
+ * Foundation values trace to MASTER_PROMPT §10.1:
+ *   #FAFAF7 paper-white  ~= oklch(0.984 0.003 96)
+ *   #0B0D10 near-black   ~= oklch(0.149 0.006 254)
+ *
+ * Brand accent is a deep-cyan placeholder pending OPEN_QUESTIONS Q5
+ * (vermilion alternative is a single-line swap on --accent and --ring in
+ * both light and dark blocks).
  */
 
 @theme inline {
@@ -13,12 +21,21 @@
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
   --color-ring: var(--ring);
+
+  /* Rating-dimension hues (MASTER_PROMPT §3.1). Semantic names live in
+   * :root (--chart-difficulty etc.); --color-chart-N aliases generate the
+   * Tailwind utilities bg-chart-1, text-chart-1, ... */
+  --color-chart-1: var(--chart-difficulty);
+  --color-chart-2: var(--chart-saturation);
+  --color-chart-3: var(--chart-urgency);
+  --color-chart-4: var(--chart-value);
+  --color-chart-5: var(--chart-industry-call);
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-source-serif), ui-serif, Georgia, "Times New Roman", serif;
@@ -28,34 +45,66 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
+  /* Motion. §10.1: subtle, 150 ms ease, no bouncing. */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-instant: 50ms;
+  --duration-fast: 100ms;
+  --duration-base: 150ms;
+  --duration-slow: 250ms;
 }
 
 :root {
-  --background: oklch(0.985 0 0);
-  --foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --border: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --radius: 0.625rem;
+  /* Foundation */
+  --background: oklch(0.984 0.003 96);
+  --foreground: oklch(0.149 0.006 254);
+
+  /* Brand accent — deep-cyan placeholder, OPEN_QUESTIONS Q5 */
+  --accent: oklch(0.55 0.12 215);
+  --accent-foreground: oklch(0.984 0.003 96);
+
+  /* Semantic */
+  --primary: oklch(0.149 0.006 254);
+  --primary-foreground: oklch(0.984 0.003 96);
+  --muted: oklch(0.96 0.003 96);
+  --muted-foreground: oklch(0.45 0.005 254);
+  --border: oklch(0.90 0.005 96);
+  --ring: oklch(0.55 0.12 215);
+  --radius: 0.5rem;
+
+  /* Rating-dimension hues. ≥ 50° hue separation; all WCAG AA on
+   * --background for 12 px+ text (4.5:1) and 3:1 for graphical objects. */
+  --chart-difficulty: oklch(0.52 0.13 250);
+  --chart-saturation: oklch(0.55 0.12 160);
+  --chart-urgency: oklch(0.60 0.16 50);
+  --chart-value: oklch(0.50 0.18 290);
+  --chart-industry-call: oklch(0.55 0.17 10);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --primary: oklch(0.985 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.205 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.205 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --border: oklch(1 0 0 / 10%);
-    --ring: oklch(0.556 0 0);
+    --background: oklch(0.149 0.006 254);
+    --foreground: oklch(0.984 0.003 96);
+
+    --accent: oklch(0.70 0.14 215);
+    --accent-foreground: oklch(0.149 0.006 254);
+
+    --primary: oklch(0.984 0.003 96);
+    --primary-foreground: oklch(0.149 0.006 254);
+    --muted: oklch(0.22 0.006 254);
+    --muted-foreground: oklch(0.65 0.005 96);
+    --border: oklch(0.30 0.006 254);
+    --ring: oklch(0.70 0.14 215);
+
+    /* Chart hues, dark variant: same hue and chroma centres, lifted
+     * lightness so each line/arc reads at AA-equivalent contrast against
+     * the new background. */
+    --chart-difficulty: oklch(0.68 0.15 250);
+    --chart-saturation: oklch(0.70 0.14 160);
+    --chart-urgency: oklch(0.75 0.18 50);
+    --chart-value: oklch(0.65 0.20 290);
+    --chart-industry-call: oklch(0.68 0.19 10);
   }
 }
 
