@@ -23,7 +23,9 @@
     "test:e2e": "playwright test",
     "test:e2e:install": "playwright install chromium",
     "lhci": "lhci autorun",
-    "prepare": "husky"
+    "prepare": "husky",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "lint-staged": {
     "*.{ts,tsx,mts,cts,js,jsx,mjs,cjs}": [
@@ -77,6 +79,14 @@
     "typescript": "^5.5.0",
     "typescript-eslint": "^8.59.3",
     "vitest": "^4.1.6",
-    "yaml": "^2.9.0"
+    "yaml": "^2.9.0",
+    "@chromatic-com/storybook": "^5.2.1",
+    "@storybook/addon-vitest": "10.3.6",
+    "@storybook/addon-docs": "10.3.6",
+    "@storybook/addon-onboarding": "10.3.6",
+    "vite": "^8.0.13",
+    "playwright": "^1.60.0",
+    "@vitest/browser-playwright": "4.1.6",
+    "@vitest/coverage-v8": "4.1.6"
   }
 }

@@ -1,0 +1,23 @@
+import { Meta } from "@storybook/blocks";
+
+<Meta title="Introduction" />
+
+# LLM OpenProblems — Storybook
+
+Phase 0 has no reusable components beyond `app/layout.tsx` and `app/page.tsx`,
+so this Storybook is wired but empty.
+
+Phase 1 onward, every UI primitive (`components/ui/*`) and every
+visualization (`components/viz/<Name>/*`) ships a story file alongside
+its implementation per MASTER_PROMPT §11 and §14.2:
+
+```
+components/viz/RatingRadar/
+  index.tsx
+  index.stories.tsx   ← shown here
+  index.test.tsx
+  README.md
+```
+
+The Vite builder via `@storybook/nextjs-vite` keeps HMR fast and reuses
+the same Tailwind v4 / next/font / design-token pipeline as the Next app.

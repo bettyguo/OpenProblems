@@ -69,3 +69,5 @@ desktop.ini
 .parcel-cache/
 .eslintcache
 .stylelintcache
+
+*storybook.log
