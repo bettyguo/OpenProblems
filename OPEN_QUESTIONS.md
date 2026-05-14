@@ -87,9 +87,9 @@ Proposal: keep ids domain-scoped (default), forbid a global-only route, and add 
 
 ## Q12. Package manager
 
-**Status:** open · **Surfaced:** Unit 0.0 THINK · **Blocks:** Unit 0.2.
+**Status:** decided 2026-05-14 (Unit 0.1 sign-off): **pnpm** · **Surfaced:** Unit 0.0 THINK · **Was blocking:** Unit 0.2.
 
-`MASTER_PROMPT.md` §15.3 shows `pnpm typecheck && pnpm lint && pnpm test && pnpm validate-content` as the pre-push command, implying pnpm. Confirm pnpm (recommended: workspace-aware, fast, ecosystem-standard for Next.js monorepos) vs npm / yarn / bun.
+`MASTER_PROMPT.md` §15.3 shows `pnpm typecheck && pnpm lint && pnpm test && pnpm validate-content` as the pre-push command, implying pnpm. Confirmed pnpm — workspace-aware, fast, ecosystem-standard for Next.js. Unit 0.2 will scaffold with `pnpm create next-app` and commit a `pnpm-lock.yaml`.
 
 ## Q13. Master prompt filename
 
