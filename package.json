@@ -1,0 +1,28 @@
+{
+  "name": "llm-openproblems",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A rated, taxonomy-organized encyclopedia of open problems in LLM and AI research. See MASTER_PROMPT.md.",
+  "type": "module",
+  "engines": {
+    "node": ">=22 <24"
+  },
+  "packageManager": "pnpm@11.1.2",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "^15.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.5.0"
+  }
+}

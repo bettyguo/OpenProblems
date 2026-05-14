@@ -1,0 +1,10 @@
+# Project-level pnpm config (pnpm 10+ canonical location for `allowBuilds`,
+# `onlyBuiltDependencies`, etc., even in single-package repos).
+#
+# `allowBuilds.sharp = true` runs sharp's postinstall to fetch its native
+# image-processing binary. Next.js uses sharp for `next/image` optimization
+# in production. Without this, pnpm 11+ errors with ERR_PNPM_IGNORED_BUILDS
+# on every script invocation.
+
+allowBuilds:
+  sharp: true
