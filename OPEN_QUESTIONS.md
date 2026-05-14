@@ -129,3 +129,11 @@ Unit 0.3 installed shadcn/ui with `baseColor: "neutral"` (true grays, no hue cas
 **Status:** open · **Surfaced:** Unit 0.5 THINK · **Blocks:** nothing in Phase 0; revisit at Phase 3 when SaturationCurve / MoversBoard land.
 
 MASTER_PROMPT §8.2 says: "When no ceiling exists, mark Saturation = N/A and use a qualitative band (Low / Medium / High)." The Unit 0.5 `RatingActionSchema.dimensions.saturation` is strictly numeric (`value: z.number().min(0).max(100)`), with no N/A escape hatch. Phase 3 will need to either (a) extend the schema with `value: z.number().nullable()` plus a `qualitative_band` field, or (b) treat the qualitative case as a separate dimension variant via `z.discriminatedUnion`. Decision deferred to a Phase-3 ADR.
+
+## Q19. `eslint-config-next` 16.x crash under ESLint 10 flat config
+
+**Status:** open · **Surfaced:** Unit 0.8 · **Blocks:** Next-specific lint rules (`@next/next/no-img-element`, `no-html-link-for-pages`, image / link / `next/script` linters). Phase 0 routes are stub-shaped; the gap is tolerable until Unit 0.10.
+
+Tried both the FlatCompat shim (`compat.config({ extends: ["next/core-web-vitals"] })`) and the direct flat-config import (`import nextCoreWebVitals from "eslint-config-next/core-web-vitals"`). Both surface the same `TypeError: Converting circular structure to JSON` from `@eslint/eslintrc/lib/shared/config-validator.js` under ESLint 10.3 + `eslint-config-next@16.2.6`. Likely a packaging bug in the upstream config (a plugin object reference is being JSON-serialized for validator output).
+
+Decision deferred: re-enable when (a) the upstream issue is fixed, or (b) we author a hand-rolled minimal Next config (just the `@next/eslint-plugin-next` plugin with the rules we want) without pulling in the broken `eslint-config-next`. Track issue in next iteration. The `@next/eslint-plugin-next` package is already a transitive dep — we can flat-config it directly.
