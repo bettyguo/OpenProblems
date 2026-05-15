@@ -887,3 +887,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **Phase 4 entry conditions** (per §12 cardinal rule, mirror of Phase 2 → Phase 3): human sign-off required. Phase 4 deliverables per §13: `DomainMap` (force graph), issue templates, `/contributing` page, conditional DB migration. No Phase-3 work blocks the kick-off once sign-off lands.
 - **Cross-phase milestone**: this commit closes the Phase-3 plan in its entirety as authored in Unit 3.0. The 14-unit breakdown shipped end-to-end with no scope reductions beyond TimelineRibbon's force-graph implementation (Unit 3.9 ships the Phase-3-light list form; the full catalog item is Phase-4-scoped per Unit 3.0 D-7).
 - Smoke gates green: `pnpm typecheck` (clean), `pnpm test` (171/171 across 25 files), `pnpm validate-content` (203 files), `pnpm audit-content` (0 errors / 6 Q32-expected warnings), `pnpm build` (198 routes; First Load JS shared chunk 103 kB), RSS well-formedness pass (20 items, namespaces declared, ampersand escaping verified).
+
+#### Unit 3.13a — Enumerate Phase-3 pages in lighthouseci config
+
+- Non-blocking Phase-3 follow-on. Closes the advisory-only flag on Unit 3.13's §13 acceptance criterion 3 (Lighthouse a11y ≥ 95 with new charts). Phase-3 viz a11y plumbing (`role="img"`, `aria-label`, `aria-describedby` → `<desc>`, plus Unit 3.12's `<caption className="sr-only">` table fallbacks) was already in place; the gate just needed the URLs enumerated.
+- **`lighthouserc.json`**: extends the URL list from 6 → 10. New entries:
+  - `/problems/hallucination-reduction/ratings` (Unit 3.3 — per-problem rating-action list)
+  - `/problems/hallucination-reduction/history` (Unit 3.9 — `SaturationCurve` + `RatingHistoryStream` + Phase-3-light TimelineRibbon)
+  - `/trending` (Unit 3.7 — `MoversBoard`)
+  - `/ratings` (Unit 3.4 — global HTML feed)
+- **Canonical slug**: `hallucination-reduction` reused for the two dynamic-route entries, matching the existing `/problems/[any-slug]` convention. Picked because it's the most-populated problem (3 rating actions across 2 methodology revisions, the SimpleQA leaderboard entries) so it exercises the chart paths with non-trivial data.
+- **CI cost**: URL count 6 → 10 → ~5-7 min of `ubuntu-latest` time per PR (10 URLs × 3 `numberOfRuns` = 30 Lighthouse collections). `numberOfRuns` and threshold (`error` ≥ 0.95) unchanged.
+- **Local Lighthouse not re-run** — same Q27-class pattern as Phase-2 visual baselines and Unit 3.13's deferred W3C-validator pass. The CI Ubuntu cohort is the source of truth; the first PR triggers the canonical run.
+- THINK artifact: `docs/thinking/3.13a-lighthouse-phase3-pages.md`.
+- Pure config edit. No app, schema, content, or test changes. Build / typecheck / test / validate-content / audit-content surfaces unchanged from Unit 3.13.
+- Smoke gates green: `pnpm typecheck` (clean), `pnpm test` (171/171 across 25 files), `pnpm validate-content` (203 files).
