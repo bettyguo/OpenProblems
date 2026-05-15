@@ -383,3 +383,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - No collision with the parallel session's Unit 2.8 (papers index) work — this unit only touches `content/institutions/` (5 new files) and `content/papers/<id>.yaml` (6 modifications), zero overlap with `app/papers/` / `lib/content/load-papers-index.ts` / `components/papers-index/`.
 - Smoke gates green: `pnpm validate-content` reports **77 content files** (was 72 after Unit 2.7); `pnpm typecheck`; `pnpm build` (168 routes).
 - THINK artifact: `docs/thinking/2.6b-institution-backfill.md`.
+
+#### Unit 2.11 — Cross-link audit script (§13 Phase 2 acceptance gate criterion)
+
+- [`scripts/cross-link-audit.ts`](../../scripts/cross-link-audit.ts) (CLI wrapper) + [`lib/content/cross-link-audit.ts`](../../lib/content/cross-link-audit.ts) (testable pure function returning `AuditReport`). Same lib + script split as Unit 0.7's `validate-content`. Wired as `pnpm audit-content`.
+- **Seven checks**, four error-class and three warning-class:
+  - `paper-problem-fk` (error) — every `paper.contributions[].problem_slug` exists in `content/problems/`.
+  - `paper-author-fk` (warning) — every `paper.authors[]` slug resolves to `content/authors/`; warning because Phase-2 norm is empty `authors[]` (Units 2.5/2.6).
+  - `paper-institution-fk` (warning) — every `paper.institutions[]` slug resolves; warning because partial population is the Phase-2 norm.
+  - `author-institution-fk` (error) — every `author.affiliations[].institution` resolves; small set, must be clean.
+  - `related-problems-fk` (error) — every `problem.related_problems[]` slug exists.
+  - `related-problems-symmetry` (warning, per Q32) — if A lists B, B should list A; the cardinal rule is the slug resolves, not that the graph is symmetric.
+  - `entries-contributions-agreement` (warning) — every `entries.json` entry's `paper_id` should appear in that paper's `contributions[]`; no-op pending Unit 2.10 content but activates automatically.
+- **First run against `content/`: 0 errors, 6 warnings.** All 6 warnings are `related-problems-symmetry`: benchmark-integrity ↔ {long-horizon-agent-reliability, hallucination-reduction}, compute-optimal-test-time-reasoning ↔ {hallucination-reduction, long-horizon-agent-reliability}, long-horizon-agent-reliability → scalable-oversight, scalable-oversight → hallucination-reduction. **No dangling slug references** anywhere — Unit 2.6b's institution backfill cleaned the seed papers, Unit 2.4's author backfill cleaned the early paper batch, and the seed problems' `related_problems` slugs all resolve.
+- Reads YAML directly from `content/` (no Velite dependency), parallel to the validate-content model. ~66 files read, ~600 ms on the current tree.
+- Exit code: 0 if errors == 0 (warnings allowed); 1 otherwise. CI integration lands in Unit 2.13 alongside the Lighthouse + visual-regression refresh.
+- No new tests in this unit — fixture-based audit tests are part of Unit 2.13's acceptance-gate test refresh.
+- THINK artifact: `docs/thinking/2.11-cross-link-audit.md`. Smoke gates green: `pnpm typecheck`, `pnpm test` (79/79), `pnpm validate-content` (77 files), `pnpm audit-content` (0 errors / 6 warnings).
