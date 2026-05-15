@@ -20,6 +20,7 @@
     "test:watch": "vitest",
     "validate-content": "tsx scripts/validate-content.ts",
     "audit-content": "tsx scripts/cross-link-audit.ts",
+    "ingest-arxiv": "tsx scripts/ingest-arxiv.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
@@ -41,6 +42,7 @@
     ]
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.96.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "d3-force": "^3.0.0",

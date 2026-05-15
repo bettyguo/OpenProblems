@@ -1319,3 +1319,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - THINK artifact: `docs/thinking/5.2-arxiv-client.md`.
 - Smoke gates: `pnpm typecheck` (clean), `pnpm test` (**212/212 across 30 files**, was 199/29; +13 arxiv-client tests), `pnpm validate-content` (203 files unchanged), `pnpm build` (313 pages; First Load JS 103 kB unchanged).
 
+#### Unit 5.3 — `scripts/ingest-arxiv.ts` (CLI drafting paper YAML from an arXiv ID)
+
+- First **LLM-using** Phase-5 script. Drafts a paper YAML for an arXiv ID and writes a unified diff + audit sidecar to `drafts/`. **Never writes `content/papers/` directly** — curator runs `git apply drafts/<file>.diff` after review (§13 "no auto-merge").
+- **3 new files**:
+  - `lib/curate/anthropic.ts` — thin `@anthropic-ai/sdk` wrapper per ADR-0008. `callAnthropic(scriptName, options)` returns `{ text, meta }` where `meta` is the audit-sidecar payload (D-E). Implements: `ANTHROPIC_API_KEY` env requirement (D-C; throws loudly when unset for non-dry-run); `cache_control: { type: "ephemeral" }` on the `systemCached` block (D-D); `LLM_OPENPROBLEMS_DAILY_BUDGET_USD` enforcement via `.llm-spend.log` (D-C); `dryRun: true` short-circuit producing a placeholder without an API call.
+  - `lib/curate/paper-draft.ts` — pure helpers: `buildSystemPrompt(slugs)`, `buildUserPrompt(metadata)`, `parseLLMResponse(text)` (strips ` ```yaml ` fences if the model adds them), `buildUnifiedDiff(targetPath, body)` (git-apply-compatible new-file patch from /dev/null), `buildDraftFilenames(...)` (filesystem-safe `<unit>-<ts>-<id>.diff` shape).
+  - `scripts/ingest-arxiv.ts` — CLI entry. Positional `<arxiv-id>` + `--model`, `--dry-run`, `--verbose`, `--no-cache`, `--out`, `--help`. Lightweight `process.argv` parsing (no `commander` / `yargs` dep — < 30 lines for this surface). Aborts loudly when `content/papers/<id>.yaml` already exists. Orchestrates: arXiv metadata fetch → slug-list load → prompt build → LLM call (or dry-run placeholder) → response parse → diff build → `drafts/` write.
+- **New runtime dep**: `@anthropic-ai/sdk@0.96.0`. Per ADR-0008 D-A.
+- **New `package.json` script**: `"ingest-arxiv": "tsx scripts/ingest-arxiv.ts"`. Mirrors the existing `validate-content` / `audit-content` pattern.
+- **Pricing tables**: `lib/curate/anthropic.ts` embeds per-model published prices for Sonnet 4.6 / Opus 4.7 / Haiku 4.5. Cache-write tokens billed at the write rate, cache-read tokens at the read rate (Sonnet's 10× cheaper read rate makes prompt caching meaningfully cost-saving on multi-paper runs).
+- **Audit sidecar shape** (per ADR-0008 D-E): `drafts/<unit>-<ts>-<id>.diff.meta.json` carries `{ model, input_tokens, output_tokens, cache_creation_input_tokens, cache_read_input_tokens, cost_usd_estimate, prompt_sha256, completion_sha256, anthropic_request_id, iso_timestamp, dry_run }`.
+- **Tests** (+23 across 2 new test files):
+  - `paper-draft.test.ts` (15 tests): system + user prompt content, fence-stripping, edge cases, unified-diff structure (header, hunk line count, `+`-prefixed body lines), filename safety.
+  - `anthropic.test.ts` (8 tests): cost estimation per model (Sonnet, Opus, Haiku price tables), cache-rate billing math, dry-run no-key behaviour, prompt-hash stability, `BudgetExceededError` when `.llm-spend.log` indicates today's cap is hit.
+- **CLI smoke verified**: `pnpm ingest-arxiv --help` prints usage cleanly; `pnpm ingest-arxiv 2310.06770` aborts with "already ingested" (correct, since `content/papers/2310.06770.yaml` exists).
+- **Bundle**: First Load JS shared chunk **103 kB UNCHANGED**. `scripts/` is `tsx`-runtime, not a Next.js build target; `@anthropic-ai/sdk` ships in `dependencies` but isn't imported from `app/*`, so it's not in any client bundle.
+- **Route count: 313 prerendered pages UNCHANGED.**
+- **Parallel-curator state**: HEAD = `f9d9a6d` post-Unit-5.2. No collision.
+- THINK artifact: `docs/thinking/5.3-ingest-arxiv-cli.md`.
+- Smoke gates: `pnpm typecheck` (clean), `pnpm test` (**235/235 across 32 files**, was 212/30; +23 tests), `pnpm validate-content` (203 files unchanged), `pnpm build` (clean compile, 313 pages, First Load JS 103 kB unchanged), `pnpm ingest-arxiv --help` (works).
+
