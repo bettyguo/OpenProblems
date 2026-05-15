@@ -1235,3 +1235,46 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - THINK artifact: `docs/thinking/4.13-phase-4-acceptance-gate.md`.
 - Smoke gates green: `pnpm typecheck` (clean), `pnpm test` (199/199 across 29 files), `pnpm validate-content` (203 files), `pnpm audit-content` (0 errors / 6 Q32-expected warnings), `pnpm build` (clean compile in 3.0s; 313 prerendered pages; First Load JS shared chunk 103 kB).
 
+### Phase 5 — Intelligence layer (LLM-assisted curation)
+
+#### Unit 5.0 — Phase 5 prep (THINK doc + 14-unit breakdown + DB-migration trigger re-eval)
+
+- Phase 5 kickoff per §12 cardinal rule. Phase 4 sign-off granted via **"Continue" override** in the unit-rhythm rhythm (per the handoff doc's option (c); §12 normally requires explicit sign-off — this unit flags the override transparently). Phase-4 closure at HEAD `37ed747` (Unit 4.13). Docs-only unit.
+- **14-unit breakdown** (5.0 – 5.13):
+
+  | Unit | Title                                                                                               |
+  | ---- | --------------------------------------------------------------------------------------------------- |
+  | 5.0  | Phase 5 prep (this doc)                                                                             |
+  | 5.1  | ADR-0008 — LLM provider selection (Anthropic SDK) + cost-governance pact                            |
+  | 5.2  | `lib/curate/arxiv-client.ts` — arXiv API client + filesystem cache                                  |
+  | 5.3  | `scripts/ingest-arxiv.ts` — CLI drafting paper YAML from an arXiv ID                                |
+  | 5.4  | `lib/curate/pdf-text.ts` — PDF text extraction utility                                              |
+  | 5.5  | `scripts/extract-leaderboard.ts` — LLM-assisted entry extraction (human-review diff output)         |
+  | 5.6  | ADR-0009 — Human-review diff format for LLM-assisted drafts (no auto-merge contract)                |
+  | 5.7  | `lib/digest/build-digest.ts` — per-domain weekly summary builder                                    |
+  | 5.8  | `app/api/v1/digest/[domain].xml/route.ts` — RSS feed per domain                                     |
+  | 5.9  | `/digest` HTML hub linking the per-domain feeds                                                     |
+  | 5.10 | DB-migration trigger re-evaluation (mandatory; checks after CLI-driven ingest paths exercise)       |
+  | 5.11 | Phase-5 hygiene: orphan `components/domain-tile-grid/` deletion (requires authorization); `entries.json` content backfill |
+  | 5.12 | OPEN_QUESTIONS hygiene + ADR review                                                                 |
+  | 5.13 | Phase 5 acceptance gate — CLI smoke; RSS validates per domain; CHANGELOG roll-up                    |
+
+- **Phase-5-blocking decisions resolved here** (D-1 through D-8 in the THINK doc):
+  - **D-1 LLM provider = Anthropic Claude** (`@anthropic-ai/sdk`). Sonnet 4.6 default; Opus 4.7 via `--model` flag for harder extraction. Recorded as ADR-0008 in Unit 5.1. Cost-governance pact: `--dry-run`, `--verbose` cost estimates, `ANTHROPIC_API_KEY` from env (no default), optional `LLM_OPENPROBLEMS_DAILY_BUDGET_USD` cap.
+  - **D-2 PDF extraction = `pdf-parse` (lean)**. Empirical evaluation in Unit 5.4 against 3 sample PDFs (ML / bio / NLP); escalate to `pdfjs-dist` if extraction quality is too lossy.
+  - **D-3 arXiv API rate limit = 3 req/s with filesystem cache** at `.arxiv-cache/` (gitignored; added in Unit 5.2).
+  - **D-4 Email = NOT in Phase 5; RSS-only.** Email needs deploy infra + subscriber-list store + double-opt-in flow — all auth-trigger-flipping. Deferred to Phase 6+ alongside the auth migration.
+  - **D-5 CLI invocation = `pnpm <name>`** (new `package.json` scripts: `ingest-arxiv`, `extract-leaderboard`, `build-digest`). Mirrors the existing `pnpm validate-content` / `pnpm audit-content` pattern.
+  - **D-6 Human-review diff format = unified patch in `drafts/`** (gitignored). Compatible with `git apply`. ADR-0009 (Unit 5.6) records the realized format + the no-auto-merge contract.
+  - **D-7 Drafts directory = `drafts/`** (gitignored, top-level, unhidden for editor discoverability).
+  - **D-8 ADR-0004 (file-first) re-affirmed.** Phase 5's mandatory DB-migration trigger re-eval is negative on both criteria; DB stays deferred to Phase 6+.
+- **DB-migration trigger evaluation (MANDATORY at Phase 5 kickoff per Unit 4.12)**:
+  - Measured at HEAD `37ed747`: `gzip(.velite snapshot) = 72,274 bytes (~70.6 KB)`. Threshold = 5 MB. **~1.38% of trigger** (was ~1.32% at Unit 4.12; +6 KB movement attributable to the `/contributing` MDX compile).
+  - Auth trigger: still negative. Phase-5 workflow is curator-side CLIs + RSS-only subscriptions; no first-party auth.
+  - **Decision**: DB migration deferred to Phase 6+. Same conclusion as Unit 4.12.
+- **Phase-5-blocking decisions deferred to per-unit implementation**: D-9 (prompt-caching for paper drafts), D-10 (arXiv category filtering scope), D-11 (leaderboard-extraction benchmark-id guardrails), D-12 (digest cadence — trailing-7-days lean).
+- **OPEN_QUESTIONS amended** with Q41 – Q44: LLM model choice per script (Q41), cost-cap default policy (Q42), PDF text cache (Q43), digest RSS managingEditor (Q44 — gated on Q33 + Q2 DNS resolution).
+- **Phase-4 closure confirmed** at HEAD `37ed747` (Unit 4.13): 313 prerendered pages, 199/199 tests across 29 files, 5 vizes live, 7 ADRs, First Load JS shared chunk 103 kB.
+- THINK artifact: `docs/thinking/5.0-phase-5-prep.md`.
+- Smoke gates: docs-only — no `pnpm test` / `pnpm build` / `pnpm validate-content` re-run needed beyond the existing Phase-4-closure state.
+

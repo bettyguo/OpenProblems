@@ -246,3 +246,27 @@ At viewport widths `< 640px` (mobile), 30+ force-layout nodes overlap meaningful
 **Status:** decided · **Surfaced:** Unit 4.0 THINK · **Resolved:** Unit 4.11 ([`docs/adr/0007-domainmap-rendering.md`](./docs/adr/0007-domainmap-rendering.md), accepted 2026-05-15).
 
 ADR-0007 ships after Unit 4.2 to record the realized DomainMap rendering decisions. Two decision-clusters could plausibly split into separate ADRs: (a) SVG-vs-Canvas-vs-HTML-CSS, (b) the D3 sub-package import policy (tree-shaken vs umbrella). Lean was: single ADR covering both. **Confirmed in Unit 4.11**: ADR-0007 covers both as a single decision-cluster ("how we render force graphs in this codebase"); splitting would add bureaucratic overhead without architectural value.
+
+## Q41. LLM model choice per Phase-5 script
+
+**Status:** decided-as-lean · **Surfaced:** Unit 5.0 THINK · **Blocks:** Unit 5.1 (ADR-0008) realized default.
+
+Phase-5 CLIs (`ingest-arxiv`, `extract-leaderboard`, `build-digest`) make Anthropic API calls. Which Claude model is the default? Lean: **Sonnet 4.6 default; Opus 4.7 via `--model` flag** for harder extraction (multi-table PDF parsing). The `claude-api` skill in the command palette recommends "latest and most capable Claude models". Decision finalized in ADR-0008 (Unit 5.1).
+
+## Q42. Cost-cap default policy
+
+**Status:** open · **Surfaced:** Unit 5.0 THINK · **Blocks:** Unit 5.1 (ADR-0008).
+
+Phase-5 CLIs need a cost-governance posture. Setting a default daily-cap means fresh installs fail on first run; not setting one means curators discover cost surprises only after the bill. Lean: **no default cap**, but `--verbose` shows estimated-cost-before-call so the curator sees the cost line and can abort. Re-evaluate after the first 100 ingest runs reveal the actual per-call distribution. Tracked in ADR-0008.
+
+## Q43. PDF text-extraction cache
+
+**Status:** decided-as-lean · **Surfaced:** Unit 5.0 THINK · **Blocks:** Unit 5.4 (`lib/curate/pdf-text.ts`).
+
+PDF re-fetches are expensive (~MB-per-paper network + parse cost). Should `pdf-text.ts` cache extracted text to `.pdf-cache/<arxiv-id>.txt`? Lean: **yes** — mirrors the `.arxiv-cache/` strategy from Unit 5.2. Cuts dev-loop iteration time in half. `--no-cache` CLI flag bypasses. `.pdf-cache/` lands in `.gitignore` in Unit 5.4.
+
+## Q44. Digest RSS `<managingEditor>`
+
+**Status:** open · **Surfaced:** Unit 5.0 THINK · **Blocks:** Unit 5.8 (`/api/v1/digest/[domain].xml/route.ts`); chained to Q33 + Q2 (DNS).
+
+The per-domain RSS digest feeds (Unit 5.8) need a channel-level `<managingEditor>` for W3C validation. This is the same shape as Q33 (which deferred to Q2 — DNS / email resolution). Lean: defer until Q2 lands so the email is real. Until then, ship the digest feeds without `<managingEditor>` (W3C validator emits a warning, not an error) or with the `noreply@<domain>` fallback Q33 contemplated.
