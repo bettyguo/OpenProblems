@@ -720,3 +720,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Pure schema + adjacent-code change: no route or bundle additions. Build surface unchanged at **188 routes**; First Load JS shared chunk unchanged at 103 kB.
 - Smoke gates green: `pnpm test` (**110/110** across 16 files, +5 new tests), `pnpm validate-content` (203 files), `pnpm audit-content` (0 errors / 6 warnings — same Q32 set), `pnpm typecheck` (clean), `pnpm build` (188 routes).
 - Artifact: [`docs/adr/0006-saturation-na-encoding.md`](docs/adr/0006-saturation-na-encoding.md).
+
+#### Unit 3.6 — `SaturationCurve` viz (§11 catalog item 2)
+
+- Phase-3 deliverable. Second new viz in the project after Unit 0.4's `RatingRadar` — same SVG-only / no-D3 / server-renderable / `role="img"` + `aria-describedby` accessibility pattern.
+- **Component shape** (`components/viz/SaturationCurve/`):
+  - `index.tsx` — the viz. Props: `actions: RatingAction[]` (chronological), optional `problemTitle`, `width`, `height`, `ariaLabel`.
+  - `index.stories.tsx` — 6 Storybook stories: hallucination-reduction-like 3-action history, compute-optimal-like 3-action history, single-initial-only, empty, qualitative-only (forward-looking ADR-0006 case), mixed numeric + qualitative (line breaks around the qualitative point).
+  - `index.test.tsx` — 9 Vitest tests covering: SVG `role="img"` + derived aria-label, `<desc>` content, path-segment counting (3 numeric points → 1 path, 1 numeric point → 0 paths, mixed numeric + qualitative → 0 paths because each numeric run has < 2 points), hollow circle + "N/A" annotation for qualitative points, empty-state figure, y-axis tick labels (0/25/50/75/100), `§8.2 ceiling` annotation.
+  - `README.md` — data shape, ADR-0006 handling, a11y notes, Storybook story map, performance ("pure server-render, no client JS, no D3 dependency").
+- **Plotting math**: SVG `viewBox="0 0 400 200"`. Padding 40 / 16 / 16 / 32 (l/r/t/b). Y-axis 0→100 with 5 ticks; 100 line dashed and labelled `ceiling (§8.2)`. X-axis dates linearly mapped via `(date.ms - minMs) / (maxMs - minMs)` to plot width; label sampling = first / middle / last when ≥ 3 points, else all. Line strokes `var(--color-chart-2)` (saturation hue from Unit 0.4 tokens).
+- **ADR-0006 handling** (the design contract from Unit 3.11 finally gets a visual representation):
+  - Numeric `value: number` → solid dot at `(date, value)`.
+  - Null `value: null` + `qualitative_band: low|medium|high` → **hollow** circle at the band's center-of-bucket (low → 20, medium → 50, high → 80) with an inline "N/A" label above the dot.
+  - Line **segments break around qualitative points**: the path is constructed by accumulating consecutive numeric points into runs and emitting a `<path>` per run of ≥ 2 numeric points. This keeps the visual line truthful to "we have ceiling-defensible data here" and avoids visually conflating numeric and qualitative.
+- **A11y**:
+  - `<svg role="img" aria-label="..." aria-describedby="saturation-curve-desc">`.
+  - `<desc id="saturation-curve-desc">` serializes every action's `date: rawDisplay (confidence N%)` for screen readers — the table-fallback toggle in Unit 3.12 will surface this content as a `<table>` for keyboard users.
+  - Per-point `<title>` for hover tooltips.
+  - All font-sizes ≥ 7 with `--color-muted-foreground` for tick labels — meets AA contrast against `--background` per Unit 0.4 tokens authoring brief.
+- **Where this renders**: not wired into a page yet — Unit 3.9 (`/problems/[slug]/history` composition) is the consumer. SaturationCurve ships isolated so Storybook stories cover every state independently before page integration.
+- Pure additive code: no route, schema, or bundle changes. Build surface unchanged at **188 routes**; First Load JS shared chunk unchanged at 103 kB.
+- Smoke gates green: `pnpm test` (**125/125 across 18 files**, was 110/16; +9 SaturationCurve unit tests + 6 Storybook composition tests picked up by the vitest+storybook plugin), `pnpm typecheck` (clean), `pnpm build` (188 routes).
