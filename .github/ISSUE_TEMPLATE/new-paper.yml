@@ -1,0 +1,99 @@
+name: "New paper"
+description: Propose a paper that contributes to an existing open problem.
+title: "[New paper] "
+labels:
+  - new-paper
+  - needs-triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for proposing a paper!
+
+        This form gathers enough signal for a curator to ingest the paper
+        following [`docs/PAPER_INGEST_RUNBOOK.md`](https://github.com/bettyguo/OpenProblems/blob/main/docs/PAPER_INGEST_RUNBOOK.md).
+        Authors, institutions, TL;DR, and benchmark metadata are
+        curator-side backfill — you don't need to provide them, though
+        they speed the pass when present.
+
+        Reading before you submit:
+        - [`MASTER_PROMPT.md`](https://github.com/bettyguo/OpenProblems/blob/main/MASTER_PROMPT.md) — project constitution (especially §7 "Paper object" and §15.6 primary-source rule).
+        - [`docs/PAPER_INGEST_RUNBOOK.md`](https://github.com/bettyguo/OpenProblems/blob/main/docs/PAPER_INGEST_RUNBOOK.md) — the runbook this proposal feeds into.
+        - [`content/problems/`](https://github.com/bettyguo/OpenProblems/tree/main/content/problems) — live problem slugs.
+
+  - type: input
+    id: paper_id
+    attributes:
+      label: arXiv ID or DOI
+      description: |
+        The canonical paper identifier. For arXiv preprints, the bare ID
+        (e.g. `2310.06770`, no prefix). For venue-published-only papers,
+        the DOI. Used as `Paper.id` in the YAML.
+      placeholder: e.g. 2310.06770
+    validations:
+      required: true
+
+  - type: input
+    id: title
+    attributes:
+      label: Paper title
+      description: The full title as it appears on the paper.
+      placeholder: "e.g. SWE-bench: Can Language Models Resolve Real-World GitHub Issues?"
+    validations:
+      required: true
+
+  - type: input
+    id: primary_problem
+    attributes:
+      label: Primary contributing problem slug
+      description: |
+        Which existing open problem does this paper most centrally contribute to?
+        Use the directory name from [`content/problems/`](https://github.com/bettyguo/OpenProblems/tree/main/content/problems)
+        (e.g. `hallucination-reduction`, `long-horizon-agent-reliability`).
+        If the paper contributes to multiple problems, name the primary one here
+        — the curator fans out additional contributions during YAML drafting.
+        If no existing problem fits, file a `[New problem]` issue first.
+      placeholder: e.g. long-horizon-agent-reliability
+    validations:
+      required: true
+
+  - type: input
+    id: evidence
+    attributes:
+      label: Evidence URL
+      description: |
+        Per §15.6 primary-source rule: the URL where the paper's claim is
+        substantiated. Typically the arXiv abstract page or the published PDF.
+        Curator-secondary summaries (e.g. blog posts, X threads) do not qualify.
+      placeholder: "e.g. https://arxiv.org/abs/2310.06770"
+    validations:
+      required: true
+
+  - type: textarea
+    id: benchmark_score
+    attributes:
+      label: Benchmark + score (if applicable)
+      description: |
+        If the paper reports a leaderboard-relevant score on a benchmark
+        already declared in the problem's `benchmarks[]`, name it here.
+        Freeform format `<benchmark-name>: <score> (<metric>)` is fine;
+        the curator structures during ingest. Skip if the paper makes a
+        methodological contribution without a single headline score.
+      placeholder: |
+        e.g. SWE-bench Verified: 21.7% (resolved)
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional context
+      description: |
+        Anything that speeds the curator's ingest pass — TL;DR draft,
+        related problems, lead-author ORCID, lab / institution, rank at
+        publication, GitHub repo URL, prior-art citations the paper
+        builds on.
+      placeholder: |
+        TL;DR draft, lead author ORCID, anything else that helps the curator scope this faster.
+    validations:
+      required: false

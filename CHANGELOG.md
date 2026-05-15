@@ -1014,4 +1014,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - THINK artifact: `docs/thinking/4.7-issue-template-new-problem.md`.
 - Smoke gates: `pnpm validate-content` (203 files unchanged), `pnpm typecheck` (clean — no TS code added), `pnpm test` (190/190 unchanged). `pnpm build` not re-run (`.github/` is not part of the Next.js build surface). Manual smoke (open template in GitHub UI) deferred to Unit 4.13 acceptance gate per Unit 4.0.
 
+#### Unit 4.8 — Issue template: new-paper (`.github/ISSUE_TEMPLATE/new-paper.yml`)
+
+- Second of the 4 form-based GitHub issue templates §13 names. Same structural pattern as Unit 4.7: form-based `.yml` per Unit 4.0 D-8, `[New paper] ` title prefix, `new-paper` + `needs-triage` labels, GitHub URLs pinned to `github.com/bettyguo/OpenProblems`.
+- **Field schema** (6 form fields + 1 markdown intro):
+  - **Intro markdown** — links `MASTER_PROMPT.md` (§7 + §15.6), `docs/PAPER_INGEST_RUNBOOK.md` (the curator-side runbook this proposal feeds into), `content/problems/` (live problem slugs).
+  - **arXiv ID or DOI** (input, required) — `Paper.id` per `PaperSchema`.
+  - **Paper title** (input, required) — `Paper.title`.
+  - **Primary contributing problem slug** (input, required) — drives `Paper.contributions[0].problem_slug`. Helper text instructs filing `[New problem]` first if no existing slug fits.
+  - **Evidence URL** (input, required) — `Paper.contributions[0].evidence`. §15.6 primary-source rule reinforced in the helper text: arXiv abstract or PDF, not secondary summaries.
+  - **Benchmark + score** (textarea, optional) — freeform `<benchmark>: <score> (<metric>)`. Curator structures `benchmark_id` / `score` / `metric` / `rank_at_publication` during ingest. Rationale: 4 separate inputs is form overhead.
+  - **Additional context** (textarea, optional) — TL;DR draft, lead-author ORCID, institutions, GitHub URL, etc.
+- **Deviations from Unit 4.0 Q37 lean**:
+  - **Lead-author ORCID demoted from required to optional** (subsumed into "Additional context"). Q37 lean assumed contributors have it ready; in practice ORCID resolution is curator-side per the Phase-2 author-backfill precedent (Unit 2.5b).
+  - **TL;DR demoted from required to optional**. 1–400-char distillations are editorial work; curator authors from the source during runbook pass.
+  - **`authors[]` / `institutions[]` / `year` / `venue` / `github` / `doi` not surfaced**. Curator backfills from arXiv metadata + ROR / ORCID lookups during ingest (Unit 2.5b / 2.6c / 2.6d precedents).
+- **Parallel-curator state**: HEAD = `de9460b` post-Unit-4.7. No collision with the parallel session's viz-line work.
+- THINK artifact: `docs/thinking/4.8-issue-template-new-paper.md`.
+- Smoke gates: `pnpm validate-content` (203 files unchanged), `pnpm typecheck` (clean), `pnpm test` (190/190 unchanged). `pnpm build` not re-run. Manual smoke deferred to Unit 4.13.
 
