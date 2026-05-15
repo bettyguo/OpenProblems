@@ -993,4 +993,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - THINK artifact: `docs/thinking/4.2-domainmap-scaffold.md`.
 - Smoke gates green: `pnpm typecheck` (clean), `pnpm test` (**190/190 across 28 files**, was 171/25; +9 index tests + 5 table tests + 5 Storybook-as-snapshot tests), `pnpm build` (198 routes; First Load JS 103 kB).
 
+#### Unit 4.7 — Issue template: new-problem (`.github/ISSUE_TEMPLATE/new-problem.yml`)
+
+- First of the 4 form-based GitHub issue templates §13 names (new-problem, new-paper, leaderboard-entry, rating-challenge). Closes Phase-4 Q37 lean (minimum-viable schema: 3–5 required + 2–4 optional context fields) for the new-problem case.
+- **Form-based `.yml` per Unit 4.0 D-8** (not legacy `.md`). GitHub renders structured fields with client-side validation and a clean issue-body markdown layout on submit.
+- **Field schema** (6 form fields + 1 markdown intro):
+  - **Intro markdown** — links to `MASTER_PROMPT.md` (§6 + §15.6), `docs/CURATION_PROMPT.md`, and live `content/taxonomy.yaml`.
+  - **Proposed slug** (input, required) — kebab-case `[a-z0-9-]+` per `lib/schemas/_primitives.ts`.
+  - **Proposed title** (input, required) — 5–120 chars per `OpenProblemSchema.title`.
+  - **Domain / subdomain** (input, required) — freeform; helper text links the live taxonomy. Rationale: a `dropdown` enumeration would go stale on every taxonomy edit; freeform lets the curator triage. Re-evaluate when taxonomy stabilises (Phase 5+).
+  - **Problem statement** (textarea, required) — one-paragraph framing.
+  - **Primary contributing paper(s)** (textarea, optional) — arXiv IDs / DOIs / URLs; helper text cites §15.6 primary-source rule.
+  - **Additional context** (textarea, optional) — related problems, candidate benchmarks, status nuance, watchlist signal.
+- **Auto-prefix title**: `[New problem] ` (matches the bracketed-type-tag convention used in the other 3 templates Units 4.8–4.10 will adopt).
+- **Labels**: `new-problem` + `needs-triage`. GitHub silently ignores labels that don't exist in the repo yet; first issue from the template surfaces them.
+- **No required `posed_year` / `tags[]` / `benchmarks[]`**: schema-required for the eventual YAML, but a submission may legitimately predate any of them. Curator authors during YAML drafting.
+- **No `assignees` / `projects`**. Out of scope; default GitHub behaviour.
+- **GitHub URLs**: pinned to the project remote (`github.com/bettyguo/OpenProblems`) via `git remote -v`, not hardcoded to a guessed handle.
+- **Phase-4 collision note**: HEAD = `be29236` (Unit 4.2 shipped by the parallel curator session). Unit 4.7 is a non-colliding scope (single GitHub YAML; no app, schema, or content code touched).
+- THINK artifact: `docs/thinking/4.7-issue-template-new-problem.md`.
+- Smoke gates: `pnpm validate-content` (203 files unchanged), `pnpm typecheck` (clean — no TS code added), `pnpm test` (190/190 unchanged). `pnpm build` not re-run (`.github/` is not part of the Next.js build surface). Manual smoke (open template in GitHub UI) deferred to Unit 4.13 acceptance gate per Unit 4.0.
+
 

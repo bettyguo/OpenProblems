@@ -1,0 +1,100 @@
+name: "New problem"
+description: Propose a new open problem to add to the encyclopedia.
+title: "[New problem] "
+labels:
+  - new-problem
+  - needs-triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for proposing an open problem!
+
+        This form gathers enough signal for a curator to draft a problem
+        YAML on your behalf. You don't need to submit a complete schema —
+        the curator handles final field selection, tag assignment, and
+        benchmark linking. If you want to PR a full YAML yourself, base
+        it on an existing file in [`content/problems/`](https://github.com/bettyguo/OpenProblems/tree/main/content/problems/)
+        and skip this form.
+
+        Reading before you submit:
+        - [`MASTER_PROMPT.md`](https://github.com/bettyguo/OpenProblems/blob/main/MASTER_PROMPT.md) — project constitution (especially §6 "Problem object" and §15.6 primary-source rule).
+        - [`docs/CURATION_PROMPT.md`](https://github.com/bettyguo/OpenProblems/blob/main/docs/CURATION_PROMPT.md) — the curator workflow this proposal feeds into.
+        - [`content/taxonomy.yaml`](https://github.com/bettyguo/OpenProblems/blob/main/content/taxonomy.yaml) — live domain / subdomain slugs.
+
+  - type: input
+    id: slug
+    attributes:
+      label: Proposed slug
+      description: |
+        Lower-case kebab-case identifier. Used as the directory name under `content/problems/`
+        and in the URL `/problems/<slug>`. Allowed characters: `[a-z0-9-]`.
+      placeholder: e.g. faithful-long-context-rag
+    validations:
+      required: true
+
+  - type: input
+    id: title
+    attributes:
+      label: Proposed title
+      description: |
+        5–120 characters. A short, declarative name for the problem (not the paper title,
+        not a question). Example styling: "Faithful & Calibrated Hallucination Reduction
+        in LLMs".
+      placeholder: e.g. Faithful Long-Context Retrieval-Augmented Generation
+    validations:
+      required: true
+
+  - type: input
+    id: domain
+    attributes:
+      label: Domain / subdomain
+      description: |
+        Where in the taxonomy does this problem sit? Format `<domain>` or `<domain> / <subdomain>`
+        using slugs from [`content/taxonomy.yaml`](https://github.com/bettyguo/OpenProblems/blob/main/content/taxonomy.yaml).
+        If you're unsure, write your best guess in plain English — the curator triages.
+      placeholder: e.g. deep-learning / large-language-models
+    validations:
+      required: true
+
+  - type: textarea
+    id: statement
+    attributes:
+      label: Problem statement
+      description: |
+        One paragraph (3–6 sentences). What is the problem? Why is it open? What would
+        a credible solution look like? Frame as a research question, not a feature request.
+      placeholder: |
+        Briefly state the problem, why current methods fall short, and what would count
+        as substantive progress. Cite specific evidence if you can.
+    validations:
+      required: true
+
+  - type: textarea
+    id: primary_sources
+    attributes:
+      label: Primary contributing paper(s)
+      description: |
+        arXiv IDs (`2310.06770`), DOIs, or URLs of the paper(s) that articulate or
+        meaningfully attack this problem. Per §15.6, the encyclopedia avoids second-
+        hand summaries — primary sources anchor the editorial work. Optional but
+        strongly encouraged.
+      placeholder: |
+        e.g.
+        - arXiv:2310.06770 (SWE-bench)
+        - arXiv:2406.12793 (long-context RAG faithfulness)
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional context
+      description: |
+        Anything else — related problems already on the site, candidate benchmarks,
+        status nuance (`open` / `partially-solved` / `converging`), industry signal,
+        watchlist concerns. Optional.
+      placeholder: |
+        Related problems, benchmarks, anything that helps the curator scope this faster.
+    validations:
+      required: false
