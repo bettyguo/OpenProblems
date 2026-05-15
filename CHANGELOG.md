@@ -620,3 +620,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - No new schema, route, or bundle additions. Build surface unchanged at **178 routes**; First Load JS shared chunk unchanged at 103 kB.
 - Smoke gates green: `pnpm test` (**105/105 across 16 files**, was 86/86; +19 new tests in this unit), `pnpm validate-content` (203 files), `pnpm audit-content` (0 errors / 6 warnings — same Q32 set), `pnpm typecheck` clean.
 - THINK artifact: covered in [`docs/thinking/3.0-phase-3-prep.md`](docs/thinking/3.0-phase-3-prep.md) Unit-3.2 row; the velite.config.ts id-injection is described inline above (Q31-contract-preserving Velite-side transform).
+
+#### Unit 3.3 — Per-problem `/problems/[slug]/ratings` sub-page
+
+- Phase-3 deliverable (§13). Replaces the Unit 1.x StubPage at `/problems/[slug]/ratings` with a real SSG page rendering the full rating-action history for the problem. Reads from Unit 3.2's `ratingActionsForProblem(slug)` + `diffRatingAction(action, prior)` loaders.
+- **Layout per action** (newest-first `<ol>`):
+  - Breadcrumb `Problems / <problem> / Rating actions` and page header.
+  - One `<article>` per action with stable anchor id `#<filename-without-extension>` for deep linking from the global feed (Unit 3.4) and RSS items (Unit 3.5).
+  - Header: ISO date, "Initial action" vs "Revision" tag, curator, methodology version pill, **WATCH** pill when `watchlist: true`.
+  - Diff summary block: per-dimension `RatingActionDelta.summary` lines (e.g. `saturation 35 → 32`, `urgency ★4 → ★5`, `difficulty confidence 0.65 → 0.70`). The `primary: true` delta is rendered with the cyan-accent pill; secondaries are muted-mono. Confidence-delta side-note on every non-confidence-only delta.
+  - Watchlist transition line when `diff.watchlistChanged` (`watchlist false → true`).
+  - **5 dimension cards in a 2-column grid** — Difficulty (letter grade), Saturation (0–100), Urgency / Value / Industry Call (★ / ☆ ASCII stars 0–5). Each card renders the headline value + confidence (decimal) + the full rationale string with `whitespace-pre-line` so the multi-line YAML literals render with paragraph breaks intact.
+  - Signals-considered bullet list when the action has any.
+- **`generateStaticParams()`** prerenders all 10 problem slugs. Build surface: **178 → 188 routes** (+10 SSG paths). The page was previously `ƒ` (dynamic stub); it's now `●` (SSG). First Load JS shared chunk unchanged at 103 kB.
+- **A11y notes** (in preparation for the Phase-3 acceptance gate's a11y ≥ 95 requirement):
+  - Semantic landmarks: `<main>`, `<nav aria-label="Breadcrumb">`, `<ol aria-label="Rating actions, newest first">`, `<section aria-label="...">` per region, `<article aria-labelledby="heading-...">` per action.
+  - Anchor ids on `<li>` use `scroll-mt-20` so deep-link jumps don't tuck the header under the site chrome.
+  - `<time datetime>` for every machine-readable date.
+  - The cyan-accent "primary delta" pill uses `--color-chart-2` (Unit 0.4 design tokens), AA-contrast against `--background`.
+- **No vizes on this page** — Phase 3 acceptance gate's "table-fallback toggles" requirement applies to chart components (Units 3.6 / 3.7 / 3.8 / 3.9), not to text-rendering pages. This page is naturally a table-shaped surface.
+- **Test coverage**: rendering is exercised by the SSG build (188 routes prerender clean). No Vitest unit test added — Phase-1 / Phase-2 page-level testing convention is Playwright e2e (out of scope for this unit; e2e baselines refresh in Unit 3.13 acceptance gate).
+- Smoke gates green: `pnpm typecheck` (clean), `pnpm build` (188 routes, +10 from 178; First Load JS shared chunk unchanged at 103 kB).
