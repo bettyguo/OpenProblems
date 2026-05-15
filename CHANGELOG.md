@@ -224,3 +224,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - KaTeX renders inline + display math in the definition MDX; Shiki dual-theme code blocks (already wired in Unit 1.3) handle any future code in the prose. The `prose` Tailwind plugin is NOT in use yet — Unit 1.3's `prose-neutral dark:prose-invert` classes are inert pending Phase 1.10's typography pass.
 - Opens Q36 (citation URL canonicalisation — placeholder `https://llm-openproblems.org`; reads `NEXT_PUBLIC_SITE_URL` when set).
 - THINK artifact: `docs/thinking/1.6-problem-detail-page.md`. Smoke gates green: `pnpm typecheck`, `pnpm test` (68/68), `pnpm validate-content` (3 files), `pnpm build` (23 routes).
+
+#### Unit 1.7 — Domain & subdomain hub pages (3 routes)
+
+- `/domains` upgraded from the Unit 1.1 smoke-proof list to a responsive tile grid (1/2/3 columns) showing every top-level domain with subdomain count + curated-problem count per domain.
+- `/domains/[domain]` SSG-prerenders each of the 8 domains: breadcrumb, title, subdomain list (2-column grid with per-subdomain problem counts), and a "Featured problems" section (top 3 by `editorial.last_curated` desc, with `StatusPill`). Unknown domain id → `notFound()`.
+- `/domains/[domain]/[subdomain]` SSG-prerenders all ~80 (domain, subdomain) pairs. Renders a simple problem list with title link, last-curated date, and status pill; empty-state copy points contributors to `/contributing`. `notFound()` on either segment.
+- `lib/content/load-domain.ts` centralises Velite taxonomy + problem joins: `loadDomain`, `loadSubdomain`, `problemsInDomain`, `problemsInSubdomain`, `allDomainIds`, `allDomainSubdomainPairs`.
+- Q11 end-to-end verification: `representation-learning` resolves to distinct pages at `/domains/deep-learning/representation-learning` and `/domains/general-ml/representation-learning`. The URL space is domain-scoped; no flat `/subdomains/[id]` route exists.
+- All three routes are RSC + SSG, zero client JS. THINK artifact: `docs/thinking/1.7-domain-hub-pages.md`.
+
+#### Unit 1.8 — Problems index `/problems` with client-side filter + sort
+
+- `app/problems/page.tsx` flips from Phase 0 `<StubPage>` to a real index. Server entry pre-computes the `IndexedProblem[]` (slug, title, status, domain/subdomain titles, tags, last-curated, normalized `points[]`, mean confidence, `composite`) at build time; client island `components/problems-index/` owns filter + sort UI.
+- Filters: domain (8 options), status (5 enums), tag (auto-discovered from content). Sort: title / last-curated / composite, with ↑↓ direction toggle on the active sort. "Clear" button resets all filters. Tag chips on each row are clickable — toggles the tag filter to that tag (or off if already active).
+- Each row shows the §8.3 composite numerically plus a five-segment dimension breakdown bar (chart-1..5, widths proportional to the normalized 0–5 value). §8.3's "composite never shown alone" rule satisfied by always rendering the dimension chips alongside.
+- Bundle: `/problems` static-prerendered, 2.2 kB route code + 117 kB First Load JS (≈14 kB for the filter UI on top of the shared baseline). Acceptable.
+- `lib/content/load-problems-index.ts` exposes `getIndexedProblems()` reusable by the landing page (Unit 1.10) and Phase 2's MoversBoard.
+- THINK artifact: `docs/thinking/1.8-problems-index.md`. Smoke: `pnpm typecheck`, `pnpm build` (23 routes — /problems and /problems/[slug] both static; no regression on other routes).
