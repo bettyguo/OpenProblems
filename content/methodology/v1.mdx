@@ -1,0 +1,121 @@
+---
+version: "1.0.0"
+title: Rating Methodology v1.0
+summary: How LLM OpenProblems rates open problems in AI research — first principles, the five dimensions, the composite formula, confidence, the rating-actions log, and the conflict-of-interest policy.
+date: 2026-05-14
+---
+
+LLM OpenProblems occupies the same conceptual slot for **AI-research open problems** that Moody's, S&P, and Fitch occupy for sovereign debt: a third party that publishes transparent, methodology-backed, time-stamped, revisable ratings the community can use as a coordination signal. This page is the methodology.
+
+## 1. First principles
+
+Five commitments shape every rating action:
+
+1. **Transparent.** Every rating action lists the curator and the signals considered.
+2. **Revisable.** Ratings can move up or down. The history is a first-class object — see [the global rating actions feed](/ratings).
+3. **Versioned.** A rating produced under v1.0 is never silently re-graded by v1.1. Ratings carry the methodology version they were issued under.
+4. **Multi-dimensional.** Open problems are not totally ordered. A single scalar would be misleading.
+5. **Discretized.** Letter grades and star buckets prevent false precision.
+
+## 2. Dimensions
+
+Each open problem carries five rating dimensions, independently scored, each with a rationale, each with a history.
+
+### 2.1 Difficulty — S, A, B, C, D, E
+
+*Conditional on current methods, how hard is substantive progress?*
+
+| Grade | Meaning |
+|-------|---------|
+| **S** | Landmark unsolved problems with multi-decade resistance (e.g., reliably truthful long-form generation, formal AGI safety guarantees). |
+| **A** | Major open problems with significant unsolved structure; SOTA improving sub-log-linearly in compute. |
+| **B** | Actively-attacked problems where SOTA improves with compute or data but no closure is in sight. |
+| **C** | Engineering-bounded; progress is largely a function of compute and data. |
+| **D** | Close to closure; only edge cases remain. |
+| **E** | Effectively solved on the dominant benchmark family; the benchmark itself may be deprecated. |
+
+### 2.2 Saturation — 0 to 100
+
+*How close is current SOTA to the achievable ceiling?*
+
+When a ceiling exists (human-expert score, theoretical upper bound, random baseline), saturation is computed as
+
+$$
+\mathrm{Saturation} = 100 \cdot \frac{\mathrm{SOTA} - \mathrm{random}}{\mathrm{ceiling} - \mathrm{random}}
+$$
+
+The ceiling must be cited. When no ceiling exists, saturation is reported as **N/A** alongside a qualitative band (Low / Medium / High).
+
+A second-derivative signal is reported alongside saturation: $\Delta(\mathrm{SOTA}, 12\text{mo}) / \Delta(\mathrm{SOTA}, 36\text{mo}) \in [0, 1]$. Low values indicate the problem is saturating — i.e., recent progress slower than the trailing 3-year average.
+
+### 2.3 Urgency — 0 to 5 stars
+
+*How time-sensitive is progress?*
+
+Signals: AI-safety reports citing the problem; downstream applications blocked; regulatory or legal deadlines; reproducibility crises.
+
+### 2.4 Value — 0 to 5 stars
+
+*Expected scientific or economic impact if substantively advanced.*
+
+Signals: cross-domain spillover; number of downstream problems that unlock; size of the affected economic or scientific community.
+
+### 2.5 Industry Call — 0 to 5 stars
+
+*How loudly is industry asking?*
+
+Signals: job-posting frequency citing the keyword; venture funding in the adjacent applied domain; presence in major industry labs' published roadmaps.
+
+## 3. The composite — advisory only
+
+A single advisory composite exists for sorting on the landing page and the problems index:
+
+$$
+\mathrm{Composite} = w_d \cdot \mathrm{Difficulty} + w_v \cdot \mathrm{Value} + w_u \cdot \mathrm{Urgency} + w_i \cdot \mathrm{IndustryCall} + w_s \cdot \frac{100 - \mathrm{Saturation}}{20}
+$$
+
+Default weights are
+
+$$
+(w_d, w_v, w_u, w_i, w_s) = (0.25,\, 0.25,\, 0.20,\, 0.15,\, 0.15)
+$$
+
+The composite is **never displayed alone**. Sorting on it must always show the underlying five dimensions alongside. The weights are editorial defaults; the problems index exposes a "Recompose" control so any reader can re-weight to their own priorities.
+
+## 4. Confidence
+
+Every dimension carries a `confidence ∈ [0, 1]`. The UI renders confidence as opacity or a small bar next to the value. A rating with confidence below `0.5` on any dimension is marked **WATCH** — analogous to a credit watchlist — and surfaced on the [trending dashboard](/trending) until a curator promotes it.
+
+## 5. Rating actions
+
+Every change to any dimension on any problem emits a rating action — an immutable, timestamped, signed record. Each action lists the *prior* and *new* values per affected dimension with a rationale. Actions feed three places:
+
+- The global [`/ratings`](/ratings) feed (HTML + JSON + RSS).
+- The problem's own `/problems/<slug>/ratings` sub-page.
+- The `[trending`](/trending) dashboard's "movers" lists.
+
+Filenames encode the date and dimension affected, e.g.:
+
+```text
+content/problems/hallucination-reduction/ratings/
+  2026-05-14-initial.yaml
+  2026-08-01-upgrade-saturation.yaml
+```
+
+The audit-log invariant is enforced at three layers: filesystem convention, a pre-commit Husky hook, and a GitHub Actions CI gate. Editing a past action's file is mechanically impossible in the normal workflow — see [ADR-0005](https://github.com/openproblems/llm-openproblems/blob/main/docs/adr/0005-rating-action-immutability.md) for the reasoning.
+
+## 6. Conflict-of-interest policy
+
+A curator must not author a rating action for a problem on which they (or a direct collaborator within the last 24 months) hold a current leaderboard top-5 entry. Every contributor's affiliations are public — see [`content/authors/`](https://github.com/openproblems/llm-openproblems/tree/main/content/authors).
+
+When a curator's status changes mid-cycle (new collaboration, new paper accepted at a top venue), they recuse from the affected problems and a co-curator takes over. The recusal is itself a rating-actions-log entry of kind `recusal` with a brief rationale.
+
+## 7. Methodology versioning
+
+This document is `v1.0.0`. Future revisions follow SemVer:
+
+- **Patch** (`1.0.0 → 1.0.1`) — wording clarifications. No rating impact.
+- **Minor** (`1.0.0 → 1.1.0`) — additive: new dimension, new signal category. Existing ratings preserved with their original version stamp.
+- **Major** (`1.0.0 → 2.0.0`) — dimension removed, semantics changed, scale rebalanced. A migration ADR documents the conversion or refusal-to-convert for each existing rating.
+
+Every methodology version is reachable at its versioned URL: `/methodology/v1`, `/methodology/v1.1`, `/methodology/v2`, … Old URLs never break.

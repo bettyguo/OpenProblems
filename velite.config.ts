@@ -1,3 +1,6 @@
+import rehypeKatex from "rehype-katex";
+import rehypePrettyCode from "rehype-pretty-code";
+import remarkMath from "remark-math";
 import { defineCollection, defineConfig, s } from "velite";
 
 /**
@@ -49,6 +52,26 @@ const taxonomy = defineCollection({
   schema: TaxonomySchema,
 });
 
+const methodology = defineCollection({
+  name: "Methodology",
+  pattern: "methodology/*.mdx",
+  schema: s
+    .object({
+      version: s.string(),
+      title: s.string(),
+      summary: s.string(),
+      date: s.isodate(),
+      supersedes: s.string().optional(),
+      slug: s.path(),
+      body: s.mdx(),
+    })
+    .transform((data) => ({
+      ...data,
+      // Strip the `methodology/` prefix from the path slug for clean URLs.
+      slug: data.slug.replace(/^methodology\//, ""),
+    })),
+});
+
 export default defineConfig({
   root: "content",
   output: {
@@ -58,7 +81,21 @@ export default defineConfig({
     name: "[name]-[hash:6].[ext]",
     clean: true,
   },
+  mdx: {
+    remarkPlugins: [remarkMath],
+    rehypePlugins: [
+      [rehypeKatex],
+      [
+        rehypePrettyCode,
+        {
+          theme: { light: "github-light", dark: "github-dark" },
+          keepBackground: false,
+        },
+      ],
+    ],
+  },
   collections: {
     taxonomy,
+    methodology,
   },
 });
