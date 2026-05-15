@@ -214,3 +214,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Vitest default project gained `@vitejs/plugin-react@6` for JSX in `.test.tsx` files (the Storybook-vitest project already had Vite + React via `@storybook/addon-vitest`).
 - THINK artifact: `docs/thinking/1.5-rating-radar.md`. Surfaced Q35 (companion table-fallback toggle lives on the problem-detail page, Unit 1.6 — §10.2 "every chart is also a table" is satisfied at the consumer, not in the viz primitive).
 - Smoke gates green: `pnpm typecheck`, `pnpm test` (68/68), `pnpm build` (23 routes, all unchanged).
+
+#### Unit 1.6 — Problem detail page `/problems/[slug]`
+
+- Implements the §9 ten-block layout in order: (1) breadcrumb + title + status pill + last-curated date, (2) `RatingRadar` (latest action) + "View as table" disclosure that satisfies §10.2 / Q35, (3) TL;DR from `problem.subtitle`, (4) Background MDX, (5) Formal definition MDX (with KaTeX), (6) Benchmarks table — name / dataset / metric+direction / ceiling / protocol link — plus "View full leaderboard →", (7) History MDX, (8) Recent rating actions (top 3, descending by date) + "View full history →", (9) Related problems as pill links (cross-FK audit deferred to Phase 2), (10) Citation block with a BibTeX `<pre>`.
+- `lib/content/load-problem.ts` consolidates Velite consumption: `loadProblem(slug)` returns `{ problem, pages: { background?, definition?, history? }, ratings, latestRating, taxonomy: { domain, subdomain } }` with taxonomy-FK resolution at request time. `allProblemSlugs()` powers `generateStaticParams`. Unknown slug → `notFound()`.
+- `components/ui/status-pill/` — RSC pill mapping each of the 5 statuses to a chart-hue ring; open is foreground/40.
+- Bundle: `/problems/[slug]` SSG-prerendered (`/problems/hallucination-reduction` so far), 170 B route code + 106 kB First Load JS (small uptick from the inlined Velite data). Pure RSC; the only "interactivity" is native `<details>` for the table-fallback. Stays well under §10.4's 180 kB problem-detail JS budget.
+- KaTeX renders inline + display math in the definition MDX; Shiki dual-theme code blocks (already wired in Unit 1.3) handle any future code in the prose. The `prose` Tailwind plugin is NOT in use yet — Unit 1.3's `prose-neutral dark:prose-invert` classes are inert pending Phase 1.10's typography pass.
+- Opens Q36 (citation URL canonicalisation — placeholder `https://llm-openproblems.org`; reads `NEXT_PUBLIC_SITE_URL` when set).
+- THINK artifact: `docs/thinking/1.6-problem-detail-page.md`. Smoke gates green: `pnpm typecheck`, `pnpm test` (68/68), `pnpm validate-content` (3 files), `pnpm build` (23 routes).
