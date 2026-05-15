@@ -177,6 +177,71 @@ const problemPages = defineCollection({
     }),
 });
 
+const ContributionS = s.object({
+  problem_slug: s.string(),
+  benchmark_id: s.string().optional(),
+  score: s.number().optional(),
+  metric: s.string().optional(),
+  rank_at_publication: s.number().int().optional(),
+  evidence: s.string().url(),
+});
+
+const PaperS = s.object({
+  id: s.string(),
+  title: s.string(),
+  authors: s.array(s.string()),
+  institutions: s.array(s.string()),
+  venue: s.string().optional(),
+  year: s.number().int(),
+  arxiv_id: s.string().optional(),
+  doi: s.string().optional(),
+  github: s.string().url().optional(),
+  tldr: s.string(),
+  contributions: s.array(ContributionS),
+});
+
+const AffiliationS = s.object({
+  institution: s.string(),
+  from: s.isodate(),
+  to: s.isodate().optional(),
+});
+
+const AuthorS = s.object({
+  slug: s.string(),
+  display_name: s.string(),
+  affiliations: s.array(AffiliationS),
+  homepage: s.string().url().optional(),
+  scholar_id: s.string().optional(),
+  orcid: s.string().optional(),
+});
+
+const InstitutionS = s.object({
+  slug: s.string(),
+  display_name: s.string(),
+  country: s.string().optional(),
+  type: s.enum(["academic", "industry", "government", "nonprofit", "other"]).optional(),
+  homepage: s.string().url().optional(),
+  ror_id: s.string().optional(),
+});
+
+const papers = defineCollection({
+  name: "Paper",
+  pattern: "papers/*.yaml",
+  schema: PaperS,
+});
+
+const authors = defineCollection({
+  name: "Author",
+  pattern: "authors/*.yaml",
+  schema: AuthorS,
+});
+
+const institutions = defineCollection({
+  name: "Institution",
+  pattern: "institutions/*.yaml",
+  schema: InstitutionS,
+});
+
 export default defineConfig({
   root: "content",
   output: {
@@ -205,5 +270,8 @@ export default defineConfig({
     problems,
     ratings,
     problemPages,
+    papers,
+    authors,
+    institutions,
   },
 });
