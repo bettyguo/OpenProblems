@@ -825,3 +825,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **Q36 disposition**: scoped to `/problems` index only — cross-page weight propagation needs a global state lift, deferred to Phase 4.
 - No new routes; pure client-component enhancement to `/problems`. Build surface unchanged at **198 routes**; First Load JS shared chunk unchanged at 103 kB (the Recompose code joins the existing client bundle for that route).
 - Smoke gates green: `pnpm typecheck` (clean), `pnpm test` (151/151 across 22 files — composite + isValidCompositeWeights tests embedded in the existing `normalize.test.ts`), `pnpm build` (198 routes).
+
+#### Unit 3.12 — Viz table-fallback toggles (Phase-3 acceptance criterion)
+
+- Phase-3 acceptance gate's "All charts have table-fallback toggles" requirement (§13). Wires zero-JS native `<details>` disclosures on the `SaturationCurve` and `RatingHistoryStream` vizes on `/problems/[slug]/history`. `MoversBoard` (Unit 3.7) is already a table-shaped surface and doesn't need a separate fallback.
+- **New wrapper component** `components/viz/_shared/chart-table-switch.tsx`:
+  - Props: `chart: ReactNode`, `table: ReactNode`, optional `label` (default "View as table"), optional `ariaLabel`.
+  - Renders the chart inline, with the table tucked inside a `<details>` element. Both pieces SSR — find-in-page and AT scrapers see the tabular content even when the disclosure is collapsed.
+  - Pure HTML — no `"use client"`, no client JS. The `<details>` element is keyboard-toggleable by spec.
+- **Per-viz table renderers** (sibling files to each viz's `index.tsx`):
+  - `components/viz/SaturationCurve/table.tsx` — `SaturationCurveTable` with columns Date · Saturation · Qualitative band · Confidence%. Renders "N/A" for null saturation values (ADR-0006). 4 columns × N rows + caption.
+  - `components/viz/RatingHistoryStream/table.tsx` — `RatingHistoryStreamTable` with columns Date · Difficulty · Saturation · Urgency · Value · Industry call. Each dimension cell shows `<rawDisplay> (<normalized.toFixed(1)>)` — e.g. `A (4.0)` for difficulty, `35 (3.3)` for saturation (35 saturation → 3.25 normalized → 3.3 rounded). 6 columns × N rows + caption.
+- **`/problems/[slug]/history` page composition update**: both viz sections now wrap their viz in `<ChartTableSwitch chart={...} table={...} label={...} />`. Labels: "View saturation data as table" and "View dimension data as table".
+- **Test coverage** (+13 tests across 3 new test files):
+  - `chart-table-switch.test.tsx` (4 tests): both chart and table SSR at the same time, `<details>` wrapper present, default + custom labels, `aria-label` thread-through.
+  - `SaturationCurve/table.test.tsx` (5 tests): empty-state, one `<tr>` per action + header, numeric value verbatim, "N/A" for null + qualitative band, confidence percent.
+  - `RatingHistoryStream/table.test.tsx` (4 tests): empty-state, 5-dimension column headers, raw display + normalized score format, one `<tr>` per action.
+- **A11y notes** (Phase-3 acceptance gate):
+  - `<details>` disclosure is keyboard-toggleable (no JS required) and announces expanded/collapsed state to AT.
+  - `<caption className="sr-only">` on each fallback table explaining the contents.
+  - The chart's own `<desc>` (from Units 3.6 and 3.8) already carries the full data prose for screen-reader users who don't drill into the disclosure.
+- Pure additive code: no route or bundle changes. Build surface unchanged at **198 routes**; First Load JS shared chunk unchanged at 103 kB (the wrapper + tables are server-rendered HTML — no client bundle impact).
+- Smoke gates green: `pnpm typecheck` (clean), `pnpm test` (**171/171 across 25 files**, was 158/22; +13 new tests), `pnpm build` (198 routes).

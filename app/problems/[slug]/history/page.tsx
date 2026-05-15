@@ -4,7 +4,10 @@ import { papers } from "#site/content";
 import { allProblemSlugs, loadProblem } from "@/lib/content/load-problem";
 import { ratingActionsForProblem } from "@/lib/content/load-ratings";
 import { SaturationCurve } from "@/components/viz/SaturationCurve";
+import { SaturationCurveTable } from "@/components/viz/SaturationCurve/table";
 import { RatingHistoryStream } from "@/components/viz/RatingHistoryStream";
+import { RatingHistoryStreamTable } from "@/components/viz/RatingHistoryStream/table";
+import { ChartTableSwitch } from "@/components/viz/_shared/chart-table-switch";
 
 interface HistoryPageProps {
   params: Promise<{ slug: string }>;
@@ -172,7 +175,12 @@ export default async function HistoryPage({ params }: HistoryPageProps) {
           as a hollow N/A marker at the qualitative band's center-of-bucket (ADR-0006).
         </p>
         <div className="mt-4 overflow-x-auto">
-          <SaturationCurve actions={actions} problemTitle={problem.title} width={520} />
+          <ChartTableSwitch
+            chart={<SaturationCurve actions={actions} problemTitle={problem.title} width={520} />}
+            table={<SaturationCurveTable actions={actions} />}
+            label="View saturation data as table"
+            ariaLabel="Saturation curve with table fallback"
+          />
         </div>
       </section>
 
@@ -185,7 +193,14 @@ export default async function HistoryPage({ params }: HistoryPageProps) {
           dimension's normalized [0, 5] value at the corresponding action date.
         </p>
         <div className="mt-4 overflow-x-auto">
-          <RatingHistoryStream actions={actions} problemTitle={problem.title} width={560} />
+          <ChartTableSwitch
+            chart={
+              <RatingHistoryStream actions={actions} problemTitle={problem.title} width={560} />
+            }
+            table={<RatingHistoryStreamTable actions={actions} />}
+            label="View dimension data as table"
+            ariaLabel="Rating dimensions stream with table fallback"
+          />
         </div>
       </section>
 
