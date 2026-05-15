@@ -203,3 +203,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Opens Q33 (`<Cite paper="…">` component shape, deferred to Phase 2's citation system) and Q34 (`entries.json` for this seed, deferred to Phase 2 with first verified entries).
 - The first rating-action file lands as net-new under `content/problems/*/ratings/` — the Unit 0.8 ADR-0005 pre-commit hook allows `A` (new) status; only `M`/`D`/`R` are blocked. Verifies the immutability-by-construction flow end-to-end.
 - THINK artifact: `docs/thinking/1.4-first-seed-problem.md`.
+
+#### Unit 1.5 — RatingRadar v1
+
+- `components/viz/RatingRadar/` ships viz catalog entry #1 from §11: 5-axis SVG radar, animated entry (250 ms ease-out, scale 0.5→1), confidence-shaded fill (mean dimension confidence mapped to `[0.15, 0.55]` opacity), per-axis chart-hue dots with native `<title>` tooltips, and `<desc>` describing every dimension for screen readers. Pure RSC — no `"use client"`, no client JS.
+- Shape: viewBox 0 0 200 200, max radius 80, five axes at -90° / -18° / 54° / 126° / 198° (first axis points up = Difficulty), dimension order Difficulty · Saturation · Urgency · Value · Industry Call (matches `--color-chart-1..5` per §3.1).
+- `lib/ratings/normalize.ts` centralises the `[0, 5]` projection used by both the radar and §8.3's composite formula: Difficulty grade → 5..0, Saturation → (100 − value) / 20, stars → identity. Also exports `meanConfidence(points)` and a Phase-0 `composite(points)` using §8.3 default weights (0.25 / 0.25 / 0.20 / 0.15 / 0.15).
+- `lib/ratings/normalize.test.ts` — 13 tests across `dimensionsToRadar`, `meanConfidence`, `composite`. `components/viz/RatingRadar/index.test.tsx` — 6 tests (renders SVG with role/aria-label, five axis lines + five value dots, exactly one polygon, `<desc>` summarises every dimension, all five chart-hue references emitted, no entry animation in `staticRender` mode). Total **68 tests across 13 files** (was 49 across 10).
+- Storybook stories: high-confidence, low-confidence WATCH, all-zeros (solved), and a small `size: 120` variant — the four states future visual-regression baselines will lock down at Unit 1.12.
+- Vitest default project gained `@vitejs/plugin-react@6` for JSX in `.test.tsx` files (the Storybook-vitest project already had Vite + React via `@storybook/addon-vitest`).
+- THINK artifact: `docs/thinking/1.5-rating-radar.md`. Surfaced Q35 (companion table-fallback toggle lives on the problem-detail page, Unit 1.6 — §10.2 "every chart is also a table" is satisfied at the consumer, not in the viz primitive).
+- Smoke gates green: `pnpm typecheck`, `pnpm test` (68/68), `pnpm build` (23 routes, all unchanged).

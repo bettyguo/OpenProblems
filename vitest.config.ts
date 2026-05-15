@@ -1,6 +1,7 @@
 import { defineConfig } from "vitest/config";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import react from "@vitejs/plugin-react";
 import { storybookTest } from "@storybook/addon-vitest/vitest-plugin";
 import { playwright } from "@vitest/browser-playwright";
 const dirname =
@@ -17,6 +18,7 @@ export default defineConfig({
     projects: [
       {
         extends: true,
+        plugins: [react()],
         test: {
           include: ["**/*.test.ts", "**/*.test.tsx"],
           exclude: ["node_modules/**", ".next/**", "dist/**", "build/**"],
