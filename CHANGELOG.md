@@ -354,3 +354,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - No new tests required — `loadPaper` is already covered by `lib/content/load-entities.test.ts` (Unit 2.2). Visual regression on a representative paper is deferred to Unit 2.13 (Phase 2 acceptance gate).
 - Smoke gates green: `pnpm typecheck`, `pnpm test` (79/79), `pnpm build` (163 routes; bundle sizes unchanged on existing surfaces; First Load JS shared chunk still 103 kB).
 - THINK artifact: `docs/thinking/2.7-paper-detail-page.md`.
+
+#### Unit 2.8 — Papers index `/papers` (replaces Unit 0.10 stub)
+
+- Replaces the Unit 0.10 `StubPage` at `/papers` with a real index that mirrors Unit 1.8's `/problems` index. Server pre-computes `IndexedPaper[]` at build time via [`lib/content/load-papers-index.ts`](../../lib/content/load-papers-index.ts); client island [`components/papers-index/`](../../components/papers-index/index.tsx) owns filter + sort UI.
+- `IndexedPaper` shape: `{ id, title, year, venue?, arxivId?, problemSlugs: string[] (distinct from contributions), contributionCount, authorCount, institutionCount }`. Built once at request time; no client-side joins.
+- **Filters (3, mutually compose):** Problem slug (distinct slugs across all papers' contributions) · Year (distinct years desc, exact match) · Venue (distinct non-empty venues, alphabetical). "Clear" button resets all three.
+- **Sort keys (3):** Year (default, desc) · Title (alpha) · Contributions (count desc — surfaces cross-cutting papers). Sort header doubles as toggle, matching `/problems`.
+- **Per row:** title (links to `/papers/[id]`), year (right-aligned mono), venue + arXiv badge + contribution count + author/institution counts on the meta line, clickable problem-slug chips that toggle the Problem filter (same UX as `/problems`' tag chips).
+- Tradeoffs flagged in the THINK doc: no author/institution facet yet (all 30 current papers have empty `authors[]` so the facet would be inert); no paper-level "verified" filter (entries land in Unit 2.10); no URL-state encoding (deferred to Phase 3 same as `/problems`).
+- Bundle: `/papers` route goes from 161 B / 103 kB (stub) to **1.76 kB / 116 kB First Load JS** — comparable to `/problems` (2.2 kB / 117 kB). Build surface stays at 163 routes; `/papers` is `○` static (filter/sort state is client-side; the data is build-time-resolved).
+- No new tests required — `getIndexedPapers` is a thin transformation over the already-tested papers collection. Visual regression baseline for the index lands in Unit 2.13.
+- Smoke gates green: `pnpm typecheck`, `pnpm test` (79/79), `pnpm build` (163 routes; only `/papers` bundle changed; First Load JS shared chunk still 103 kB).
+- THINK artifact: `docs/thinking/2.8-papers-index.md`.
