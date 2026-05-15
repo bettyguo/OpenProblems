@@ -1,0 +1,10 @@
+---
+title: History
+summary: From the 2018 framing of debate and iterated amplification, through 2024–25 SAE-era progress on weaker-supervises-stronger experiments, to the 2026 status where empirical scalable-oversight wins remain narrow and protocol-specific.
+---
+
+The phrase *scalable oversight* enters the alignment literature in 2018 with the AI-safety-via-debate proposal — a two-player zero-sum game in which a human judge picks a winner between two model debaters, and the equilibrium is hypothesised to favour truth. The same period produced *iterated amplification* and *recursive reward modeling*, all of which framed alignment under capability gulfs as a protocol problem.
+
+The 2020–2023 wave was largely conceptual: the protocols were studied at small scale, and the empirical question — does a weaker judge actually do better with the protocol than without — remained open. RLHF dominated the practical alignment stack and worked well precisely on tasks where the labeller was the stronger judge, sidestepping the structural problem.
+
+Through 2024–2025, sandwich experiments (use a non-expert human + protocol vs. a domain expert as ground truth) began producing concrete results on narrow domains: small wins for debate on some QA splits, mixed results on long-form generation, and persistent failures when the protocol requires the expert models to be honest about their capabilities. The 2026 status is that scalable oversight remains an open empirical problem: no single protocol robustly beats the unaided judge across capability gulfs of the size that matter for frontier-model deployment, and the protocols that do work in narrow settings have not been shown to generalise.

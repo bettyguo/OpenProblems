@@ -1,0 +1,10 @@
+---
+title: Background
+summary: Why context windows have grown from $10^4$ to $10^6$ tokens without quality scaling proportionally — and why the retrieval-augmented composition over long contexts is the open problem rather than raw context length per se.
+---
+
+Through 2023–2025 the announced context length of frontier models grew by roughly two orders of magnitude — from 4–32K tokens to 128K, 200K, and announced support for 1M and beyond. The follow-on evaluation literature documented a steady gap between *claimed* context length and *effective* context length: synthetic needle-in-haystack tests degraded long before the claimed limit; long-form question answering and aggregation tasks degraded earlier; multi-document reasoning degraded earliest of all.
+
+The natural composition with retrieval was supposed to help. Classical retrieval-augmented generation (RAG) retrieves a small set of relevant passages and conditions generation on them. As context budgets grew, the temptation was to retrieve more — entire document collections, multiple candidate passages, full conversation histories. The empirical observation was that more retrieved context did not monotonically improve answer quality past a regime-dependent threshold: distractors accumulated, attention diluted, and the generation step's quality dropped.
+
+The frontier task tracked here is **retrieval-augmented generation that scales positively with retrieved context length** — answer quality non-decreasing as the input grows from $10^4$ to $10^6$ tokens, evaluated on tasks where the relevant signal is genuinely distributed across the long context (not concentrated in a small pre-identifiable subset). The relationship to [[hallucination-reduction]] is direct: when the retrieved context is wrong, missing, or buried, the generation step falls back on parametric knowledge that may not be faithful.

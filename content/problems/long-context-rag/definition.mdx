@@ -1,0 +1,16 @@
+---
+title: Formal definition
+summary: Long-context RAG as a function $\text{RAG}_M : (x, C) \mapsto y$ whose answer quality is non-decreasing in the retrieved context length $|C|$ — measured by a verifier on tasks where the relevant signal is genuinely distributed across $C$.
+---
+
+Let a query $x$ be drawn from a task distribution $\mathcal{D}$. Let $C \subseteq \mathcal{R}$ be a retrieved context of length $|C|$ tokens drawn from a corpus $\mathcal{R}$. Let $\text{RAG}_M : (x, C) \mapsto y$ be a retrieval-augmented generation function combining a model $M$ with the context $C$, and let $V$ be a task verifier.
+
+The **answer quality** at retrieval budget $L$ is
+
+$$
+Q(M, L) \;=\; \mathbb{E}_{x \sim \mathcal{D},\, C \sim \mathcal{R}(x;\, L)}\!\left[\, V\!\left(\text{RAG}_M(x, C),\, x\right) \,\right]
+$$
+
+where $\mathcal{R}(x; L)$ samples retrieved contexts of length $L$ relevant to $x$. We say $\text{RAG}_M$ *scales* on $\mathcal{D}$ when $Q(M, L)$ is non-decreasing on the regime of interest — typically $L \in \{10^4, 10^5, 10^6\}$ tokens — on tasks where the relevant signal is genuinely distributed across $C$ (not concentrated in a small pre-identifiable subset that defeats the purpose).
+
+Current systems satisfy $Q(M, 10^4) \le Q(M, 10^5)$ on most tasks but exhibit $Q(M, 10^5) > Q(M, 10^6)$ — the long-context-RAG cliff. The frontier task is a $\text{RAG}_M$ whose $Q$ is monotone over the full $10^4$–$10^6$ regime on benchmarks broader than the one the system was tuned on.

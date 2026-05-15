@@ -1,0 +1,54 @@
+problem_slug: genome-foundation-models
+date: 2026-05-14
+methodology_version: "1.0.0"
+curator: jikun
+dimensions:
+  difficulty:
+    grade: A
+    confidence: 0.6
+    rationale: |
+      Difficulty A on the open part (non-coding, rare variants): the
+      label-scarce regime requires the representation to do almost all the
+      work, and current pretraining objectives may not be sufficient. Not
+      S because coding-variant interpretation has matured into clinical
+      use; not B because non-coding effect prediction remains a
+      systematic gap with no clear method-level solution in sight.
+  saturation:
+    value: 40
+    confidence: 0.5
+    rationale: |
+      Coding-variant effect prediction is well-served and improving;
+      non-coding effect prediction is poorly served and improving slowly.
+      Saturation is a weighted average leaning on the open part of the
+      problem (per §8.2 the ceiling is set by clinical demand, which is
+      dominated by the long tail). TODO(curate) per-benchmark numbers.
+  urgency:
+    stars: 4
+    confidence: 0.65
+    rationale: |
+      Clinical demand is high and growing — rare-disease diagnostic odyssey
+      and regulatory interpretation are first-line use cases — but the
+      timeline is set by clinical-trial cycles rather than by frontier
+      research. 4 stars rather than 5.
+  value:
+    stars: 5
+    confidence: 0.7
+    rationale: |
+      Closing the non-coding gap would change rare-disease diagnosis,
+      pharmacogenomics, and gene-therapy targeting. Among the highest-
+      value applied problems on the seed list.
+  industry_call:
+    stars: 4
+    confidence: 0.6
+    rationale: |
+      Substantial industry investment via biotech foundation-model
+      startups, partnerships between pharma and AI labs, and the genomics
+      arms of the major model providers. Below 5 because the field is
+      still small relative to general LLM industry hiring.
+signals_considered:
+  - 2020–22 supervised variant-effect-prediction baselines (ClinVar, deep mutational scanning)
+  - 2023–24 emergence of multi-trillion-nucleotide foundation models
+  - 2025–26 clinical-pipeline adoption of foundation-model predictors for coding variants
+  - First AI-co-discovered drugs entering Phase II in 2026
+  - Persistent non-coding-variant interpretation gap
+watchlist: false

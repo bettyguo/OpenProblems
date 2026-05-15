@@ -1,0 +1,10 @@
+---
+title: Background
+summary: Why neural operator-learning has reached "matches the classical solver" on standard benchmarks while struggling to generalise across regimes, and what would change if a true cross-regime operator foundation model existed.
+---
+
+A surrogate for a partial differential equation is an inexpensive function that takes initial conditions (and possibly parameters and geometry) and returns the PDE's solution at later times. Classical surrogates — proper-orthogonal decomposition, reduced-order models — work well in the regime they were fitted in and degrade outside it. Neural operator-learning, the program of training neural networks to approximate solution operators of PDE families, promised to remove that limitation: train once on enough data spanning the regime of interest, deploy across the regime.
+
+By 2024–2025, neural surrogates for atmospheric and fluid dynamics had reached headline parity with the dominant classical numerical-weather-prediction systems on standard short-to-medium-range benchmarks, at orders-of-magnitude lower inference cost. Demonstrations on operator-learning benchmarks (Burgers, Navier–Stokes families, Darcy flow) showed similar wins. The wave was real.
+
+The 2026 status is that **generalisation across regimes** — extreme weather events, parameter regimes outside the training distribution, geometries the model did not see — remains the binding constraint. A surrogate that matches the solver in-distribution but degrades sharply at the tails is not a substitute for the solver; it is a fast approximation usable inside known limits. The frontier task is the foundation-model version: pretrained operators whose representations transfer across PDE families and across regimes within a family.

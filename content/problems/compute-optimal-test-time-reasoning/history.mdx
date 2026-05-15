@@ -1,0 +1,10 @@
+---
+title: History
+summary: From self-consistency in 2022, through the 2024 compute-optimal-scaling result that legitimised test-time compute as a first-class axis, to the 2025 inverse-scaling finding that complicated the picture.
+---
+
+Test-time decoding strategies for reasoning predate the modern scaling discussion. Self-consistency (sample many chains, vote) and verifier-guided decoding appeared in 2022–2023 and consistently improved accuracy on mathematics-style benchmarks at modest compute multipliers. The framing was "use the model better at inference," not "spend much more inference compute."
+
+The 2024 transition was the Snell et al. compute-optimal-scaling analysis: at fixed total compute, models trained smaller and decoded longer can match or beat models trained larger and decoded shorter on reasoning-heavy benchmarks. This made test-time compute a first-class scaling axis and shifted the design space — the question became "how much test-time compute is worth spending" rather than "is it worth any."
+
+Through 2024–2025 a wave of methods explored that question: best-of-N with learned verifiers, tree-of-thought variants, internalised long chains of thought trained directly into the model. The 2025 complication was the inverse-scaling-in-test-time finding (Yang et al., NeurIPS 2025): on knowledge-intensive QA, more chain-of-thought tokens *decreased* accuracy. The 2026 frontier is allocation, not aggregate compute: deciding per-prompt how much to spend and on which strategy, including the case where the right answer is "spend less."

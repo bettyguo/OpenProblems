@@ -1,0 +1,10 @@
+---
+title: History
+summary: From the 2022–24 first wave of train-test contamination audits, through the 2025 agent-benchmark inflation, to the Berkeley RDI 2026 finding that crystallised gamability as the defining benchmark-integrity failure of the agent era.
+---
+
+Concerns about train-test contamination in language-model benchmarks date to the 2020 GPT-3 era, but the first systematic audits appeared in 2022–2024. The most-cited finding of that wave was that several widely-used benchmarks (HellaSwag, MMLU subsets, code-generation suites) had partial overlap with public web corpora; the scores were demonstrably inflated by memorisation in some cases.
+
+The 2024–2025 inflection was the agent-era benchmark explosion. New benchmarks appeared monthly; many were authored by labs whose models were the first to evaluate on them. Held-out private replications surfaced rank-disagreement on multiple high-profile agent leaderboards — i.e., models that topped the public version did not top the private replication. The interpretation was contested between "the public benchmark leaked" and "the agent stack was tuned to the protocol".
+
+The 2026 watershed was **the Berkeley RDI gamability audit**, which showed that 8 widely-cited agent benchmarks could be driven to ~100% success rates by adversarial agents that solved none of the intended tasks. The exploits were not subtle: verifier loopholes, environment shortcuts, and protocol artefacts. The finding shifted the field's framing from "did the benchmark leak?" to "is the benchmark gamable at all?" The mid-2026 frontier — tracked by this entry — is the design of benchmarks robust to both contamination and gaming, plus auditing methodology that can keep up with the rate at which new benchmarks ship.

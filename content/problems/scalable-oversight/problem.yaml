@@ -1,0 +1,41 @@
+slug: scalable-oversight
+title: Scalable Oversight Beyond Human-Verifiable Capability
+subtitle: How to evaluate, train, and correct models on tasks where the human supervisor is no longer the most-capable judge.
+domain: social-aspects
+subdomain: alignment
+tags:
+  - oversight
+  - alignment
+  - debate
+  - prover-verifier
+  - rlhf
+status: open
+posed_year: 2018
+related_problems:
+  - mechanistic-interpretability
+  - hallucination-reduction
+benchmarks:
+  - id: gpqa-diamond
+    name: GPQA-Diamond (oversight split)
+    dataset: GPQA Diamond
+    metric: judge-accuracy-vs-expert
+    metric_direction: higher-is-better
+    notes: |
+      The Diamond split of GPQA asks PhD-domain-expert questions whose answers
+      are unverifiable by non-experts. Used as an oversight-protocol benchmark
+      by measuring how reliably a non-expert (or weaker model) judge can pick
+      the correct answer when assisted by debate, critique, or prover-verifier
+      protocols.
+  - id: debate-arena
+    name: Debate-arena protocols
+    dataset: Various
+    metric: protocol-truthfulness
+    metric_direction: higher-is-better
+    notes: |
+      Family of debate, market, and recursive-decomposition evaluation
+      protocols whose common metric is "does the protocol return the truthful
+      answer when run by a weaker judge?" No single dataset is canonical;
+      results are typically reported per-protocol.
+editorial:
+  primary_curator: jikun
+  last_curated: 2026-05-14

@@ -1,0 +1,12 @@
+---
+title: Formal definition
+summary: An interpretability claim as a hypothesis about a model's internal computation; faithfulness as the rate at which interventions predicted by the claim alter behaviour as predicted.
+---
+
+Let $M$ be a trained transformer with parameters $\theta$ and activations $a(x)$ on input $x$. An *interpretability claim* $H$ is a hypothesis that some internal subset of computations $C \subseteq M$ implements a specified function $f$ on a specified input distribution $\mathcal{D}$.
+
+**Faithfulness.** $H$ is *faithful* on $\mathcal{D}$ when the predicted intervention behaves as predicted: if $H$ says circuit $C$ computes $f(x)$ at activation site $a(x)$, then patching $a(x)$ with $a(x')$ for a paired counterfactual $x'$ should change $M(x)$'s output in the way $f$ predicts.
+
+**Coverage.** $H$ has *coverage* $c$ on $\mathcal{D}$ when the fraction of $M$'s behaviour on $\mathcal{D}$ explained by $C$ — measured by ablation drop or by behavioural decomposition — is at least $c$.
+
+A claim with high faithfulness and low coverage tells us a true thing about a small slice of $M$. A claim with low faithfulness has not been validated. The frontier task is to produce claims that are simultaneously faithful and high-coverage at frontier scale, on input distributions that matter for deployment (not just on hand-picked toy circuits).

@@ -1,0 +1,54 @@
+problem_slug: multi-agent-llm-coordination
+date: 2026-05-14
+methodology_version: "1.0.0"
+curator: jikun
+dimensions:
+  difficulty:
+    grade: A
+    confidence: 0.6
+    rationale: |
+      Difficulty A: the joint problem requires both a coordination policy
+      that survives team-size scaling and a memory primitive that survives
+      concurrent edits. Each subproblem is hard; their interaction may be
+      harder. Not S because partial wins are routine on small teams; not
+      B because the field has been at the same scaling wall for two years.
+  saturation:
+    value: 22
+    confidence: 0.5
+    rationale: |
+      Small-team gains (n ≤ 4) are the rule; positive-scaling beyond that
+      is the exception. Shared-memory primitives are pre-paradigmatic
+      relative to the single-agent retrieval stack. Saturation against
+      a hypothetical "monotone scaling to n = 16 with a defined consistency
+      level" ceiling. TODO(curate) once a primary benchmark stabilises.
+  urgency:
+    stars: 4
+    confidence: 0.6
+    rationale: |
+      Production agent stacks all hit memory walls; multi-agent
+      orchestration is the engineering layer above
+      [[long-horizon-agent-reliability]]. Below 5 because single-agent
+      reliability is closer to the binding constraint for many products.
+  value:
+    stars: 4
+    confidence: 0.6
+    rationale: |
+      A robust multi-agent stack would unlock parallelism across most
+      LLM-product surfaces, and the shared-memory advances would
+      transfer to single-agent long-horizon tasks. Below 5 because the
+      single-agent ceiling is rising fast enough that some of this value
+      may be captured by frontier single-agent systems.
+  industry_call:
+    stars: 4
+    confidence: 0.55
+    rationale: |
+      Visible engineering investment across orchestration frameworks,
+      vector-store-as-memory products, and agent-platform startups.
+      Below 5 because hiring is more concentrated in single-agent
+      capability than in coordination per se.
+signals_considered:
+  - 2023 multi-agent-framework demo wave (autonomous-agent stacks, assistant-of-assistants)
+  - Han et al. 2024–26 multi-agent LLM survey documenting the scaling wall
+  - 2025 production-agent post-mortems naming shared memory as a binding constraint
+  - "Cross-link: [[long-horizon-agent-reliability]] as the single-agent analog"
+watchlist: true

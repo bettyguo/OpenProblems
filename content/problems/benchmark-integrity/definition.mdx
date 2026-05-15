@@ -1,0 +1,16 @@
+---
+title: Formal definition
+summary: Benchmark integrity as the property that a benchmark's score is a faithful measurement of the underlying capability — formalised as a bound on the gap between observed score and capability under a defined threat model.
+---
+
+Let a benchmark $\mathcal{B} = (\mathcal{D}, V)$ be a distribution $\mathcal{D}$ over task instances and a verifier $V$. Let $c(M)$ be the true capability of a model $M$ on the task family $\mathcal{B}$ measures — defined as the probability $M$ correctly solves a freshly-sampled, non-contaminated instance evaluated by an oracle verifier.
+
+A benchmark **has integrity** at threat model $\mathcal{T}$ when, for every model $M$ obtained under the strategies admitted by $\mathcal{T}$ (e.g., contamination, verifier exploitation, retrieval shortcuts),
+
+$$
+\left|\, \text{score}(M, \mathcal{B}) - c(M) \,\right| \;\le\; \varepsilon.
+$$
+
+Two failures break this bound. **Contamination** ($\mathcal{T}_{\text{contam}}$): evaluation items appear in $M$'s training corpus, so $\text{score}(M, \mathcal{B})$ reflects memorisation. **Gaming** ($\mathcal{T}_{\text{game}}$): $M$ exploits structure in $V$ or $\mathcal{D}$'s presentation so $\text{score}(M, \mathcal{B})$ reflects exploitation rather than capability.
+
+The frontier task is benchmarks for which the bound holds under realistic $\mathcal{T}$, plus **auditing protocols** that estimate $|\text{score} - c|$ for an existing $\mathcal{B}$ at a cost lower than re-running the original benchmark from scratch.

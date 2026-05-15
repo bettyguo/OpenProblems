@@ -1,0 +1,14 @@
+---
+title: Formal definition
+summary: The pass^k reliability metric, the multiplicative-failure model that motivates it, and the practical scoping of "long-horizon" trajectories.
+---
+
+Let an agent $A$ act on a task $t$ drawn from a benchmark distribution $\mathcal{D}$. A trajectory $\tau$ either succeeds ($s(\tau) = 1$) or fails ($s(\tau) = 0$) under a task-specific verifier.
+
+**Pass@k.** $\text{pass@}k(A, \mathcal{D}) = \mathbb{P}_{t \sim \mathcal{D}}\!\left[\, \exists\, i \le k\,:\, s(\tau_i) = 1 \,\right]$ — at least one of $k$ independent trials succeeds.
+
+**Pass^k.** $\text{pass}^k(A, \mathcal{D}) = \mathbb{P}_{t \sim \mathcal{D}}\!\left[\, \forall\, i \le k\,:\, s(\tau_i) = 1 \,\right]$ — every one of $k$ independent trials succeeds.
+
+Under independence, $\text{pass}^k = (\text{pass@1})^k$. Empirical $\text{pass}^k$ is **higher** than this lower bound when failures are correlated across trials (the agent fails the same hard tasks, succeeds the easy ones), and **lower** when failures are anti-correlated. Either deviation tells us something about the agent.
+
+We call a trajectory *long-horizon* when its successful completion requires more than $\sim 10^4$ output tokens or more than $\sim 50$ tool calls. Below that scale, single-shot benchmarks dominate; above it, the variance gap dominates. This problem tracks closing the gap on benchmarks at or above the long-horizon threshold while preserving short-horizon $\text{pass@}1$.

@@ -1,0 +1,39 @@
+slug: multi-agent-llm-coordination
+title: Robust Multi-Agent LLM Coordination & Memory
+subtitle: Multi-agent LLM systems whose performance scales positively with the number of agents, and whose shared memory remains coherent under concurrent edits.
+domain: reinforcement-learning
+subdomain: multi-agent
+tags:
+  - multi-agent
+  - coordination
+  - shared-memory
+  - emergent-communication
+  - cross-domain-llm
+status: open
+posed_year: 2023
+related_problems:
+  - long-horizon-agent-reliability
+benchmarks:
+  - id: multi-agent-coord-suites
+    name: Multi-agent coordination suites (TODO)
+    dataset: Various
+    metric: cooperative-success
+    metric_direction: higher-is-better
+    notes: |
+      No single benchmark dominates this surface in 2026. Reported metrics
+      typically include cooperative-success on a held-out coordination
+      task, robustness to unseen partners, and degradation under
+      concurrent memory edits. TODO(curate) once a primary benchmark
+      stabilises.
+  - id: shared-memory-consistency
+    name: Shared-memory consistency (TODO)
+    dataset: Various
+    metric: read-after-write-consistency
+    metric_direction: higher-is-better
+    notes: |
+      Family of evaluations measuring whether multi-agent systems whose
+      agents share a memory store maintain consistent state across
+      concurrent edits. TODO(curate).
+editorial:
+  primary_curator: jikun
+  last_curated: 2026-05-14

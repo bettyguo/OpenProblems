@@ -1,0 +1,16 @@
+---
+title: Formal definition
+summary: Variant-effect prediction as a pretrained-representation transfer problem; the rare-variant and non-coding-variant regimes where supervised labels are scarce and a foundation-model representation has to do most of the work.
+---
+
+Let $g$ be a genome sequence and $v$ a variant — a substitution, insertion, or deletion at a defined position. Let $f(v)$ be the variant's *effect* on a phenotype of interest (pathogenicity, expression change, splicing alteration, etc.).
+
+A **genome foundation model** $M$ is a model pretrained on raw nucleotide sequence with a self-supervised objective (typically masked-language-modeling or auto-regressive prediction). A *variant-effect predictor* derived from $M$ is a function $\hat f_M(v)$ — either a fine-tuned head, a zero-shot likelihood ratio, or a feature-extractor + downstream classifier — that maps variants to predicted effects.
+
+The problem decomposes by regime:
+
+- **Coding, common variants.** Supervised labels are dense; the question is whether $M$-derived predictors beat per-task supervised baselines. They typically do, modestly.
+- **Non-coding variants.** Labels are sparse and noisy; tissue and context matter; $M$ is doing most of the work. This is the open frontier.
+- **Rare variants.** Per-variant supervised labels do not exist; the predictor's accuracy depends entirely on $M$'s representation generalising from common-variant context to rare instances.
+
+A solved version would deliver clinically usable accuracy across all three regimes from a single $M$.

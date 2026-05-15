@@ -1,0 +1,46 @@
+slug: long-context-rag
+title: Long-Context Retrieval-Augmented Generation Beyond 1M Tokens
+subtitle: RAG that retains answer quality as retrieved context grows from $10^4$ to $10^6$ tokens — closing the needle-in-haystack cliff current systems hit past a few hundred thousand tokens.
+domain: deep-learning
+subdomain: large-language-models
+tags:
+  - long-context
+  - retrieval
+  - rag
+  - evaluation
+  - factuality
+status: open
+posed_year: 2024
+related_problems:
+  - hallucination-reduction
+benchmarks:
+  - id: ruler
+    name: RULER
+    dataset: RULER
+    metric: composite-recall
+    metric_direction: higher-is-better
+    notes: |
+      Synthetic long-context evaluation spanning multi-needle retrieval,
+      variable-tracking, and aggregation tasks. The most-cited probe for
+      effective context length vs. claimed context length.
+  - id: longbench
+    name: LongBench
+    dataset: LongBench
+    metric: composite
+    metric_direction: higher-is-better
+    notes: |
+      Multi-task long-context evaluation across QA, summarisation, and
+      few-shot learning at multiple context lengths. The community
+      surface for cross-task generalisation at length.
+  - id: niah
+    name: Needle-in-a-Haystack (multi-needle)
+    dataset: NIAH (multi-needle variants)
+    metric: recall
+    metric_direction: higher-is-better
+    notes: |
+      Multi-needle NIAH evaluations probing recall under distractor
+      density. The classical "1M-token claim" is most cleanly tested
+      here. TODO(curate) current SOTA at 1M-token contexts.
+editorial:
+  primary_curator: jikun
+  last_curated: 2026-05-14

@@ -1,0 +1,12 @@
+---
+title: History
+summary: Brief chronology of agent-reliability benchmarks — from the 2023 single-task suites to the 2025–26 long-horizon and pass^k evaluations that exposed the reliability cliff.
+---
+
+Pre-2023, "agent" evaluation in the LLM context meant ReAct-style traces on short toolformer benchmarks. The metric was almost always `pass@1` on a small task set; reliability across trials was not measured because the trial cost was low and the task complexity was bounded.
+
+The 2023 inflection was **SWE-bench**, which released a corpus of real GitHub issues and a verifier (test execution). The 2024 *Verified* subset corrected mis-graded examples and became the canonical agent benchmark; resolved rates climbed from single digits in 2023 to a plateau approaching 80% in early 2026.
+
+The first long-horizon benchmarks appeared in 2024: τ-bench introduced multi-turn dialogue with a verifier, OSWorld pushed agents into a real operating system, and RE-Bench measured trajectories denominated in hours. These exposed a different failure mode — variance — that single-shot SWE-bench never surfaced.
+
+The mid-2026 frontier as we track it is twofold: (a) close the `pass^k`/`pass@1` gap on existing long-horizon benchmarks, and (b) extend evaluation to trajectories whose success requires recovery from intermediate failure (self-correction, sub-task replanning). Progress on (a) without (b) risks training agents that succeed reliably only on tasks where the first try happens to be right.

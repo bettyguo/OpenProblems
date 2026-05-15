@@ -1,0 +1,45 @@
+slug: mechanistic-interpretability
+title: Mechanistic Interpretability of Frontier-Scale Transformers
+subtitle: Reverse-engineering the internal computations of frontier transformers from weights and activations, at a faithfulness sufficient to support deployment-time auditing.
+domain: social-aspects
+subdomain: accountability-transparency-interpretability
+tags:
+  - interpretability
+  - circuits
+  - sparse-autoencoders
+  - features
+  - auditing
+status: open
+posed_year: 2020
+related_problems:
+  - scalable-oversight
+benchmarks:
+  - id: ioi-family
+    name: IOI-family circuit benchmarks
+    dataset: IOI and follow-on circuits
+    metric: circuit-recovery
+    metric_direction: higher-is-better
+    notes: |
+      Indirect-Object-Identification and follow-on tasks where a known small
+      circuit is the natural ground truth. Method evaluation: does the method
+      recover the documented circuit at faithful agreement with ablation?
+  - id: saebench
+    name: SAEBench
+    dataset: SAEBench
+    metric: composite
+    metric_direction: higher-is-better
+    notes: |
+      Standardised SAE evaluation over reconstruction fidelity, feature
+      sparsity, downstream-probe transfer, and several feature-quality proxies.
+  - id: circuit-recovery
+    name: Circuit-recovery benchmarks
+    dataset: Various
+    metric: faithfulness
+    metric_direction: higher-is-better
+    notes: |
+      Family of evaluations that synthesise a model with a known internal
+      computation and ask whether interpretability tools recover it. Acts
+      as a method-comparison surface where the ground truth is constructible.
+editorial:
+  primary_curator: jikun
+  last_curated: 2026-05-14

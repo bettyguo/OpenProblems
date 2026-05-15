@@ -1,0 +1,16 @@
+---
+title: Formal definition
+summary: Compute-optimal test-time reasoning as a per-prompt budget-allocation problem; the inverse-scaling regime where the optimal strategy is to spend less rather than more.
+---
+
+Let $M$ be a model and $x$ a prompt drawn from a distribution $\mathcal{D}$. Let $\Pi$ be a family of decoding strategies $\pi$, each with an associated inference cost $c(\pi, x)$ measured in compute (FLOPs or sampled tokens) and a per-prompt accuracy $a_M(\pi, x) = \mathbb{P}[M_\pi(x) = y^*]$.
+
+Given a per-prompt budget function $B(x)$, the **compute-optimal strategy** is
+
+$$
+\pi^*(x) \;=\; \mathop{\mathrm{arg\,max}}_{\pi \in \Pi,\, c(\pi, x)\, \le\, B(x)} \; a_M(\pi, x).
+$$
+
+The frontier task is to compute $\pi^*$ — or a useful approximation to it — at deployment time, with no per-prompt human guidance and a per-prompt overhead that is small relative to $B(x)$.
+
+The **inverse-scaling regime** is the input distribution where $a_M(\pi, x)$ *decreases* in $c(\pi, x)$: spending more compute makes the model worse. Inverse-scaling regimes are reported on knowledge-intensive QA (more reasoning → more confabulation) and on prompts where the model's first instinct is correct. A compute-optimal allocator must detect this regime and *under-spend* the global budget, not over-spend it.

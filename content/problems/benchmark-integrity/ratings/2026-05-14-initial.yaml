@@ -1,0 +1,64 @@
+problem_slug: benchmark-integrity
+date: 2026-05-14
+methodology_version: "1.0.0"
+curator: jikun
+dimensions:
+  difficulty:
+    grade: B
+    confidence: 0.55
+    rationale: |
+      B because the failure modes are now well-documented (contamination,
+      gaming) and the auditing methodology is improving year over year;
+      progress is steady, even if benchmark turnover outpaces audit
+      capacity. Not A because no structural barrier blocks better
+      benchmark design, only execution discipline and incentives.
+      Not C because the gap between current practice and the integrity
+      bar remains substantial.
+  saturation:
+    value: 22
+    confidence: 0.5
+    rationale: |
+      Auditing tooling is improving (membership-inference probes, held-
+      out replications, verifier-adversarial scans) but the rate of new-
+      benchmark publication outpaces audit deployment. Saturation
+      calculated against a hypothetical "every public benchmark
+      audited at publication and refreshed annually" ceiling.
+      TODO(curate) over the Berkeley RDI audit family and follow-on
+      replications.
+  urgency:
+    stars: 4
+    confidence: 0.65
+    rationale: |
+      High urgency because every capability claim of 2025–26 is
+      gated by a benchmark score, and the integrity of those scores
+      directly affects research direction, hiring, and deployment
+      decisions. Not 5 because the field has begun to internalise the
+      issue and the worst public claims of 2024 are now treated more
+      sceptically.
+  value:
+    stars: 4
+    confidence: 0.6
+    rationale: |
+      Robust benchmarks shift the entire field's research signal-to-
+      noise ratio. Direct spillover into
+      [[long-horizon-agent-reliability]] (where the Berkeley RDI
+      audit hit hardest) and [[hallucination-reduction]] (where
+      contamination has been documented). Not 5 because the value is
+      indirect — better measurement enables faster capability progress
+      but is not capability itself.
+  industry_call:
+    stars: 3
+    confidence: 0.55
+    rationale: |
+      Industrial labs are investing in internal eval rigor; public
+      hiring for "evaluation" / "benchmark" roles grew through 2025–
+      26 but remains a smaller pulse than capability hiring. Not 4
+      because vendor incentives still favour shipping the benchmark
+      that flatters their model over auditing existing surfaces.
+signals_considered:
+  - 2022–24 first wave of train-test contamination audits (HellaSwag, MMLU subsets, codegen)
+  - 2024–25 agent-era benchmark explosion and held-out replication disagreements
+  - Berkeley RDI 2026 audit finding 8 agent benchmarks gamable to ~100%
+  - Membership-inference / rephrasing-detection tooling maturing through 2025
+  - Industry shift toward private held-out replications in 2025–26
+watchlist: false

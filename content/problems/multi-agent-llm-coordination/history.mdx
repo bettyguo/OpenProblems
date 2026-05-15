@@ -1,0 +1,10 @@
+---
+title: History
+summary: From the 2023 multi-agent-framework wave, through the 2024–26 survey literature documenting the scaling wall, to the 2026 frontier where shared-memory primitives are the binding constraint.
+---
+
+Multi-agent LLM systems became a visible research and engineering surface in 2023, when the first widely used frameworks (autonomous-agent stacks, assistant-of-assistants demos) showed that orchestrating a small team of LLM-backed agents could outperform a single agent on multi-step tasks. The proof-of-concept wave was rapid; the production-deployment wave that followed was slower.
+
+By 2024, multi-agent LLM survey papers were already documenting the scaling wall: gains saturate and often reverse beyond a small number of agents. The Han et al. 2024–26 survey is the most-cited synthesis and characterises the failure modes — coordination overhead, partner brittleness, shared-state divergence — across frameworks and tasks.
+
+The 2025–26 frontier has narrowed to memory. Production agent stacks routinely cap useful team sizes at 3–5 because the shared-memory primitive (RAG-over-shared-store, blackboard, structured database) breaks under concurrent edits. The current research wave is producing memory-architecture proposals (graph-structured, vector-store-with-versioning, append-only with materialised views) that the field is still evaluating against coherent benchmarks. No one has yet shown a multi-agent LLM system that scales monotonically from 1 to 16 agents on a non-trivial task distribution.

@@ -1,0 +1,37 @@
+slug: genome-foundation-models
+title: Genome-scale Foundation Models for Functional Variant Prediction
+subtitle: Foundation models trained on raw nucleotide sequences whose internal representations support clinically actionable predictions of variant effect, especially for rare and non-coding variants.
+domain: applications
+subdomain: health-medicine
+tags:
+  - genomics
+  - foundation-models
+  - variant-effect
+  - clinical
+  - non-coding
+status: open
+posed_year: 2023
+related_problems:
+  - operator-learning-foundation-models
+benchmarks:
+  - id: clinvar-variant-effect
+    name: ClinVar variant-effect prediction (TODO)
+    dataset: ClinVar
+    metric: auroc
+    metric_direction: higher-is-better
+    notes: |
+      Standard surface for variant-pathogenicity prediction. Coding variants
+      are well-characterised; non-coding remains the open frontier.
+      TODO(curate) per-class numbers.
+  - id: rare-variant-zero-shot
+    name: Rare-variant zero-shot effect (TODO)
+    dataset: Various
+    metric: spearman
+    metric_direction: higher-is-better
+    notes: |
+      Zero-shot effect prediction on rare variants where supervised
+      training labels are scarce. The clinically interesting case.
+      TODO(curate).
+editorial:
+  primary_curator: jikun
+  last_curated: 2026-05-14

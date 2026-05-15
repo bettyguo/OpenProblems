@@ -1,0 +1,62 @@
+problem_slug: long-context-rag
+date: 2026-05-14
+methodology_version: "1.0.0"
+curator: jikun
+dimensions:
+  difficulty:
+    grade: B
+    confidence: 0.55
+    rationale: |
+      B: empirical progress is steady and the failure modes are
+      legible (attention dilution, distractor accumulation, position-
+      encoding extrapolation). Not A because architectural and pre-
+      training interventions have been narrowing the gap year over
+      year. Not C because the cliff at $10^5$–$10^6$ tokens has not
+      been closed by any current method on broad benchmarks.
+  saturation:
+    value: 30
+    confidence: 0.5
+    rationale: |
+      Effective context length improving but lags claimed context
+      length by a roughly constant multiplicative factor across the
+      published frontier. Saturation calculated against a hypothetical
+      "monotone quality from $10^4$ to $10^6$ on broad task families"
+      ceiling. TODO(curate) over RULER and LongBench leaderboards.
+  urgency:
+    stars: 4
+    confidence: 0.65
+    rationale: |
+      High urgency because long-context RAG is the architectural
+      pattern that every long-document and codebase-scale agent
+      stack depends on; the gap is a real bottleneck for production
+      deployment. Not 5 because hallucination and agent reliability
+      dominate vendor roadmaps more visibly.
+  value:
+    stars: 4
+    confidence: 0.6
+    rationale: |
+      Closing the cliff unlocks legal, scientific, and codebase-scale
+      assistance, all of which currently require painful chunking +
+      reranking pipelines. Direct spillover into
+      [[hallucination-reduction]] (retrieval grounds the generation
+      step; when retrieval is unreliable the generation falls back to
+      parametric knowledge). Not 5 because alternative compositions
+      (chunked RAG with reranking) remain a viable substitute on
+      many use cases.
+  industry_call:
+    stars: 4
+    confidence: 0.6
+    rationale: |
+      Vendor "1M-token context" announcements are a recurring 2024–26
+      marketing surface; production teams hit the cliff and route
+      around it with chunking or summarisation pipelines. Not 5
+      because the call is for raw context length more than for the
+      retrieval-composition version of the problem.
+signals_considered:
+  - 2020–21 first RAG papers and the small-context retrieval framing
+  - 2023–24 context-window race (128K → 200K → 1M token claims)
+  - First-generation needle-in-haystack and multi-needle evaluations
+  - RULER (2024) as the community-standard effective-context-length probe
+  - LongBench as the cross-task long-context surface
+  - 2025–26 vendor announcements vs. effective-context-length gaps in audits
+watchlist: false

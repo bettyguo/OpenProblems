@@ -1,0 +1,10 @@
+---
+title: Background
+summary: Why production multi-agent LLM stacks routinely under-perform single-agent baselines beyond a few agents, and why shared memory has become the binding constraint as orchestration matures.
+---
+
+The 2023–2024 wave of multi-agent LLM frameworks promised compositional gains: assemble a small team of specialised agents (planner, coder, reviewer, executor), let them communicate, and outperform a single monolithic model. Early demos delivered, but reproducible scaling — performance that improves monotonically with the number of agents — has been elusive. The 2024–26 multi-agent survey literature documents the same artefact across frameworks: small teams (2–4) often help, larger teams routinely regress to or below the single-agent baseline.
+
+Two structural problems dominate. The first is **coordination overhead**: agents communicate in natural language, and the round-trip cost of message passing grows faster than the work decomposable to additional agents. The second is **shared memory**: a coherent multi-agent system needs a place where agents can record and retrieve facts established by other agents, and the field has not converged on a primitive. RAG-over-shared-store, blackboard architectures, and message-history retrieval all degrade under concurrent edits and over long horizons.
+
+This problem also sits at a domain boundary. The agents themselves are LLMs ([deep-learning / large-language-models](/domains/deep-learning/large-language-models)); the system-level question — coordination policies, equilibrium behaviour, partner robustness — is a multi-agent reinforcement-learning question. The taxonomy locates the problem under [reinforcement-learning / multi-agent](/domains/reinforcement-learning/multi-agent) per §16; the cross-link is intentional.

@@ -1,0 +1,48 @@
+slug: benchmark-integrity
+title: Benchmark Integrity & Evaluation Gaming
+subtitle: Designing and auditing AI benchmarks so that high scores reflect the underlying capability rather than exploitation of verifier or protocol artefacts — and detecting when a benchmark has been gamed.
+domain: general-ml
+subdomain: evaluation
+tags:
+  - evaluation
+  - benchmarks
+  - gaming
+  - integrity
+  - auditing
+status: open
+posed_year: 2024
+related_problems:
+  - long-horizon-agent-reliability
+  - hallucination-reduction
+benchmarks:
+  - id: berkeley-rdi-gamability-audit
+    name: Berkeley RDI 2026 agent-benchmark gamability audit
+    dataset: 8 agent benchmarks (audited)
+    metric: gamability-rate
+    metric_direction: lower-is-better
+    notes: |
+      Berkeley RDI 2026 finding: 8 agent benchmarks driven to ~100%
+      "success" without solving any task, by adversarial exploitation
+      of verifier and protocol artefacts. The audit itself is the
+      benchmark family this entry tracks.
+  - id: contamination-detection
+    name: Train-test contamination detection suites
+    dataset: Various
+    metric: contamination-detection-accuracy
+    metric_direction: higher-is-better
+    notes: |
+      Tooling and benchmarks for detecting whether evaluation items are
+      present in pre-training corpora. Includes membership-inference
+      probes and rephrasing-detection methods. TODO(curate).
+  - id: held-out-replication
+    name: Held-out replication benchmarks
+    dataset: Various
+    metric: rank-correlation-vs-public
+    metric_direction: higher-is-better
+    notes: |
+      Privately-held replications of public benchmarks; the rank
+      correlation between public and private leaderboards is the
+      integrity signal.
+editorial:
+  primary_curator: jikun
+  last_curated: 2026-05-14

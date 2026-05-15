@@ -1,0 +1,61 @@
+problem_slug: scalable-oversight
+date: 2026-05-14
+methodology_version: "1.0.0"
+curator: jikun
+dimensions:
+  difficulty:
+    grade: S
+    confidence: 0.6
+    rationale: |
+      Difficulty S because the question is a precondition for safely deploying
+      models more capable than their supervisors, no current protocol has
+      demonstrated the persistence + capability-gulf scaling required, and
+      partial wins on one benchmark family have not transferred to others.
+      The problem may also be ill-posed in the strongest form: a protocol that
+      provably scales requires assumptions on the expert models that are
+      themselves open questions (e.g., honesty under adversarial training).
+  saturation:
+    value: 18
+    confidence: 0.5
+    rationale: |
+      Sandwich-experiment wins exist for narrow QA-style protocols; nothing
+      generalises to long-form or to tasks where the judge cannot evaluate
+      intermediate steps. Saturation calculated against a hypothetical
+      protocol that passes the §8.2 ceiling on GPQA-Diamond + a debate-arena
+      protocol; placeholder pending TODO(curate) over the 2025–26 sandwich
+      literature.
+  urgency:
+    stars: 5
+    confidence: 0.7
+    rationale: |
+      Frontier models are already at or past the human-expert frontier on
+      narrow domains (mathematics, coding, parts of biology). Without a
+      scalable oversight protocol, deployment in those domains either
+      proceeds without principled supervision or is gated by humans whose
+      capacity does not scale. Urgency is at the ceiling.
+  value:
+    stars: 5
+    confidence: 0.7
+    rationale: |
+      A scalable oversight result that holds on a non-trivial capability
+      gulf would unlock principled deployment of frontier models in
+      domains where the human supervisor is not authoritative — directly
+      shifts what alignment training can target. Spillover into
+      [[mechanistic-interpretability]] and [[hallucination-reduction]]
+      is large.
+  industry_call:
+    stars: 4
+    confidence: 0.6
+    rationale: |
+      Scalable oversight is named explicitly on every frontier lab's
+      published 2025–26 alignment-team roadmap and is the topic of an
+      identifiable research community. Slightly below 5 because industry
+      hiring tracks adjacent topics (RLHF, evals, jailbreak resistance)
+      more than scalable oversight per se.
+signals_considered:
+  - 2018 AI-safety-via-debate proposal and the iterated-amplification framing
+  - 2020–23 conceptual protocol literature (recursive reward modeling, prover-verifier games)
+  - 2024–25 sandwich experiments on debate / decomposition protocols
+  - GPQA-Diamond as a capability-gulf evaluation surface
+  - 2026 frontier-lab alignment roadmaps consistently naming scalable oversight
+watchlist: true

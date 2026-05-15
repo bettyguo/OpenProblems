@@ -1,0 +1,12 @@
+---
+title: History
+summary: From the 2020–2022 supervised variant-effect-prediction era, through the 2023–2024 emergence of multi-trillion-nucleotide pretrained models, to the 2026 status where coding variants are tractable and non-coding ones are the open frontier.
+---
+
+Pre-2020 variant-effect prediction was overwhelmingly supervised: per-task models trained on labeled variant catalogs (ClinVar, gnomAD-derived sets, deep mutational scanning). Coverage was uneven — well-studied genes had usable models; the rest of the genome did not.
+
+The 2020–2022 wave introduced learned representations: convolutional and transformer-based models trained on shorter context windows (kilobase-scale) for specific downstream tasks. They improved on supervised baselines but did not change the regime — coverage was still bounded by where labels existed.
+
+The 2023–2024 inflection was scale. Foundation models trained on multi-trillion-nucleotide corpora — the 9.3-trillion-nucleotide-class models that became routine by 2025 — produced representations that transferred zero-shot to variant-effect tasks. Clinical pipelines began incorporating foundation-model scores alongside supervised predictors for coding variants, and the first AI-co-discovered drugs entered Phase II clinical trials by 2026.
+
+The 2026 status: the coding-variant frontier is being pushed by ensembling of supervised and foundation-model predictors. The non-coding frontier — which dominates the long tail of rare disease — remains genuinely open. Whether scaling alone will close it, or whether the field needs new pretraining objectives (regulatory-aware, multi-omic), is the open question.

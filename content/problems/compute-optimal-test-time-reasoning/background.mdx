@@ -1,0 +1,10 @@
+---
+title: Background
+summary: Why test-time compute became a first-class scaling axis after 2024, why a one-size-fits-all reasoning-budget setting wastes accuracy, and why the same decoding strategy can hurt as well as help on knowledge-intensive tasks.
+---
+
+Through 2022–2024 the dominant scaling axis was train-time: more parameters, more training tokens, larger pretraining budgets. Test-time decoding was an afterthought — sample at temperature 0, take the first answer.
+
+The 2024 inflection was Snell et al.'s compute-optimal scaling result: trading train-time for test-time can produce strictly better accuracy at fixed total compute on reasoning-heavy tasks. The wave that followed — best-of-N, self-consistency, tree-of-thought, internalised reasoning, learned verifiers — turned test-time compute into the second scaling axis. Modern frontier models routinely spend orders of magnitude more inference compute on a hard prompt than on an easy one.
+
+This entry tracks what to spend that compute *on*, prompt by prompt. A frontier model with a fixed inference budget faces three choices simultaneously: (a) how many samples to draw, (b) which decoding strategy to use (sequential reasoning, parallel sampling with verifier, tree expansion), and (c) when to stop. Allocating that budget is a per-prompt decision; current frontier deployments use coarse policies (always reason for $N$ tokens, always sample $K$ chains) that the literature has shown are suboptimal in both directions: under-spending on hard prompts wastes the model's capability, and over-spending on knowledge-intensive prompts can *decrease* accuracy (the 2025 inverse-scaling-in-test-time finding).

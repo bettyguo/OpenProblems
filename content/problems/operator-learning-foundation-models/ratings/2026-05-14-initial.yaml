@@ -1,0 +1,59 @@
+problem_slug: operator-learning-foundation-models
+date: 2026-05-14
+methodology_version: "1.0.0"
+curator: jikun
+dimensions:
+  difficulty:
+    grade: A
+    confidence: 0.6
+    rationale: |
+      Difficulty A: in-distribution surrogates have matured; the open
+      frontier (cross-regime, cross-family generalisation at industrial
+      fidelity) requires either substantially larger pretraining data
+      and compute, or new physics-aware inductive biases. Not S because
+      the in-distribution wins prove the architecture family is
+      sufficient at the small end; not B because no current model
+      generalises across regimes at the precision the application
+      demands.
+  saturation:
+    value: 35
+    confidence: 0.5
+    rationale: |
+      In-distribution parity with classical solvers on standard
+      benchmarks; large generalisation gaps to extreme regimes and
+      unseen geometries. Saturation against the cross-regime ceiling
+      that the application requires. TODO(curate) on WeatherBench /
+      PDEBench numbers.
+  urgency:
+    stars: 4
+    confidence: 0.6
+    rationale: |
+      Industrial demand is real (climate, engineering simulation, energy
+      planning), and the inference-cost win is large enough to matter
+      at deployment scale. Below 5 because classical solvers remain
+      adequate fallbacks at the cost of compute.
+  value:
+    stars: 4
+    confidence: 0.65
+    rationale: |
+      A cross-regime operator foundation model would change scientific-
+      computing economics across multiple industries — earth science,
+      industrial design, energy. Below 5 because the per-domain wins
+      already accessible from in-distribution surrogates capture a
+      substantial fraction of the available value.
+  industry_call:
+    stars: 3
+    confidence: 0.55
+    rationale: |
+      Weather services and a growing set of industrial-CFD vendors are
+      adopting neural surrogates; investment is meaningful but
+      concentrated in domain-specific pipelines, not in cross-domain
+      foundation models. 3 stars: substantial industry presence, not
+      yet a labelled hiring frontier.
+signals_considered:
+  - DeepONet (2019) and Fourier neural operator (2020–21) as the first-generation primitives
+  - 2022–24 weather-surrogate parity wins (FourCastNet / GraphCast / Pangu-class)
+  - 2024–25 industrial CFD adoption of neural surrogates
+  - Persistent cross-regime generalisation gap on extreme events and unseen geometries
+  - "2026 status: no cross-PDE-family foundation operator at industrial fidelity"
+watchlist: false

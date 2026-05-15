@@ -1,0 +1,59 @@
+problem_slug: mechanistic-interpretability
+date: 2026-05-14
+methodology_version: "1.0.0"
+curator: jikun
+dimensions:
+  difficulty:
+    grade: A
+    confidence: 0.65
+    rationale: |
+      Strong A: faithful, high-coverage claims at frontier scale require
+      either fundamentally new methods or substantial scaling of existing
+      ones. Not S because the small-model circuit playbook proves the
+      problem is solvable in principle; the frontier-scale version is
+      believed by the community to be tractable on a years horizon, not
+      decades. Not B because no current method recovers a non-trivial
+      capability circuit at GPT-4-class scale with ablation-validated
+      faithfulness.
+  saturation:
+    value: 25
+    confidence: 0.5
+    rationale: |
+      Substantial wins on small models and narrow circuits; SAEs have
+      delivered useful feature inventories at frontier scale; auditing
+      use case remains far. Saturation computed against a hypothetical
+      "audit a deployed model" ceiling. TODO(curate) for SAEBench and
+      circuit-recovery numbers.
+  urgency:
+    stars: 4
+    confidence: 0.65
+    rationale: |
+      High but below the ceiling: deployment of frontier models is
+      proceeding without auditing, and the marginal urgency depends on
+      whether one believes deceptive-alignment-style failure modes are
+      imminent. Sustained 4 stars — a top-tier alignment problem —
+      rather than 5, which would imply a crisis on a near horizon.
+  value:
+    stars: 5
+    confidence: 0.7
+    rationale: |
+      Faithful frontier-scale interpretability would be a step-change for
+      [[scalable-oversight]] (give judges access to internals) and for
+      every alignment-training method that currently treats the model as
+      a black box. Among the highest-value alignment results.
+  industry_call:
+    stars: 4
+    confidence: 0.6
+    rationale: |
+      Major frontier labs run interpretability teams; SAEs generated a
+      substantial 2024–25 hiring pulse; conferences and workshops
+      (NeurIPS Mech Interp, dedicated workshops at ICLR / ICML) have
+      grown. Not 5 because deployment teams have not yet adopted
+      interpretability outputs as a routine gating signal.
+signals_considered:
+  - 2020–22 small-model circuit results (induction heads, IOI, toy-model circuits)
+  - 2023 scaling attempts at GPT-2 / GPT-3 scale and the faithfulness gap that emerged
+  - 2024–25 SAE wave and the rise of SAEBench as a method-comparison surface
+  - 2026 alignment / safety status reports with mixed verdicts on auditing readiness
+  - Industry interpretability hiring through 2025
+watchlist: false

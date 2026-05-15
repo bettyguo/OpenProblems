@@ -1,0 +1,10 @@
+---
+title: History
+summary: From the 2020–23 small-model circuit era, through the 2024–25 SAE wave, to the 2026 status where frontier-scale faithfulness remains open and the auditing use case is still aspirational.
+---
+
+The 2020–2022 period established the small-model circuit playbook: identify an algorithmic capability, propose a candidate circuit, validate it with activation patching and ablation. Induction heads (the in-context learning circuit), indirect-object-identification, and a handful of toy-model circuits were the headline results. The methods worked because the models were small and the tasks were narrow.
+
+The 2023 transition was scale: induction-head-style claims at GPT-2 / GPT-3 scale were attempted with activation-patching variants and attribution-graph methods. The faithfulness picture became more nuanced — claims that held on small models did not always survive ablation at larger scale, and the human cost per claim grew.
+
+The 2024–2025 inflection was sparse autoencoders. SAE training over residual-stream activations produced large dictionaries of features that were interpretable enough to label and probe, and SAEBench standardised their evaluation. The 2026 status, after a wave of mixed verdicts in safety and alignment status reports, is that SAEs gave the field a useful representation but did not close the gap to deployment-time auditing. Faithful, high-coverage claims at frontier scale — and especially circuits relevant to deceptive alignment or capability gating — remain the open frontier.

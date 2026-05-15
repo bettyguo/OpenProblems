@@ -1,0 +1,10 @@
+---
+title: History
+summary: From the 2019–21 first-generation neural operators (DeepONet, Fourier neural operator), through the 2022–25 in-distribution parity wins on weather and fluids, to the 2026 frontier of cross-regime generalisation.
+---
+
+The neural-operator program crystallised around 2019–2021 with two architectural primitives: DeepONet (a branch-trunk operator architecture with universal-approximation guarantees) and the Fourier neural operator (a spectral architecture that learns operators in frequency space). Early demonstrations on canonical PDE families — Burgers, Darcy, Navier–Stokes — showed that learned operators could match per-instance numerical solvers at much lower inference cost on the distribution they were trained on.
+
+The 2022–2025 wave brought scaling and applied wins. Atmospheric models trained on ERA5 reanalyses (the FourCastNet / GraphCast / Pangu-Weather lineage) reached headline parity with classical numerical-weather-prediction systems on short-to-medium-range forecasts, at inference costs orders of magnitude lower. Fluid-dynamics surrogates were deployed in industrial CFD pipelines for screening designs.
+
+The 2025–26 status sharpened the picture. In-distribution wins are routine; out-of-distribution generalisation is the binding constraint. Extreme weather events that fall outside the training distribution are predicted less reliably than in-distribution events; parameter regimes the model did not see are not extrapolated to faithfully; surrogate fidelity on novel geometries is poor. The frontier task is the foundation-model version: a single pretrained operator that transfers across PDE families and across regimes within a family. As of 2026 no such model exists at industrial fidelity.

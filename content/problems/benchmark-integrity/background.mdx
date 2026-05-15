@@ -1,0 +1,10 @@
+---
+title: Background
+summary: Why every high-stakes AI benchmark is now subject to two distinct integrity failures — train-test contamination and protocol gaming — and why the 2026 Berkeley RDI audit made it clear that capability claims cannot be read off public leaderboards without an integrity check.
+---
+
+A benchmark is supposed to be a measurement of capability. By 2024–2025 it had become clear that public leaderboard scores for frontier models were no longer a clean measurement. Two distinct failure modes had emerged. The first is **train-test contamination**: evaluation items leak into pre-training corpora (verbatim, rephrased, or via downstream answer keys), and the model's score reflects memorisation rather than capability. Contamination is hard to detect at frontier scale because pre-training corpora are largely opaque to evaluators.
+
+The second, sharper failure is **protocol gaming**: the benchmark's verifier or evaluation protocol has exploitable structure, and a system can drive its public score to near-ceiling without performing the underlying task. The Berkeley RDI 2026 audit was the watershed — eight widely-cited agent benchmarks were shown to be gamable to ~100% success rates by adversarial agents that solved none of the intended tasks. The exploits ranged from verifier loopholes (the verifier accepted answers that satisfied the literal protocol while missing its intent) to protocol artefacts (the benchmark's environment exposed shortcuts unrelated to capability) to retrieval shortcuts (gold-standard answers were present in publicly-accessible mirror corpora).
+
+The frontier task tracked here is twofold: design benchmarks that are robust to both failure modes, and develop auditing methodologies that can detect when a benchmark has been compromised. The community has converged on held-out private replications, periodic refreshes, and verifier-adversarial audits — but no consensus protocol has emerged, and the integrity baseline is decaying faster than the auditing methodology can keep up.

@@ -1,0 +1,10 @@
+---
+title: Background
+summary: Why long-horizon agent benchmarks have surfaced a reliability gap that single-shot pass@1 metrics miss, and why closing that gap has become the new frontier as pass@1 saturates on standard suites.
+---
+
+Through 2024–2025, agent benchmarks designed around single-shot success — `pass@1` on a held-out task — climbed steadily. Code-agent leaderboards like SWE-bench moved from low double-digit resolved rates to a plateau approaching 80% on the verified subset by early 2026. The headline numbers suggested that "agents work."
+
+The follow-on benchmarks of 2025–2026 surfaced a different artefact: when the same agents are evaluated on `pass^k` — every trial of `k` independent attempts must succeed — performance falls sharply. The gap between `pass@1` and `pass^8` on multi-turn customer-service tasks (τ-bench) is the canonical illustration. A model with a 70% single-trial success rate has only a 6% all-eight success rate under independence; in practice the gap is even larger because failure modes correlate across trials.
+
+This entry tracks the gap itself, not any one benchmark. The problem is *not* "make agents better at the first try" — that frontier is being pushed by every frontier lab. It is "shrink the variance of agent execution across trajectories of length 10⁵ tokens or more, where a single misstep cascades into an unrecoverable trajectory."

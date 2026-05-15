@@ -1,0 +1,10 @@
+---
+title: Background
+summary: Mechanistic interpretability — recovering the internal computations of trained transformers as human-readable circuits — and why faithfulness, not just human plausibility, is the binding constraint at frontier scale.
+---
+
+Mechanistic interpretability is the program of reverse-engineering the internal computations of trained neural networks from their weights and activations, to a level of detail sufficient to predict and modify model behaviour. The hope is operational: an interpretability stack faithful enough to *audit* a model — to confirm or rule out specific internal computations — would change what alignment training, deployment review, and safety monitoring can target.
+
+The 2020–2023 wave produced the first mature small-model circuit results: induction heads, indirect-object-identification, and a handful of toy-model circuits whose internal computations are now understood with high confidence. The methods that produced those results — activation patching, path patching, attribution — scale by problem size, but the per-problem human cost is substantial.
+
+The 2024–2025 wave was dominated by sparse autoencoders (SAEs), which decompose activations into a large dictionary of sparse features. SAEs gave the field a tractable handle on internal representations at frontier scale, but the 2026 status is mixed: feature dictionaries are large and useful for probing, but the gap between "we have a list of features" and "we can audit a deployed model" has not closed. The frontier task is faithfulness — methods whose claims about model internals are validated under ablation, not just plausible to a human reviewer.

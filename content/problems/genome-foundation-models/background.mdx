@@ -1,0 +1,10 @@
+---
+title: Background
+summary: Why nucleotide-sequence foundation models have become the dominant 2024–26 approach to variant-effect prediction, why coding variants are largely tractable while non-coding ones are not, and what would change if the open part were closed.
+---
+
+The clinical question behind this problem is simple to state: given a DNA variant, predict whether and how it affects function. The supervised version — train on a labeled set of variants with known effects — works well where labels exist (familiar coding variants in well-studied genes) and fails where they do not (rare variants, non-coding regions, regulatory sequences whose effects are tissue-specific or context-dependent).
+
+Through 2023–2024, nucleotide-sequence foundation models — transformers trained on raw genome sequence in the multi-trillion-nucleotide range — emerged as the dominant approach for the unlabeled regime. The promise is the standard foundation-model story: pretraining on enough sequence produces representations that transfer to downstream tasks where labels are scarce, including zero-shot effect prediction on variants that did not appear in any supervised training set.
+
+By 2026, the picture is mixed. The first AI-discovered drugs are entering Phase II clinical trials, and foundation-model-based variant interpretation is in routine use for coding variants in many clinical pipelines. Non-coding variants — which dominate the rare-disease landscape and the regulatory layer — remain the open frontier. Closing the gap there would change the variant-interpretation pipeline from "interpretable for the well-studied portion of the genome" to "interpretable across the genome," which is the actual clinical demand.

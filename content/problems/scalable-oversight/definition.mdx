@@ -1,0 +1,16 @@
+---
+title: Formal definition
+summary: Scalable oversight as a protocol question — does there exist a procedure $P$ that, given a weaker judge $J$ and one or more stronger models, returns the correct answer with reliability strictly greater than $J$ alone?
+---
+
+Let $T$ be a task whose ground-truth answer is $y^*$. Let $J$ be a *judge* whose unaided accuracy on $T$ is $\alpha_J = \mathbb{P}[J(T) = y^*]$. Let $M_1, \dots, M_n$ be one or more *expert* models with capability strictly greater than $J$ on $T$.
+
+A **scalable oversight protocol** $P$ is a procedure that takes $(J, M_1, \dots, M_n, T)$ and returns an answer $\hat y$. We say $P$ *scales oversight* on $T$ when
+
+$$
+\mathbb{P}\!\left[\, P(J, M_{1\!:\!n}, T) = y^* \,\right] \;>\; \alpha_J,
+$$
+
+with the inequality strict, persistent across task perturbations, and robust to adversarial behaviour by any subset of the $M_i$. The strength of a protocol is the size of the gap and the size of the capability gulf between $J$ and the $M_i$ across which it persists.
+
+The empty protocol — let the strongest $M_i$ answer directly — is not a scalable oversight protocol; it requires trusting the model on tasks where trust is not yet warranted. Debate, recursive decomposition, prover-verifier games, and market protocols are candidates whose empirical performance against this definition is the central question.

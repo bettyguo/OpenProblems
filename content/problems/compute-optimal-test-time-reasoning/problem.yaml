@@ -1,0 +1,44 @@
+slug: compute-optimal-test-time-reasoning
+title: Compute-Optimal Test-Time Reasoning Allocation
+subtitle: Choosing per-prompt how much inference compute to spend, on which decoding strategy, to maximise marginal accuracy under a budget — and characterising where more reasoning hurts.
+domain: deep-learning
+subdomain: algorithms
+tags:
+  - inference-compute
+  - reasoning
+  - decoding
+  - budget-allocation
+  - inverse-scaling
+status: open
+posed_year: 2024
+related_problems:
+  - hallucination-reduction
+  - long-horizon-agent-reliability
+benchmarks:
+  - id: aime-2026
+    name: AIME-2026
+    dataset: AIME-2026
+    metric: accuracy
+    metric_direction: higher-is-better
+    notes: |
+      Olympiad-style mathematics; pass@1 under different test-time-compute
+      budgets is the canonical surface for compute-optimal-reasoning curves.
+  - id: gpqa
+    name: GPQA
+    dataset: GPQA
+    metric: accuracy
+    metric_direction: higher-is-better
+    notes: |
+      Graduate-domain expert questions; behavior under test-time scaling is
+      the contrast surface for inverse-scaling claims.
+  - id: hle
+    name: HLE
+    dataset: Humanity's Last Exam
+    metric: accuracy
+    metric_direction: higher-is-better
+    notes: |
+      Cross-domain expert exam where compute-optimal allocation across
+      domains differs noticeably from a single global setting.
+editorial:
+  primary_curator: jikun
+  last_curated: 2026-05-14

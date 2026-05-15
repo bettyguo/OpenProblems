@@ -1,0 +1,53 @@
+slug: long-horizon-agent-reliability
+title: Reliable Long-Horizon Agent Execution (the pass^k reliability gap)
+subtitle: Why agents that solve a step on the first try often fail to solve a sequence of steps on every try, and how to close the gap between pass@1 and pass^k.
+domain: deep-learning
+subdomain: large-language-models
+tags:
+  - agents
+  - reliability
+  - long-horizon
+  - software-engineering
+  - evaluation
+status: open
+posed_year: 2024
+related_problems:
+  - multi-agent-llm-coordination
+  - scalable-oversight
+benchmarks:
+  - id: swe-bench-verified
+    name: SWE-bench Verified
+    dataset: SWE-bench Verified
+    metric: resolved-rate
+    metric_direction: higher-is-better
+    notes: |
+      Verified subset of SWE-bench; pass@1 on the verified split is the most-cited
+      single-shot agent metric. TODO(curate) current SOTA.
+  - id: tau-bench
+    name: τ-bench
+    dataset: τ-bench
+    metric: pass^k
+    metric_direction: higher-is-better
+    notes: |
+      Multi-turn customer-service trajectories with verifier; pass^k (every-trial
+      success) collapses well below pass@1 by k = 4–8. The widening gap between
+      these two columns is the central artefact of this problem.
+  - id: re-bench
+    name: RE-Bench
+    dataset: RE-Bench
+    metric: success-rate
+    metric_direction: higher-is-better
+    notes: |
+      Long-horizon ML research engineering tasks; agent budget measured in hours,
+      not tokens.
+  - id: osworld
+    name: OSWorld
+    dataset: OSWorld
+    metric: success-rate
+    metric_direction: higher-is-better
+    notes: |
+      Real-OS computer-use benchmark across applications; scores remain low
+      relative to the same models' web-only computer-use performance.
+editorial:
+  primary_curator: jikun
+  last_curated: 2026-05-14

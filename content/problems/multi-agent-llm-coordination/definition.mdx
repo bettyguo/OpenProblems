@@ -1,0 +1,12 @@
+---
+title: Formal definition
+summary: Multi-agent LLM coordination as the joint problem of (a) producing positive-scaling cooperative behaviour from a team of LLM agents, and (b) maintaining a coherent shared memory store under concurrent reads and writes.
+---
+
+A **multi-agent LLM system** is a tuple $(A_1, \dots, A_n, P, S)$ where each $A_i$ is an LLM-backed agent, $P$ is a coordination protocol (turn-taking, parallel with arbiter, market, etc.), and $S$ is a shared state store accessible to all $A_i$.
+
+**Positive-scaling.** A coordination protocol $P$ exhibits *positive-scaling* on a task distribution $\mathcal{D}$ when team performance $\mathrm{Acc}(A_{1\!:\!n}, P, \mathcal{D})$ is monotonically non-decreasing in $n$ over a useful range, with strict improvement at some $n > 1$ relative to the best single-agent baseline.
+
+**Memory consistency.** Let $w_t$ be a write to $S$ at time $t$ and $r_{t'}$ a read at $t' > t$. The system is *consistent* under a concurrency model when the read returns the most-recent write under that model — at minimum read-your-own-writes; strictly, a defined consistency level (e.g., causal, sequential, linearisable).
+
+A solved version of this problem would jointly demonstrate positive-scaling on a non-trivial $n$ (say $n \ge 8$) and a non-trivial consistency level on a shared store, across a benchmark family that admits comparison to a single-agent baseline.

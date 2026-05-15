@@ -1,0 +1,37 @@
+slug: operator-learning-foundation-models
+title: Operator-Learning Foundation Models for Physical Systems
+subtitle: Neural surrogates for solution operators of physical PDE families that generalise across initial conditions, parameter regimes, and geometries — at fidelity sufficient to replace classical solvers.
+domain: applications
+subdomain: chem-phys-earth
+tags:
+  - operator-learning
+  - pde
+  - surrogate-models
+  - weather
+  - fluids
+status: open
+posed_year: 2021
+related_problems:
+  - genome-foundation-models
+benchmarks:
+  - id: weatherbench
+    name: WeatherBench-class evaluation (TODO)
+    dataset: WeatherBench-style ERA5 splits
+    metric: rmse-vs-ifs
+    metric_direction: lower-is-better
+    notes: |
+      Standard surface for global weather surrogates. RMSE versus
+      classical numerical-weather-prediction baselines is the canonical
+      headline; out-of-distribution generalisation (extreme events,
+      regime shifts) is the open part. TODO(curate).
+  - id: pdebench
+    name: PDEBench-class evaluation (TODO)
+    dataset: PDEBench
+    metric: relative-l2
+    metric_direction: lower-is-better
+    notes: |
+      Per-PDE-family neural-operator evaluation across initial conditions
+      and parameter regimes. TODO(curate).
+editorial:
+  primary_curator: jikun
+  last_curated: 2026-05-14

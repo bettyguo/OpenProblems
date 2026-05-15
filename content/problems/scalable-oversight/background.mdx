@@ -1,0 +1,10 @@
+---
+title: Background
+summary: Why aligning a model that is more capable than its human supervisor on the relevant task is a structurally distinct problem from RLHF on tasks where the human is the more-capable judge, and why it is becoming the central alignment problem of frontier models.
+---
+
+The standard alignment training loop — supervised fine-tuning followed by reinforcement learning from human feedback — relies on a load-bearing assumption: the human labeller is a more reliable judge of the desired behaviour than the model. When that holds, model behaviour can be shaped by training against human preferences, and the failure mode is "the labeller's preferences were poorly calibrated", which is a measurable, fixable problem.
+
+When the model exceeds the labeller in the relevant capability — solving a research-mathematics problem, debugging a production system, vetting a scientific claim — the assumption fails. The labeller can still express a preference, but their preference is no longer authoritative, and training against it risks selecting for *appearing correct to a weaker judge* rather than *being correct*. This is the **scalable oversight** problem.
+
+The 2018–2022 framing emphasised debate, recursive reward modeling, and iterated amplification as candidate protocols that might let a weaker judge supervise a stronger generator. The 2023–2026 framing has hardened the question: not "which protocol is theoretically attractive" but "which protocols, on which benchmark families, actually let a non-expert judge return the correct answer more reliably than a non-expert alone?"

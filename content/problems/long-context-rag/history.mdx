@@ -1,0 +1,12 @@
+---
+title: History
+summary: From the 2023 4K–32K context era, through the 2024 first-generation 200K–1M claims and their evaluation gaps, to the 2025–26 needle-in-N-haystack and RULER results that crystallised effective-context-length as the field's measurement.
+---
+
+Retrieval-augmented generation as a named technique dates to 2020–2021 (the RAG paper and its first-wave follow-ons). The framing was small: retrieve a handful of relevant passages and condition generation on them. Context budgets through 2023 were modest — 4K to 32K tokens — and the retrieval step's job was to compress the corpus down to what fit.
+
+The 2023–2024 inflection was the **context-window race**. Frontier models announced 128K, then 200K, then 1M-token contexts. The natural temptation was to skip retrieval (just put everything in) or retrieve aggressively (the budget was no longer the bottleneck). The first published evaluations of effective context length — needle-in-haystack with multi-needle variants, then RULER — documented a clean gap between claimed context length and effective context length.
+
+The 2024–2025 wave attempted to close the gap through architectural changes (improved attention scaling, retrieval-aware training), pre-training tricks (long-context data mixtures, position-encoding extensions), and inference-time strategies (passage compression, hierarchical retrieval, attention sink management). Effective context length improved but stayed below the claim by a fixed multiplicative gap on most evaluations. RULER became the community-standard probe; LongBench the cross-task generalisation surface.
+
+The 2026 frontier — tracked by this entry — is the *retrieval-augmented* version specifically: not "can the model read 1M tokens" but "can the RAG system produce correct answers when the retrieved evidence is distributed across $10^5$–$10^6$ tokens of related-but-distracting material?" As of mid-2026 the answer is "not reliably"; closing the long-context-RAG cliff remains open.

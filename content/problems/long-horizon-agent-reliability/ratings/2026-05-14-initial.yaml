@@ -1,0 +1,56 @@
+problem_slug: long-horizon-agent-reliability
+date: 2026-05-14
+methodology_version: "1.0.0"
+curator: jikun
+dimensions:
+  difficulty:
+    grade: A
+    confidence: 0.65
+    rationale: |
+      The pass^k gap is structural — it grows with horizon length under almost
+      any independence-violating failure model. Closing it requires either
+      sharply lower per-step failure rates (which scaling has not delivered
+      monotonically) or principled self-correction inside the trajectory.
+      Not S because the metric is well-defined and the benchmark surface is
+      already substantial; not B because no current method consistently
+      narrows the gap on τ-bench-class evaluations.
+  saturation:
+    value: 30
+    confidence: 0.5
+    rationale: |
+      Single-shot pass@1 on SWE-bench Verified approaches a high-70s plateau,
+      but the corresponding pass^k metrics on τ-bench / RE-Bench remain in
+      the 20s. Saturation is computed on the long-horizon family, not on
+      pass@1; placeholder pending TODO(curate) of current SOTA across all
+      four benchmarks.
+  urgency:
+    stars: 5
+    confidence: 0.7
+    rationale: |
+      Production deployment of LLM agents in any high-stakes setting (code
+      review, customer service, scientific assistance) requires the every-
+      trial success bound, not the at-least-one bound. The gap is the
+      single most-cited blocker in 2026 agent post-mortems.
+  value:
+    stars: 5
+    confidence: 0.7
+    rationale: |
+      Closing the pass^k gap unlocks autonomous agent deployment in
+      regulated industries and substantially reduces the human-in-the-loop
+      cost that currently dominates agent operating budgets. Spillover into
+      [[multi-agent-llm-coordination]] and [[scalable-oversight]] is direct.
+  industry_call:
+    stars: 5
+    confidence: 0.65
+    rationale: |
+      Every frontier lab's 2025–26 agent roadmap names reliability as a
+      top-line objective, often above raw capability. Vendor pricing has
+      shifted from per-call to per-resolved-task on agent products, which
+      directly incentivises pass^k improvement.
+signals_considered:
+  - SWE-bench Verified resolved-rate plateau on pass@1 in early 2026
+  - τ-bench pass^8 reports tracking ≪ pass@1 across frontier models
+  - RE-Bench long-horizon ML-research-engineering evaluation
+  - OSWorld real-OS computer-use scores tracking below web-only baselines
+  - 2026 agent-product post-mortems naming reliability as the top blocker
+watchlist: false
