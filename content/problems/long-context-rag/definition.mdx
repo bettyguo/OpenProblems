@@ -1,6 +1,6 @@
 ---
 title: Formal definition
-summary: Long-context RAG as a function $\text{RAG}_M : (x, C) \mapsto y$ whose answer quality is non-decreasing in the retrieved context length $|C|$ — measured by a verifier on tasks where the relevant signal is genuinely distributed across $C$.
+summary: "Long-context RAG as a function $\\text{RAG}_M : (x, C) \\mapsto y$ whose answer quality is non-decreasing in the retrieved context length $|C|$ — measured by a verifier on tasks where the relevant signal is genuinely distributed across $C$."
 ---
 
 Let a query $x$ be drawn from a task distribution $\mathcal{D}$. Let $C \subseteq \mathcal{R}$ be a retrieved context of length $|C|$ tokens drawn from a corpus $\mathcal{R}$. Let $\text{RAG}_M : (x, C) \mapsto y$ be a retrieval-augmented generation function combining a model $M$ with the context $C$, and let $V$ be a task verifier.
