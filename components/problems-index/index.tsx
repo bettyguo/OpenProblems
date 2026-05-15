@@ -5,6 +5,12 @@ import { useMemo, useState } from "react";
 import { StatusPill } from "@/components/ui/status-pill";
 import { cn } from "@/lib/utils";
 import type { IndexedProblem } from "@/lib/content/load-problems-index";
+import {
+  composite,
+  isValidCompositeWeights,
+  DEFAULT_COMPOSITE_WEIGHTS,
+} from "@/lib/ratings/normalize";
+import { Recompose, useUrlWeights } from "./recompose";
 
 type SortKey = "title" | "lastCurated" | "composite";
 
@@ -28,6 +34,13 @@ export function ProblemsIndex({
   const [tag, setTag] = useState<string>("");
   const [sort, setSort] = useState<SortKey>("composite");
   const [order, setOrder] = useState<"asc" | "desc">("desc");
+  const [weights, setWeights] = useUrlWeights();
+
+  // When the user types an invalid weight set (sum ≠ 1 or any < 0), silently
+  // fall back to §8.3 defaults for the composite computation. The UI still
+  // shows the user's typed values + a "must be 1.00" hint, but the sort uses
+  // the defaults so the page remains usable.
+  const effectiveWeights = isValidCompositeWeights(weights) ? weights : DEFAULT_COMPOSITE_WEIGHTS;
 
   const allTags = useMemo(() => {
     const set = new Set<string>();
@@ -35,8 +48,24 @@ export function ProblemsIndex({
     return [...set].sort();
   }, [initial]);
 
+  // Recompose-aware: when weights are non-default, recompute composite per row
+  // from `p.points`. When defaults, use the server-precomputed `p.composite`.
+  const recomposed = useMemo(() => {
+    const isDefault =
+      effectiveWeights.difficulty === DEFAULT_COMPOSITE_WEIGHTS.difficulty &&
+      effectiveWeights.value === DEFAULT_COMPOSITE_WEIGHTS.value &&
+      effectiveWeights.urgency === DEFAULT_COMPOSITE_WEIGHTS.urgency &&
+      effectiveWeights.industry_call === DEFAULT_COMPOSITE_WEIGHTS.industry_call &&
+      effectiveWeights.saturation === DEFAULT_COMPOSITE_WEIGHTS.saturation;
+    if (isDefault) return initial;
+    return initial.map((p) => {
+      if (!p.points) return p;
+      return { ...p, composite: composite(p.points, effectiveWeights) };
+    });
+  }, [initial, effectiveWeights]);
+
   const filtered = useMemo(() => {
-    let rows = initial;
+    let rows = recomposed;
     if (domain) rows = rows.filter((p) => p.domainId === domain);
     if (status) rows = rows.filter((p) => p.status === status);
     if (tag) rows = rows.filter((p) => p.tags.includes(tag));
@@ -51,7 +80,7 @@ export function ProblemsIndex({
       return dir * (av < bv ? -1 : av > bv ? 1 : 0);
     });
     return rows;
-  }, [initial, domain, status, tag, sort, order]);
+  }, [recomposed, domain, status, tag, sort, order]);
 
   return (
     <div>
@@ -93,6 +122,8 @@ export function ProblemsIndex({
           Clear
         </button>
       </div>
+
+      <Recompose weights={weights} onChange={setWeights} />
 
       <div className="text-muted-foreground mt-3 flex items-center gap-2 text-xs">
         <span>

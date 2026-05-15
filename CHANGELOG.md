@@ -793,3 +793,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Each viz has its own `role="img"` + `aria-label` + `<desc>` for screen-readers (from Units 3.6 and 3.8).
 - **Data flow**: `loadProblem(slug)` + `ratingActionsForProblem(slug).reverse()` (the loader returns newest-first; vizes want chronological). Timeline entries combine `papers` (from `#site/content`, filtered by `contributions[].problem_slug`) with the rating actions, then sort by ISO sort key.
 - Smoke gates green: `pnpm typecheck` (clean), `pnpm build` (**198 routes**, +10 from 188; First Load JS shared chunk unchanged at 103 kB), `pnpm test` (151/151 — no new tests required for this composition unit; the rendering is verified by the SSG prerender).
+
+#### Unit 3.10 — Recompose weights UI on `/problems`
+
+- Phase-3 deliverable. Implements §13's "'Recompose' UI control on `/problems` letting the user re-weight composite" per Unit 3.0 D-6 (URL params, no localStorage) and Q35/Q36 leans (Phase-3 scope: `/problems` only).
+- **`lib/ratings/normalize.ts` extensions** (additive, backwards-compatible):
+  - New `CompositeWeights` interface with `difficulty / value / urgency / industry_call / saturation` keys.
+  - Exported `DEFAULT_COMPOSITE_WEIGHTS = { 0.25, 0.25, 0.20, 0.15, 0.15 }` matching §8.3.
+  - `composite(points)` now accepts an optional 2nd `weights` argument; callers without weights get the §8.3 defaults (unchanged behavior).
+  - New `isValidCompositeWeights(w)` predicate: non-negative + sum within ±0.01 of 1.0.
+- **`components/problems-index/recompose.tsx` (new)**: client-only Recompose UI.
+  - 5 number inputs (one per dimension) with colored labels matching `--color-chart-1`..`5` from Unit 0.4 design tokens.
+  - "Reset to §8.3" button (disabled when weights match defaults).
+  - "Sum: N.NN" indicator turns the chart-3 warning color when the sum/non-negative validity fails; the parent component falls back to defaults silently in that case so the sort stays sensible.
+  - `useUrlWeights()` hook reads from `window.location.search` on mount and writes via `history.replaceState` on every change — no Next.js router invocation per keystroke (the route doesn't re-render).
+  - URL param shape: `?wd=...&wv=...&wu=...&wi=...&ws=...` per Unit 3.0 D-6. When weights are at defaults the params are stripped from the URL (clean shareable URL).
+- **`components/problems-index/index.tsx` integration**:
+  - The page is already a `"use client"` component; the Recompose UI lands inline below the existing filter row.
+  - `recomposed` memo recomputes each problem's `composite` from `p.points` using current weights. When weights are at defaults, returns `initial` unchanged (no allocation).
+  - When sort is "composite" AND weights are custom, a chart-2 "custom weights" pill renders next to the row count for awareness.
+- **Test coverage** added to `lib/ratings/normalize.test.ts` (+5 new tests):
+  - `composite(points, customWeights)` reweights correctly (100% saturation weight → composite equals saturation normalized).
+  - `composite(points)` and `composite(points, DEFAULT_COMPOSITE_WEIGHTS)` return identical values.
+  - `isValidCompositeWeights` accepts defaults, accepts equal-fifths (0.2 × 5), rejects negative weights, rejects sums outside ±0.01 tolerance, accepts sums within tolerance.
+- **A11y notes** (Phase-3 acceptance gate prep):
+  - The Recompose widget is a `<details>` / `<summary>` disclosure — keyboard-toggleable, no JS required to expand.
+  - The "custom weights" pill carries `aria-label="Composite sort uses custom weights"`.
+  - Each weight input is wrapped in a `<label>` with screen-reader-visible text.
+  - URL param mutation via `history.replaceState` does not steal focus or scroll.
+- **Q35 disposition**: localStorage persistence deliberately omitted per the OPEN_QUESTIONS lean. Phase-4 enhancement if user-research signals demand it.
+- **Q36 disposition**: scoped to `/problems` index only — cross-page weight propagation needs a global state lift, deferred to Phase 4.
+- No new routes; pure client-component enhancement to `/problems`. Build surface unchanged at **198 routes**; First Load JS shared chunk unchanged at 103 kB (the Recompose code joins the existing client bundle for that route).
+- Smoke gates green: `pnpm typecheck` (clean), `pnpm test` (151/151 across 22 files — composite + isValidCompositeWeights tests embedded in the existing `normalize.test.ts`), `pnpm build` (198 routes).

@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   composite,
   dimensionsToRadar,
+  isValidCompositeWeights,
   meanConfidence,
+  DEFAULT_COMPOSITE_WEIGHTS,
   type RadarPoint,
 } from "@/lib/ratings/normalize";
 import type { RatingAction } from "@/lib/schemas/rating-action";
@@ -99,6 +101,61 @@ describe("dimensionsToRadar", () => {
   });
 });
 
+// Unit 3.10 — Recompose weight validation.
+describe("isValidCompositeWeights", () => {
+  it("accepts the §8.3 defaults", () => {
+    expect(isValidCompositeWeights(DEFAULT_COMPOSITE_WEIGHTS)).toBe(true);
+  });
+
+  it("accepts any non-negative weights summing to ~1 within tolerance", () => {
+    expect(
+      isValidCompositeWeights({
+        difficulty: 0.2,
+        value: 0.2,
+        urgency: 0.2,
+        industry_call: 0.2,
+        saturation: 0.2,
+      }),
+    ).toBe(true);
+  });
+
+  it("rejects negative weights", () => {
+    expect(
+      isValidCompositeWeights({
+        difficulty: -0.1,
+        value: 0.4,
+        urgency: 0.3,
+        industry_call: 0.2,
+        saturation: 0.2,
+      }),
+    ).toBe(false);
+  });
+
+  it("rejects when sum ≠ 1 outside the ±0.01 tolerance", () => {
+    expect(
+      isValidCompositeWeights({
+        difficulty: 0.5,
+        value: 0.5,
+        urgency: 0.5,
+        industry_call: 0.5,
+        saturation: 0.5,
+      }),
+    ).toBe(false);
+  });
+
+  it("accepts sums within ±0.01 of 1 (rounding tolerance)", () => {
+    expect(
+      isValidCompositeWeights({
+        difficulty: 0.25,
+        value: 0.25,
+        urgency: 0.205,
+        industry_call: 0.15,
+        saturation: 0.15,
+      }),
+    ).toBe(true);
+  });
+});
+
 describe("meanConfidence", () => {
   it("averages confidences across the five points", () => {
     const points = dimensionsToRadar(baseDimensions);
@@ -117,6 +174,25 @@ describe("composite", () => {
     // 0.25*4 (diff) + 0.25*5 (val) + 0.2*5 (urg) + 0.15*4 (ind) + 0.15*3.25 (sat)
     // = 1.0 + 1.25 + 1.0 + 0.6 + 0.4875 = 4.3375
     expect(composite(points)).toBeCloseTo(4.3375, 5);
+  });
+
+  // Unit 3.10 — Recompose accepts user-customized weights.
+  it("accepts custom weights and reweights accordingly", () => {
+    const points = dimensionsToRadar(baseDimensions);
+    // 100% saturation weight: composite = saturation normalized = 3.25
+    const all_sat = composite(points, {
+      difficulty: 0,
+      value: 0,
+      urgency: 0,
+      industry_call: 0,
+      saturation: 1,
+    });
+    expect(all_sat).toBeCloseTo(3.25, 5);
+  });
+
+  it("defaults match DEFAULT_COMPOSITE_WEIGHTS export", () => {
+    const points = dimensionsToRadar(baseDimensions);
+    expect(composite(points)).toBe(composite(points, DEFAULT_COMPOSITE_WEIGHTS));
   });
 
   it("handles a missing dimension gracefully (zero-fill)", () => {

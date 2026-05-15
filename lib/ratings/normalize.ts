@@ -102,13 +102,52 @@ export function meanConfidence(points: RadarPoint[]): number {
   return points.reduce((acc, p) => acc + p.confidence, 0) / points.length;
 }
 
-/** Phase 0 composite per §8.3 — advisory only, never shown alone. */
-export function composite(points: RadarPoint[]): number {
+/**
+ * Composite weights per §8.3. Each dimension multiplies a [0, 5] normalized
+ * value; weights should sum to 1.0 (the §8.3 default does).
+ */
+export interface CompositeWeights {
+  difficulty: number;
+  value: number;
+  urgency: number;
+  industry_call: number;
+  saturation: number;
+}
+
+/** §8.3 default weights — the canonical composite shown on /problems by default. */
+export const DEFAULT_COMPOSITE_WEIGHTS: CompositeWeights = {
+  difficulty: 0.25,
+  value: 0.25,
+  urgency: 0.2,
+  industry_call: 0.15,
+  saturation: 0.15,
+};
+
+/** §8.3 composite — advisory only, never shown alone. Phase 3 "Recompose" UI
+ * (Unit 3.10) passes user-customized weights via the optional 2nd argument. */
+export function composite(
+  points: RadarPoint[],
+  weights: CompositeWeights = DEFAULT_COMPOSITE_WEIGHTS,
+): number {
   const map = Object.fromEntries(points.map((p) => [p.dimension, p.normalized]));
   const diff = map.difficulty ?? 0;
   const sat = map.saturation ?? 0;
   const urg = map.urgency ?? 0;
   const val = map.value ?? 0;
   const ind = map.industry_call ?? 0;
-  return 0.25 * diff + 0.25 * val + 0.2 * urg + 0.15 * ind + 0.15 * sat;
+  return (
+    weights.difficulty * diff +
+    weights.value * val +
+    weights.urgency * urg +
+    weights.industry_call * ind +
+    weights.saturation * sat
+  );
+}
+
+/** Validate that weights are non-negative and sum to ~1.0 (±0.01 tolerance). */
+export function isValidCompositeWeights(w: CompositeWeights): boolean {
+  const vals = [w.difficulty, w.value, w.urgency, w.industry_call, w.saturation];
+  if (vals.some((v) => !Number.isFinite(v) || v < 0)) return false;
+  const sum = vals.reduce((acc, v) => acc + v, 0);
+  return Math.abs(sum - 1) <= 0.01;
 }
