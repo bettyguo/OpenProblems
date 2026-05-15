@@ -762,3 +762,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **`/trending` page route** flips from `○ Static stub` to `○ Static real`. Build surface unchanged at **188 routes**; First Load JS shared chunk unchanged at 103 kB (the sparkline SVG is server-rendered inline).
 - **Q34 disposition**: the mech-interp `2026-12-15-q4-revision` watchlist flip (from Unit 3.1) IS visible on the rendered MoversBoard as a `false → true` pill. Phase-3 acceptance gate's MoversBoard-renders-watchlist-add criterion is met.
 - Smoke gates green: `pnpm test` (**138/138 across 20 files**, was 125/18; +10 MoversBoard unit tests + 3 Storybook composition tests), `pnpm typecheck` (clean), `pnpm build` (188 routes; `/trending` is `○ Static`).
+
+#### Unit 3.8 — `RatingHistoryStream` viz (§11 catalog item 8)
+
+- Phase-3 deliverable. Third new viz this phase after `SaturationCurve` (Unit 3.6) and `MoversBoard` (Unit 3.7). Same SVG-only / no-D3 / server-renderable / `role="img"` + `<desc>` accessibility pattern.
+- **Streamgraph shape**: stepped center-baseline stacked area of the 5 rating dimensions over time for one problem. Each dimension's normalized [0, 5] value (from Unit 0.4's `dimensionsToRadar` + Unit 3.11 ADR-0006 null-saturation handling) contributes to a colored band's thickness at each time slice. Bands stack symmetrically around a horizontal midline.
+- **Stack ordering** (fixed): Difficulty (chart-1) → Saturation (chart-2) → Urgency (chart-3) → Value (chart-4) → Industry call (chart-5). Matches the §10 brand convention.
+- **Stepped transitions** (per Unit 3.0 D-10): between consecutive time slices, each band holds its prior value until the midpoint between dates, then jumps to the new value. Polygon paths walk the upper edge left→right, then the lower edge right→left, then `Z`-close.
+- **Component shape** (`components/viz/RatingHistoryStream/`):
+  - `index.tsx` — the viz. Props: `actions: RatingAction[]`, optional `problemTitle`, `width`, `height`, `ariaLabel`.
+  - `index.stories.tsx` — 5 Storybook stories: `HallucinationReduction3Actions` (saturation drops, others flat), `ScalableOversight3Actions` (difficulty S throughout, saturation slow climb), `AllDimensionsMove4Actions` (showcase with movement on every dimension across 4 actions), `SingleInitialOnly`, `Empty`.
+  - `index.test.tsx` — 8 Vitest tests covering SVG `role="img"` + derived `aria-label`, exactly 5 `<path>` elements (one per dimension), `<desc>` content with per-slice normalized values, 5-item legend across the top, empty-state figure, `YYYY-MM` x-axis labels at first/mid/last, dashed center midline, all 5 chart-color tokens (`--color-chart-1`..`5`) present.
+  - `README.md` — data shape, output, a11y, story map.
+- **Where this renders**: not wired into a page yet — Unit 3.9 (`/problems/[slug]/history` composition) is the consumer. Ships isolated so Storybook covers every state independently before page integration.
+- Pure additive code: no route, schema, or bundle changes. Build surface unchanged at **188 routes**; First Load JS shared chunk unchanged at 103 kB.
+- Smoke gates green: `pnpm test` (**151/151 across 22 files**, was 138/20; +8 unit tests + 5 Storybook composition tests), `pnpm typecheck` (clean), `pnpm build` (188 routes).
