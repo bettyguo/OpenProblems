@@ -455,3 +455,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - No code, schema, route, or bundle changes. Pure metadata addition. Build surface unchanged at **178 routes**; First Load JS shared chunk unchanged at 103 kB.
 - Smoke gates green: `pnpm validate-content` (77 files), `pnpm audit-content` (0 errors / 6 warnings — same Q32-expected `related-problems-symmetry` set), `pnpm build` (178 routes; all 14 `/institutions/[slug]` pages prerender).
 - THINK artifact: `docs/thinking/2.6c-ror-id-backfill.md`.
+
+#### Unit 2.6d — ROR ID backfill for original-9 institutions
+
+- Extends Unit 2.6c's pattern across the 9 institutions seeded in Unit 2.1 without `ror_id`. Combined with 2.6c, 11 of 14 institutions now carry a verified ROR ID.
+- Adds the `ror_id:` field to 7 of the 9 institutions. Each ID was retrieved from the ROR public API (`https://api.ror.org/v2/organizations?query=...`) and cross-checked against the organization's location and founding year on the matching record:
+  - `anthropic` → [`056y0v115`](https://ror.org/056y0v115) (Anthropic, San Francisco CA, est. 2021)
+  - `openai` → [`05wx9n238`](https://ror.org/05wx9n238) (OpenAI, San Francisco CA, est. 2015)
+  - `google-deepmind` → [`00971b260`](https://ror.org/00971b260) (Google DeepMind, London UK, est. 2010 — parent Alphabet)
+  - `mit` → [`042nb2s44`](https://ror.org/042nb2s44) (Massachusetts Institute of Technology, Cambridge MA, est. 1861)
+  - `stanford-university` → [`00f54p054`](https://ror.org/00f54p054) (Stanford University, est. 1891)
+  - `uc-berkeley` → [`01an7q238`](https://ror.org/01an7q238) (University of California, Berkeley, est. 1868)
+  - `princeton-university` → [`00hx57361`](https://ror.org/00hx57361) (Princeton University, est. 1746)
+- **2 documented exceptions** (consistent with Unit 2.6c's InstaDeep precedent — omit rather than misattribute):
+  - `meta-fair` — Meta FAIR is not separately registered in ROR. Parent Meta has `01zbnvs85`, but attaching a parent-corporate ROR ID to a research-division slug ("Meta FAIR") is a category error future tooling would propagate. Omit.
+  - `microsoft-research` — Microsoft Research has no unified ROR record at the lab level; only regional MSR subsidiaries (UK, India, Asia, etc.) and parent Microsoft (`00d0nc645`) are registered. Same reasoning. Omit.
+- All 7 added IDs satisfy the schema regex `^0[\da-z]{6}\d{2}$` (9 chars). `pnpm validate-content` enforces at commit time.
+- Combined with 2.6c, **3 of 14 institutions** still lack `ror_id` (`instadeep`, `meta-fair`, `microsoft-research`). All 3 are documented-exception omissions, not deferrals.
+- Pure metadata addition: no code, schema, route, or bundle changes. Build surface unchanged at **178 routes**; First Load JS shared chunk unchanged at 103 kB.
+- Smoke gates green: `pnpm validate-content` (191 files — includes 114 new author YAMLs from a parallel session's in-flight Unit 2.5b work), `pnpm audit-content` (0 errors / 6 warnings — same Q32-expected set), `pnpm build` (178 routes).
+- THINK artifact: `docs/thinking/2.6d-ror-id-backfill-original-institutions.md`.
