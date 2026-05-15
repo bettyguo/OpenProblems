@@ -1,0 +1,59 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Cancel in-flight runs when a new commit lands on the same ref.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  verify:
+    name: typecheck · lint · test · build · validate-content
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      # Skip Husky hook install during pnpm install on CI; we run the
+      # underlying checks as explicit steps below.
+      HUSKY: "0"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # fetch full history so the ADR-0005 base-branch diff can compare
+          # against the merge base instead of the shallow checkout.
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Format check
+        run: pnpm format:check
+
+      - name: Unit tests (Vitest)
+        run: pnpm test
+
+      - name: Validate content
+        run: pnpm validate-content
+
+      - name: Build (Next.js production)
+        run: pnpm build
+
+      - name: ADR-0005 — rating-action immutability (CI gate)
+        if: github.event_name == 'pull_request'
+        run: node scripts/check-rating-action-immutability-ci.mjs origin/${{ github.base_ref }}
