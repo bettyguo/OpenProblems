@@ -538,6 +538,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Smoke gates green: `pnpm validate-content` (193 files), `pnpm audit-content` (0 errors / 6 warnings — same Q32-expected set), `pnpm build` (178 routes; new `entries.json` doesn't add SSG paths), `pnpm test` (86/86).
 - THINK artifact: `docs/thinking/2.6i-entries-long-horizon-agent-reliability.md`.
 
+#### Unit 2.6e — HyenaDNA correction for paper 2306.15794
+
+- Phase-2 hygiene follow-on, **completing parallel-session work that was stranded mid-flight across 4 intervening commits** (2.6h, 2.6i, 3.0, 3.1). The THINK doc and YAML diff were authored by the parallel session in an earlier hour of the multi-curator session; this commit ships them as-is after re-verifying the diff and running gates. Fixes a data-integrity bug surfaced by Unit 2.6d's ROR backfill: paper YAML at arXiv ID `2306.15794` claimed to be "The Nucleotide Transformer" (Dalla-Torre et al., InstaDeep) but the actual paper at that arXiv ID is **HyenaDNA** (Nguyen et al., Stanford / UC Berkeley / Mila).
+- `WebFetch` on `https://arxiv.org/abs/2306.15794` (parallel session, earlier in this session) confirmed the actual paper at that ID. Unit 2.6 seed conflated the two papers.
+- The fix (single file, [content/papers/2306.15794.yaml](content/papers/2306.15794.yaml)):
+  - `title` → HyenaDNA's verbatim title: "HyenaDNA: Long-Range Genomic Sequence Modeling at Single Nucleotide Resolution"
+  - `tldr` → describes HyenaDNA's contribution (Hyena long-convolution operator; single-nucleotide resolution; contexts up to ~1M tokens)
+  - `institutions`: `[instadeep]` → `[stanford-university, uc-berkeley]` (both pre-existing in `content/institutions/` from Unit 2.1; Mila intentionally omitted because no Mila institution slug exists yet)
+  - `contributions[0]`: drops `benchmark_id: rare-variant-zero-shot` and `metric: spearman` — HyenaDNA did not introduce the rare-variant-zero-shot benchmark (the Nucleotide Transformer did); `problem_slug: genome-foundation-models` and `evidence:` URL remain valid
+  - `authors: []` preserved, matching the other 9 batch-3 papers' pattern; uniform batch-3 author backfill (the still-reserved Unit 2.6f) will pick up HyenaDNA's 13-author arXiv list captured in the THINK doc
+- **Surfaced findings** (for future curator):
+  - `content/institutions/instadeep.yaml` is now **orphan** — no paper in the repo references it after this commit. Audit doesn't flag orphan institutions; re-attached on a future Nucleotide-Transformer paper commit (bioRxiv `10.1101/2023.01.11.523679`).
+  - `rare-variant-zero-shot` benchmark in `genome-foundation-models/problem.yaml` now has **no contributing paper** — benchmark declaration stays (editorial intent independent of contributors), leaderboard page renders empty for it until a Nucleotide-Transformer paper is added.
+  - HyenaDNA's NeurIPS 2023 venue was not added (`venue: arXiv 2023` retained) — arXiv abstract pages don't attest venue; defer until a primary-source venue claim lands.
+- Smoke gates green: `pnpm validate-content` (203 files; Phase-3 rating-action YAMLs raised the count from 193), `pnpm audit-content` (0 errors / 6 warnings — same Q32-expected set; my changes don't introduce dangling refs because both new institution slugs exist).
+- THINK artifact: `docs/thinking/2.6e-hyenadna-correction.md` (parallel-session-authored).
+
 ### Phase 3 — Rating Dynamics & Trending
 
 #### Unit 3.0 — Phase 3 prep (THINK doc + Phase-3 unit breakdown + OPEN_QUESTIONS surface)

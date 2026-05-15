@@ -1,19 +1,17 @@
 id: "2306.15794"
-title: "The Nucleotide Transformer: Building and Evaluating Robust Foundation Models for Human Genomics"
+title: "HyenaDNA: Long-Range Genomic Sequence Modeling at Single Nucleotide Resolution"
 authors: []
 institutions:
-  - instadeep
+  - stanford-university
+  - uc-berkeley
 venue: arXiv 2023
 year: 2023
 arxiv_id: "2306.15794"
 tldr: |
-  Trains a family of foundation models on multi-species genomic sequence at the multi-billion-token
-  scale and evaluates them across 18 downstream genomics tasks. Demonstrates that pretrained
-  nucleotide-sequence representations transfer to variant-effect and regulatory tasks where
-  supervised labels are scarce — the foundational result for the 2023-2026 genome-foundation-model
-  wave.
+  Replaces Transformer attention with the Hyena long-convolution operator and trains on raw
+  nucleotide sequences at single-base resolution, reaching contexts up to ~1M tokens — orders of
+  magnitude beyond prior genomic foundation models. Shows that single-nucleotide-resolution
+  context unlocks tasks where k-mer tokenisation lost signal, broadening the design space.
 contributions:
   - problem_slug: genome-foundation-models
-    benchmark_id: rare-variant-zero-shot
-    metric: spearman
     evidence: https://arxiv.org/abs/2306.15794
