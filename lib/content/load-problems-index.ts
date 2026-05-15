@@ -22,6 +22,8 @@ export interface IndexedProblem {
   confidence?: number;
   /** §8.3 advisory composite; undefined when no rating. */
   composite?: number;
+  /** ISO date (YYYY-MM-DD) of the latest rating action; undefined when no rating. */
+  latestRatingDate?: string;
 }
 
 export function getIndexedProblems(): IndexedProblem[] {
@@ -49,6 +51,7 @@ export function getIndexedProblems(): IndexedProblem[] {
       base.points = points;
       base.confidence = meanConfidence(points);
       base.composite = composite(points);
+      base.latestRatingDate = latest.date;
     }
     return base;
   });
