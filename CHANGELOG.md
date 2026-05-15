@@ -1340,3 +1340,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - THINK artifact: `docs/thinking/5.3-ingest-arxiv-cli.md`.
 - Smoke gates: `pnpm typecheck` (clean), `pnpm test` (**235/235 across 32 files**, was 212/30; +23 tests), `pnpm validate-content` (203 files unchanged), `pnpm build` (clean compile, 313 pages, First Load JS 103 kB unchanged), `pnpm ingest-arxiv --help` (works).
 
+#### Unit 5.4 — `lib/curate/pdf-text.ts` (PDF text extraction utility)
+
+- The input pipeline for Unit 5.5's leaderboard-entry extractor. Fetches a paper's PDF from arXiv (or a custom URL), extracts the text via `pdf-parse`, caches the result to `.pdf-cache/<arxivId>.json` (gitignored — already added in Unit 5.2).
+- **`extractPdfText(arxivId, options?)`** returns `{ text, numPages, sourceUrl, fetchedFromCache }`. Options: `noCache`, `cacheDir`, `fetchImpl` + `parseImpl` test seams, `pdfUrl` override (default `https://arxiv.org/pdf/<id>`), `userAgent`.
+- **Module-singleton rate limiter** for PDF fetches: capacity 2, refill 1 token / 2000 ms. **Separate bucket from `arxiv-client.ts`** because `arxiv.org/pdf/` (PDF host) and `export.arxiv.org/api/` (Atom API) are different subdomains with different policies.
+- **Cache shape**: text-only, not PDF binary. Trade-off documented in the THINK — PDF binary is cheap to re-download (5–10s), text extraction is the expensive step (~1–2s on academic PDFs); caching just the text is the right granularity. Disk footprint per cached PDF: ~50 KB vs. ~1–5 MB if we cached the binary.
+- **`pdf-parse@2.x` API change**: v2.x exports a `PDFParse` class (not a default function as in v1.x). The default `parseImpl` instantiates `new PDFParse({ data: buffer })`, calls `.getText()`, returns `{ text, numpages: result.total }`, then `.destroy()` in a `finally`. The TextResult class fields are `text` (concatenated) and `total` (page count).
+- **8 new tests** in `pdf-text.test.ts` covering: cache miss (fetch + parse path), cache write disk shape, cache hit (no network / no parse), `noCache: true` bypass, custom `pdfUrl` override, HTTP error throws without caching, parser not called on cache hit, default URL composition.
+- **New devDep**: `pdf-parse@2.4.5`. Lives in `devDependencies` because `lib/curate/*` is only imported from `scripts/*`. **Note**: initial install also pulled `@types/pdf-parse` from DefinitelyTyped, but `pdf-parse@2.x` ships its own types via its export map; `@types/pdf-parse` is for v1.x and is unused. Removed in the same commit to keep the dep tree clean.
+- **No Anthropic SDK** in this unit. PDF text is the input to Unit 5.5's leaderboard extractor; LLM calls live there.
+- **`pdfjs-dist` escalation path** remains the Unit 5.0 D-2 lean if `pdf-parse` quality is too lossy on real academic PDFs — verify empirically when Unit 5.5 runs against a known fixture; revisit then.
+- **Bundle**: First Load JS shared chunk **103 kB UNCHANGED**. `scripts/`-runtime code; no app bundle impact.
+- **Route count: 313 prerendered pages UNCHANGED.**
+- **Parallel-curator state**: HEAD = `25fd29e` post-Unit-5.3. No collision.
+- THINK artifact: `docs/thinking/5.4-pdf-text.md`.
+- Smoke gates: `pnpm typecheck` (clean), `pnpm test` (**243/243 across 33 files**, was 235/32; +8 pdf-text tests), `pnpm validate-content` (203 files unchanged), `pnpm build` (clean compile, 313 pages, First Load JS 103 kB unchanged).
+
