@@ -582,3 +582,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Pure content addition: no code, schema, route, or bundle changes. Build surface unchanged at **178 routes**; First Load JS shared chunk unchanged at 103 kB. Velite re-emits `.velite/ratings.json` with 20 entries (was 10) on the next `pnpm build`.
 - Smoke gates green: `pnpm validate-content` (**203 files**, was 193), `pnpm audit-content` (0 errors / 6 warnings — same Q32-expected `related-problems-symmetry` set).
 - THINK artifact: covered in [`docs/thinking/3.0-phase-3-prep.md`](docs/thinking/3.0-phase-3-prep.md) §D-1 / D-2 / D-3; no separate Unit-3.1 THINK doc (D-1 through D-3 enumerated every per-action decision).
+
+#### Unit 3.2 — Cross-problem rating-action loader (`lib/content/load-ratings.ts`)
+
+- Phase-3 foundation. Backs the per-problem `/ratings` sub-page (Unit 3.3), the global `/ratings` HTML feed (Unit 3.4), the `/api/v1/ratings` + `/api/v1/rss.xml` feeds (Unit 3.5), the `/trending` MoversBoard window-filtering (Unit 3.7), and the `SaturationCurve` / `RatingHistoryStream` data shaping (Units 3.6, 3.8, 3.9). Single loader prevents three+ pages from each rolling their own.
+- **velite.config.ts change**: `RatingActionS` now carries a stable `id` field derived via the `s.path()` transform (same pattern as `methodology` and `problemPages` collections). Form: `<problem_slug>/<filename-without-extension>` per Unit 3.0 D-4. Used as RSS `<guid>`, JSON envelope identifier, and URL fragment for per-action deep links. No breaking change — the existing fields (`problem_slug`, `date`, `methodology_version`, `curator`, `prior_action`, `dimensions`, `signals_considered`, `watchlist`) are preserved; `path` + `id` are additive. `lib/schemas/rating-action.ts` (the Zod-4 source of truth) is untouched — the Velite-side transform is a presentation enhancement, not a data-shape change (Q31 contract holds).
+- **Loader API** (`lib/content/load-ratings.ts`):
+  - `allRatingActions()` — every action across all problems, sorted newest-first.
+  - `ratingActionsForProblem(slug)` — actions for one problem, sorted newest-first.
+  - `ratingActionById(id)` — stable lookup by Velite-injected id.
+  - `recentRatingActions(windowDays = 90, anchorDate?)` — actions inside a date window. **Anchor defaults to the most-recent action date across the corpus**, NOT today's wall-clock (per Unit 3.0 D-8 — keeps `/trending` showing relative motion against simulated data rather than emptying when wall-clock outruns the data). Anchor is inclusive on both ends: `cutoff ≤ action.date ≤ anchor`.
+  - `diffRatingAction(action, prior)` — computes a `RatingActionDiff` with per-dimension `RatingActionDelta` entries. Flags both categorical (grade / value / stars) changes and confidence shifts ≥ `CONFIDENCE_DELTA_THRESHOLD` (0.05). Tags one delta as `primary: true` — the first non-confidence-only delta, falling back to the first delta when every change is confidence-only. Returns `watchlistChanged` + `priorWatchlist` + `newWatchlist` for MoversBoard's watchlist-add signal (Unit 3.7).
+- **Test coverage** (`lib/content/load-ratings.test.ts`, 19 tests):
+  - `allRatingActions` shape + count (20 = 10 initials + 10 q3/q4 revisions) + sort order + id regex.
+  - `ratingActionsForProblem` — multi-action problem (hallucination-reduction → 3 actions in q4 / q3 / initial order), single-action problem (benchmark-integrity → 1), unknown slug.
+  - `ratingActionById` — initial (no prior_action), revision (prior_action set), unknown id.
+  - `recentRatingActions` — default 90-day window (q4 cohort = 5), 180-day (q3 + q4 = 10), 365-day (everything = 20), explicit anchor 2026-09-30 with 60-day window (q3 only = 5).
+  - `diffRatingAction` — initial returns empty deltas, hallucination-reduction q3 vs initial flags `saturation 35 → 32` as primary, mechanistic-interpretability q4 vs q3 detects watchlist `false → true`, scalable-oversight q4 vs q3 detects `saturation 18 → 22`, confidence-only diffs carry the "confidence" substring.
+- **Type derivation**: `export type RatingAction = (typeof ratings)[number]` — re-uses Velite's emitted type, automatically picks up the new `id` field. Downstream consumers (`load-problem.ts`, `load-problems-index.ts`) get the new field for free without code changes.
+- No new schema, route, or bundle additions. Build surface unchanged at **178 routes**; First Load JS shared chunk unchanged at 103 kB.
+- Smoke gates green: `pnpm test` (**105/105 across 16 files**, was 86/86; +19 new tests in this unit), `pnpm validate-content` (203 files), `pnpm audit-content` (0 errors / 6 warnings — same Q32 set), `pnpm typecheck` clean.
+- THINK artifact: covered in [`docs/thinking/3.0-phase-3-prep.md`](docs/thinking/3.0-phase-3-prep.md) Unit-3.2 row; the velite.config.ts id-injection is described inline above (Q31-contract-preserving Velite-side transform).

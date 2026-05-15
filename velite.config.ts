@@ -129,22 +129,34 @@ const DimensionStars = s.object({
   rationale: s.string(),
 });
 
-const RatingActionS = s.object({
-  problem_slug: s.string(),
-  date: s.isodate(),
-  methodology_version: s.string(),
-  curator: s.string(),
-  prior_action: s.string().optional(),
-  dimensions: s.object({
-    difficulty: DimensionGrade,
-    saturation: DimensionSaturation,
-    urgency: DimensionStars,
-    value: DimensionStars,
-    industry_call: DimensionStars,
-  }),
-  signals_considered: s.array(s.string()).optional(),
-  watchlist: s.boolean().default(false),
-});
+const RatingActionS = s
+  .object({
+    problem_slug: s.string(),
+    date: s.isodate(),
+    methodology_version: s.string(),
+    curator: s.string(),
+    prior_action: s.string().optional(),
+    dimensions: s.object({
+      difficulty: DimensionGrade,
+      saturation: DimensionSaturation,
+      urgency: DimensionStars,
+      value: DimensionStars,
+      industry_call: DimensionStars,
+    }),
+    signals_considered: s.array(s.string()).optional(),
+    watchlist: s.boolean().default(false),
+    path: s.path(),
+  })
+  .transform((data) => {
+    // path is e.g. "problems/hallucination-reduction/ratings/2026-05-14-initial".
+    // Extract the filename-without-extension for a stable, file-unique id used
+    // by Phase-3 feeds (Unit 3.5 RSS / JSON) and per-action deep links
+    // (Unit 3.4 HTML feed). The id form mirrors Unit 3.0 D-4:
+    // <problem_slug>/<filename-without-extension>.
+    const m = data.path.match(/^problems\/[^/]+\/ratings\/(.+)$/);
+    const file = m?.[1] ?? "";
+    return { ...data, id: `${data.problem_slug}/${file}` };
+  });
 
 const problems = defineCollection({
   name: "Problem",
