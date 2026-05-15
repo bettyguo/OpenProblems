@@ -1,9 +1,22 @@
+import Link from "next/link";
+
 const RATING_DIMENSIONS = [
   { label: "Difficulty", chart: "bg-chart-1" },
   { label: "Saturation", chart: "bg-chart-2" },
   { label: "Urgency", chart: "bg-chart-3" },
   { label: "Value", chart: "bg-chart-4" },
   { label: "Industry Call", chart: "bg-chart-5" },
+] as const;
+
+const STUB_ROUTES = [
+  { href: "/domains", label: "Domains" },
+  { href: "/problems", label: "Problems" },
+  { href: "/papers", label: "Papers" },
+  { href: "/trending", label: "Trending" },
+  { href: "/ratings", label: "Rating actions" },
+  { href: "/methodology", label: "Methodology" },
+  { href: "/about", label: "About" },
+  { href: "/contributing", label: "Contributing" },
 ] as const;
 
 export default function HomePage() {
@@ -32,6 +45,24 @@ export default function HomePage() {
           ))}
         </ul>
       </section>
+
+      <nav aria-label="Phase 0 stub routes" className="border-border mt-10 border-t pt-6">
+        <h2 className="text-muted-foreground text-xs font-medium tracking-widest uppercase">
+          Routes
+        </h2>
+        <ul className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-3">
+          {STUB_ROUTES.map(({ href, label }) => (
+            <li key={href}>
+              <Link
+                href={href}
+                className="text-foreground hover:text-accent text-sm underline-offset-2 hover:underline"
+              >
+                {label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
     </main>
   );
 }
