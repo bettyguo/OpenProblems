@@ -84,30 +84,32 @@
   --chart-industry-call: oklch(0.55 0.17 10);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: oklch(0.149 0.006 254);
-    --foreground: oklch(0.984 0.003 96);
+/* Dark mode is activated by the `.dark` class on <html>, set by
+ * `next-themes` (Unit 1.2). Theme state cycles system → light → dark.
+ * When the theme is `system`, next-themes mirrors the OS preference
+ * onto/off the class. Closes OPEN_QUESTIONS Q18. */
+.dark {
+  --background: oklch(0.149 0.006 254);
+  --foreground: oklch(0.984 0.003 96);
 
-    --accent: oklch(0.7 0.13 170);
-    --accent-foreground: oklch(0.149 0.006 254);
+  --accent: oklch(0.7 0.13 170);
+  --accent-foreground: oklch(0.149 0.006 254);
 
-    --primary: oklch(0.984 0.003 96);
-    --primary-foreground: oklch(0.149 0.006 254);
-    --muted: oklch(0.22 0.006 254);
-    --muted-foreground: oklch(0.65 0.005 96);
-    --border: oklch(0.3 0.006 254);
-    --ring: oklch(0.7 0.13 170);
+  --primary: oklch(0.984 0.003 96);
+  --primary-foreground: oklch(0.149 0.006 254);
+  --muted: oklch(0.22 0.006 254);
+  --muted-foreground: oklch(0.65 0.005 96);
+  --border: oklch(0.3 0.006 254);
+  --ring: oklch(0.7 0.13 170);
 
-    /* Chart hues, dark variant: same hue centres as light, lifted
+  /* Chart hues, dark variant: same hue centres as light, lifted
      * lightness so each line/arc reads at AA-equivalent contrast on
      * the inverted background. */
-    --chart-difficulty: oklch(0.68 0.15 250);
-    --chart-saturation: oklch(0.7 0.14 140);
-    --chart-urgency: oklch(0.75 0.18 50);
-    --chart-value: oklch(0.65 0.2 290);
-    --chart-industry-call: oklch(0.68 0.19 10);
-  }
+  --chart-difficulty: oklch(0.68 0.15 250);
+  --chart-saturation: oklch(0.7 0.14 140);
+  --chart-urgency: oklch(0.75 0.18 50);
+  --chart-value: oklch(0.65 0.2 290);
+  --chart-industry-call: oklch(0.68 0.19 10);
 }
 
 body {

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const RATING_DIMENSIONS = [
   { label: "Difficulty", chart: "bg-chart-1" },
@@ -22,9 +23,12 @@ const STUB_ROUTES = [
 export default function HomePage() {
   return (
     <main className="mx-auto max-w-prose px-6 py-16">
-      <h1 className="text-foreground font-serif text-4xl font-semibold tracking-tight">
-        LLM OpenProblems
-      </h1>
+      <div className="flex items-start justify-between gap-4">
+        <h1 className="text-foreground font-serif text-4xl font-semibold tracking-tight">
+          LLM OpenProblems
+        </h1>
+        <ThemeToggle className="mt-1" />
+      </div>
       <p className="text-muted-foreground mt-3 text-base">
         Phase 0 scaffold &middot; content arrives in Phase 1.
       </p>
