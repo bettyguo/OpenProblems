@@ -14,8 +14,7 @@ jobs:
     name: Playwright e2e
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    # Advisory in Phase 0 — promote to required at Phase 1 (OPEN_QUESTIONS Q27).
-    continue-on-error: true
+    # Required from Phase 1 (Unit 1.12 acceptance gate; closes Q27).
     env:
       HUSKY: "0"
     steps:
@@ -55,8 +54,7 @@ jobs:
     name: Lighthouse CI
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # Advisory in Phase 0 — promote to required at Phase 1 (OPEN_QUESTIONS Q27).
-    continue-on-error: true
+    # Required from Phase 1 (Unit 1.12 acceptance gate; closes Q27).
     env:
       HUSKY: "0"
     steps:
