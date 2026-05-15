@@ -341,3 +341,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - §13 stretch target (40 papers, +10 over the floor) is best executed via PAPER-INGEST runs once Unit 2.7 (paper detail page) lands — see [docs/PAPER_INGEST_RUNBOOK.md](../../docs/PAPER_INGEST_RUNBOOK.md). The trunk units (2.7 paper detail + 2.8 papers index + 2.9 per-problem leaderboard + 2.10 entries.json + 2.11 cross-link audit + 2.12 aggregate rollups + 2.13 acceptance gate) own the rest of Phase 2.
 - Smoke gates green: `pnpm validate-content` reports **72 content files** (was 62 after Unit 2.5: +10 papers); `pnpm typecheck` clean; `pnpm build` 133 routes (no new SSG paths — `/papers/[id]` still `ƒ` dynamic until Unit 2.7).
 - THINK artifact: `docs/thinking/2.6-seed-papers-batch-3.md`.
+
+#### Unit 2.7 — Paper detail page `/papers/[id]` (replaces Unit 0.10 stub)
+
+- Replaces the Unit 0.10 `StubPage` at `/papers/[id]` with a real four-block RSC detail page backed by [`loadPaper`](../../lib/content/load-paper.ts). `generateStaticParams` over `allPaperIds()` prerenders all 30 paper paths as SSG.
+- Four-block layout (RSC, no client JS):
+  1. **Header** — breadcrumb (`Papers →`), title (h1), metadata row (venue · year · arXiv link · DOI link · GitHub link) with each external link conditionally rendered.
+  2. **TL;DR + Contributions** — verbatim `paper.tldr` (`"[TLDR pending human review]"` sentinel rendered as-is). Contributions table with columns Problem · Benchmark · Metric · Score · Evidence; problem column resolves to `/problems/[slug]` link via `loadPaper`'s join, falls back to monospace slug + `(unresolved)` tag when the slug doesn't resolve (Unit 2.11 cross-link audit will surface these).
+  3. **Authors + Institutions** — two-column section. Resolved slugs link to `/authors/[slug]` / `/institutions/[slug]`; unresolved slugs render as monospace `@slug` + `(unresolved)` tag; both-empty empty-states explain the Phase-2 backfill pacing. With all 30 current papers having `authors: []`, every paper currently shows the empty-state on the authors side.
+  4. **Citation** — BibTeX-style `<pre>` `@misc{op-paper-<id>, …}` mirroring Unit 1.6's problem-citation block. Includes `eprint` + `archivePrefix` when `arxiv_id` is set; `doi` line when set; `note` for the venue; canonical `{NEXT_PUBLIC_SITE_URL}/papers/{id}` URL.
+- Bundle: build surface jumps **133 → 163 routes** — exactly +30, one prerendered path per paper from Units 2.4 / 2.5 / 2.6. `/papers/[id]` is now `●` SSG at 182 B route code / 106 kB First Load JS, well under §10.4's 180 kB problem-detail budget.
+- No new tests required — `loadPaper` is already covered by `lib/content/load-entities.test.ts` (Unit 2.2). Visual regression on a representative paper is deferred to Unit 2.13 (Phase 2 acceptance gate).
+- Smoke gates green: `pnpm typecheck`, `pnpm test` (79/79), `pnpm build` (163 routes; bundle sizes unchanged on existing surfaces; First Load JS shared chunk still 103 kB).
+- THINK artifact: `docs/thinking/2.7-paper-detail-page.md`.
