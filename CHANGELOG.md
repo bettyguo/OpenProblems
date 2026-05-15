@@ -1088,3 +1088,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Pure docs unit — no app, schema, or test code touched.
 - Smoke gates: `pnpm typecheck` (clean), `pnpm test` (190/190 unchanged), `pnpm validate-content` (203 files unchanged). `pnpm build` not re-run.
 
+#### Unit 4.12 — DB-migration trigger evaluation note
+
+- Promotes the §12 DB-migration trigger check from Unit 4.0's THINK doc to its own standalone artifact (`docs/thinking/4.12-db-migration-trigger-eval.md`) so Phase-5+ curators have a canonical re-check reference rather than digging through CHANGELOG.
+- **Fresh measurement at HEAD `25801f4`**: `tar -czf` of `.velite/` = **69,182 bytes (~67.6 KB)** vs the **5 MB (5,242,880-byte) trigger**. **~1.32% of trigger**; ~76× headroom. Within rounding of Unit 4.0's 68,969-byte measurement (~0.3% movement; the Phase-4 docs additions are not measurable against the snapshot — most growth lands as `problemPages.json` MDX prose, of which Phase 4 added little).
+- **Auth trigger**: also negative. Phase 4's submission workflow is GitHub-mediated (issue templates + PR review per Units 4.7–4.10); no first-party auth. §5.8 ("Auth deferred to Phase 4") + §13 (no write-path UI in Phase-4 deliverables) line up cleanly.
+- **Decision**: **DB migration deferred to Phase 5.** §12's explicit contemplation of this case ("Otherwise skip and revisit at Phase 5.") obviates an override.
+- **Re-evaluation triggers** (when to re-check) documented in the note:
+  1. **Content scale 3×** (`pnpm validate-content` > 600 files, OR gzipped snapshot > 1 MB internal alarm — gives ~5× headroom before the 5 MB hard trigger).
+  2. **First Phase-5 write-path lands** (auth trigger flips).
+  3. **Phase 5 kickoff** (per §12, mandatory re-evaluation).
+  4. **Rating-action volume reaches 200** (current 20; linear vs. MDX-prose's step-function growth profile).
+- **Forward-looking signals** (not §12 triggers but worth watching): storage-shape stress vs. byte count (cross-cutting queries that don't map cleanly to per-page JSON slices); data-freshness cadence (real-time ingest decoupling from deploy cycles); multi-curator concurrency (5+ active per week).
+- **Anchor ADR**: ADR-0004 (file-first; no DB through Phase 3) is the durable architectural record this trigger defers against.
+- **Parallel-curator state**: HEAD = `25801f4` post-Unit-4.11. No collision. The parallel session's `.gitignore` change remains staged-but-uncommitted in their tree; not included here.
+- Pure docs. Smoke gates: `pnpm typecheck` (clean), `pnpm test` (190/190 unchanged), `pnpm validate-content` (203 files unchanged).
+
