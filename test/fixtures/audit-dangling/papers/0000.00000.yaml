@@ -1,0 +1,9 @@
+id: "0000.00000"
+title: Test Paper
+authors: []
+institutions: []
+year: 2024
+tldr: Audit fixture — exercises paper-problem-fk with a dangling slug.
+contributions:
+  - problem_slug: nonexistent
+    evidence: https://example.com/abs/0000.00000

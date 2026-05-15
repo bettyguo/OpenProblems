@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   verify:
-    name: typecheck · lint · test · build · validate-content
+    name: typecheck · lint · test · build · validate-content · audit-content
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -50,6 +50,9 @@ jobs:
 
       - name: Validate content
         run: pnpm validate-content
+
+      - name: Cross-link audit (Phase-2 / Unit 2.11)
+        run: pnpm audit-content
 
       - name: Build (Next.js production)
         run: pnpm build

@@ -1,0 +1,13 @@
+slug: a
+title: Problem A
+domain: x
+subdomain: y
+tags: []
+status: open
+posed_year: 2020
+related_problems:
+  - b
+benchmarks: []
+editorial:
+  primary_curator: test
+  last_curated: 2026-05-15

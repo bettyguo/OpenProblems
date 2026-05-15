@@ -4,7 +4,10 @@
       "url": [
         "http://localhost:3000/",
         "http://localhost:3000/problems/hallucination-reduction",
-        "http://localhost:3000/domains/deep-learning"
+        "http://localhost:3000/domains/deep-learning",
+        "http://localhost:3000/papers/2310.06770",
+        "http://localhost:3000/authors/shunyu-yao",
+        "http://localhost:3000/institutions/anthropic"
       ],
       "startServerCommand": "pnpm start",
       "startServerReadyPattern": "Ready",

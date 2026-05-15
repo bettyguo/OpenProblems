@@ -77,24 +77,58 @@ test.describe("Phase 1 §13 nav: landing → domain → subdomain → problem �
   });
 });
 
-test.describe("Phase 1 visual regression: RatingRadar", () => {
-  test("RatingRadar v1 on /problems/hallucination-reduction matches the baseline", async ({
+test.describe("Phase 2 paper detail nav", () => {
+  test("can reach a paper detail page from /papers and back-link to a problem", async ({
     page,
   }) => {
-    await page.goto("/problems/hallucination-reduction");
+    // Pick an exemplar paper (Unit 2.4 seed; SWE-bench).
+    await page.goto("/papers/2310.06770");
 
+    await expect(page.getByRole("heading", { level: 1, name: /SWE-bench/i })).toBeVisible();
+
+    // Block 2 contributions table — every paper has at least one row.
+    await expect(page.getByRole("heading", { level: 2, name: /Contributions/i })).toBeVisible();
+
+    // Block 4 BibTeX-style citation block.
+    await expect(page.getByRole("heading", { level: 2, name: /Cite this/i })).toBeVisible();
+  });
+});
+
+test.describe("Phase 2 visual regression: paper + author + institution detail", () => {
+  test("RatingRadar v1 baseline (Phase 1 carryover)", async ({ page }) => {
+    await page.goto("/problems/hallucination-reduction");
     const radar = page.getByRole("img", { name: /Current rating radar/i });
     await expect(radar).toBeVisible();
-
-    // toHaveScreenshot creates the baseline on first run and gates against
-    // it thereafter. Baselines are platform-specific (font / pixel
-    // rendering) — first CI run will land an Ubuntu baseline that
-    // supersedes any locally-captured baseline.
     await expect(radar).toHaveScreenshot("rating-radar-hallucination-reduction.png", {
       animations: "disabled",
-      // Tight diff threshold: the radar is pure SVG, so cross-machine
-      // rendering should be near-pixel-identical.
       maxDiffPixelRatio: 0.005,
+    });
+  });
+
+  test("paper detail page baseline", async ({ page }) => {
+    await page.goto("/papers/2310.06770");
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.locator("main")).toHaveScreenshot("paper-detail-swe-bench.png", {
+      animations: "disabled",
+      maxDiffPixelRatio: 0.01,
+    });
+  });
+
+  test("author detail page baseline", async ({ page }) => {
+    await page.goto("/authors/shunyu-yao");
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.locator("main")).toHaveScreenshot("author-detail-shunyu-yao.png", {
+      animations: "disabled",
+      maxDiffPixelRatio: 0.01,
+    });
+  });
+
+  test("institution detail page baseline", async ({ page }) => {
+    await page.goto("/institutions/anthropic");
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.locator("main")).toHaveScreenshot("institution-detail-anthropic.png", {
+      animations: "disabled",
+      maxDiffPixelRatio: 0.01,
     });
   });
 });
