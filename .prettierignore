@@ -18,3 +18,9 @@ docs/adr/**
 
 # Generated CHANGELOG entries — let humans control wrap.
 CHANGELOG.md
+
+# THINK artifacts contain Markdown that uses literal underscores
+# (e.g., `MASTER_PROMPT.md`, `_before_`). Prettier reinterprets
+# `_..._` as emphasis and mangles the text on reformat. Treat THINK
+# docs as written-prose-frozen-at-authoring, mirroring the ADR rule.
+docs/thinking/**

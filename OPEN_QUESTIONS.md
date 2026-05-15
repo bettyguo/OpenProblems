@@ -137,3 +137,38 @@ MASTER_PROMPT §8.2 says: "When no ceiling exists, mark Saturation = N/A and use
 Tried both the FlatCompat shim (`compat.config({ extends: ["next/core-web-vitals"] })`) and the direct flat-config import (`import nextCoreWebVitals from "eslint-config-next/core-web-vitals"`). Both surface the same `TypeError: Converting circular structure to JSON` from `@eslint/eslintrc/lib/shared/config-validator.js` under ESLint 10.3 + `eslint-config-next@16.2.6`. Likely a packaging bug in the upstream config (a plugin object reference is being JSON-serialized for validator output).
 
 Decision deferred: re-enable when (a) the upstream issue is fixed, or (b) we author a hand-rolled minimal Next config (just the `@next/eslint-plugin-next` plugin with the rules we want) without pulling in the broken `eslint-config-next`. Track issue in next iteration. The `@next/eslint-plugin-next` package is already a transitive dep — we can flat-config it directly.
+
+## Q25. JSON API envelope shape
+
+**Status:** open · **Surfaced:** Unit 0.10 THINK · **Blocks:** Phase 1 API implementation (when `/api/v1/*` flips from 501 stubs to real handlers).
+
+Phase 0 stubs return `{ endpoint, status: "not-implemented", phase: 0, message }` with HTTP 501. The canonical Phase 1+ envelope is undecided. Three plausible shapes:
+
+- (a) JSON:API style: `{ data, meta, links }` — verbose but tooling-friendly.
+- (b) Flat resource: `{ slug, title, ...fields }` for singletons; arrays for collections.
+- (c) Hybrid: flat resources at `/api/v1/<entity>/<id>`, paginated `{ items, page, total }` for `/api/v1/<entity>`.
+
+Lean: (c). Decide at Phase 1 kickoff before the first real API handler ships.
+
+## Q26. Per-segment `not-found.tsx` strategy
+
+**Status:** open · **Surfaced:** Unit 0.10 THINK · **Blocks:** nothing critical; revisit when first stub is replaced with a real resolver in Phase 1.
+
+Phase 0 uses Next's default 404 for unknown paths. Phase 1 will start resolving dynamic segments against real content; missing slugs should 404 with a _helpful_ message ("No problem with slug `xyz` — see the index at /problems"). Two options:
+
+- (a) Per-segment `not-found.tsx` co-located with `[slug]/page.tsx`. More files; richer messaging.
+- (b) Single global `app/not-found.tsx` with conditional copy based on the current URL pathname.
+
+Lean: (a) for problems / authors / papers / institutions (each has a natural "see the index" CTA); (b) global fallback for everything else.
+
+## Q27. e2e + Lighthouse: advisory → required
+
+**Status:** open · **Surfaced:** Unit 0.11 THINK · **Blocks:** Phase 1 acceptance gate.
+
+`.github/workflows/e2e-lighthouse.yml` runs Playwright e2e and Lighthouse CI with `continue-on-error: true` in Phase 0 — they report status but don't block merges. Reason: Playwright browser install + Lighthouse perf are flaky on shared runners until baselines stabilize. At Phase 1 kickoff, flip `continue-on-error: false` once 3 consecutive PRs have passed without intervention.
+
+## Q28. GitHub branch-protection rules
+
+**Status:** open · **Surfaced:** Unit 0.11 THINK · **Blocks:** PR merge enforcement.
+
+Branch-protection rules cannot be declared in code; they're configured on the repo via GitHub settings. Required Phase 0 checks: `verify` job (the fast-CI matrix), plus the `Conventional Commits` PR title check if enabled. Defer to first GitHub setup pass — likely happens at Phase 0 acceptance (Unit 0.12) when the repo is pushed to GitHub for the first preview deploy.
