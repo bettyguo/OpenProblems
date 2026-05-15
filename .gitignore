@@ -46,6 +46,9 @@ dist/
 build/
 *.tgz
 
+# --- Velite (generated content snapshot; rebuilt by `pnpm velite` / `pnpm build` / `pnpm dev`) ---
+.velite/
+
 # --- Env files (do commit .env.example) ---
 .env
 .env.local

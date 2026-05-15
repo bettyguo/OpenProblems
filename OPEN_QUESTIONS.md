@@ -170,3 +170,23 @@ Lean: (a) for problems / authors / papers / institutions (each has a natural "se
 **Status:** open · **Surfaced:** Unit 0.11 THINK · **Blocks:** PR merge enforcement.
 
 Branch-protection rules cannot be declared in code; they're configured on the repo via GitHub settings. Required Phase 0 checks: `verify` job (the fast-CI matrix), plus the `Conventional Commits` PR title check if enabled. Defer to first GitHub setup pass — likely happens at Phase 0 acceptance (Unit 0.12) when the repo is pushed to GitHub for the first preview deploy.
+
+## Q29. Velite MDX plugin set
+
+**Status:** open · **Surfaced:** Unit 1.1 THINK · **Blocks:** Unit 1.3 (methodology page).
+
+Phase 1 needs KaTeX (inline + display math) and Shiki (code highlight) wired into Velite's MDX pipeline. Mermaid is listed in §5.4 but no Phase 1 deliverable requires it. Lean: wire KaTeX + Shiki in Unit 1.3 when the first MDX file lands; defer Mermaid until a content author asks for it.
+
+## Q30. Snapshot publishing via `/api/v1/snapshot.json`
+
+**Status:** open · **Surfaced:** Unit 1.1 THINK · **Blocks:** nothing in Phase 1; revisit when the 5 MB-gz trigger (ADR-0004) looms.
+
+The `.velite/` JSON snapshot is the "static JSON snapshot the client consumes" of §5.7. Whether to also expose it publicly at `/api/v1/snapshot.json` (capped, gzipped) for third-party consumers — vs. keeping it server-side only — is a separate decision. Defer to Unit 1.10 (landing) or later.
+
+## Q31. Velite + Zod 4 incompatibility
+
+**Status:** open · **Surfaced:** Unit 1.1 CODE · **Blocks:** "no schema duplication" promise of ADR-0003.
+
+Velite 0.3.1 bundles Zod 3 internally; its runtime calls `schema._parse(...)` which Zod 4 renamed. Passing a Zod-4 schema from `lib/schemas/*` directly to `defineCollection({ schema })` throws `schema._parse is not a function`. Workaround in Unit 1.1: duplicate the (small) taxonomy schema in `velite.config.ts` using Velite's bundled `s` factory. The canonical schemas in `lib/schemas/*` remain the source of truth, and `scripts/validate-content.ts` (Unit 0.7) cross-validates content against them — so any drift surfaces in CI on the next commit that authors content.
+
+Action: track Velite upstream for Zod-4 support. When it ships, replace the `s.object({...})` blocks in `velite.config.ts` with direct imports from `@/lib/schemas/*` and close this question.
