@@ -967,3 +967,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - THINK artifact: `docs/thinking/4.1-d3-deps-install.md`.
 - Smoke gates green: `pnpm typecheck` (clean), `pnpm test` (171/171 across 25 files), `pnpm build` (198 routes; First Load JS 103 kB unchanged).
 
+#### Unit 4.2 — `components/viz/DomainMap/` scaffold (§11 catalog item 4)
+
+- The big-ticket Phase-4 viz. SSR-only force-directed graph following the Phase-3 viz precedent (RatingRadar, SaturationCurve, MoversBoard, RatingHistoryStream are all SSR-only).
+- **6 new files** in `components/viz/DomainMap/`:
+  - `types.ts` — `DomainMapNode` + `DomainMapLink` (the data contract for consumer pages Unit 4.3 / 4.4).
+  - `index.tsx` — presentational viz component. Runs `d3-force` at module render time with **deterministic initial positions** (each node placed on a circle around viewport center; pre-seeded x/y prevents `Math.random()` drift); 300 ticks; emits static SVG. No `"use client"`, no client JS.
+  - `table.tsx` — tabular fallback grouping problems by domain → subdomain (mirrors Unit 3.12's `ChartTableSwitch` pattern).
+  - `index.stories.tsx` — 5 Storybook stories: `FullGraph` (5 domains + 4 subdomains + 10 problems; mirrors Phase-3-close fixture), `SingleDomain`, `TwoDomainsOverlap` (verifies label disambiguation when subdomains share a name across domains), `Empty`, `DimmedSubset` (exercises the `dimmedIds` prop that consumer pages will use for filter chips in Unit 4.3 / 4.4).
+  - `index.test.tsx` — 9 vitest tests covering: `<svg role="img">` + derived aria-label; `<desc>` enumeration; one `<line>` per link; one `<circle>` per node; problem-href wrapping in `<a>`; chart-token hue references; empty-state; dimmed-opacity; **layout determinism across renders** (`render(props) === render(props)`).
+  - `table.test.tsx` — 5 tests covering row counts, composite-rating display, domain repetition, subdomain `—` fallback, and empty-state.
+- **Force-simulation tuning constants** (initial values; to be confirmed in Unit 4.11 ADR-0007):
+  - `viewBox` 600 × 420 (desktop primary; ~1.4:1 aspect).
+  - `linkDistance: 60`, `chargeStrength: -180`, `centerStrength: 0.05`, `nTicks: 300`.
+  - Radius `k`: 5 (problem), 5.5 (subdomain), 7 (domain). `radius = sqrt(composite) × k` per Unit 4.0 D-4.
+- **Color encoding** per Unit 4.0 D-5: `fill="var(--color-chart-{1..5})"` driven by the node's `hue` field. Fill opacity 0.85 (domain) / 0.55 (subdomain) / 0.75 (problem) — subdomain dimming substitutes for the "lower-saturation" parent-inheritance pattern without needing CSS `color-mix`.
+- **A11y plumbing** mirrors Phase-3 vizes: `role="img"` + `aria-label` + `aria-describedby` → `<desc>` enumerating "Domain map: N domains, M subdomains, K problems. <Domain Name> (composite X.X, …): includes <Problem>, …". Each node group carries a native `<title>` for hover/focus tooltip. Edges marked `aria-hidden="true"` (the parent/child relationship is already in the `<desc>`).
+- **Scope explicitly deferred** to keep 4.2 reviewable:
+  - **Drag** (Unit 4.0 D-6 interaction #3) — requires `"use client"` + live d3-force on the client. Punted to a follow-on / Phase-5 enhancement. Click navigation (via `<a>`) and hover (via native `<title>`) ship in this unit.
+  - **Filter chips** (Unit 4.0 D-6) — lives at the page layer per Unit 4.0's per-unit split. 4.2 exposes a `dimmedIds?: Set<string>` prop the page can wire to; chip-state-management belongs to Units 4.3 / 4.4.
+  - **Subdomain expand/collapse** (Unit 4.0 D-3) — all 3 hierarchy levels render statically at once. ~30 nodes at current content scale is within the readability envelope without collapse.
+- **d3-selection NOT imported in this unit.** It ships in `dependencies` from Unit 4.1 but is unused server-side. Tree-shaking drops it from the client bundle entirely (DomainMap is server-only at this commit).
+- **First Load JS shared chunk 103 kB UNCHANGED.** d3-force runs server-side only (SSR force simulation); the static SVG payload that ships to clients is just markup. The client-bundle bump from the Unit 4.0 D-2 projection (~20–25 KB gz) lands when Unit 4.3 / 4.4 wire client-side filter chips around the viz — not at this commit.
+- **198 SSG routes UNCHANGED** at this commit (no new pages; DomainMap is consumed by existing pages in Units 4.3 / 4.4).
+- THINK artifact: `docs/thinking/4.2-domainmap-scaffold.md`.
+- Smoke gates green: `pnpm typecheck` (clean), `pnpm test` (**190/190 across 28 files**, was 171/25; +9 index tests + 5 table tests + 5 Storybook-as-snapshot tests), `pnpm build` (198 routes; First Load JS 103 kB).
+
+
