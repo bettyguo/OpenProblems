@@ -1137,3 +1137,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - THINK artifact: `docs/thinking/4.6-contributing-page.md`.
 - Smoke gates: `pnpm velite` (build finished in ~1.7s), `pnpm typecheck` (clean), `pnpm test` (190/190 across 28 files), `pnpm validate-content` (203 files — MDX is outside `scripts/validate-content.ts`'s YAML-against-Zod cross-validation scope per Q31; Velite validates MDX at build), `pnpm build` (**200 SSG routes**; First Load JS 103 kB).
 
+#### Unit 4.3 — `/domains` page composition with DomainMap
+
+- Replaces the static `<DomainTileGrid />` at `app/domains/page.tsx` with the live `<DomainMap />` from Unit 4.2, wrapped in `<ChartTableSwitch>` with `<DomainMapTable />` as the table-fallback (Unit 3.12 pattern). The page is the brushable-DomainMap surface §13 D-8 names.
+- **New shared loader**: `lib/content/build-domain-map.ts` exposes `buildDomainMap()` returning `{ nodes, links }` from the live taxonomy + problems + indexed-composite data. **Reusable** by Unit 4.4 (`/` landing).
+- **Composite aggregation rule** (Unit 4.3 D-1, documented in the file): mean of leaves.
+  - **Problem composite**: from `getIndexedProblems()`.composite (§8.3 formula on the latest rating action). Unrated problems fall back to a `3.0` midpoint placeholder.
+  - **Subdomain composite**: arithmetic mean of child problems' composites. Empty subdomain → 3.0 placeholder.
+  - **Domain composite**: mean of *all descendant problems* (not nested subdomain means) — flatter aggregation more honest under uneven subdomain populations.
+- **Hue assignment** per Unit 4.0 D-5: `taxonomy.domains[i].hue = (i % 5) + 1`. Subdomain + problem nodes inherit parent-domain hue. Wraps at 6 domains (Phase 5+).
+- **Orphan-problem defense**: if a problem's `subdomain` slug isn't present in `taxonomy.domains[].subdomains[]` (shouldn't happen in HEAD — defensive against future taxonomy edits), the problem node attaches directly to its domain. Wouldn't be silently dropped.
+- **Test coverage** (+9 tests in `lib/content/build-domain-map.test.ts`):
+  1. Domain node count + order + hues (1..5 wrapping).
+  2. Subdomain node count = sum over `taxonomy.domains[i].subdomains.length`.
+  3. Every non-domain node inherits its parent's hue.
+  4. Every link's `source` and `target` id exists in `nodes`.
+  5. Every non-domain node has a `parent` that resolves.
+  6. Domain composite = arithmetic mean of descendant problem composites.
+  7. Subdomain composite = mean of child problem composites (with 3.0 fallback for empty).
+  8. Problem-node-count = `getIndexedProblems().length` (no drops / no duplicates).
+  9. Every problem node has `href = /problems/<slug>`.
+- **Bundle**: `/domains` route size went **198 B → 146 B** (the DomainMap SSR'd SVG is smaller in-bundle than the tile-grid component was). First Load JS shared chunk **103 kB UNCHANGED**.
+- **Route count: 200 UNCHANGED** — `/domains` is still `○ Static`; same path, different inner viz.
+- **Scope split per Unit 4.0**: filter chips are page-layer interactivity → live on Unit 4.4 (`/` landing); Unit 4.3 ships DomainMap without chips, since the table-fallback under `<details>` covers the discovery surface §13's "brushable" framing needs.
+- **Parallel-curator state**: HEAD = `abd3c07` post-Unit-4.6. No collision with the parallel session's viz-line work.
+- THINK artifact: `docs/thinking/4.3-domains-page-domainmap.md`.
+- Smoke gates: `pnpm typecheck` (clean), `pnpm test` (**199/199 across 29 files**, was 190/190 across 28; +9 build-domain-map tests), `pnpm validate-content` (203 files unchanged), `pnpm build` (200 SSG routes; `/domains` 146 B / 103 kB; First Load JS shared chunk 103 kB unchanged).
+
