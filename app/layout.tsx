@@ -9,19 +9,19 @@ import "katex/dist/katex.min.css";
 
 const inter = Inter({
   variable: "--font-inter",
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
   display: "swap",
 });
 
 const sourceSerif = Source_Serif_4({
   variable: "--font-source-serif",
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
   display: "swap",
 });
 
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
   display: "swap",
 });
 
