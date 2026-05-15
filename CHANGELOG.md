@@ -1104,3 +1104,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **Parallel-curator state**: HEAD = `25801f4` post-Unit-4.11. No collision. The parallel session's `.gitignore` change remains staged-but-uncommitted in their tree; not included here.
 - Pure docs. Smoke gates: `pnpm typecheck` (clean), `pnpm test` (190/190 unchanged), `pnpm validate-content` (203 files unchanged).
 
+#### Unit 4.5 — `content/contributing/v1.mdx` (curator workflow MDX)
+
+- The versioned editorial-workflow doc for external contributors, per Unit 4.0 D-9. Mirrors `content/methodology/v1.mdx`'s structural conventions: top-level frontmatter (`version` / `title` / `summary` / `date`), prose with `##`/`###` headings, no inline code outside fenced blocks.
+- **Scope split**: Unit 4.5 ships content only; Velite collection registration + the `/contributing` page composition belong to Unit 4.6. The MDX sits as an unreferenced file on disk between the two commits — Velite's existing globs (`methodology/*.mdx`, etc.) don't match `contributing/v1.mdx`, so it's silently ignored at build until 4.6 wires the collection.
+- **Frontmatter forward-compatible** with the Unit 4.6 Velite collection schema (which will mirror `methodology` 1:1 — `version` + `title` + `summary` + `date` + optional `supersedes`). No backfill needed when 4.6 lands.
+- **6 sections** (per Unit 4.0 D-9):
+  1. **Who can contribute** — anyone with a GitHub account via issues; curators do the merge work; curator-of-record recorded in `editorial.primary_curator` / rating-action `curator` / PR reviewer history.
+  2. **The four contribution types** — table linking each of the 4 Phase-4 issue templates (Units 4.7 – 4.10) by canonical GitHub "new issue from template" URL.
+  3. **Editorial standards** — primary-source rule (§15.6), ROR / ORCID conventions, ADR-0005 rating-action immutability, methodology versioning (§8.1 + ADR-0006), no-fabrication rule.
+  4. **PR review expectations** — CI green required; curator + 1 reviewer; visual baselines refresh; CHANGELOG entry per commit + per-unit conventional-commit title.
+  5. **Versioning this page** — v1.x additive, v2.0 for workflow-shape change (auth-gated submissions per §5.8, currently deferred per Unit 4.12).
+  6. **Questions, ambiguity, gaps** — file a regular GitHub issue tagged `meta` for things that don't fit the 4 templates.
+- **GitHub URLs**: all pinned to `github.com/bettyguo/OpenProblems` per `git remote -v` (same convention as Units 4.7 – 4.10). 4 template URLs use the canonical `/issues/new?template=<file>.yml` pattern.
+- **No CURATION_PROMPT.md duplication.** That doc is written for Claude (parallel-safety contract, prompt-engineering register); this MDX is written for external curators — different audience, different scope, different voice.
+- **No screenshots / GIFs.** Following the MASTER_PROMPT.md text-first convention; revisit if user-research signals demand visual aids.
+- **Parallel-curator state**: HEAD = `1261aca` post-Unit-4.12. No collision. The parallel session's staged `.gitignore` change persists; not modified here.
+- THINK artifact: `docs/thinking/4.5-contributing-mdx.md`.
+- Pure content. Smoke gates: `pnpm validate-content` (203 files unchanged — the new MDX is outside the validated globs until Unit 4.6 wires the Velite collection), `pnpm typecheck` (clean — no TS touched), `pnpm test` (190/190 unchanged), `pnpm build` (198 routes unchanged — no new SSG page until 4.6).
+
