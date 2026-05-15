@@ -1,0 +1,26 @@
+[
+  {
+    "paper_id": "2411.04368",
+    "benchmark_id": "simpleqa",
+    "score": 40.1,
+    "date": "2024-08-06",
+    "verified": true,
+    "protocol_notes": "Model: gpt-4o-2024-08-06. Source: openai/simple-evals README (https://github.com/openai/simple-evals). F-score per the correct/incorrect/not_attempted protocol defined in 2411.04368. Score reported as percentage."
+  },
+  {
+    "paper_id": "2411.04368",
+    "benchmark_id": "simpleqa",
+    "score": 42.6,
+    "date": "2024-12-05",
+    "verified": true,
+    "protocol_notes": "Model: o1 (OpenAI reasoning model; date is public-availability date). Source: openai/simple-evals README (https://github.com/openai/simple-evals). F-score per the correct/incorrect/not_attempted protocol defined in 2411.04368. Score reported as percentage."
+  },
+  {
+    "paper_id": "2411.04368",
+    "benchmark_id": "simpleqa",
+    "score": 62.5,
+    "date": "2025-02-27",
+    "verified": true,
+    "protocol_notes": "Model: gpt-4.5-preview-2025-02-27. Source: openai/simple-evals README (https://github.com/openai/simple-evals). F-score per the correct/incorrect/not_attempted protocol defined in 2411.04368. Score reported as percentage."
+  }
+]

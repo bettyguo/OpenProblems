@@ -500,3 +500,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Pure metadata fix: no code, schema, route, or bundle changes. Build surface unchanged at **178 routes**; First Load JS shared chunk unchanged at 103 kB.
 - Smoke gates green: `pnpm validate-content` (191 files), `pnpm audit-content` (0 errors / 6 warnings — same Q32-expected set).
 - THINK artifact: `docs/thinking/2.6g-paper-title-audit.md`.
+
+#### Unit 2.6h — Leaderboard entries for hallucination-reduction (SimpleQA only)
+
+- Phase-2 hygiene follow-on. Closes one corner of the §13 deliverable "`entries.json` per problem; per-entry verified flag rendered" deferred by Unit 2.9 ("page wiring lands here; entries content goes live as curators populate per-problem `entries.json`"). Lands the first per-problem `entries.json` content into the repo.
+- **Scope-limited to 3 SimpleQA entries** sourced from [`openai/simple-evals`](https://github.com/openai/simple-evals) (OpenAI's official evaluation harness for the SimpleQA benchmark, primary-source-grade for OpenAI-attested scores):
+  - `gpt-4o-2024-08-06` → **40.1** (2024-08-06; model snapshot date embedded in the model name)
+  - `o1` → **42.6** (2024-12-05; OpenAI's public-availability date for o1)
+  - `gpt-4.5-preview-2025-02-27` → **62.5** (2025-02-27; the current top scorer in the simple-evals table)
+- All 3 entries set `verified: true` qualified by the leaderboard page's [inclusive-OR definition](../../app/problems/[slug]/leaderboard/page.tsx#L62-L64) — "Verified entries have been replicated or have explicit protocol notes". The OpenAI-sourced scores are not independently replicated but each entry carries explicit `protocol_notes` pointing to the simple-evals repo and the correct/incorrect/not_attempted protocol defined in paper 2411.04368.
+- Score scale: percentages (0–100), preserving the primary source's reported format verbatim (§15.6 defensible default; the benchmark declaration in `problem.yaml` doesn't pin a scale).
+- **3 of 4 declared benchmarks remain empty** (documented in the THINK doc):
+  - `truthfulqa-2026` — TruthfulQA abstract reports "truthful 58%" but the benchmark's declared metric is `truthful+informative` (a stricter conjunction; ~21% in the paper's body). Abstract-only fetch is metric-mismatched; full-PDF curation is needed. Additionally, `-2026` suffix implies a hypothetical refresh of the 2021 benchmark; that disambiguation is a separate curatorial decision.
+  - `halueval` — HaluEval abstract is methodological only. Headline numbers are in the paper's tables; full-PDF or [`RUCAIBox/HaluEval`](https://github.com/RUCAIBox/HaluEval) leaderboard ingestion would unblock.
+  - `facts-grounding` — FACTS Grounding is a 2024 DeepMind benchmark with no contributing paper in the repo. A future paper-ingest commit attaches.
+- No code, schema, route, or bundle changes. Build surface unchanged at **178 routes**; First Load JS shared chunk unchanged at 103 kB. The `/problems/hallucination-reduction/leaderboard` page now renders 3 entries on the `simpleqa` benchmark instead of empty-state across the board.
+- **Schema gap surfaced** (for Phase-3 work): `LeaderboardEntrySchema` lacks `model_name` and `score_scale`. Today's `paper_id` field serves dual duty (benchmark-defining paper + score-reporting paper) — `protocol_notes` carries the model identity. A Phase-3 schema refinement could split these out.
+- Smoke gates green: `pnpm validate-content` (192 files), `pnpm audit-content` (0 errors / 6 warnings — same Q32-expected set), `pnpm build` (178 routes; new `entries.json` doesn't add SSG paths).
+- THINK artifact: `docs/thinking/2.6h-entries-hallucination-reduction.md`.
