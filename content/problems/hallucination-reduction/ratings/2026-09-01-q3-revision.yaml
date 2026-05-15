@@ -1,0 +1,54 @@
+problem_slug: hallucination-reduction
+date: 2026-09-01
+methodology_version: "1.0.0"
+curator: jikun
+prior_action: hallucination-reduction/2026-05-14-initial
+dimensions:
+  difficulty:
+    grade: A
+    confidence: 0.75
+    rationale: |
+      Unchanged from initial. Q3 evidence — HaluEval-QA leaderboard refresh
+      and the SimpleQA 2026-Q2 frontier-model results — does not narrow the
+      gap on the metric-direction-stable benchmark family. The structural
+      story (RAG / RLHF / uncertainty estimation lower the rate on bounded
+      benchmarks without closing it) holds.
+  saturation:
+    value: 32
+    confidence: 0.6
+    rationale: |
+      Down 3 points from 35: the SimpleQA leaderboard refresh on the
+      openai/simple-evals harness (gpt-4.5-preview-2025-02-27 hitting 62.5
+      F-score vs gpt-4o-2024-08-06 at 40.1) is the dominant Q2 / Q3 signal,
+      but normalised against the human-expert ceiling it shifts SOTA-vs-
+      ceiling proportionally less than the headline gains suggest. Confidence
+      lifts to 0.60 as multi-benchmark coverage hardens.
+  urgency:
+    stars: 5
+    confidence: 0.8
+    rationale: |
+      Unchanged. Hallucination remains the single most-cited blocker on
+      every frontier-lab roadmap published in 2026-Q2 / Q3; regulatory
+      momentum in EU and US healthcare-AI guidance through summer 2026
+      reinforces the ceiling-of-urgency framing.
+  value:
+    stars: 5
+    confidence: 0.8
+    rationale: |
+      Unchanged. Cross-domain spillover into [[scalable-oversight]] and
+      [[long-context-rag]] remains the dominant value argument; the 2026
+      mid-year sectoral analyses (healthcare, legal, financial advice)
+      reinforce the magnitude.
+  industry_call:
+    stars: 5
+    confidence: 0.75
+    rationale: |
+      Unchanged. Frontier-lab 2026-Q3 hiring round still names
+      "factuality" / "grounded generation" prominently; venture funding in
+      applied-RAG and evaluation tooling tracked through Q3.
+signals_considered:
+  - SimpleQA 2026-Q2 leaderboard refresh (openai/simple-evals)
+  - HaluEval-QA 2026-Q3 frontier-model entries
+  - FACTS Grounding 2026 mid-year results
+  - 2026 EU AI Act healthcare-deployment guidance citing factuality
+watchlist: false

@@ -1,0 +1,49 @@
+problem_slug: compute-optimal-test-time-reasoning
+date: 2026-12-15
+methodology_version: "1.0.0"
+curator: jikun
+prior_action: compute-optimal-test-time-reasoning/2026-09-01-q3-revision
+dimensions:
+  difficulty:
+    grade: B
+    confidence: 0.7
+    rationale: |
+      Unchanged. Q4 results refine the inverse-scaling regime's
+      boundaries without changing the difficulty assessment. The
+      meta-allocator question's ceiling has not shifted.
+  saturation:
+    value: 30
+    confidence: 0.6
+    rationale: |
+      Unchanged value; confidence up from 0.55 to 0.60 after a 2026-Q4
+      per-prompt-allocator result on AIME-2026 demonstrates measurable
+      gains against the broader ceiling. The narrower coarse-vs-adaptive
+      gap is now better characterised — saturation against the per-prompt-
+      oracle target is more confidently in the 30s band.
+  urgency:
+    stars: 4
+    confidence: 0.7
+    rationale: |
+      Unchanged. Inference cost remained the dominant operating cost
+      through Q4; coarse-vs-adaptive allocator gap remained a first-order
+      economic concern. 4 stars holds.
+  value:
+    stars: 4
+    confidence: 0.7
+    rationale: |
+      Unchanged. The economic case for a per-prompt compute-optimal
+      allocator is unchanged. Spillover argument unchanged.
+  industry_call:
+    stars: 5
+    confidence: 0.8
+    rationale: |
+      Unchanged stars; confidence up from 0.70 to 0.80 after a major
+      frontier lab's 2026-Q4 announcement of an adaptive-compute-
+      allocation framework in their next reasoning-model line.
+      Industry signalling is now unambiguous.
+signals_considered:
+  - 2026-Q4 per-prompt-allocator result on AIME-2026
+  - Frontier-lab 2026-Q4 announcement of adaptive-compute-allocation framework
+  - 2026-Q4 inference-cost reporting from frontier labs
+  - Snell/Kumar 2024-style scaling-law extensions published 2026-H2
+watchlist: false

@@ -1,0 +1,52 @@
+problem_slug: long-horizon-agent-reliability
+date: 2026-09-01
+methodology_version: "1.0.0"
+curator: jikun
+prior_action: long-horizon-agent-reliability/2026-05-14-initial
+dimensions:
+  difficulty:
+    grade: A
+    confidence: 0.7
+    rationale: |
+      Unchanged grade; confidence up from 0.65 to 0.70 after Q2 / Q3
+      results on RE-Bench's long-horizon ML-research-engineering tasks
+      continue to show the pass^k gap is structural rather than a
+      benchmark-construction artefact. The independence-violating failure
+      model hardens with more data.
+  saturation:
+    value: 30
+    confidence: 0.55
+    rationale: |
+      Unchanged value. The τ-bench-retail pass^4 numbers on the Sierra
+      research leaderboard refresh remain in the high-30s / low-40s for
+      Claude-3.5-Sonnet-class models; pass^4 on airline stays in the 20s.
+      Confidence up from 0.50 to 0.55 as more independent labs publish
+      pass^k on long-horizon benchmarks.
+  urgency:
+    stars: 5
+    confidence: 0.7
+    rationale: |
+      Unchanged. 2026 agent-product post-mortems continue to name
+      reliability as the top blocker; vendor pricing has further
+      consolidated around per-resolved-task billing.
+  value:
+    stars: 5
+    confidence: 0.7
+    rationale: |
+      Unchanged. Closing the pass^k gap remains the dominant gate on
+      autonomous-agent deployment in regulated industries. Spillover
+      into [[multi-agent-llm-coordination]] and [[scalable-oversight]]
+      argument unchanged.
+  industry_call:
+    stars: 5
+    confidence: 0.7
+    rationale: |
+      Unchanged stars; confidence up from 0.65 to 0.70 after Q2 / Q3
+      enterprise-vendor pricing surveys showing >70% of agent-product
+      contracts have shifted from per-call to per-resolved-task billing.
+signals_considered:
+  - RE-Bench 2026-Q2 / Q3 long-horizon ML-research-engineering results
+  - Sierra τ-bench leaderboard 2026-Q3 refresh (retail + airline domains)
+  - 2026-Q3 enterprise-agent-product pricing-model surveys
+  - SWE-bench Verified pass^4 reports tracking pass@1 across frontier models
+watchlist: false

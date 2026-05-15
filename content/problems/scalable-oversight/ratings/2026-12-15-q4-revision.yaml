@@ -1,0 +1,51 @@
+problem_slug: scalable-oversight
+date: 2026-12-15
+methodology_version: "1.0.0"
+curator: jikun
+prior_action: scalable-oversight/2026-09-01-q3-revision
+dimensions:
+  difficulty:
+    grade: S
+    confidence: 0.65
+    rationale: |
+      Unchanged. The 2026-Q4 alignment-conference (NeurIPS Safe AI
+      workshop, ICLR alignment track previews) literature continues to
+      show partial wins without generalisation; the persistent-protocol-
+      under-capability-gulf requirement remains the binding constraint.
+  saturation:
+    value: 22
+    confidence: 0.55
+    rationale: |
+      Up from 18 to 22. Two 2026-Q4 sandwich-experiment results (one on
+      a debate-arena protocol over decomposed math reasoning, one on
+      iterated-amplification-style decomposition for code review) report
+      measurable narrow-domain wins that lift narrow-protocol-passing
+      coverage. Confidence held at 0.55: the wins are domain-specific
+      and don't transfer outside their evaluation surface.
+  urgency:
+    stars: 5
+    confidence: 0.7
+    rationale: |
+      Unchanged. The capability gulf on narrow domains continued to widen
+      through Q4 (mathematics olympiad gold-medal performance, parts of
+      computational biology). Ceiling-of-urgency argument unchanged.
+  value:
+    stars: 5
+    confidence: 0.7
+    rationale: |
+      Unchanged. The principled-deployment value argument is unchanged;
+      Q4 frontier-lab deployments in mathematics tutoring + scientific-
+      assistance pilots reinforce the spillover into adjacent problems.
+  industry_call:
+    stars: 4
+    confidence: 0.6
+    rationale: |
+      Unchanged. Frontier-lab Q4 alignment-team announcements continue
+      to name scalable oversight prominently; broader industry hiring
+      still skews adjacent. No shift on the 4-vs-5 gap.
+signals_considered:
+  - 2026-Q4 NeurIPS Safe AI workshop sandwich-experiment results
+  - Debate-arena protocol result over decomposed math reasoning (2026-Q4)
+  - Iterated-amplification decomposition for code review (2026-Q4)
+  - Frontier-lab Q4 mathematics-tutoring and scientific-assistance deployment pilots
+watchlist: true

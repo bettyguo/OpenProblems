@@ -1,0 +1,56 @@
+problem_slug: compute-optimal-test-time-reasoning
+date: 2026-09-01
+methodology_version: "1.0.0"
+curator: jikun
+prior_action: compute-optimal-test-time-reasoning/2026-05-14-initial
+dimensions:
+  difficulty:
+    grade: B
+    confidence: 0.7
+    rationale: |
+      Unchanged grade; confidence up from 0.65 to 0.70. The 2026-Q2 / Q3
+      inverse-scaling follow-on literature widens the inverse regime to
+      additional task surfaces (knowledge-intensive QA + some structured
+      math), making the loss surface more pathological than the initial
+      rating implied. B holds because per-prompt allocators on bounded
+      surfaces continue to work; not A because the meta-question's
+      ceiling has not shifted.
+  saturation:
+    value: 30
+    confidence: 0.55
+    rationale: |
+      Down from 35 to 30. The 2026-Q2 inverse-scaling-regime-widening
+      results reframe the ceiling against which saturation is computed:
+      a per-prompt-oracle target on a broader task surface is now the
+      defensible ceiling, and current allocators cover proportionally
+      less of it. Confidence held at 0.55; AIME-2026 / GPQA / HLE coverage
+      remains TODO(curate).
+  urgency:
+    stars: 4
+    confidence: 0.7
+    rationale: |
+      Unchanged. Inference cost remains the dominant operating cost; the
+      coarse-vs-per-prompt allocator gap is still a first-order economic
+      concern. 4 stars holds — a coarse global policy is still workable,
+      just expensive.
+  value:
+    stars: 4
+    confidence: 0.7
+    rationale: |
+      Unchanged. A working per-prompt compute-optimal allocator would
+      still unlock tens of percent inference savings or non-trivial
+      accuracy gains at fixed budget. Spillover into
+      [[long-horizon-agent-reliability]] argument unchanged.
+  industry_call:
+    stars: 5
+    confidence: 0.7
+    rationale: |
+      Unchanged. Mid-2026 frontier-lab inference-cost reports continue
+      to dominate budget cycles; "inference systems" hiring profile
+      surged further through 2026-Q3.
+signals_considered:
+  - 2026-Q2 inverse-scaling-regime-widening result on knowledge-intensive QA
+  - Mid-2026 per-prompt-allocator paper from a frontier-lab inference team
+  - 2026-Q3 inference-cost reports from frontier labs
+  - AIME-2026 + GPQA + HLE 2026-Q2 / Q3 leaderboard motion
+watchlist: false

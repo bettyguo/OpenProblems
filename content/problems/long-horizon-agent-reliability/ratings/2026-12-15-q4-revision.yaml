@@ -1,0 +1,53 @@
+problem_slug: long-horizon-agent-reliability
+date: 2026-12-15
+methodology_version: "1.0.0"
+curator: jikun
+prior_action: long-horizon-agent-reliability/2026-09-01-q3-revision
+dimensions:
+  difficulty:
+    grade: A
+    confidence: 0.75
+    rationale: |
+      Unchanged grade; confidence up from 0.70 to 0.75. The Q4 long-horizon
+      benchmark surface (τ-bench domain expansion to insurance + telecom,
+      RE-Bench v2 announcement) consistently shows the pass^k structural
+      gap holds across new domains, lifting confidence on the A grade
+      while keeping the door open to S-class re-evaluation if a structural
+      result lands in 2027.
+  saturation:
+    value: 30
+    confidence: 0.55
+    rationale: |
+      Unchanged value + confidence. Q4 leaderboard motion is incremental;
+      no fundamental shift in the pass^k-vs-pass@1 ratio. The next
+      signal-of-interest is the Q1-2027 release of self-correcting agent
+      methods promised by two frontier labs at their 2026-Q4 readouts.
+  urgency:
+    stars: 5
+    confidence: 0.8
+    rationale: |
+      Unchanged stars; confidence up from 0.70 to 0.80 after the 2026-Q4
+      industry status reports universally cite agent reliability as the
+      top P0 in customer deployments. Two regulators (US healthcare,
+      EU financial services) have signalled forthcoming deployment-
+      gating frameworks pegged to reliability metrics.
+  value:
+    stars: 5
+    confidence: 0.7
+    rationale: |
+      Unchanged. The economic case remains: closing the pass^k gap
+      directly unlocks autonomous-agent deployment value. Spillover
+      argument unchanged.
+  industry_call:
+    stars: 5
+    confidence: 0.7
+    rationale: |
+      Unchanged. Frontier-lab Q4 hiring continues to prioritise agent
+      reliability over raw capability; enterprise-vendor pricing now
+      almost universally per-resolved-task on agent products.
+signals_considered:
+  - τ-bench 2026-Q4 domain expansion (insurance + telecom)
+  - RE-Bench v2 announcement at 2026-Q4 frontier-lab readouts
+  - 2026-Q4 US healthcare + EU financial-services agent-deployment regulatory signals
+  - Q1-2027 self-correcting-agent method roadmap announcements
+watchlist: false

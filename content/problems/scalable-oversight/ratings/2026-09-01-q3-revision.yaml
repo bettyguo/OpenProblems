@@ -1,0 +1,55 @@
+problem_slug: scalable-oversight
+date: 2026-09-01
+methodology_version: "1.0.0"
+curator: jikun
+prior_action: scalable-oversight/2026-05-14-initial
+dimensions:
+  difficulty:
+    grade: S
+    confidence: 0.65
+    rationale: |
+      Unchanged grade; confidence up from 0.60 to 0.65 after 2026-Q2 / Q3
+      sandwich-experiment follow-ons continue to show partial wins on
+      narrow QA-style protocols without generalisation to long-form or to
+      tasks where the judge cannot evaluate intermediate steps. The S grade
+      is reinforced by the persistence of the capability-gulf-scaling
+      requirement across multiple replications.
+  saturation:
+    value: 18
+    confidence: 0.55
+    rationale: |
+      Unchanged value; confidence up from 0.50 to 0.55 after multiple
+      2026-Q2 / Q3 sandwich experiments converge on a similar
+      qualitative-low band. The hypothetical-protocol-passing-GPQA-Diamond
+      ceiling remains the right normalisation; no measurable shift on
+      that surface.
+  urgency:
+    stars: 5
+    confidence: 0.7
+    rationale: |
+      Unchanged. Frontier models continued to extend past human-expert
+      frontier on narrow domains through 2026-Q3 (mathematics olympiad
+      coverage, parts of computational biology). The principled-
+      supervision gap remains at ceiling-of-urgency.
+  value:
+    stars: 5
+    confidence: 0.7
+    rationale: |
+      Unchanged. A scalable oversight result on non-trivial capability
+      gulf would unlock principled frontier-model deployment in
+      domains where the human supervisor is not authoritative. Spillover
+      argument unchanged.
+  industry_call:
+    stars: 4
+    confidence: 0.6
+    rationale: |
+      Unchanged. Scalable oversight remains on every frontier-lab
+      alignment-team roadmap; industry hiring still skews to adjacent
+      topics (RLHF, evals, jailbreak resistance) more than scalable
+      oversight per se. The 4-vs-5 gap holds.
+signals_considered:
+  - 2026-Q2 / Q3 sandwich experiment replications on debate / decomposition protocols
+  - GPQA-Diamond 2026 results on frontier models
+  - 2026 alignment-team roadmap publications from frontier labs
+  - Industry alignment-research hiring tracking through 2026-Q3
+watchlist: true

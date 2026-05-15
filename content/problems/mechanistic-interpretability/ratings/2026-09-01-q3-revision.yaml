@@ -1,0 +1,52 @@
+problem_slug: mechanistic-interpretability
+date: 2026-09-01
+methodology_version: "1.0.0"
+curator: jikun
+prior_action: mechanistic-interpretability/2026-05-14-initial
+dimensions:
+  difficulty:
+    grade: A
+    confidence: 0.7
+    rationale: |
+      Unchanged grade; confidence up from 0.65 to 0.70 after the 2026
+      SAEBench ranking refresh shows continued progress on feature-
+      inventory coverage at GPT-3.5-class scale, but the audit-readiness
+      gap remains. A holds; S not warranted (the small-model circuit
+      playbook still proves tractability in principle).
+  saturation:
+    value: 28
+    confidence: 0.55
+    rationale: |
+      Up from 25 to 28. Q2 / Q3 SAE-based circuit-recovery progress at
+      GPT-3.5-class scale lifts coverage proportionally against the
+      "audit a deployed model" ceiling. Confidence up from 0.50 to 0.55
+      as SAEBench rankings stabilise across multiple independent
+      replications.
+  urgency:
+    stars: 4
+    confidence: 0.65
+    rationale: |
+      Unchanged. Sustained-4-stars argument holds: deployment continues
+      without auditing, marginal urgency dependent on deceptive-
+      alignment failure-mode timing. No 2026-Q2 / Q3 signal shifts the
+      crisis-horizon framing.
+  value:
+    stars: 5
+    confidence: 0.7
+    rationale: |
+      Unchanged. Faithful frontier-scale interpretability remains a
+      step-change for [[scalable-oversight]] and alignment training.
+      Among the highest-value alignment results; value argument unchanged.
+  industry_call:
+    stars: 4
+    confidence: 0.6
+    rationale: |
+      Unchanged. Frontier-lab interpretability teams continued hiring
+      through 2026-Q2 / Q3; deployment teams have not yet adopted
+      interpretability outputs as routine gating. The 4-vs-5 gap holds.
+signals_considered:
+  - 2026 SAEBench mid-year ranking refresh
+  - Circuit-recovery progress at GPT-3.5-class scale (2026-Q2 / Q3)
+  - 2026-H1 alignment / safety status reports on auditing readiness
+  - Interpretability-team hiring tracking through 2026-Q3
+watchlist: false

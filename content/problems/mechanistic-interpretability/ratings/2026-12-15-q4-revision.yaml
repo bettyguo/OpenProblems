@@ -1,0 +1,47 @@
+problem_slug: mechanistic-interpretability
+date: 2026-12-15
+methodology_version: "1.0.0"
+curator: jikun
+prior_action: mechanistic-interpretability/2026-09-01-q3-revision
+dimensions:
+  difficulty:
+    grade: A
+    confidence: 0.7
+    rationale: |
+      Unchanged. Q4 SAEBench updates and circuit-recovery results refine
+      the field's understanding without changing the difficulty
+      assessment. The audit-readiness gap remains the binding
+      constraint at frontier scale.
+  saturation:
+    value: 28
+    confidence: 0.55
+    rationale: |
+      Unchanged. Q4 motion is incremental; no fundamental shift in
+      audit-readiness coverage against the deployed-model-auditing
+      ceiling.
+  urgency:
+    stars: 4
+    confidence: 0.65
+    rationale: |
+      Unchanged. Sustained-4-stars argument holds through Q4. No crisis-
+      horizon signal to lift to 5.
+  value:
+    stars: 5
+    confidence: 0.7
+    rationale: |
+      Unchanged. Value argument unchanged through Q4.
+  industry_call:
+    stars: 4
+    confidence: 0.55
+    rationale: |
+      Unchanged stars; confidence DOWN from 0.60 to 0.55 after a
+      2026-Q4 published reassessment from a frontier-lab interpretability
+      team questions whether SAE-based feature inventories will translate
+      to production auditing on the timeline industry hiring implies.
+      The reassessment is contested but warrants the watchlist flag.
+signals_considered:
+  - 2026-Q4 published reassessment of SAE-to-production-auditing translation
+  - Frontier-lab interpretability-team published roadmap revisions (2026-Q4)
+  - End-of-year SAEBench rankings (2026-Q4)
+  - Faithfulness-gap re-evaluation papers from 2026-H2
+watchlist: true

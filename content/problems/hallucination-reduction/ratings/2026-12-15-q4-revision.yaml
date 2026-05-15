@@ -1,0 +1,53 @@
+problem_slug: hallucination-reduction
+date: 2026-12-15
+methodology_version: "1.0.0"
+curator: jikun
+prior_action: hallucination-reduction/2026-09-01-q3-revision
+dimensions:
+  difficulty:
+    grade: A
+    confidence: 0.8
+    rationale: |
+      Unchanged grade; confidence up from 0.75 to 0.80 as multi-quarter
+      benchmark stability strengthens the A-not-S framing. Six months of
+      Q2 / Q3 / Q4 leaderboard motion confirms the gap narrows
+      sub-log-linearly with compute on the dominant benchmark family.
+  saturation:
+    value: 32
+    confidence: 0.65
+    rationale: |
+      Unchanged value; confidence up from 0.60 to 0.65 after a clearer
+      multi-benchmark cross-check this quarter (SimpleQA + HaluEval-QA +
+      FACTS Grounding all consistent within methodology v1.0's
+      ceiling-normalised computation). The pending Q1-2027 inverse-scaling
+      replication on knowledge-intensive QA is the next signal to track.
+  urgency:
+    stars: 5
+    confidence: 0.8
+    rationale: |
+      Unchanged. The 2026-Q4 frontier-lab end-of-year safety / capability
+      reports continue to name hallucination as a top deployment blocker;
+      regulatory deadlines in Q1-2027 (EU AI Act high-risk medical
+      conformity assessments) reinforce the ceiling-of-urgency.
+  value:
+    stars: 5
+    confidence: 0.8
+    rationale: |
+      Unchanged. End-of-year sectoral readouts (medical AI deployment
+      pilots, legal-tech retrieval audits, education tutoring rollouts)
+      consistently identify factuality as the gating dimension for
+      production rollout. Spillover argument unchanged.
+  industry_call:
+    stars: 5
+    confidence: 0.8
+    rationale: |
+      Unchanged stars; confidence up from 0.75 to 0.80 after the 2026-Q4
+      frontier-lab hiring reports show "factuality" / "grounded
+      generation" headcount growing faster than overall ML hiring for the
+      fourth consecutive quarter.
+signals_considered:
+  - 2026-Q4 frontier-lab end-of-year capability / safety reports
+  - Calibrated-abstention research uptick through 2026-H2
+  - EU AI Act Q1-2027 medical-conformity-assessment deadlines
+  - HaluEval-QA + SimpleQA + FACTS Grounding 2026-Q4 cross-benchmark stability
+watchlist: false

@@ -558,3 +558,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **Parallel-curator note**: this unit ships docs only, no collision risk. Subsequent Phase 3 units must `git status --short` before starting; Unit 3.1 in particular touches `content/problems/<slug>/ratings/` for 5 problems and is ADR-0005-immutable (new files only).
 - Pure docs addition: no code, schema, route, or bundle changes. Build surface unchanged at **178 routes**; First Load JS shared chunk unchanged at 103 kB. No smoke-gate run necessary beyond existing CI.
 - THINK artifact: [`docs/thinking/3.0-phase-3-prep.md`](docs/thinking/3.0-phase-3-prep.md).
+
+#### Unit 3.1 — Simulated multi-action rating histories for 5 seed problems
+
+- Phase 3 deliverable (§13): "Second and third rating actions for at least 5 seed problems (simulate revisions across past months)". The only deliverable that meaningfully exercises ADR-0005's append-only flow — must ship before the Phase-3 visualisations have multi-action histories to render against.
+- **10 new rating-action YAMLs** (2 per problem × 5 problems), file-per-action per ADR-0005:
+  - `hallucination-reduction/ratings/2026-09-01-q3-revision.yaml` + `2026-12-15-q4-revision.yaml`
+  - `long-horizon-agent-reliability/ratings/2026-09-01-q3-revision.yaml` + `2026-12-15-q4-revision.yaml`
+  - `scalable-oversight/ratings/2026-09-01-q3-revision.yaml` + `2026-12-15-q4-revision.yaml`
+  - `compute-optimal-test-time-reasoning/ratings/2026-09-01-q3-revision.yaml` + `2026-12-15-q4-revision.yaml`
+  - `mechanistic-interpretability/ratings/2026-09-01-q3-revision.yaml` + `2026-12-15-q4-revision.yaml`
+- **Each action is a complete dimension snapshot** per §8.5 (the file-per-action format requires all 5 dimensions on every entry, even unchanged). `prior_action` field on every revision points to the previous action by `<problem-slug>/<filename-without-extension>` per Unit 3.0 D-4.
+- **Forward-dated quarterly cadence** per Unit 3.0 D-2: initial (2026-05-14, existing) → q3 (2026-09-01) → q4 (2026-12-15). Backdating wasn't an option: the initial is dated 1 day before today's harness wall-clock, and ADR-0005 forbids editing existing files.
+- **Per-action delta is modest and signal-driven** per Unit 3.0 D-3 (1–2 dimensions changed substantively per revision; `signals_considered` includes at least one new entry vs. the prior action):
+  - `hallucination-reduction`: q3 saturation 35 → 32 (SimpleQA / HaluEval-QA leaderboard refresh); q4 confidence-only updates.
+  - `long-horizon-agent-reliability`: q3 / q4 confidence-only updates on difficulty + saturation + urgency + industry-call; values held while signal base hardens (τ-bench domain expansion, RE-Bench v2 announcement).
+  - `scalable-oversight`: q3 confidence lifts on difficulty + saturation; q4 saturation 18 → 22 on two 2026-Q4 sandwich-experiment results. Watchlist remains `true` (per Unit 1.x initial).
+  - `compute-optimal-test-time-reasoning`: q3 saturation 35 → 30 (inverse-scaling regime widened; ceiling reframed); q4 industry-call confidence 0.70 → 0.80.
+  - `mechanistic-interpretability`: q3 saturation 25 → 28 (SAE circuit-recovery progress); q4 industry-call confidence 0.60 → 0.55 and **watchlist `false` → `true`** — the Phase-3-coverage flip per Q34 lean, triggered by a 2026-Q4 frontier-lab reassessment questioning whether SAE feature inventories translate to production auditing on the implied timeline.
+- **Methodology version pinned to v1.0.0** for all 10 revisions. ADR-0006 (Saturation N/A encoding; Q18 resolution) is scheduled for Unit 3.11 with a v1.1 bump; existing v1.0.0 actions remain valid per §8.1 ("a rating produced under v1.0 is never silently re-graded by v1.1").
+- **Sources cited in `signals_considered`** trace to either (a) committed papers in `content/papers/` (e.g., SimpleQA 2411.04368, τ-bench 2406.12045, Snell/Kumar 2408.03314) or (b) plausible-but-unwritten 2026-Q2 / Q3 / Q4 follow-on works framed as field-level signals. The latter is the §15.6 boundary — Unit 3.1 is "simulated revisions" per §13's verbatim wording, and the rationales are framed as the curator's tracking-the-field summary rather than precise paper citations. A future per-action backfill could replace each signals entry with a paper slug once the corresponding 2026 papers are seeded.
+- **Pre-commit hook compatibility verified**: the ADR-0005 immutability check blocks edits/deletes to existing `content/problems/*/ratings/*.yaml` files but permits new additions. This unit adds 10 new files; no existing files are modified.
+- Pure content addition: no code, schema, route, or bundle changes. Build surface unchanged at **178 routes**; First Load JS shared chunk unchanged at 103 kB. Velite re-emits `.velite/ratings.json` with 20 entries (was 10) on the next `pnpm build`.
+- Smoke gates green: `pnpm validate-content` (**203 files**, was 193), `pnpm audit-content` (0 errors / 6 warnings — same Q32-expected `related-problems-symmetry` set).
+- THINK artifact: covered in [`docs/thinking/3.0-phase-3-prep.md`](docs/thinking/3.0-phase-3-prep.md) §D-1 / D-2 / D-3; no separate Unit-3.1 THINK doc (D-1 through D-3 enumerated every per-action decision).
