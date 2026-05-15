@@ -243,6 +243,6 @@ At viewport widths `< 640px` (mobile), 30+ force-layout nodes overlap meaningful
 
 ## Q40. ADR-0007 scope
 
-**Status:** decided-as-lean · **Surfaced:** Unit 4.0 THINK · **Blocks:** Unit 4.11 ADR shape.
+**Status:** decided · **Surfaced:** Unit 4.0 THINK · **Resolved:** Unit 4.11 ([`docs/adr/0007-domainmap-rendering.md`](./docs/adr/0007-domainmap-rendering.md), accepted 2026-05-15).
 
-ADR-0007 ships after Unit 4.2 to record the realized DomainMap rendering decisions. Two decision-clusters could plausibly split into separate ADRs: (a) SVG-vs-Canvas-vs-HTML-CSS, (b) the D3 sub-package import policy (tree-shaken vs umbrella). Lean: **single ADR covering both** — they form one decision-cluster ("how we render force graphs in this codebase") and splitting adds bureaucratic overhead without architectural value.
+ADR-0007 ships after Unit 4.2 to record the realized DomainMap rendering decisions. Two decision-clusters could plausibly split into separate ADRs: (a) SVG-vs-Canvas-vs-HTML-CSS, (b) the D3 sub-package import policy (tree-shaken vs umbrella). Lean was: single ADR covering both. **Confirmed in Unit 4.11**: ADR-0007 covers both as a single decision-cluster ("how we render force graphs in this codebase"); splitting would add bureaucratic overhead without architectural value.

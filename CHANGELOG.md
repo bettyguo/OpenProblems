@@ -1071,3 +1071,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - THINK artifact: `docs/thinking/4.10-issue-template-rating-challenge.md`.
 - Smoke gates: `pnpm validate-content` (203 files unchanged), `pnpm typecheck` (clean), `pnpm test` (190/190 unchanged). `pnpm build` not re-run. Manual smoke (open all 4 templates in the GitHub UI on a non-main branch and verify field rendering + title prefixes) deferred to Unit 4.13 acceptance gate per Unit 4.0.
 
+#### Unit 4.11 — ADR-0007: DomainMap rendering target & D3 import policy
+
+- Records the realized decisions from the parallel session's Unit 4.2 DomainMap implementation (`be29236`). Per ADR README convention, ADRs document what shipped, not what was sketched — the constants and import surface in ADR-0007 mirror `components/viz/DomainMap/index.tsx` at HEAD.
+- **Closes [OPEN_QUESTIONS Q40](./OPEN_QUESTIONS.md#q40-adr-0007-scope)** (single ADR covering SVG-vs-Canvas + D3-import-policy as one decision-cluster). Status flipped from `decided-as-lean` to `decided`.
+- **4 decisions documented**:
+  - **D-A — Render target = SVG**, not Canvas, not HTML/CSS. Inherits Phase-3 a11y plumbing pattern.
+  - **D-B — D3 surface = tree-shaken sub-packages**. `d3-force` imported; `d3-selection` installed-but-unused (reserved for the drag follow-on); `d3-scale` and `d3-zoom` not installed; umbrella `d3` forbidden.
+  - **D-C — Deterministic SSR layout** via pre-seeded `x` / `y` on a circle around viewport center. Eliminates `Math.random()` drift; no hydration-mismatch surface for the future drag follow-on. Locked by `render(props) === render(props)` test (Unit 4.2 `index.test.tsx`).
+  - **D-D — Tuning constants table** (realized at Unit 4.2): `VIEW_W = 600`, `VIEW_H = 420`, `LINK_DISTANCE = 60`, `CHARGE_STRENGTH = -180`, `CENTER_STRENGTH = 0.05`, `N_TICKS = 300`, `RADIUS_K_PROBLEM = 5`, `RADIUS_K_SUBDOMAIN = 5.5`, `RADIUS_K_DOMAIN = 7`. Re-tuning trigger: content scale 3× (Phase-5 ingest).
+- **ADR README index updated** with ADR-0006 (which shipped in Unit 3.11 but the README index wasn't refreshed at the time) **and** ADR-0007. Cleanup paid forward.
+- **5 considered options** documented with explicit Pros/Cons per the ADR README's authoring rule: SVG+tree-shaken (chosen), Canvas+tree-shaken, SVG+umbrella `d3`, HTML/CSS+tree-shaken, React force-graph wrapper.
+- **Status: accepted** on the authoring commit. The decisions were realized + shipped + tested at HEAD before the ADR landed; authoring a pre-decision `proposed` ADR would be an antipattern.
+- **Parallel-curator state**: HEAD = `81e4459` post-Unit-4.10. No collision. Note: the parallel session staged a `.gitignore` change adding the leftover `docs/SESSION_HANDOFF_phase3_close.md` to the ignore list — left untouched in this commit; the parallel session ships it on their schedule.
+- THINK artifact: `docs/thinking/4.11-adr-domainmap-rendering.md`.
+- Pure docs unit — no app, schema, or test code touched.
+- Smoke gates: `pnpm typecheck` (clean), `pnpm test` (190/190 unchanged), `pnpm validate-content` (203 files unchanged). `pnpm build` not re-run.
+
