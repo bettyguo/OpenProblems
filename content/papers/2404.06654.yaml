@@ -1,6 +1,14 @@
 id: "2404.06654"
 title: "RULER: What's the Real Context Size of Your Long-Context Language Models?"
-authors: []
+authors:
+  - cheng-ping-hsieh
+  - simeng-sun
+  - samuel-kriman
+  - shantanu-acharya
+  - dima-rekesh
+  - fei-jia
+  - yang-zhang
+  - boris-ginsburg
 institutions:
   - nvidia
 venue: COLM 2024

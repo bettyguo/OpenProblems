@@ -1,6 +1,11 @@
 id: "2211.00593"
 title: "Interpretability in the Wild: a Circuit for Indirect Object Identification in GPT-2 small"
-authors: []
+authors:
+  - kevin-wang
+  - alexandre-variengien
+  - arthur-conmy
+  - buck-shlegeris
+  - jacob-steinhardt
 institutions:
   - uc-berkeley
 venue: NeurIPS 2022

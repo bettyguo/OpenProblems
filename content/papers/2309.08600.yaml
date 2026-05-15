@@ -1,6 +1,11 @@
 id: "2309.08600"
 title: "Sparse Autoencoders Find Highly Interpretable Features in Language Models"
-authors: []
+authors:
+  - hoagy-cunningham
+  - aidan-ewart
+  - logan-riggs
+  - robert-huben
+  - lee-sharkey
 institutions: []
 venue: arXiv 2023
 year: 2023

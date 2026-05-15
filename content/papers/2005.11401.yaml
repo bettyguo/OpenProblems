@@ -1,6 +1,18 @@
 id: "2005.11401"
 title: "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks"
-authors: []
+authors:
+  - patrick-lewis
+  - ethan-perez
+  - aleksandra-piktus
+  - fabio-petroni
+  - vladimir-karpukhin
+  - naman-goyal
+  - heinrich-kuttler
+  - mike-lewis
+  - wen-tau-yih
+  - tim-rocktaschel
+  - sebastian-riedel
+  - douwe-kiela
 institutions:
   - meta-fair
 venue: NeurIPS 2020

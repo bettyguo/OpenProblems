@@ -1,6 +1,14 @@
 id: "2311.12022"
 title: "GPQA: A Graduate-Level Google-Proof Q&A Benchmark"
-authors: []
+authors:
+  - david-rein
+  - betty-li-hou
+  - asa-cooper-stickland
+  - jackson-petty
+  - richard-yuanzhe-pang
+  - julien-dirani
+  - julian-michael
+  - samuel-r-bowman
 institutions:
   - anthropic
 venue: COLM 2024

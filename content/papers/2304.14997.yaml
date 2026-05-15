@@ -1,6 +1,11 @@
 id: "2304.14997"
 title: "Towards Automated Circuit Discovery for Mechanistic Interpretability"
-authors: []
+authors:
+  - arthur-conmy
+  - augustine-n-mavor-parker
+  - aengus-lynch
+  - stefan-heimersheim
+  - adria-garriga-alonso
 institutions: []
 venue: NeurIPS 2023
 year: 2023

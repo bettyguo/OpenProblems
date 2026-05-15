@@ -1,6 +1,9 @@
 id: "1805.00899"
 title: "AI Safety via Debate"
-authors: []
+authors:
+  - geoffrey-irving
+  - paul-christiano
+  - dario-amodei
 institutions:
   - openai
 venue: arXiv 2018

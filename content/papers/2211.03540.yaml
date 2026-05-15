@@ -1,6 +1,52 @@
 id: "2211.03540"
 title: "Measuring Progress on Scalable Oversight for Large Language Models"
-authors: []
+authors:
+  - samuel-r-bowman
+  - jeeyoon-hyun
+  - ethan-perez
+  - edwin-chen
+  - craig-pettit
+  - scott-heiner
+  - kamile-lukosiute
+  - amanda-askell
+  - andy-jones
+  - anna-chen
+  - anna-goldie
+  - azalia-mirhoseini
+  - cameron-mckinnon
+  - christopher-olah
+  - daniela-amodei
+  - dario-amodei
+  - dawn-drain
+  - dustin-li
+  - eli-tran-johnson
+  - jackson-kernion
+  - jamie-kerr
+  - jared-mueller
+  - jeffrey-ladish
+  - joshua-landau
+  - kamal-ndousse
+  - liane-lovitt
+  - nelson-elhage
+  - nicholas-schiefer
+  - nicholas-joseph
+  - noemi-mercado
+  - nova-dassarma
+  - robin-larson
+  - sam-mccandlish
+  - sandipan-kundu
+  - scott-johnston
+  - shauna-kravec
+  - sheer-el-showk
+  - stanislav-fort
+  - timothy-telleen-lawton
+  - tom-brown
+  - tom-henighan
+  - tristan-hume
+  - yuntao-bai
+  - zac-hatfield-dodds
+  - ben-mann
+  - jared-kaplan
 institutions:
   - anthropic
 venue: arXiv 2022

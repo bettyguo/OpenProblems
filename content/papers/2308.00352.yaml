@@ -1,6 +1,21 @@
 id: "2308.00352"
 title: "MetaGPT: Meta Programming for A Multi-Agent Collaborative Framework"
-authors: []
+authors:
+  - sirui-hong
+  - mingchen-zhuge
+  - jiaqi-chen
+  - xiawu-zheng
+  - yuheng-cheng
+  - ceyao-zhang
+  - jinlin-wang
+  - zili-wang
+  - steven-ka-shing-yau
+  - zijuan-lin
+  - liyang-zhou
+  - chenyu-ran
+  - lingfeng-xiao
+  - chenglin-wu
+  - jurgen-schmidhuber
 institutions: []
 venue: ICLR 2024
 year: 2023
