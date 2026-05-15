@@ -742,3 +742,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **Where this renders**: not wired into a page yet — Unit 3.9 (`/problems/[slug]/history` composition) is the consumer. SaturationCurve ships isolated so Storybook stories cover every state independently before page integration.
 - Pure additive code: no route, schema, or bundle changes. Build surface unchanged at **188 routes**; First Load JS shared chunk unchanged at 103 kB.
 - Smoke gates green: `pnpm test` (**125/125 across 18 files**, was 110/16; +9 SaturationCurve unit tests + 6 Storybook composition tests picked up by the vitest+storybook plugin), `pnpm typecheck` (clean), `pnpm build` (188 routes).
+
+#### Unit 3.7 — `MoversBoard` viz + `/trending` page composition (§11 catalog item 3)
+
+- Phase-3 deliverable. Replaces the Phase-0 / Phase-1 stub at `app/trending/page.tsx` with a real composition page reading from Unit 3.2's loader and rendering the `MoversBoard` viz.
+- **New component** (`components/viz/MoversBoard/`):
+  - `index.tsx` — Bloomberg-style table with one row per rating action. Columns: Date · Problem · Change (primary delta pill) · Watchlist (transition pill) · Curator · Saturation (inline 80×24 SVG sparkline).
+  - Sparkline component is inline (not its own catalog entry) — same `--color-chart-2` hue as `SaturationCurve`, same ADR-0006 handling (hollow circle for qualitative points; line breaks around them).
+  - `index.stories.tsx` — 3 stories: `Q4Cohort` (5 rows = Unit 3.1 q4 batch with the mech-interp watchlist flip visible), `SingleWatchlistFlip` (mech-interp alone, 30-day window), `Empty` (empty-state section).
+  - `index.test.tsx` — 10 tests covering empty-state copy, `<tr>` count, primary-delta pill, watchlist transition pill, deep-link href shape, sparkline SVG presence, single-point sparkline path-segment absence, mixed numeric + qualitative sparkline path-segment absence, `windowDays` thread-through, screen-reader caption.
+  - `README.md` — data shape, output, a11y, story map.
+- **Component is presentational** — `/trending`'s page handler does:
+  1. `recentRatingActions(90)` filters via Unit 3.2's loader (default 90-day window per Unit 3.0 D-8 — anchored at the most-recent action date, not today's wall-clock).
+  2. For each windowed action, find its chronological predecessor across **all** (unwindowed) actions on the same problem — the prior may sit outside the window, but the diff vs that prior is what makes the row meaningful.
+  3. `diffRatingAction(action, prior)` extracts the primary delta + watchlist transition.
+  4. `ratingActionsForProblem(slug).reverse()` provides the full chronological saturation history for the per-row sparkline (sparklines are NOT windowed — they show the whole arc).
+  5. Pass the shaped `MoverRow[]` to `<MoversBoard rows={rows} windowDays={90} />`.
+- **A11y** (Phase-3 acceptance gate prep): `<section aria-label>` wrapping the empty-state and table, `<caption className="sr-only">` on the `<table>` explaining the contents, `<time datetime>` per date cell, `<svg role="img" aria-label>` per sparkline. The table IS the fallback for the sparkline column — there's no chart-only variant.
+- **`/trending` page route** flips from `○ Static stub` to `○ Static real`. Build surface unchanged at **188 routes**; First Load JS shared chunk unchanged at 103 kB (the sparkline SVG is server-rendered inline).
+- **Q34 disposition**: the mech-interp `2026-12-15-q4-revision` watchlist flip (from Unit 3.1) IS visible on the rendered MoversBoard as a `false → true` pill. Phase-3 acceptance gate's MoversBoard-renders-watchlist-add criterion is met.
+- Smoke gates green: `pnpm test` (**138/138 across 20 files**, was 125/18; +10 MoversBoard unit tests + 3 Storybook composition tests), `pnpm typecheck` (clean), `pnpm build` (188 routes; `/trending` is `○ Static`).
