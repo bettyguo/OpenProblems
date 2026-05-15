@@ -1,0 +1,18 @@
+id: "2212.12794"
+title: "GraphCast: Learning skillful medium-range global weather forecasting"
+authors: []
+institutions:
+  - google-deepmind
+venue: Science 2023
+year: 2022
+arxiv_id: "2212.12794"
+tldr: |
+  Trains a graph neural network surrogate for global medium-range weather forecasting on ERA5,
+  reporting parity-or-better skill than the operational IFS across most evaluated variables at
+  lead times up to 10 days, with inference costs orders of magnitude lower than classical NWP.
+  Anchors the operator-learning foundation-model story for atmospheric dynamics.
+contributions:
+  - problem_slug: operator-learning-foundation-models
+    benchmark_id: weatherbench
+    metric: rmse-vs-ifs
+    evidence: https://arxiv.org/abs/2212.12794

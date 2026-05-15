@@ -1,0 +1,17 @@
+id: "2305.10160"
+title: "Stop Uploading Test Data in Plain Text: Practical Strategies for Mitigating Data Contamination by Large Language Models"
+authors: []
+institutions: []
+venue: EMNLP 2023
+year: 2023
+arxiv_id: "2305.10160"
+tldr: |
+  Proposes a set of practical mitigation strategies for protecting benchmark integrity against
+  large-scale web-trained models — including hidden splits, encryption, and refresh cadences.
+  Widely cited in the 2024-2026 audit literature on agent-benchmark gameability and informs the
+  held-out-replication benchmark family.
+contributions:
+  - problem_slug: benchmark-integrity
+    benchmark_id: held-out-replication
+    metric: rank-correlation-vs-public
+    evidence: https://arxiv.org/abs/2305.10160

@@ -1,0 +1,15 @@
+id: "1909.03004"
+title: "Show Your Work: Improved Reporting of Experimental Results"
+authors: []
+institutions: []
+venue: EMNLP 2019
+year: 2019
+arxiv_id: "1909.03004"
+tldr: |
+  Argues that single-point reported results obscure both true model rankings and the effort behind
+  them, and proposes "expected validation performance" curves as a function of hyperparameter
+  budget. One of the foundational methodology papers on the reporting-hygiene side of benchmark
+  integrity, predating the modern data-contamination wave.
+contributions:
+  - problem_slug: benchmark-integrity
+    evidence: https://arxiv.org/abs/1909.03004

@@ -1,0 +1,17 @@
+id: "2211.02556"
+title: "Pangu-Weather: A 3D High-Resolution Model for Fast and Accurate Global Weather Forecast"
+authors: []
+institutions: []
+venue: Nature 2023
+year: 2022
+arxiv_id: "2211.02556"
+tldr: |
+  Trains a 3D Earth-specific transformer on 39 years of reanalysis data and reports forecast skill
+  exceeding the operational ECMWF integrated forecast system on a broad set of variables at the
+  medium range, at inference cost orders of magnitude lower. One of three canonical 2022-2023
+  weather-surrogate wins (alongside GraphCast and FourCastNet).
+contributions:
+  - problem_slug: operator-learning-foundation-models
+    benchmark_id: weatherbench
+    metric: rmse-vs-ifs
+    evidence: https://arxiv.org/abs/2211.02556

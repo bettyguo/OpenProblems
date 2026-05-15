@@ -1,0 +1,15 @@
+id: "2306.15006"
+title: "DNABERT-2: Efficient Foundation Model and Benchmark For Multi-Species Genome"
+authors: []
+institutions: []
+venue: arXiv 2023
+year: 2023
+arxiv_id: "2306.15006"
+tldr: |
+  Successor to DNABERT trained on multi-species genomic data with byte-pair-encoded nucleotides
+  and an efficient transformer backbone. Releases a benchmark suite (GUE) spanning 28 datasets
+  across 7 tasks; commonly cited alongside Nucleotide Transformer as one of the two anchor genome
+  foundation models of 2023.
+contributions:
+  - problem_slug: genome-foundation-models
+    evidence: https://arxiv.org/abs/2306.15006

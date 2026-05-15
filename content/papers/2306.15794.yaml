@@ -1,0 +1,18 @@
+id: "2306.15794"
+title: "The Nucleotide Transformer: Building and Evaluating Robust Foundation Models for Human Genomics"
+authors: []
+institutions: []
+venue: arXiv 2023
+year: 2023
+arxiv_id: "2306.15794"
+tldr: |
+  Trains a family of foundation models on multi-species genomic sequence at the multi-billion-token
+  scale and evaluates them across 18 downstream genomics tasks. Demonstrates that pretrained
+  nucleotide-sequence representations transfer to variant-effect and regulatory tasks where
+  supervised labels are scarce — the foundational result for the 2023-2026 genome-foundation-model
+  wave.
+contributions:
+  - problem_slug: genome-foundation-models
+    benchmark_id: rare-variant-zero-shot
+    metric: spearman
+    evidence: https://arxiv.org/abs/2306.15794

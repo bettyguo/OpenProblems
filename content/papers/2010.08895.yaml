@@ -1,0 +1,17 @@
+id: "2010.08895"
+title: "Fourier Neural Operator for Parametric Partial Differential Equations"
+authors: []
+institutions: []
+venue: ICLR 2021
+year: 2020
+arxiv_id: "2010.08895"
+tldr: |
+  Introduces the Fourier Neural Operator, learning operators in frequency space via parameterised
+  kernel integrations. The spectral-architecture counterpart to DeepONet that became dominant on
+  Burgers / Darcy / Navier-Stokes families. Together with DeepONet, anchors the 2019-2021 first-
+  generation neural-operator wave that operator-learning foundation models inherit.
+contributions:
+  - problem_slug: operator-learning-foundation-models
+    benchmark_id: pdebench
+    metric: relative-l2
+    evidence: https://arxiv.org/abs/2010.08895

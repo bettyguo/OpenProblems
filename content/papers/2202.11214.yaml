@@ -1,0 +1,17 @@
+id: "2202.11214"
+title: "FourCastNet: A Global Data-driven High-resolution Weather Model using Adaptive Fourier Neural Operators"
+authors: []
+institutions: []
+venue: arXiv 2022
+year: 2022
+arxiv_id: "2202.11214"
+tldr: |
+  Trains a neural weather surrogate on ERA5 reanalysis at 0.25° resolution using an adaptive
+  Fourier neural operator backbone. First demonstration that a learned model can produce a global
+  short-to-medium-range forecast at orders-of-magnitude lower inference cost than classical NWP,
+  opening the 2022-2025 wave of weather-surrogate parity wins.
+contributions:
+  - problem_slug: operator-learning-foundation-models
+    benchmark_id: weatherbench
+    metric: rmse-vs-ifs
+    evidence: https://arxiv.org/abs/2202.11214

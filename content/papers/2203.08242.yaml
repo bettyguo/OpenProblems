@@ -1,0 +1,17 @@
+id: "2203.08242"
+title: "Data Contamination: From Memorization to Exploitation"
+authors: []
+institutions: []
+venue: ACL 2022
+year: 2022
+arxiv_id: "2203.08242"
+tldr: |
+  Distinguishes two failure modes of train-test contamination — passive memorisation of test
+  answers vs. active exploitation of leaked supervision — and demonstrates both can inflate
+  benchmark scores. Influential framing that separated contamination as a distinct evaluation-
+  integrity concern from generic overfitting.
+contributions:
+  - problem_slug: benchmark-integrity
+    benchmark_id: contamination-detection
+    metric: contamination-detection-accuracy
+    evidence: https://arxiv.org/abs/2203.08242

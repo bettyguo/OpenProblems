@@ -1,0 +1,17 @@
+id: "1910.03193"
+title: "DeepONet: Learning nonlinear operators for identifying differential equations based on the universal approximation theorem of operators"
+authors: []
+institutions: []
+venue: arXiv 2019
+year: 2019
+arxiv_id: "1910.03193"
+tldr: |
+  Introduces DeepONet, a branch-trunk architecture for learning nonlinear solution operators of
+  differential equations, with universal-approximation guarantees over Banach spaces. One of the two
+  first-generation neural-operator primitives; established that learned operators can match per-
+  instance numerical solvers at much lower inference cost within their training distribution.
+contributions:
+  - problem_slug: operator-learning-foundation-models
+    benchmark_id: pdebench
+    metric: relative-l2
+    evidence: https://arxiv.org/abs/1910.03193
