@@ -1297,3 +1297,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Pure docs unit — no app, schema, or test code touched.
 - Smoke gates: `pnpm typecheck` (clean), `pnpm test` (199/199 unchanged), `pnpm validate-content` (203 files unchanged).
 
+#### Unit 5.2 — `lib/curate/arxiv-client.ts` (arXiv API client + filesystem cache)
+
+- First Phase-5 code unit. New `lib/curate/` directory with the arXiv-side metadata fetcher. Consumed by Unit 5.3's `scripts/ingest-arxiv.ts` CLI.
+- **`lib/curate/arxiv-client.ts`** — exports `fetchArxivMetadata(arxivId, options?)` returning a typed `ArxivMetadata`:
+  - `arxivId`, `version`, `title`, `abstract`, `authors[]`, `primaryCategory`, `categories[]`, `publishedDate` (ISO), `updatedDate` (ISO), `abstractUrl`, `pdfUrl`.
+  - Strips version suffix from input ids (`2310.06770v3` → `2310.06770` canonical).
+  - Atom feed at `https://export.arxiv.org/api/query?id_list=<id>` (public, no auth).
+  - **Filesystem cache at `.arxiv-cache/<id>.json`** (gitignored; added in this commit). `noCache: true` option forces re-fetch.
+  - **Token-bucket rate limiter**, module-singleton: capacity 3, refill 1 token / 1000 ms (per Unit 5.0 D-3 / arXiv guidance ≤ 3 req/s burst, 1 req/s sustained). Cache hits do NOT consume tokens.
+  - `User-Agent` defaults to `llm-openproblems/0.0 (https://github.com/bettyguo/OpenProblems)` per arXiv's politeness norm.
+  - `fetchImpl` test-seam injection lets unit tests run without network.
+  - Throws on HTTP error or parse error; does NOT cache partial / failed responses (silent partial caching would corrupt downstream YAML drafts).
+- **`lib/curate/arxiv-client.test.ts`** (+13 tests covering): version-stripping, Atom parse (title / abstract / authors / categories / dates / URLs), parse errors (missing `<entry>`, missing title/summary), token-bucket burst + refill behaviour, fetch on cache miss, write to cache, read from cache on subsequent calls (network not hit), `noCache: true` bypass, HTTP error throws without caching, canonical-id stripping at the cache-key layer.
+- **`.gitignore`** updated with the Phase-5 caches + drafts directory: `.arxiv-cache/`, `.pdf-cache/`, `.llm-spend.log`, `drafts/`.
+- **New devDep**: `fast-xml-parser@5.8.0`. Lives in `devDependencies` because `lib/curate/*` is only imported from `scripts/*` (a `tsx`-driven runtime, not a Next.js build target). Per ADR-0008's import-policy framing: this is a non-LLM SDK and outside ADR-0008's scope, so no provider-policy conflict.
+- **No Anthropic SDK** in this unit. arXiv is just the metadata fetcher; the LLM-drafted YAML transformation lands in Unit 5.3.
+- **Bundle**: First Load JS shared chunk **103 kB UNCHANGED**. `lib/curate/*` is not imported by any `app/*` page; pure server-side scripts surface.
+- **Route count: 313 prerendered pages UNCHANGED.**
+- **Parallel-curator state**: HEAD = `5ccad5c` post-Unit-5.1. No collision.
+- THINK artifact: `docs/thinking/5.2-arxiv-client.md`.
+- Smoke gates: `pnpm typecheck` (clean), `pnpm test` (**212/212 across 30 files**, was 199/29; +13 arxiv-client tests), `pnpm validate-content` (203 files unchanged), `pnpm build` (313 pages; First Load JS 103 kB unchanged).
+

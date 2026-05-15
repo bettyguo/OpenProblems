@@ -74,3 +74,9 @@ desktop.ini
 .stylelintcache
 
 *storybook.log
+
+# --- Phase-5 curator-script caches + drafts (Unit 5.0 D-3 / D-7) ---
+.arxiv-cache/
+.pdf-cache/
+.llm-spend.log
+drafts/
