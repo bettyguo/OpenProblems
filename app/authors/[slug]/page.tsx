@@ -15,7 +15,7 @@ export default async function AuthorPage({ params }: AuthorPageProps) {
   const loaded = loadAuthor(slug);
   if (!loaded) notFound();
 
-  const { author, affiliations, papers, problemsTouched } = loaded;
+  const { author, affiliations, papers, problemsTouched, cumulativeImpact } = loaded;
 
   return (
     <main className="mx-auto max-w-prose px-6 py-12">
@@ -164,9 +164,28 @@ export default async function AuthorPage({ params }: AuthorPageProps) {
         )}
       </section>
 
-      <p className="text-muted-foreground mt-12 text-xs">
-        Cumulative author impact (composite over contributions[]) lands in Unit 2.12.
-      </p>
+      <section aria-label="Cumulative impact" className="border-border mt-8 border-t pt-6">
+        <h2 className="font-serif text-xl font-semibold">Cumulative impact</h2>
+        {typeof cumulativeImpact === "number" ? (
+          <p className="mt-3 text-sm">
+            <span className="font-mono text-base">{cumulativeImpact.toFixed(2)}</span>
+            <span className="text-muted-foreground">
+              {" "}
+              — sum of §8.3 advisory composite across {problemsTouched.length} problem
+              {problemsTouched.length === 1 ? "" : "s"} touched.
+            </span>
+          </p>
+        ) : (
+          <p className="text-muted-foreground mt-3 text-sm italic">
+            No cumulative impact yet — none of this author&apos;s problemsTouched has a rating
+            action with a composite.
+          </p>
+        )}
+        <p className="text-muted-foreground mt-2 text-xs">
+          §8.3 cardinal rule: composite is advisory and never shown alone. The problemsTouched list
+          above is the always-paired view.
+        </p>
+      </section>
     </main>
   );
 }

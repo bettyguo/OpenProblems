@@ -121,3 +121,33 @@ describe("loadInstitution", () => {
     expect(allInstitutionSlugs().length).toBeGreaterThanOrEqual(8);
   });
 });
+
+describe("Unit 2.12 — cumulative impact + problemsTouched on institutions", () => {
+  it("author cumulativeImpact is a positive sum when problemsTouched have composites", () => {
+    // owain-evans → TruthfulQA → hallucination-reduction (rated, has composite).
+    const loaded = loadAuthor("owain-evans");
+    expect(loaded).not.toBeNull();
+    if (!loaded) return;
+    expect(typeof loaded.cumulativeImpact).toBe("number");
+    expect(loaded.cumulativeImpact ?? 0).toBeGreaterThan(0);
+  });
+
+  it("author cumulativeImpact is undefined when no problemsTouched has a composite", () => {
+    // yejin-choi has no papers in the seed set → empty problemsTouched → undefined.
+    const loaded = loadAuthor("yejin-choi");
+    expect(loaded).not.toBeNull();
+    if (!loaded) return;
+    expect(loaded.cumulativeImpact).toBeUndefined();
+  });
+
+  it("institution surfaces problemsTouched and cumulativeImpact", () => {
+    const loaded = loadInstitution("openai");
+    expect(loaded).not.toBeNull();
+    if (!loaded) return;
+    expect(Array.isArray(loaded.problemsTouched)).toBe(true);
+    const touchedSlugs = loaded.problemsTouched.map((p) => p.slug);
+    expect(touchedSlugs).toContain("hallucination-reduction");
+    expect(typeof loaded.cumulativeImpact).toBe("number");
+    expect(loaded.cumulativeImpact ?? 0).toBeGreaterThan(0);
+  });
+});

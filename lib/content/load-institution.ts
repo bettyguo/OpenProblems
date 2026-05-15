@@ -1,8 +1,10 @@
 import { institutions, authors, papers, problems, taxonomy } from "#site/content";
+import { getIndexedProblems } from "@/lib/content/load-problems-index";
 
 type Institution = (typeof institutions)[number];
 type Author = (typeof authors)[number];
 type Paper = (typeof papers)[number];
+type Problem = (typeof problems)[number];
 
 export interface SubdomainCoverage {
   domain_id: string;
@@ -19,6 +21,10 @@ export interface LoadedInstitution {
   papers: Paper[];
   /** Ranked subdomain coverage from this institution's papers' contributions. Sorted by paperCount desc. */
   subdomainCoverage: SubdomainCoverage[];
+  /** Deduped Problems touched by this institution's papers (Unit 2.12). */
+  problemsTouched: Problem[];
+  /** Sum of §8.3 advisory composite scores across `problemsTouched` (Unit 2.12). */
+  cumulativeImpact?: number;
 }
 
 export function loadInstitution(slug: string): LoadedInstitution | null {
@@ -74,12 +80,40 @@ export function loadInstitution(slug: string): LoadedInstitution | null {
       : a.subdomain_title.localeCompare(b.subdomain_title),
   );
 
-  return {
+  // Problems touched by this institution's papers (deduped) + cumulative impact.
+  const touchedSlugs = new Set<string>();
+  for (const p of institutionPapers) {
+    for (const c of p.contributions) touchedSlugs.add(c.problem_slug);
+  }
+  const problemsTouched: Problem[] = [];
+  for (const ts of touchedSlugs) {
+    const p = problemsBySlug.get(ts);
+    if (p) problemsTouched.push(p);
+  }
+
+  const compositeBySlug = new Map<string, number>();
+  for (const p of getIndexedProblems()) {
+    if (typeof p.composite === "number") compositeBySlug.set(p.slug, p.composite);
+  }
+  let sum = 0;
+  let counted = 0;
+  for (const p of problemsTouched) {
+    const c = compositeBySlug.get(p.slug);
+    if (typeof c === "number") {
+      sum += c;
+      counted++;
+    }
+  }
+
+  const loaded: LoadedInstitution = {
     institution,
     affiliatedAuthors,
     papers: institutionPapers,
     subdomainCoverage,
+    problemsTouched,
   };
+  if (counted > 0) loaded.cumulativeImpact = sum;
+  return loaded;
 }
 
 export function allInstitutionSlugs(): string[] {

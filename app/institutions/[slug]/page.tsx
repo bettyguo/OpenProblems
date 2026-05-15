@@ -23,7 +23,14 @@ export default async function InstitutionPage({ params }: InstitutionPageProps) 
   const loaded = loadInstitution(slug);
   if (!loaded) notFound();
 
-  const { institution, affiliatedAuthors, papers, subdomainCoverage } = loaded;
+  const {
+    institution,
+    affiliatedAuthors,
+    papers,
+    subdomainCoverage,
+    problemsTouched,
+    cumulativeImpact,
+  } = loaded;
 
   return (
     <main className="mx-auto max-w-prose px-6 py-12">
@@ -145,9 +152,28 @@ export default async function InstitutionPage({ params }: InstitutionPageProps) 
         )}
       </section>
 
-      <p className="text-muted-foreground mt-12 text-xs">
-        Ranked subdomain-coverage visualisations land in Unit 2.12.
-      </p>
+      <section aria-label="Cumulative impact" className="border-border mt-8 border-t pt-6">
+        <h2 className="font-serif text-xl font-semibold">Cumulative impact</h2>
+        {typeof cumulativeImpact === "number" ? (
+          <p className="mt-3 text-sm">
+            <span className="font-mono text-base">{cumulativeImpact.toFixed(2)}</span>
+            <span className="text-muted-foreground">
+              {" "}
+              — sum of §8.3 advisory composite across {problemsTouched.length} problem
+              {problemsTouched.length === 1 ? "" : "s"} touched by this institution&apos;s papers.
+            </span>
+          </p>
+        ) : (
+          <p className="text-muted-foreground mt-3 text-sm italic">
+            No cumulative impact yet — this institution&apos;s papers&apos; problems don&apos;t have
+            rating actions with composites.
+          </p>
+        )}
+        <p className="text-muted-foreground mt-2 text-xs">
+          §8.3 cardinal rule: composite is advisory and never shown alone. The subdomain-coverage
+          section above is the always-paired view.
+        </p>
+      </section>
     </main>
   );
 }

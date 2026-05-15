@@ -415,3 +415,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Per-platform baseline coupling continues from Unit 1.12: the 4 PNG baselines committed here are `chromium-win32`; the first CI Ubuntu run will need a one-shot `--update-snapshots` to land the Linux equivalents.
 - Smoke gates green: `pnpm typecheck`, `pnpm test` (83/83 across 15 files), `pnpm validate-content` (77 files), `pnpm audit-content` (0 errors / 6 warnings), `pnpm build` (168 routes, unchanged from Unit 2.11), `pnpm exec playwright test` (7/7 passed in 32.8 s).
 - THINK artifact: `docs/thinking/2.13-phase-2-acceptance-gate.md`.
+
+#### Unit 2.12 — Aggregate rollups (cumulative author + institution impact)
+
+- Closes the §13 Phase 2 deliverable "each author shows cumulative problem-impact score; each institution shows ranked subdomain coverage." Subdomain coverage already shipped in Unit 2.2; this unit lands the cumulative-impact half on both surfaces and adds `problemsTouched` to the institution loader for symmetry with the author one.
+- [`lib/content/load-author.ts`](../../lib/content/load-author.ts): `LoadedAuthor.cumulativeImpact?: number` — sum of §8.3 advisory composite scores across `problemsTouched`. Built from `getIndexedProblems()` (Unit 1.8) which already pre-computes per-problem composite from the latest rating action. Undefined when no touched problem has a composite (e.g., no rating action).
+- [`lib/content/load-institution.ts`](../../lib/content/load-institution.ts): `LoadedInstitution.problemsTouched: Problem[]` + `LoadedInstitution.cumulativeImpact?: number`. Same shape and semantics as the author loader; deduped via Set over the institution's papers' contributions.
+- Page renders:
+  - [`/authors/[slug]`](../../app/authors/[slug]/page.tsx): new "Cumulative impact" section at the bottom — shows `cumulativeImpact.toFixed(2)` with denominator "across N problems touched". Falls back to an italic placeholder when undefined. The §8.3 cardinal rule ("composite is advisory and never shown alone") is satisfied by the always-visible problemsTouched section above.
+  - [`/institutions/[slug]`](../../app/institutions/[slug]/page.tsx): same section, paired with the existing subdomain-coverage section as the "always alongside" view.
+- Sum (not mean) is the §13 wording's "cumulative" reading — more problems touched = more impact. Weighted variants (per-contribution count, per-author share) are explicitly deferred until a real use case requests them.
+- [`lib/content/load-entities.test.ts`](../../lib/content/load-entities.test.ts): 3 new Vitest cases — author with rated problemsTouched has positive cumulativeImpact; author with empty problemsTouched returns undefined; institution surfaces both new fields. Total **86 tests across 15 files** (was 83/15).
+- No new content, no schema changes, no bundle-size impact (both pages stay at the 182 B / 106 kB First Load JS envelope; the new computation runs at module load against the same Velite snapshot the existing loaders already touch).
+- THINK artifact: `docs/thinking/2.12-aggregate-rollups.md`. Smoke gates green: `pnpm typecheck`, `pnpm test` (86/86), `pnpm validate-content` (77), `pnpm audit-content` (0 errors / 6 warnings), `pnpm build` (168 routes).
