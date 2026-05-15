@@ -4,6 +4,8 @@ Load-bearing decisions awaiting the human. Per `MASTER_PROMPT.md` §15.6: Claude
 
 Numbering: Q1–Q9 are verbatim from `MASTER_PROMPT.md` §17. Q10+ are added by Claude Code as work surfaces new ambiguity.
 
+> **Parallel curator workflow.** This file is a shared singleton — concurrent curation runs must **not** write here directly. They drop ambiguities into `docs/open-questions-inbox/<RUN-ID>.md` instead; a serial merge pass appends them as new Q-numbers below. See [`docs/CURATION_PROMPT.md`](./docs/CURATION_PROMPT.md) for the full parallel-safety contract.
+
 ---
 
 ## Q1. Brand name
