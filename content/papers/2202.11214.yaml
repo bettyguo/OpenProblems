@@ -1,7 +1,8 @@
 id: "2202.11214"
 title: "FourCastNet: A Global Data-driven High-resolution Weather Model using Adaptive Fourier Neural Operators"
 authors: []
-institutions: []
+institutions:
+  - nvidia
 venue: arXiv 2022
 year: 2022
 arxiv_id: "2202.11214"

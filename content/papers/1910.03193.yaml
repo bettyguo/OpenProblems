@@ -1,7 +1,8 @@
 id: "1910.03193"
 title: "DeepONet: Learning nonlinear operators for identifying differential equations based on the universal approximation theorem of operators"
 authors: []
-institutions: []
+institutions:
+  - brown-university
 venue: arXiv 2019
 year: 2019
 arxiv_id: "1910.03193"

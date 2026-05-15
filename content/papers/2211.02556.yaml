@@ -1,7 +1,8 @@
 id: "2211.02556"
 title: "Pangu-Weather: A 3D High-Resolution Model for Fast and Accurate Global Weather Forecast"
 authors: []
-institutions: []
+institutions:
+  - huawei
 venue: Nature 2023
 year: 2022
 arxiv_id: "2211.02556"

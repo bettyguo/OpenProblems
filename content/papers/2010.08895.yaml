@@ -1,7 +1,8 @@
 id: "2010.08895"
 title: "Fourier Neural Operator for Parametric Partial Differential Equations"
 authors: []
-institutions: []
+institutions:
+  - caltech
 venue: ICLR 2021
 year: 2020
 arxiv_id: "2010.08895"

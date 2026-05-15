@@ -367,3 +367,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - No new tests required — `getIndexedPapers` is a thin transformation over the already-tested papers collection. Visual regression baseline for the index lands in Unit 2.13.
 - Smoke gates green: `pnpm typecheck`, `pnpm test` (79/79), `pnpm build` (163 routes; only `/papers` bundle changed; First Load JS shared chunk still 103 kB).
 - THINK artifact: `docs/thinking/2.8-papers-index.md`.
+
+#### Unit 2.6b — Institution backfill for Units 2.5 / 2.6 papers
+
+- Phase-2 hygiene follow-on to Units 2.5 / 2.6. Authors 5 new institution YAMLs and backfills `institutions:` arrays on the 6 affected paper YAMLs that landed with `institutions: []`. Shrinks the cross-link audit (Unit 2.11) backlog and adds 5 new SSG paths under `/institutions/[slug]`.
+- New institutions (`content/institutions/<slug>.yaml`): `brown-university`, `caltech`, `nvidia`, `huawei`, `instadeep`. All five carry `slug`, `display_name`, `country`, `type` (industry / academic), and `homepage`; `ror_id` deliberately omitted (no fabricated IDs per §15.6 — a follow-on curator pass pulls them from `ror.org`).
+- Paper YAML backfills:
+  - `1910.03193` (DeepONet) → `brown-university`
+  - `2010.08895` (Fourier Neural Operator) → `caltech`
+  - `2202.11214` (FourCastNet) → `nvidia`
+  - `2211.02556` (Pangu-Weather) → `huawei`
+  - `2306.15794` (Nucleotide Transformer) → `instadeep`
+  - `2404.06654` (RULER) → `nvidia`
+- Build surface goes from 163 → **168 routes** (+5 institution pages now `●` SSG; same 182 B / 106 kB envelope as the existing 9). Total institutions in `content/institutions/`: 9 → **14**.
+- No collision with the parallel session's Unit 2.8 (papers index) work — this unit only touches `content/institutions/` (5 new files) and `content/papers/<id>.yaml` (6 modifications), zero overlap with `app/papers/` / `lib/content/load-papers-index.ts` / `components/papers-index/`.
+- Smoke gates green: `pnpm validate-content` reports **77 content files** (was 72 after Unit 2.7); `pnpm typecheck`; `pnpm build` (168 routes).
+- THINK artifact: `docs/thinking/2.6b-institution-backfill.md`.
