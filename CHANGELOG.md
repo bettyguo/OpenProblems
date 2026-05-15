@@ -661,3 +661,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Divider via Tailwind `divide-y` on the `<ol>` rather than CSS-only horizontal rules — preserves the semantic list while visually separating entries.
 - **No vizes** — same reasoning as Unit 3.3; this is a text-shaped surface.
 - Smoke gates green: `pnpm typecheck` (clean), `pnpm build` (188 routes; First Load JS shared chunk unchanged at 103 kB).
+
+#### Unit 3.5 — `/api/v1/ratings` JSON + `/api/v1/rss.xml` RSS feeds
+
+- Phase-3 deliverable (§13: "`/ratings` global feed (HTML + JSON + RSS)"). Replaces the Phase-0 / Phase-1 501 stubs at both endpoints with real implementations. Both routes are marked `export const dynamic = "force-static"` so they prerender at build time and serve from CDN — same envelope on every request until content changes and the next build runs.
+- **JSON envelope** at `/api/v1/ratings` (hybrid per Q25 / Unit 3.0 D-4):
+
+  ```jsonc
+  { "items": RatingActionResource[], "page": 1, "pageSize": 50, "total": 20 }
+  ```
+
+  Each `RatingActionResource`: `id`, `problem_slug`, `date` (ISO), `methodology_version`, `curator`, `prior_action`, `watchlist`, full `dimensions`, `signals_considered`, **plus a precomputed `diff`** ({`deltas`, `watchlist_changed`, `prior_watchlist`, `new_watchlist`}) so third-party consumers don't re-derive the same delta info every page render. Query params: `page=N`, `pageSize=N` (capped at 200), `problem=<slug>`. Pagination is 1-indexed.
+- **RSS 2.0 feed** at `/api/v1/rss.xml` (shape per Unit 3.0 D-5):
+  - Channel: `<title>` "LLM OpenProblems — Rating actions", `<link>` `/ratings`, `<atom:link rel="self">`, `<description>` from §3.1 framing, `<language>en</language>`, `<lastBuildDate>` from the most-recent action.
+  - One `<item>` per action with `<title>` = "&lt;Problem Title&gt; — revision (&lt;primary delta&gt;)", `<link>` deep-anchored to the per-problem ratings page (`/problems/<slug>/ratings#<filename-without-extension>`), `<guid isPermaLink="false">` carrying the stable id from Unit 3.2, `<pubDate>` in RFC-822 form (UTC midnight via `Date.toUTCString()`), `<dc:creator>` = action's curator (per Q33 lean), `<description>` = primary-delta summary + watchlist transition if any + rationale of the primary dimension.
+  - Namespaces: `xmlns:dc` for `<dc:creator>`, `xmlns:atom` for `<atom:link>`.
+  - XML escaping helper covers `&`, `<`, `>`, `"`, `'` on every interpolated text (problem titles like "Faithful & Calibrated…" land as `Faithful &amp; Calibrated…`).
+- **Force-static verification**: `pnpm build` now prerenders both routes as `○` Static (was `ƒ` Dynamic stubs). `.next/server/app/api/v1/{ratings,rss.xml}.body` contains the full rendered envelopes at build time. JSON renders 20 items; RSS renders 20 `<item>` blocks with proper escaping (S&P → `S&amp;P`, Moody's → `Moody&apos;s`).
+- **W3C validator pass** is enforced in Unit 3.13 (Phase-3 acceptance gate) against the deployed feed. The static output matches RSS 2.0 + Dublin Core requirements; visual inspection of `.next/server/app/api/v1/rss.xml.body` shows well-formed XML.
+- **Caching headers**: `Cache-Control: public, max-age=300, s-maxage=300` on both routes. Aligns with how content updates flow (rebuild → new static output → 5-minute CDN cache window).
+- **Site URL** uses the `MASTER_PROMPT.md` §5.10 placeholder `https://llm-openproblems.org` pending Q2 resolution. Switching to the production domain is a single-constant edit.
+- **Q33 disposition**: item-level `<dc:creator>` lands per the Q33 lean (action's `curator` field directly). Channel-level `<managingEditor>` is **deliberately omitted** in this commit — RSS 2.0 spec allows omitting it, and W3C validator doesn't require it. Adding `<managingEditor>noreply@<domain> (Name)</managingEditor>` is a one-line change once Q2 (DNS) resolves.
+- Build surface unchanged at **188 routes**; First Load JS shared chunk unchanged at 103 kB.
+- Smoke gates green: `pnpm typecheck` (clean), `pnpm build` (both routes flip from `ƒ` Dynamic stub to `○` Static; prerendered bodies inspect clean).
