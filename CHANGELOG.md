@@ -947,3 +947,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **Phase-3 closure confirmed** at HEAD `709679f` post-Unit-3.13a: 198 SSG routes; 171/171 tests across 25 files; 203 content files; 0 errors / 6 Q32-expected warnings; First Load JS 103 KB; 4 vizes shipped (RatingRadar, SaturationCurve, MoversBoard, RatingHistoryStream); 1 new ADR (ADR-0006); 1 OPEN_QUESTIONS thread closed (Q18) plus 4 surfaced (Q33–Q36).
 - THINK artifact: `docs/thinking/4.0-phase-4-prep.md`.
 - Smoke gates: docs-only — no `pnpm test` / `pnpm build` / `pnpm validate-content` run needed beyond the existing Phase-3-closure state.
+
+#### Unit 4.1 — D3 sub-package install (`d3-force` + `d3-selection`)
+
+- Per Unit 4.0 D-2: tree-shaken D3 sub-packages, not the umbrella `d3`. First D3 unit in the project.
+- **Dependencies added** (runtime — ship in client bundle):
+  - `d3-force@3.0.0` — force simulation primitives. Used in Unit 4.2's DomainMap for node-position computation (`forceSimulation`, `forceLink`, `forceManyBody`, `forceCenter`).
+  - `d3-selection@3.0.0` — declarative DOM updates inside the simulation tick handler.
+- **devDependencies added**:
+  - `@types/d3-force@3.0.10`
+  - `@types/d3-selection@3.0.11`
+- **Scope trimmed from Unit 4.0 D-2's projection**:
+  - `d3-scale` deferred to Unit 4.2 — plain `Math.sqrt` covers the `radius = sqrt(composite) × k` formula from D-4 without it. Install only if 4.2 ends up wanting `scaleLinear()` / `scaleSqrt()` for readability or domain/range clamping.
+  - `d3-zoom` skipped entirely — Unit 4.0 D-6 scoped zoom/pan out of Phase 4.
+- **No app code changes.** Install-only unit. Unit 4.2 owns the first `import` and the client-bundle bump.
+- **Bundle**: First Load JS shared chunk **103 kB** (unchanged at this commit; the deps are resolved but no code imports them yet). 198 SSG routes (unchanged from Unit 3.13a).
+- **pnpm-lock churn**: ~6 packages added across the 2 runtime deps + 2 types (some are transitive dependencies of d3-* internals; no native build steps, no `approve-builds` required).
+- **5 deprecated transitive sub-dependencies surfaced** during install (`glob@7.2.3`, `inflight@1.0.6`, `rimraf@2.7.1`, `rimraf@3.0.2`, `uuid@8.3.2`). All originate from the existing dep graph, not the D3 install — pre-existing technical debt that this commit doesn't worsen.
+- THINK artifact: `docs/thinking/4.1-d3-deps-install.md`.
+- Smoke gates green: `pnpm typecheck` (clean), `pnpm test` (171/171 across 25 files), `pnpm build` (198 routes; First Load JS 103 kB unchanged).
+
