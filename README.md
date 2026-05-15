@@ -7,7 +7,7 @@ This repository is governed by [`MASTER_PROMPT.md`](./MASTER_PROMPT.md), which s
 ## Status
 
 - **Phase 0 (Foundation):** complete locally; awaiting first push to GitHub for CI run and Vercel preview-deploy verification. See [§13 of the master prompt](./MASTER_PROMPT.md) and `docs/thinking/0.12-phase-0-acceptance.md` for the acceptance audit.
-- **Next:** Phase 1 (Core MVP) — authoring the seed-content list from §16 against the stub IA Phase 0 froze.
+- **Phase 1 (Core MVP):** in progress. Unit 1.0 (license + brand finalization + accent shift to HKU-green hue 170°) landed; Unit 1.1 (Velite content pipeline) is next.
 
 ### Phase 0 — what landed
 
@@ -32,4 +32,7 @@ This repository is governed by [`MASTER_PROMPT.md`](./MASTER_PROMPT.md), which s
 
 ## License
 
-Pending — see Q4 in [`OPEN_QUESTIONS.md`](./OPEN_QUESTIONS.md). Until a license is committed, all rights are reserved by the author and no public redistribution is granted.
+- **Code** (`app/`, `components/`, `lib/`, `scripts/`, configs) is licensed under **Apache-2.0** — see [`LICENSE`](./LICENSE).
+- **Content** (`content/` — `taxonomy.yaml`, problems, papers, authors, institutions, methodology) is licensed under **CC-BY-4.0** — see [`content/LICENSE.md`](./content/LICENSE.md).
+
+Q4 resolved in Unit 1.0 (2026-05-14); Apache-2.0 picked over MIT for the explicit patent grant, given the project intends a citable methodology paper.

@@ -8,9 +8,9 @@ Numbering: Q1–Q9 are verbatim from `MASTER_PROMPT.md` §17. Q10+ are added by 
 
 ## Q1. Brand name
 
-**Status:** open · **Surfaced:** MASTER_PROMPT.md §17 · **Blocks:** Phase 1 visual design (Unit 1.x).
+**Status:** decided 2026-05-14 (Unit 1.0): **LLM OpenProblems** · **Surfaced:** MASTER_PROMPT.md §17.
 
-Working title: _LLM OpenProblems_. Alternatives floated: _AIORatings_, _OpenAI-Problems_, _ResearchRatings_. A decision is needed before any logo / typography / accent work in Phase 1.
+Confirmed: the working title stands. Alternatives (_AIORatings_, _OpenAI-Problems_, _ResearchRatings_) closed.
 
 ## Q2. Domain (DNS)
 
@@ -26,18 +26,16 @@ Vercel is assumed by the stack rationale (Next.js native, ISR, edge runtime). Co
 
 ## Q4. License
 
-**Status:** open · **Surfaced:** §17 · **Blocks:** any public push of this repo.
+**Status:** decided 2026-05-14 (Unit 1.0): **Apache-2.0** (code) + **CC-BY-4.0** (content) · **Surfaced:** §17.
 
-- Code: MIT vs Apache-2.0 (Apache-2.0 gives explicit patent grant; MIT is simpler and more common in academic web tooling).
-- Content (MDX + YAML in `content/`): CC-BY-4.0 recommended.
-
-Until resolved, no `LICENSE` file is committed and the README states "all rights reserved".
+- **Code → Apache-2.0.** Picked over MIT for the explicit patent grant — defensible for a project that intends a citable methodology paper and may attract downstream derivatives. Full text at [`LICENSE`](./LICENSE); `package.json#license = "Apache-2.0"` (SPDX).
+- **Content (`content/`) → CC-BY-4.0.** Permissive attribution-required license, standard for academic-adjacent published content. Scope and canonical-text pointer at [`content/LICENSE.md`](./content/LICENSE.md).
 
 ## Q5. Primary brand accent
 
-**Status:** open · **Surfaced:** §17 / §10.1 · **Blocks:** Unit 0.4 (design tokens).
+**Status:** decided 2026-05-14 (Unit 1.0): **deep cyan, HKU-green register, OKLCH hue 170°** · **Surfaced:** §17 / §10.1.
 
-Vermilion vs deep cyan. §17 says "Mock both, decide on the landing v1," but Unit 0.4 (design tokens) needs at least a placeholder. Proposal: stub the accent as a CSS custom property `--accent` and pick a default for Unit 0.4 that we can swap by editing one token.
+User direction: "deep cyan like the HKU green visuals (hku.hk)" — i.e., the cyan branch of Q5 but biased toward HKU's distinctive deep-teal green. Implemented as `--accent: oklch(0.5 0.1 170)` (light) and `oklch(0.7 0.13 170)` (dark) in `app/globals.css`. Vermilion alternative closed. `--ring` follows `--accent` for focus consistency. `--chart-saturation` was nudged from hue 160° → 140° in the same edit to preserve ≥ 30° hue separation from the accent.
 
 ## Q6. Bilingual rollout (FR / EN)
 

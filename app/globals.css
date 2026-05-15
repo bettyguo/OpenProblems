@@ -11,9 +11,10 @@
  *   #FAFAF7 paper-white  ~= oklch(0.984 0.003 96)
  *   #0B0D10 near-black   ~= oklch(0.149 0.006 254)
  *
- * Brand accent is a deep-cyan placeholder pending OPEN_QUESTIONS Q5
- * (vermilion alternative is a single-line swap on --accent and --ring in
- * both light and dark blocks).
+ * Brand accent: deep cyan in the "HKU green" register (OKLCH hue 170°),
+ * resolved by OPEN_QUESTIONS Q5. Sits between pure cyan (~195°) and
+ * green (~145°). --chart-saturation was nudged from 160° → 140° in
+ * Unit 1.0 to preserve ≥ 30° separation from the accent.
  */
 
 @theme inline {
@@ -61,8 +62,8 @@
   --background: oklch(0.984 0.003 96);
   --foreground: oklch(0.149 0.006 254);
 
-  /* Brand accent — deep-cyan placeholder, OPEN_QUESTIONS Q5 */
-  --accent: oklch(0.55 0.12 215);
+  /* Brand accent — HKU-green-leaning deep cyan, hue 170° (Q5 resolved 2026-05-14). */
+  --accent: oklch(0.5 0.1 170);
   --accent-foreground: oklch(0.984 0.003 96);
 
   /* Semantic */
@@ -71,13 +72,13 @@
   --muted: oklch(0.96 0.003 96);
   --muted-foreground: oklch(0.45 0.005 254);
   --border: oklch(0.9 0.005 96);
-  --ring: oklch(0.55 0.12 215);
+  --ring: oklch(0.5 0.1 170);
   --radius: 0.5rem;
 
-  /* Rating-dimension hues. ≥ 50° hue separation; all WCAG AA on
-   * --background for 12 px+ text (4.5:1) and 3:1 for graphical objects. */
+  /* Rating-dimension hues. ≥ 30° hue separation from --accent (170°);
+   * WCAG AA on --background for 12 px+ text (4.5:1) and 3:1 for charts. */
   --chart-difficulty: oklch(0.52 0.13 250);
-  --chart-saturation: oklch(0.55 0.12 160);
+  --chart-saturation: oklch(0.55 0.12 140);
   --chart-urgency: oklch(0.6 0.16 50);
   --chart-value: oklch(0.5 0.18 290);
   --chart-industry-call: oklch(0.55 0.17 10);
@@ -88,7 +89,7 @@
     --background: oklch(0.149 0.006 254);
     --foreground: oklch(0.984 0.003 96);
 
-    --accent: oklch(0.7 0.14 215);
+    --accent: oklch(0.7 0.13 170);
     --accent-foreground: oklch(0.149 0.006 254);
 
     --primary: oklch(0.984 0.003 96);
@@ -96,13 +97,13 @@
     --muted: oklch(0.22 0.006 254);
     --muted-foreground: oklch(0.65 0.005 96);
     --border: oklch(0.3 0.006 254);
-    --ring: oklch(0.7 0.14 215);
+    --ring: oklch(0.7 0.13 170);
 
-    /* Chart hues, dark variant: same hue and chroma centres, lifted
-     * lightness so each line/arc reads at AA-equivalent contrast against
-     * the new background. */
+    /* Chart hues, dark variant: same hue centres as light, lifted
+     * lightness so each line/arc reads at AA-equivalent contrast on
+     * the inverted background. */
     --chart-difficulty: oklch(0.68 0.15 250);
-    --chart-saturation: oklch(0.7 0.14 160);
+    --chart-saturation: oklch(0.7 0.14 140);
     --chart-urgency: oklch(0.75 0.18 50);
     --chart-value: oklch(0.65 0.2 290);
     --chart-industry-call: oklch(0.68 0.19 10);

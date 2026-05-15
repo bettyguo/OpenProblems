@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "description": "A rated, taxonomy-organized encyclopedia of open problems in LLM and AI research. See MASTER_PROMPT.md.",
+  "license": "Apache-2.0",
   "type": "module",
   "engines": {
     "node": ">=22 <24"
