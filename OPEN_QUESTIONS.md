@@ -126,7 +126,7 @@ Unit 0.3 installed shadcn/ui with `baseColor: "neutral"` (true grays, no hue cas
 
 ## Q18. Saturation N/A encoding
 
-**Status:** open · **Surfaced:** Unit 0.5 THINK · **Blocks:** nothing in Phase 0; revisit at Phase 3 when SaturationCurve / MoversBoard land.
+**Status:** open · **Surfaced:** Unit 0.5 THINK · **Blocks:** nothing in Phase 0; **resolution scheduled:** Unit 3.11 (ADR-0006) — see [docs/thinking/3.0-phase-3-prep.md](./docs/thinking/3.0-phase-3-prep.md).
 
 MASTER_PROMPT §8.2 says: "When no ceiling exists, mark Saturation = N/A and use a qualitative band (Low / Medium / High)." The Unit 0.5 `RatingActionSchema.dimensions.saturation` is strictly numeric (`value: z.number().min(0).max(100)`), with no N/A escape hatch. Phase 3 will need to either (a) extend the schema with `value: z.number().nullable()` plus a `qualitative_band` field, or (b) treat the qualitative case as a separate dimension variant via `z.discriminatedUnion`. Decision deferred to a Phase-3 ADR.
 
@@ -192,3 +192,33 @@ The `.velite/` JSON snapshot is the "static JSON snapshot the client consumes" o
 Velite 0.3.1 bundles Zod 3 internally; its runtime calls `schema._parse(...)` which Zod 4 renamed. Passing a Zod-4 schema from `lib/schemas/*` directly to `defineCollection({ schema })` throws `schema._parse is not a function`. Workaround in Unit 1.1: duplicate the (small) taxonomy schema in `velite.config.ts` using Velite's bundled `s` factory. The canonical schemas in `lib/schemas/*` remain the source of truth, and `scripts/validate-content.ts` (Unit 0.7) cross-validates content against them — so any drift surfaces in CI on the next commit that authors content.
 
 Action: track Velite upstream for Zod-4 support. When it ships, replace the `s.object({...})` blocks in `velite.config.ts` with direct imports from `@/lib/schemas/*` and close this question.
+
+## Q32. `related_problems[]` symmetry — warning-class vs. error-class
+
+**Status:** decided · **Surfaced:** Unit 2.11 (cross-link audit script) · **Resolved:** Unit 2.11 (commit `bc671ec`).
+
+Per `scripts/cross-link-audit.ts` (Unit 2.11), if problem A lists B in `related_problems[]` but B does not list A back, the audit reports a **warning**, not an error. Rationale: editorial intent may legitimately be asymmetric (A "relates to" B without B "relating to" A — e.g., a niche problem points to a foundational one without the foundation pointing back to every niche descendant). The cross-link audit surfaces the asymmetry for human review but does not fail CI. Current count: 6 such asymmetric edges, all expected per editorial intent at HEAD ≈ `cfe0f6f`.
+
+## Q33. RSS feed `<dc:creator>` / `<managingEditor>` shape
+
+**Status:** open · **Surfaced:** Unit 3.0 THINK · **Blocks:** Unit 3.5 (JSON + RSS feeds).
+
+RSS items conventionally name a person. Two slots: per-`<item>` `<dc:creator>` and channel-level `<managingEditor>`. Lean: item-level `<dc:creator>` = action's `curator` field directly (e.g. `jikun`); channel-level `<managingEditor>` = a project-level address once decided. W3C validator accepts a project-level email in `name@example.com (Name)` form. Surface when Unit 3.5 ships if no email is available — fall back to `noreply@<domain>` until Q2 resolves.
+
+## Q34. Watchlist signal in the simulated revisions
+
+**Status:** open · **Surfaced:** Unit 3.0 THINK · **Blocks:** Unit 3.7 (`MoversBoard`) rendering coverage.
+
+§13 says MoversBoard tracks "watch-list additions". The `RatingActionSchema.watchlist` boolean is per-action; a watchlist-add is a `false → true` transition. No problems in the seed set have `watchlist: true` yet. Decision needed before Unit 3.7 ships: should at least one of the 5 simulated revisions in Unit 3.1 flip a watchlist to demonstrate the rendering? Lean: yes — flip `mechanistic-interpretability`'s q4 to `watchlist: true` (low confidence on a dimension's recent move makes a defensible watchlist signal).
+
+## Q35. "Recompose" UI persistence to localStorage
+
+**Status:** open · **Surfaced:** Unit 3.0 THINK · **Blocks:** Unit 3.10 (Recompose UI control).
+
+The composite-weight Recompose control (`/problems` page, §13) stores weights in URL search params for shareability (Unit 3.0 D-6 default). Whether to also persist to localStorage so a return visit restores the user's last-used weights is open. Lean: defer to Phase 4 — URL-only keeps Phase 3 simple and avoids the SSR / hydration mismatch class of bugs that localStorage hydration introduces.
+
+## Q36. Recompose UI scope — `/problems` only or cross-page
+
+**Status:** open · **Surfaced:** Unit 3.0 THINK · **Blocks:** Unit 3.10 reach.
+
+When the user re-weights via the Recompose control, do leaderboards on `/`, `/domains/[domain]`, `/domains/[domain]/[subdomain]` also re-sort, or is the recompose scoped to the `/problems` index page only? Lean: `/problems` only for Phase 3 — cross-page weight propagation needs a global state lift (Zustand / Context / URL-sync-across-pages) that's more architectural than scoping suggests. Phase 4 enhancement if user-research signals demand it.

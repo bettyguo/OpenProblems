@@ -537,3 +537,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - No code, schema, route, or bundle changes. Build surface unchanged at **178 routes**; First Load JS shared chunk unchanged at 103 kB. The `/problems/long-horizon-agent-reliability/leaderboard` page now renders 3 entries on the `tau-bench` benchmark instead of empty-state across the board.
 - Smoke gates green: `pnpm validate-content` (193 files), `pnpm audit-content` (0 errors / 6 warnings — same Q32-expected set), `pnpm build` (178 routes; new `entries.json` doesn't add SSG paths), `pnpm test` (86/86).
 - THINK artifact: `docs/thinking/2.6i-entries-long-horizon-agent-reliability.md`.
+
+### Phase 3 — Rating Dynamics & Trending
+
+#### Unit 3.0 — Phase 3 prep (THINK doc + Phase-3 unit breakdown + OPEN_QUESTIONS surface)
+
+- Phase 2 → Phase 3 gate cleared: human sign-off granted per §12 cardinal rule. Phase 2 closed at HEAD ≈ `1d9d67e` (12 of the 13 planned Phase-2 units committed, plus 6 hygiene follow-ons: `2.6b/c/d/g/h/i` and `2.5b`). The §13 Phase 2 acceptance criteria — `cross-link-audit` green, visual baselines captured, 30-paper floor met — remain met.
+- This unit is docs-only. Lands [`docs/thinking/3.0-phase-3-prep.md`](docs/thinking/3.0-phase-3-prep.md) with:
+  - **14-unit breakdown for Phase 3** (3.0 through 3.13), mirroring the 13–14 unit shape of Phases 0/1/2.
+  - **8 Phase-3-blocking decisions resolved with defensible defaults** (D-1 multi-action problem set, D-2 dating cadence, D-3 action content scope, D-4 JSON envelope, D-5 RSS shape, D-6 Recompose URL params, D-7 history page composition, D-8 trending window).
+  - **2 decisions deferred to per-unit implementation** (D-9 SaturationCurve x-axis & data source, D-10 RatingHistoryStream stepped-vs-linear).
+- **Phase 3 deliverables** (verbatim from §13): second + third rating actions for ≥ 5 seed problems; per-problem `/ratings` sub-page; global `/ratings` feed (HTML + JSON + RSS); `SaturationCurve` + `MoversBoard` + `RatingHistoryStream` vizes; "Recompose" UI control. Acceptance gate: table-fallback toggles on every viz; RSS validates (W3C); Lighthouse a11y ≥ 95.
+- **OPEN_QUESTIONS.md updates**:
+  - Q18 (Saturation N/A encoding) — added forward-pointer: resolution scheduled in Unit 3.11 (ADR-0006).
+  - **Q32** added as a resolved retro-entry — `related_problems[]` symmetry is warning-class not error-class, decided in Unit 2.11. Documented in the file for the first time (was referenced in commit text + session memory but not in OPEN_QUESTIONS.md proper).
+  - **Q33** added: RSS `<dc:creator>` / `<managingEditor>` shape — blocks Unit 3.5.
+  - **Q34** added: Watchlist signal in simulated revisions — blocks Unit 3.7 rendering coverage.
+  - **Q35** added: Recompose UI persistence to localStorage — Phase-3 lean: defer.
+  - **Q36** added: Recompose UI scope (just `/problems` vs cross-page) — Phase-3 lean: `/problems` only.
+- **Parallel-curator note**: this unit ships docs only, no collision risk. Subsequent Phase 3 units must `git status --short` before starting; Unit 3.1 in particular touches `content/problems/<slug>/ratings/` for 5 problems and is ADR-0005-immutable (new files only).
+- Pure docs addition: no code, schema, route, or bundle changes. Build surface unchanged at **178 routes**; First Load JS shared chunk unchanged at 103 kB. No smoke-gate run necessary beyond existing CI.
+- THINK artifact: [`docs/thinking/3.0-phase-3-prep.md`](docs/thinking/3.0-phase-3-prep.md).
