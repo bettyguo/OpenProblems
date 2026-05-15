@@ -1278,3 +1278,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - THINK artifact: `docs/thinking/5.0-phase-5-prep.md`.
 - Smoke gates: docs-only — no `pnpm test` / `pnpm build` / `pnpm validate-content` re-run needed beyond the existing Phase-4-closure state.
 
+#### Unit 5.1 — ADR-0008: LLM provider selection (Anthropic Claude) + cost-governance pact
+
+- Pins the LLM-provider contract before any Phase-5 code lands. Phase 5 is the first paid-API surface in the project; ADR-0008 documents the choice + the cost-governance posture from day zero.
+- **Closes [OPEN_QUESTIONS Q41](./OPEN_QUESTIONS.md#q41-llm-model-choice-per-phase-5-script)**. Status flipped from `decided-as-lean` to `decided`. Documents Q42 (cost-cap default policy) trade-off explicitly as the working "no default cap" position; Q42 remains `open` for re-evaluation after the first 100 ingest runs.
+- **6 decisions documented** (D-A through D-F):
+  - **D-A** Provider = Anthropic (`@anthropic-ai/sdk`). Other LLM SDKs forbidden until a follow-on ADR.
+  - **D-B** Per-script model defaults: `ingest-arxiv` → Sonnet 4.6, `extract-leaderboard` → Opus 4.7, `build-digest` → Sonnet 4.6. `--model` overrides on every script.
+  - **D-C** Cost-governance pact: `ANTHROPIC_API_KEY` from env (no fallback), `--dry-run` flag, `--verbose` per-call cost line, optional `LLM_OPENPROBLEMS_DAILY_BUDGET_USD` cap via `.llm-spend.log` (gitignored), **no default daily-cap** (deliberate Q42 lean — `--verbose` + dry-run is the primary safeguard).
+  - **D-D** Prompt caching: shared system-prompt blocks wrapped in `cache_control: { type: "ephemeral" }` on ≥ 2-call sessions. 5-minute TTL acceptable.
+  - **D-E** Auditability: every script writes `drafts/<unit>-<ts>-<slug>.diff.meta.json` alongside the diff (model, token counts, cost estimate, prompt SHA256, anthropic_request_id). Spot-audit + reproduction tractable.
+  - **D-F** Conflict-of-interest disclosure: LLM OpenProblems indexes Anthropic's own work; a future `/contributing` v1.x bump surfaces the disclosure. Tracked as a Phase-5 / Phase-6 content follow-on.
+- **6 considered options** documented with explicit Pros/Cons per the ADR README authoring rule: Anthropic (chosen), OpenAI GPT-4-class, Google Gemini, local Ollama, multi-provider abstraction (Vercel AI SDK / LangChain), no-LLM.
+- **ADR README index updated** with ADR-0008.
+- **Status: `accepted`** on the authoring commit. The decision (Anthropic) is firm; cost-governance details refine via new ADRs if real usage reveals issues. The `lib/curate/` modules in Units 5.2 / 5.3 abstract provider calls behind a thin wrapper for reversibility.
+- **Parallel-curator state**: HEAD = `42fa01f` post-Unit-5.0. No collision.
+- THINK artifact: `docs/thinking/5.1-adr-llm-provider.md`.
+- Pure docs unit — no app, schema, or test code touched.
+- Smoke gates: `pnpm typecheck` (clean), `pnpm test` (199/199 unchanged), `pnpm validate-content` (203 files unchanged).
+

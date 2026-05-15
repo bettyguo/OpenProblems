@@ -249,9 +249,15 @@ ADR-0007 ships after Unit 4.2 to record the realized DomainMap rendering decisio
 
 ## Q41. LLM model choice per Phase-5 script
 
-**Status:** decided-as-lean · **Surfaced:** Unit 5.0 THINK · **Blocks:** Unit 5.1 (ADR-0008) realized default.
+**Status:** decided · **Surfaced:** Unit 5.0 THINK · **Resolved:** Unit 5.1 ([`docs/adr/0008-llm-provider-anthropic.md`](./docs/adr/0008-llm-provider-anthropic.md), accepted 2026-05-15).
 
-Phase-5 CLIs (`ingest-arxiv`, `extract-leaderboard`, `build-digest`) make Anthropic API calls. Which Claude model is the default? Lean: **Sonnet 4.6 default; Opus 4.7 via `--model` flag** for harder extraction (multi-table PDF parsing). The `claude-api` skill in the command palette recommends "latest and most capable Claude models". Decision finalized in ADR-0008 (Unit 5.1).
+Phase-5 CLIs (`ingest-arxiv`, `extract-leaderboard`, `build-digest`) make Anthropic API calls. Which Claude model is the default? ADR-0008 D-B pins the per-script defaults:
+
+- `ingest-arxiv` → Sonnet 4.6 (fast + cheap for metadata + abstract → YAML)
+- `extract-leaderboard` → Opus 4.7 (multi-table PDF parsing benefits from frontier capability)
+- `build-digest` → Sonnet 4.6 (text summarisation; not capability-bound)
+
+Every script accepts a `--model` CLI flag that overrides the default. Per the `claude-api` skill, the project tracks "latest and most capable" Claude models; a follow-on commit updates these defaults when a new flagship lands.
 
 ## Q42. Cost-cap default policy
 

@@ -21,5 +21,6 @@ This directory contains Architecture Decision Records for the LLM OpenProblems r
 | 0005 | [Rating-action immutability](./0005-rating-action-immutability.md) | accepted |
 | 0006 | [Saturation N/A encoding](./0006-saturation-na-encoding.md) | accepted |
 | 0007 | [DomainMap rendering target & D3 import policy](./0007-domainmap-rendering.md) | accepted |
+| 0008 | [LLM provider selection (Anthropic Claude) + cost-governance pact](./0008-llm-provider-anthropic.md) | accepted |
 
-ADRs 0001–0005 were authored in Unit 0.1 and accepted on the same commit (2026-05-14) following human sign-off. ADR-0006 was authored in Unit 3.11 (closes OPEN_QUESTIONS Q18; accepted 2026-05-15). ADR-0007 was authored in Unit 4.11 (closes OPEN_QUESTIONS Q40; accepted 2026-05-15). The next ADR will be numbered 0008.
+ADRs 0001–0005 were authored in Unit 0.1 and accepted on the same commit (2026-05-14) following human sign-off. ADR-0006 was authored in Unit 3.11 (closes OPEN_QUESTIONS Q18; accepted 2026-05-15). ADR-0007 was authored in Unit 4.11 (closes OPEN_QUESTIONS Q40; accepted 2026-05-15). ADR-0008 was authored in Unit 5.1 (closes OPEN_QUESTIONS Q41 + documents Q42 trade-off; accepted 2026-05-15). The next ADR will be numbered 0009.
