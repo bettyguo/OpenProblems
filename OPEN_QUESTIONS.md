@@ -163,9 +163,9 @@ Lean: (a) for problems / authors / papers / institutions (each has a natural "se
 
 ## Q27. e2e + Lighthouse: advisory → required
 
-**Status:** open · **Surfaced:** Unit 0.11 THINK · **Blocks:** Phase 1 acceptance gate.
+**Status:** decided · **Surfaced:** Unit 0.11 THINK · **Resolved:** Unit 1.12 (Phase 1 acceptance gate, commit `939062c`).
 
-`.github/workflows/e2e-lighthouse.yml` runs Playwright e2e and Lighthouse CI with `continue-on-error: true` in Phase 0 — they report status but don't block merges. Reason: Playwright browser install + Lighthouse perf are flaky on shared runners until baselines stabilize. At Phase 1 kickoff, flip `continue-on-error: false` once 3 consecutive PRs have passed without intervention.
+`.github/workflows/e2e-lighthouse.yml` ran Playwright e2e and Lighthouse CI with `continue-on-error: true` through Phase 0 — advisory, not blocking. Unit 1.12 dropped `continue-on-error` from both jobs at Phase 1 kickoff: the Playwright nav spec + visual-regression baseline and the Lighthouse perf/a11y/SEO ≥ 95 thresholds on `/`, `/problems/[slug]`, `/domains/[domain]` are now PR-blocking. Follow-on: the Linux baseline for the RatingRadar visual snapshot must be captured on first CI run (only the `chromium-win32` baseline is committed) — one-shot `--update-snapshots` from a CI artifact, then commit the resulting `chromium-linux.png`.
 
 ## Q28. GitHub branch-protection rules
 
