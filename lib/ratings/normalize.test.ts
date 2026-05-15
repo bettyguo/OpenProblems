@@ -58,6 +58,29 @@ describe("dimensionsToRadar", () => {
     }
   });
 
+  // ADR-0006: Saturation N/A encoding falls back to qualitative band.
+  it("maps null saturation + qualitative_band to center-of-bucket (low=4, medium=2.5, high=1)", () => {
+    const tests = [
+      { band: "low" as const, expected: 4 },
+      { band: "medium" as const, expected: 2.5 },
+      { band: "high" as const, expected: 1 },
+    ];
+    for (const { band, expected } of tests) {
+      const dims = {
+        ...baseDimensions,
+        saturation: {
+          value: null,
+          qualitative_band: band,
+          confidence: 0.4,
+          rationale: "no ceiling defensible",
+        },
+      };
+      const points = dimensionsToRadar(dims);
+      expect(points[1]?.normalized).toBe(expected);
+      expect(points[1]?.rawDisplay).toBe(`N/A (${band})`);
+    }
+  });
+
   it("passes star ratings through unchanged", () => {
     const points = dimensionsToRadar(baseDimensions);
     expect(points[2]?.normalized).toBe(5);

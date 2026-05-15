@@ -3,8 +3,12 @@
  * (and the composite formula in §8.3 also uses).
  *
  *   Difficulty letter → 0 (E) … 5 (S)
- *   Saturation 0–100 → (100 − saturation) / 20 → 0 (fully saturated, no
- *                       progress remaining) … 5 (open, much remaining)
+ *   Saturation
+ *     numeric 0–100   → (100 − saturation) / 20 → 0 (fully saturated, no
+ *                         progress remaining) … 5 (open, much remaining)
+ *     null + band     → low → 4, medium → 2.5, high → 1 (qualitative-only
+ *                         encoding per ADR-0006; radar plots the band's
+ *                         center-of-bucket so the viz shape stays readable)
  *   Urgency / Value / Industry Call stars 0–5 → pass-through
  *
  * Output order is fixed: difficulty, saturation, urgency, value,
@@ -13,6 +17,12 @@
  */
 
 import type { RatingAction } from "@/lib/schemas/rating-action";
+
+const BAND_TO_NORM: Record<"low" | "medium" | "high", number> = {
+  low: 4,
+  medium: 2.5,
+  high: 1,
+};
 
 export type DimensionId = "difficulty" | "saturation" | "urgency" | "value" | "industry_call";
 
@@ -48,8 +58,17 @@ export function dimensionsToRadar(dimensions: RatingAction["dimensions"]): Radar
     },
     {
       dimension: "saturation",
-      normalized: (100 - dimensions.saturation.value) / 20,
-      rawDisplay: String(dimensions.saturation.value),
+      // ADR-0006: value may be null (no ceiling defensible); fall back to
+      // qualitative_band's center-of-bucket. The schema's refine() guarantees
+      // at least one is set, so the band branch is reachable iff value is null.
+      normalized:
+        dimensions.saturation.value !== null
+          ? (100 - dimensions.saturation.value) / 20
+          : BAND_TO_NORM[dimensions.saturation.qualitative_band ?? "medium"],
+      rawDisplay:
+        dimensions.saturation.value !== null
+          ? String(dimensions.saturation.value)
+          : `N/A (${dimensions.saturation.qualitative_band ?? "medium"})`,
       confidence: dimensions.saturation.confidence,
       rationale: dimensions.saturation.rationale,
     },

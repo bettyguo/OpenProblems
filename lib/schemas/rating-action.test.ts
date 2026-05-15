@@ -80,4 +80,68 @@ describe("RatingActionSchema", () => {
     const parsed = RatingActionSchema.parse(VALID);
     expect(parsed.watchlist).toBe(false);
   });
+
+  // ADR-0006: Saturation N/A encoding (closes Q18).
+  it("accepts saturation { value: null, qualitative_band: 'medium' }", () => {
+    const result = RatingActionSchema.safeParse({
+      ...VALID,
+      dimensions: {
+        ...VALID.dimensions,
+        saturation: {
+          value: null,
+          qualitative_band: "medium",
+          confidence: 0.4,
+          rationale: "No theoretical ceiling defensible; medium band reflects active progress.",
+        },
+      },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts saturation with both numeric value AND qualitative_band when curator wants both", () => {
+    const result = RatingActionSchema.safeParse({
+      ...VALID,
+      dimensions: {
+        ...VALID.dimensions,
+        saturation: {
+          value: 35,
+          qualitative_band: "low",
+          confidence: 0.6,
+          rationale: "Numeric + qualitative for downstream redundancy.",
+        },
+      },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects saturation when both `value` is null and `qualitative_band` is omitted", () => {
+    const result = RatingActionSchema.safeParse({
+      ...VALID,
+      dimensions: {
+        ...VALID.dimensions,
+        saturation: {
+          value: null,
+          confidence: 0.4,
+          rationale: "Empty saturation — should be rejected.",
+        },
+      },
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects qualitative_band outside low/medium/high", () => {
+    const result = RatingActionSchema.safeParse({
+      ...VALID,
+      dimensions: {
+        ...VALID.dimensions,
+        saturation: {
+          value: null,
+          qualitative_band: "very-low",
+          confidence: 0.4,
+          rationale: "Invalid band.",
+        },
+      },
+    });
+    expect(result.success).toBe(false);
+  });
 });

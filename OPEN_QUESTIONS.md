@@ -126,9 +126,9 @@ Unit 0.3 installed shadcn/ui with `baseColor: "neutral"` (true grays, no hue cas
 
 ## Q18. Saturation N/A encoding
 
-**Status:** open · **Surfaced:** Unit 0.5 THINK · **Blocks:** nothing in Phase 0; **resolution scheduled:** Unit 3.11 (ADR-0006) — see [docs/thinking/3.0-phase-3-prep.md](./docs/thinking/3.0-phase-3-prep.md).
+**Status:** decided · **Surfaced:** Unit 0.5 THINK · **Resolved:** Unit 3.11 ([ADR-0006](./docs/adr/0006-saturation-na-encoding.md)).
 
-MASTER_PROMPT §8.2 says: "When no ceiling exists, mark Saturation = N/A and use a qualitative band (Low / Medium / High)." The Unit 0.5 `RatingActionSchema.dimensions.saturation` is strictly numeric (`value: z.number().min(0).max(100)`), with no N/A escape hatch. Phase 3 will need to either (a) extend the schema with `value: z.number().nullable()` plus a `qualitative_band` field, or (b) treat the qualitative case as a separate dimension variant via `z.discriminatedUnion`. Decision deferred to a Phase-3 ADR.
+MASTER_PROMPT §8.2 says: "When no ceiling exists, mark Saturation = N/A and use a qualitative band (Low / Medium / High)." [ADR-0006](./docs/adr/0006-saturation-na-encoding.md) picks **option (a)** — extends `SaturationDimensionSchema` with `value: z.number().min(0).max(100).nullable()` plus `qualitative_band: z.enum(["low", "medium", "high"]).optional()` plus a `.refine()` ensuring at least one is set. Additive change: all 20 v1.0 rating actions continue to validate unchanged (ADR-0005 immutability preserved). Future N/A-cases set `value: null` and pick a band. Velite mirror in `velite.config.ts` matches the shape (Zod-3 `.nullable()` is supported in Velite's bundled `s` factory).
 
 ## Q19. `eslint-config-next` 16.x crash under ESLint 10 flat config
 

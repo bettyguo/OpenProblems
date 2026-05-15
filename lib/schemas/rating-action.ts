@@ -13,11 +13,26 @@ const DifficultyDimensionSchema = z.object({
   rationale: z.string().min(1),
 });
 
-const SaturationDimensionSchema = z.object({
-  value: z.number().min(0).max(100),
-  confidence: Confidence,
-  rationale: z.string().min(1),
-});
+/**
+ * Saturation dimension — supports both numeric (0–100) values and the
+ * qualitative N/A escape hatch from MASTER_PROMPT §8.2 / ADR-0006.
+ *
+ * - `value: number (0–100)` for the canonical case (defensible ceiling exists).
+ * - `value: null` for the §8.2 "no ceiling" case; `qualitative_band` carries
+ *   the editorial signal in that case.
+ * - Both can coexist when a curator is confident in both. The refine ensures
+ *   at least one is set so the dimension is never silently empty.
+ */
+const SaturationDimensionSchema = z
+  .object({
+    value: z.number().min(0).max(100).nullable(),
+    qualitative_band: z.enum(["low", "medium", "high"]).optional(),
+    confidence: Confidence,
+    rationale: z.string().min(1),
+  })
+  .refine((data) => data.value !== null || data.qualitative_band !== undefined, {
+    message: "saturation: either `value` (0–100) or `qualitative_band` must be set",
+  });
 
 const StarDimensionSchema = z.object({
   stars: Stars,

@@ -684,3 +684,39 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **Q33 disposition**: item-level `<dc:creator>` lands per the Q33 lean (action's `curator` field directly). Channel-level `<managingEditor>` is **deliberately omitted** in this commit — RSS 2.0 spec allows omitting it, and W3C validator doesn't require it. Adding `<managingEditor>noreply@<domain> (Name)</managingEditor>` is a one-line change once Q2 (DNS) resolves.
 - Build surface unchanged at **188 routes**; First Load JS shared chunk unchanged at 103 kB.
 - Smoke gates green: `pnpm typecheck` (clean), `pnpm build` (both routes flip from `ƒ` Dynamic stub to `○` Static; prerendered bodies inspect clean).
+
+#### Unit 3.11 — ADR-0006 + Saturation N/A schema (closes Q18)
+
+- Phase-3 architecture unit. Resolves [OPEN_QUESTIONS Q18](../OPEN_QUESTIONS.md#q18-saturation-na-encoding) (open since Unit 0.5 THINK) with [ADR-0006](docs/adr/0006-saturation-na-encoding.md) and the schema bump it specifies. Unblocks `SaturationCurve` (Unit 3.6) + `MoversBoard` saturation column (Unit 3.7) — both need a defined N/A encoding to render qualitative entries faithfully instead of silently coercing them to 0.
+- **ADR-0006** picks option (a) — nullable numeric value + optional qualitative band + Zod `.refine()` ensuring at least one is set. Alternatives considered (and rejected):
+  - **Discriminated union by `mode`** — breaking change for the 20 committed v1.0 actions (ADR-0005 violation).
+  - **Sentinel numeric (-1 = N/A)** — §15.6 violation in spirit (a -1 in the audit log reads as fabricated).
+  - **Separate schema keyed off a top-level field** — doubles dimension-handling code across Phase-3 viz consumers.
+- **`lib/schemas/rating-action.ts`** — `SaturationDimensionSchema` now:
+
+  ```ts
+  z.object({
+    value: z.number().min(0).max(100).nullable(),
+    qualitative_band: z.enum(["low", "medium", "high"]).optional(),
+    confidence: Confidence,
+    rationale: z.string().min(1),
+  }).refine(
+    (data) => data.value !== null || data.qualitative_band !== undefined,
+    { message: "saturation: either `value` (0–100) or `qualitative_band` must be set" },
+  );
+  ```
+
+- **`velite.config.ts`** — `DimensionSaturation` mirror updated to match (Velite's bundled Zod-3 `s` factory supports `.nullable()` and `.enum()` — no Q31 breakage).
+- **`lib/ratings/normalize.ts`** updated to handle the new shape:
+  - When `value !== null`: same `(100 - value) / 20` formula as before.
+  - When `value === null`: fall back to `qualitative_band` center-of-bucket — `low → 4`, `medium → 2.5`, `high → 1`. Picks the band's midpoint so the radar viz shape stays readable while still communicating "no ceiling defensible".
+  - `rawDisplay` reads `"N/A (medium)"` (etc.) for the null case; numeric case unchanged.
+- **Backwards compatibility verified**: `pnpm validate-content` returns the same **203 files green** as before the change — all 20 committed v1.0 actions parse without modification (they set `value: <number>` and omit `qualitative_band`, which still passes the `.refine()`). ADR-0005 immutability preserved.
+- **Forward compatibility**: future v1.1+ actions can write `value: null` + `qualitative_band: low/medium/high` for the §8.2 no-ceiling case. The methodology_version bump happens organically as new actions are written; the schema accepts both v1.0 and v1.1 shapes.
+- **Test coverage** (+5 new tests across two suites):
+  - `lib/schemas/rating-action.test.ts` (+4): accepts `value: null + band: medium`; accepts both numeric value AND band coexisting (curator redundancy); rejects empty (null value, no band); rejects out-of-enum band ("very-low").
+  - `lib/ratings/normalize.test.ts` (+1): null saturation + each of low / medium / high maps to the documented bucket center (4 / 2.5 / 1) and `rawDisplay` reads `"N/A (<band>)"`.
+- **`OPEN_QUESTIONS.md` Q18 marked as decided** with a backlink to the ADR.
+- Pure schema + adjacent-code change: no route or bundle additions. Build surface unchanged at **188 routes**; First Load JS shared chunk unchanged at 103 kB.
+- Smoke gates green: `pnpm test` (**110/110** across 16 files, +5 new tests), `pnpm validate-content` (203 files), `pnpm audit-content` (0 errors / 6 warnings — same Q32 set), `pnpm typecheck` (clean), `pnpm build` (188 routes).
+- Artifact: [`docs/adr/0006-saturation-na-encoding.md`](docs/adr/0006-saturation-na-encoding.md).

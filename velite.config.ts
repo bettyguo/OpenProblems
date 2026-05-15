@@ -117,8 +117,13 @@ const DimensionGrade = s.object({
   rationale: s.string(),
 });
 
+// Saturation dimension per ADR-0006: numeric value OR qualitative band.
+// The refine() lives in the Zod-4 source-of-truth schema (lib/schemas/rating-
+// action.ts) and is enforced by scripts/validate-content.ts. Velite's mirror
+// here matches the shape so .velite/ratings.json carries both fields verbatim.
 const DimensionSaturation = s.object({
-  value: s.number(),
+  value: s.number().nullable(),
+  qualitative_band: s.enum(["low", "medium", "high"]).optional(),
   confidence: s.number(),
   rationale: s.string(),
 });
