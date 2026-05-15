@@ -72,6 +72,111 @@ const methodology = defineCollection({
     })),
 });
 
+const BenchmarkS = s.object({
+  id: s.string(),
+  name: s.string(),
+  dataset: s.string(),
+  metric: s.string(),
+  metric_direction: s.enum(["higher-is-better", "lower-is-better"]),
+  upper_bound: s.number().optional(),
+  protocol_url: s.string().url().optional(),
+  notes: s.string().optional(),
+});
+
+const EditorialS = s.object({
+  primary_curator: s.string(),
+  last_curated: s.isodate(),
+});
+
+const ExternalLinksS = s.object({
+  arxiv_survey: s.string().url().optional(),
+  paperswithcode_legacy: s.string().url().optional(),
+  nlp_progress: s.string().url().optional(),
+  canonical_survey: s.string().url().optional(),
+});
+
+const ProblemS = s.object({
+  slug: s.string(),
+  title: s.string(),
+  subtitle: s.string().optional(),
+  domain: s.string(),
+  subdomain: s.string(),
+  tags: s.array(s.string()),
+  status: s.enum(["open", "partially-solved", "converging", "solved", "retired"]),
+  posed_year: s.number().int(),
+  authors_who_posed: s.array(s.string()).optional(),
+  related_problems: s.array(s.string()).optional(),
+  benchmarks: s.array(BenchmarkS),
+  external_links: ExternalLinksS.optional(),
+  editorial: EditorialS,
+});
+
+const DimensionGrade = s.object({
+  grade: s.enum(["S", "A", "B", "C", "D", "E"]),
+  confidence: s.number(),
+  rationale: s.string(),
+});
+
+const DimensionSaturation = s.object({
+  value: s.number(),
+  confidence: s.number(),
+  rationale: s.string(),
+});
+
+const DimensionStars = s.object({
+  stars: s.number().int(),
+  confidence: s.number(),
+  rationale: s.string(),
+});
+
+const RatingActionS = s.object({
+  problem_slug: s.string(),
+  date: s.isodate(),
+  methodology_version: s.string(),
+  curator: s.string(),
+  prior_action: s.string().optional(),
+  dimensions: s.object({
+    difficulty: DimensionGrade,
+    saturation: DimensionSaturation,
+    urgency: DimensionStars,
+    value: DimensionStars,
+    industry_call: DimensionStars,
+  }),
+  signals_considered: s.array(s.string()).optional(),
+  watchlist: s.boolean().default(false),
+});
+
+const problems = defineCollection({
+  name: "Problem",
+  pattern: "problems/*/problem.yaml",
+  schema: ProblemS,
+});
+
+const ratings = defineCollection({
+  name: "RatingAction",
+  pattern: "problems/*/ratings/*.yaml",
+  schema: RatingActionS,
+});
+
+const problemPages = defineCollection({
+  name: "ProblemPage",
+  pattern: "problems/*/{background,definition,history}.mdx",
+  schema: s
+    .object({
+      title: s.string(),
+      summary: s.string(),
+      slug: s.path(),
+      body: s.mdx(),
+    })
+    .transform((data) => {
+      // path is e.g. "problems/hallucination-reduction/background"
+      const m = data.slug.match(/^problems\/([^/]+)\/(background|definition|history)$/);
+      const problemSlug = m?.[1] ?? "";
+      const kind = (m?.[2] ?? "background") as "background" | "definition" | "history";
+      return { ...data, problem_slug: problemSlug, kind };
+    }),
+});
+
 export default defineConfig({
   root: "content",
   output: {
@@ -97,5 +202,8 @@ export default defineConfig({
   collections: {
     taxonomy,
     methodology,
+    problems,
+    ratings,
+    problemPages,
   },
 });

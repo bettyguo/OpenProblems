@@ -1,0 +1,60 @@
+problem_slug: hallucination-reduction
+date: 2026-05-14
+methodology_version: "1.0.0"
+curator: jikun
+dimensions:
+  difficulty:
+    grade: A
+    confidence: 0.75
+    rationale: |
+      A multi-decade open problem that has resisted scaling alone. Multiple
+      independent waves of progress (RAG, uncertainty estimation, RLHF)
+      have lowered the rate on some benchmark families without closing the
+      gap; the 2025 inverse-scaling finding on test-time reasoning sets
+      the difficulty above B. Not S because (a) the problem is measurable
+      and benchmarked, and (b) there is broad consensus on what "progress"
+      means, even where progress is hard.
+  saturation:
+    value: 35
+    confidence: 0.55
+    rationale: |
+      Best-published SOTA on HaluEval and FACTS Grounding is well below the
+      human-expert ceiling. Saturation calculation uses the human-expert
+      ceiling on those two benchmarks; second-derivative signal (Δ12mo /
+      Δ36mo) is decreasing, indicating progress is slowing relative to its
+      own historical pace. The 35 figure is a placeholder pending a
+      curated SOTA pass and TODO(curate) for each benchmark.
+  urgency:
+    stars: 5
+    confidence: 0.8
+    rationale: |
+      Hallucination is the single most-cited blocker in 2025–26 AI-safety
+      and AI-evaluation reports, sits on every frontier-lab roadmap, and
+      blocks deployment in domains with regulatory exposure
+      (medical, legal, financial advice). 5 stars is the only defensible
+      value at this date.
+  value:
+    stars: 5
+    confidence: 0.8
+    rationale: |
+      Substantive progress here unlocks the entire long-form generation
+      surface for high-stakes deployment — directly affects the value
+      ratings of every adjacent problem in [[scalable-oversight]] and
+      [[long-context-rag]]. Cross-domain spillover into healthcare,
+      legal, education is large.
+  industry_call:
+    stars: 5
+    confidence: 0.75
+    rationale: |
+      Every frontier lab's published 2025–26 roadmap names hallucination
+      or faithfulness explicitly. Job postings for "factuality" and
+      "grounded generation" researchers have grown faster than overall
+      ML hiring through 2025. Venture funding in applied-RAG and
+      evaluation tooling tracks the same curve.
+signals_considered:
+  - Yang et al., NeurIPS 2025 — inverse scaling of test-time reasoning on knowledge-intensive QA
+  - HaluEval (Li et al., 2023) and TruthfulQA-2026 (refresh)
+  - SimpleQA — short-form ungoogleable QA with abstention
+  - FACTS Grounding — long-form grounded generation
+  - 2026 AI-safety status reports citing factuality as a top-3 unsolved deployment risk
+watchlist: false

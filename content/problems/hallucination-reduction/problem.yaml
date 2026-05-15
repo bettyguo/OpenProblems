@@ -1,0 +1,52 @@
+slug: hallucination-reduction
+title: Faithful & Calibrated Hallucination Reduction in LLMs
+subtitle: Reducing fabricated content while preserving useful generation, with calibrated abstention when the model does not know.
+domain: deep-learning
+subdomain: large-language-models
+tags:
+  - factuality
+  - calibration
+  - abstention
+  - knowledge-intensive
+  - evaluation
+status: open
+posed_year: 2022
+related_problems:
+  - long-context-rag
+benchmarks:
+  - id: halueval
+    name: HaluEval
+    dataset: HaluEval
+    metric: accuracy
+    metric_direction: higher-is-better
+    notes: |
+      Multi-task hallucination evaluation across QA, dialogue, and summarization.
+      Score on the QA split is the most-cited subset in 2024–26 SOTA papers.
+  - id: truthfulqa-2026
+    name: TruthfulQA-2026
+    dataset: TruthfulQA-2026
+    metric: truthful+informative
+    metric_direction: higher-is-better
+    notes: |
+      2026 refresh of TruthfulQA with deduplicated mimicry prompts and updated
+      "truthful AND informative" judging. Replaces the original TruthfulQA for
+      contemporary models.
+  - id: simpleqa
+    name: SimpleQA
+    dataset: SimpleQA
+    metric: f-score
+    metric_direction: higher-is-better
+    notes: |
+      Short-form factual QA with deliberately ungoogleable questions; designed
+      to penalise hallucinated answers vs. "I don't know" abstentions.
+  - id: facts-grounding
+    name: FACTS Grounding
+    dataset: FACTS Grounding
+    metric: groundedness
+    metric_direction: higher-is-better
+    notes: |
+      Long-form grounded generation evaluated against retrieved evidence;
+      tracks both factual support and abstention quality.
+editorial:
+  primary_curator: jikun
+  last_curated: 2026-05-14

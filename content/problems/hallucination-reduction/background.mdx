@@ -1,0 +1,10 @@
+---
+title: Background
+summary: Why hallucination — fluent text untethered from fact — has remained the perennial open problem of large language models, and why faithfulness alone is insufficient without calibration.
+---
+
+Large language models are next-token predictors trained on internet-scale corpora. Fluency is the easy part; *truthfulness* — the property that a generated claim actually corresponds to the world — is not directly optimised by next-token loss. When the training distribution rewards confident-sounding continuations regardless of factual support, a model can produce sentences that are syntactically pristine and semantically wrong with equal facility.
+
+The community has converged on a useful distinction: **faithfulness** (does the output match the evidence?), **factuality** (does the output match the world?), and **calibration** (does the model say "I don't know" when it should?). All three can fail independently. A retrieval-augmented model can be faithful to its retrieved context yet wrong if the retrieval is wrong; a parametric model can be factual on average yet uncalibrated, refusing nothing and over-claiming everything. A well-aligned system needs all three.
+
+The dimension of this problem that this entry tracks is **reducing hallucination *while* preserving useful behaviour**. Trivially solving hallucination by refusing every prompt is not progress. The frontier task is to lower the rate of fabricated content, raise the rate of well-calibrated abstention, and keep informativeness — measured on the same benchmark family — at or above the previous SOTA.

@@ -1,0 +1,14 @@
+---
+title: Formal definition
+summary: A working definition of hallucination as a joint failure of faithfulness, factuality, and calibration; with notation for the three quantities a benchmark must measure.
+---
+
+Let a model $M$ produce a response $y$ to a prompt $x$, optionally conditioned on retrieved context $C(x)$. Let $W$ be the underlying world state (ground truth).
+
+**Faithfulness.** $y$ is *faithful* to $C(x)$ when every claim in $y$ is entailed by $C(x)$. Faithfulness is necessary for retrieval-augmented systems and is the metric of choice on long-form grounded benchmarks.
+
+**Factuality.** $y$ is *factual* when every claim in $y$ is true of $W$. Factuality may diverge from faithfulness when the retrieved context is wrong, missing, or out of date.
+
+**Calibration.** Let $p_M(y \mid x)$ be the model's expressed confidence in $y$. The model is *calibrated* when its expressed confidence matches its empirical accuracy on prompts similar to $x$. A well-calibrated model abstains — outputs "I don't know" or a similar sentinel — when its confidence is below a threshold appropriate to the deployment context.
+
+We call the joint failure of any combination of these three a **hallucination**. The frontier task is to drive the hallucination rate down on a benchmark family while preserving informativeness (loosely, recall on a population of questions a competent model should answer) and not degrading on related dimensions (latency, downstream task performance, calibration on out-of-distribution prompts).

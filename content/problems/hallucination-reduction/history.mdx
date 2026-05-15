@@ -1,0 +1,12 @@
+---
+title: History
+summary: Brief chronology of the hallucination-reduction frontier — from knowledge-intensive QA benchmarks, through retrieval and uncertainty estimation, to the 2025 finding that test-time-scaling can make hallucination worse on knowledge-intensive tasks.
+---
+
+The concern that fluent generation can be factually wrong predates large language models, but it became a defining open problem of the field after 2020 when generative pre-training began producing outputs whose fluency outran their faithfulness. By 2022, knowledge-intensive QA benchmarks (HaluEval, the original TruthfulQA, and the early ELI5-style evaluations) had made the failure mode legible and measurable.
+
+The first wave of progress, 2022–2024, came from **retrieval-augmented generation**: grounding the model in retrieved documents reliably reduced free-form hallucination on benchmark families where the retrieval was high-quality. The wave plateaued when retrieval quality, not generation quality, became the bottleneck — a problem we track separately under [long-context retrieval-augmented generation beyond 1M tokens](/problems/long-context-rag).
+
+The second wave, 2023–2025, focused on **uncertainty estimation and calibration**. Methods spanned trained verifiers, internal-state probes, and post-hoc calibration. Progress was real on multiple-choice and short-form QA, but transferred unevenly to long-form generation.
+
+The current phase, starting late 2025, is shaped by a finding that ran counter to expectations: scaling **test-time reasoning** — longer chains of thought, more inference compute — *increases* hallucination on knowledge-intensive tasks (Yang et al., NeurIPS 2025). Reasoning gave the model more tokens to confabulate with; without grounding, longer outputs introduced more factual errors. The frontier as of mid-2026 is "reason longer without confabulating more" — and that is what this problem tracks.
