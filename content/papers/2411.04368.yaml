@@ -1,0 +1,17 @@
+id: "2411.04368"
+title: "Measuring short-form factuality in large language models"
+authors: []
+institutions:
+  - openai
+venue: OpenAI 2024
+year: 2024
+arxiv_id: "2411.04368"
+tldr: |
+  Introduces SimpleQA, a short-form factual QA benchmark with deliberately ungoogleable questions designed
+  to penalise hallucinated answers vs. calibrated "I don't know" abstentions. Released as part of OpenAI's
+  factuality evaluation push.
+contributions:
+  - problem_slug: hallucination-reduction
+    benchmark_id: simpleqa
+    metric: f-score
+    evidence: https://arxiv.org/abs/2411.04368

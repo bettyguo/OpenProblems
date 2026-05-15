@@ -8,9 +8,19 @@ describe("loadPaper", () => {
     expect(loadPaper("does-not-exist-2999.99999")).toBeNull();
   });
 
-  it("returns the full paper count via allPaperIds()", () => {
-    // Phase 2.2 lands collections empty; the count grows in 2.4–2.6.
+  it("returns an array via allPaperIds()", () => {
     expect(Array.isArray(allPaperIds())).toBe(true);
+  });
+
+  it("loads TruthfulQA (Unit 2.4) and resolves its author + institution joins", () => {
+    const loaded = loadPaper("2109.07958");
+    expect(loaded).not.toBeNull();
+    if (!loaded) return;
+    expect(loaded.paper.title).toMatch(/TruthfulQA/);
+    expect(loaded.authors.map((a) => a.slug)).toContain("owain-evans");
+    expect(loaded.institutions.map((i) => i.slug)).toContain("openai");
+    expect(loaded.contributions.length).toBeGreaterThan(0);
+    expect(loaded.contributions[0]?.problem?.slug).toBe("hallucination-reduction");
   });
 });
 
@@ -19,7 +29,7 @@ describe("loadAuthor", () => {
     expect(loadAuthor("nobody-here-2026")).toBeNull();
   });
 
-  it("loads each seed author and reports empty joins until papers land", () => {
+  it("resolves each Unit-2.1 seed author and exposes affiliations + papers arrays", () => {
     const seedSlugs = [
       "yejin-choi",
       "percy-liang",
@@ -32,14 +42,26 @@ describe("loadAuthor", () => {
       expect(loaded, `author ${slug} should resolve`).not.toBeNull();
       if (!loaded) continue;
       expect(loaded.author.slug).toBe(slug);
-      // Affiliations are intentionally empty in Unit 2.1; papers come in 2.4–2.6.
+      // Affiliations stay empty until a later curation pass — papers anchor the dates.
       expect(loaded.affiliations).toEqual([]);
-      expect(loaded.papers).toEqual([]);
-      expect(loaded.problemsTouched).toEqual([]);
+      // papers / problemsTouched grow as Units 2.4–2.6 land batches; just assert shape here.
+      expect(Array.isArray(loaded.papers)).toBe(true);
+      expect(Array.isArray(loaded.problemsTouched)).toBe(true);
     }
   });
 
-  it("allAuthorSlugs() includes every seed author", () => {
+  it("joins an author to their papers once a paper references them", () => {
+    // Owain Evans is on the TruthfulQA paper (arXiv 2109.07958), committed in Unit 2.4.
+    const loaded = loadAuthor("owain-evans");
+    expect(loaded).not.toBeNull();
+    if (!loaded) return;
+    const ids = loaded.papers.map((p) => p.id);
+    expect(ids).toContain("2109.07958");
+    const problemSlugs = loaded.problemsTouched.map((p) => p.slug);
+    expect(problemSlugs).toContain("hallucination-reduction");
+  });
+
+  it("allAuthorSlugs() includes every Unit-2.1 seed author", () => {
     const slugs = allAuthorSlugs();
     for (const expected of [
       "yejin-choi",
@@ -58,7 +80,7 @@ describe("loadInstitution", () => {
     expect(loadInstitution("no-such-institution-2026")).toBeNull();
   });
 
-  it("loads each seed institution with empty paper joins", () => {
+  it("resolves each Unit-2.1 seed institution and exposes papers + coverage arrays", () => {
     const seedSlugs = [
       "openai",
       "anthropic",
@@ -74,12 +96,28 @@ describe("loadInstitution", () => {
       expect(loaded, `institution ${slug} should resolve`).not.toBeNull();
       if (!loaded) continue;
       expect(loaded.institution.slug).toBe(slug);
-      expect(loaded.papers).toEqual([]);
-      expect(loaded.subdomainCoverage).toEqual([]);
+      expect(Array.isArray(loaded.papers)).toBe(true);
+      expect(Array.isArray(loaded.subdomainCoverage)).toBe(true);
     }
   });
 
-  it("allInstitutionSlugs() returns the 8 seed institutions", () => {
+  it("joins an institution to its papers and ranks subdomain coverage", () => {
+    // OpenAI is on TruthfulQA + SimpleQA, both committed in Unit 2.4 and both
+    // contributing to hallucination-reduction (DL / large-language-models).
+    const loaded = loadInstitution("openai");
+    expect(loaded).not.toBeNull();
+    if (!loaded) return;
+    const ids = loaded.papers.map((p) => p.id);
+    expect(ids).toContain("2109.07958");
+    expect(ids).toContain("2411.04368");
+    const llmCoverage = loaded.subdomainCoverage.find(
+      (c) => c.subdomain_id === "large-language-models",
+    );
+    expect(llmCoverage).toBeDefined();
+    expect(llmCoverage?.paperCount).toBeGreaterThanOrEqual(2);
+  });
+
+  it("allInstitutionSlugs() returns at least the 8 Unit-2.1 seed institutions", () => {
     expect(allInstitutionSlugs().length).toBeGreaterThanOrEqual(8);
   });
 });

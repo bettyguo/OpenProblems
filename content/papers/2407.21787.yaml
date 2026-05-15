@@ -1,0 +1,16 @@
+id: "2407.21787"
+title: "Large Language Monkeys: Scaling Inference Compute with Repeated Sampling"
+authors: []
+institutions:
+  - stanford-university
+venue: arXiv 2024
+year: 2024
+arxiv_id: "2407.21787"
+tldr: |
+  Demonstrates that repeated sampling with a verifier can substantially boost task coverage at fixed
+  inference compute on math and code benchmarks, even for relatively small base models. The findings
+  motivate "best-of-N is a free lunch" framing in compute-optimal inference, with caveats on verifier
+  reliability.
+contributions:
+  - problem_slug: compute-optimal-test-time-reasoning
+    evidence: https://arxiv.org/abs/2407.21787

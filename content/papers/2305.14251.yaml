@@ -1,0 +1,15 @@
+id: "2305.14251"
+title: "FActScore: Fine-grained Atomic Evaluation of Factual Precision in Long Form Text Generation"
+authors:
+  - sewon-min
+institutions: []
+venue: EMNLP 2023
+year: 2023
+arxiv_id: "2305.14251"
+tldr: |
+  Decomposes long-form generations into atomic factoid claims and evaluates each against a reference knowledge
+  source, yielding a fine-grained factual-precision score. The atomic-decomposition approach was widely adopted
+  by follow-on long-form-grounding evaluations.
+contributions:
+  - problem_slug: hallucination-reduction
+    evidence: https://arxiv.org/abs/2305.14251

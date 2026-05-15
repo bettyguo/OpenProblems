@@ -1,0 +1,20 @@
+id: "2109.07958"
+title: "TruthfulQA: Measuring How Models Mimic Human Falsehoods"
+authors:
+  - stephanie-lin
+  - jacob-hilton
+  - owain-evans
+institutions:
+  - openai
+venue: ACL 2022
+year: 2022
+arxiv_id: "2109.07958"
+tldr: |
+  Introduces TruthfulQA, a benchmark of questions designed to elicit imitative falsehoods — answers that humans
+  would also get wrong because the training distribution rewards them. Establishes that larger models can be less
+  truthful, motivating a "truthful AND informative" judging protocol that became standard for hallucination work.
+contributions:
+  - problem_slug: hallucination-reduction
+    benchmark_id: truthfulqa-2026
+    metric: truthful+informative
+    evidence: https://arxiv.org/abs/2109.07958

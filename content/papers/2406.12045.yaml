@@ -1,0 +1,19 @@
+id: "2406.12045"
+title: "τ-bench: A Benchmark for Tool-Agent-User Interaction in Real-World Domains"
+authors:
+  - shunyu-yao
+  - karthik-narasimhan
+institutions:
+  - princeton-university
+venue: arXiv 2024
+year: 2024
+arxiv_id: "2406.12045"
+tldr: |
+  Introduces τ-bench, a multi-turn customer-service benchmark with database-grounded verifiers and a
+  pass^k metric that measures every-trial success across k independent attempts. Surfaces a sharp
+  pass^k / pass@1 gap that did not appear on single-shot agent benchmarks.
+contributions:
+  - problem_slug: long-horizon-agent-reliability
+    benchmark_id: tau-bench
+    metric: pass^k
+    evidence: https://arxiv.org/abs/2406.12045

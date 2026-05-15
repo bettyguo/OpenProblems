@@ -1,0 +1,16 @@
+id: "2411.15114"
+title: "RE-Bench: Evaluating frontier AI R&D capabilities of language model agents against human experts"
+authors: []
+institutions: []
+venue: arXiv 2024
+year: 2024
+arxiv_id: "2411.15114"
+tldr: |
+  Introduces RE-Bench, a benchmark of long-horizon machine-learning research-engineering tasks where
+  agent budgets are measured in hours rather than tokens. Pairs each task with human-expert baselines
+  to make the long-horizon capability gap legible.
+contributions:
+  - problem_slug: long-horizon-agent-reliability
+    benchmark_id: re-bench
+    metric: success-rate
+    evidence: https://arxiv.org/abs/2411.15114

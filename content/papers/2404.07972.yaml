@@ -1,0 +1,16 @@
+id: "2404.07972"
+title: "OSWorld: Benchmarking Multimodal Agents for Open-Ended Tasks in Real Computer Environments"
+authors: []
+institutions: []
+venue: NeurIPS 2024
+year: 2024
+arxiv_id: "2404.07972"
+tldr: |
+  Releases OSWorld, a computer-use agent benchmark spanning real operating-system environments (Ubuntu,
+  Windows) and a wide range of applications. Success rates remained substantially below the same models'
+  web-only computer-use scores, surfacing the real-OS gap as a frontier challenge.
+contributions:
+  - problem_slug: long-horizon-agent-reliability
+    benchmark_id: osworld
+    metric: success-rate
+    evidence: https://arxiv.org/abs/2404.07972

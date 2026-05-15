@@ -1,0 +1,19 @@
+id: "2310.06770"
+title: "SWE-bench: Can Language Models Resolve Real-World GitHub Issues?"
+authors:
+  - shunyu-yao
+  - karthik-narasimhan
+institutions:
+  - princeton-university
+venue: ICLR 2024
+year: 2024
+arxiv_id: "2310.06770"
+tldr: |
+  Releases SWE-bench, a benchmark of real GitHub issues from popular Python repositories with associated
+  test suites as verifiers. Resolved-rate on the Verified subset became the canonical agent-coding metric;
+  pass@1 climbed from single digits in 2023 to a high plateau by early 2026.
+contributions:
+  - problem_slug: long-horizon-agent-reliability
+    benchmark_id: swe-bench-verified
+    metric: resolved-rate
+    evidence: https://arxiv.org/abs/2310.06770
