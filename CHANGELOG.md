@@ -777,3 +777,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **Where this renders**: not wired into a page yet — Unit 3.9 (`/problems/[slug]/history` composition) is the consumer. Ships isolated so Storybook covers every state independently before page integration.
 - Pure additive code: no route, schema, or bundle changes. Build surface unchanged at **188 routes**; First Load JS shared chunk unchanged at 103 kB.
 - Smoke gates green: `pnpm test` (**151/151 across 22 files**, was 138/20; +8 unit tests + 5 Storybook composition tests), `pnpm typecheck` (clean), `pnpm build` (188 routes).
+
+#### Unit 3.9 — `/problems/[slug]/history` page composition
+
+- Phase-3 deliverable. Replaces the Unit 1.x StubPage at `app/problems/[slug]/history/page.tsx` with a real composition page that stacks the three Phase-3 vizes per Unit 3.0 D-7:
+  1. **Timeline** — Phase-3-light TimelineRibbon: compact chronological list of papers (publication year) and rating actions (full date), interleaved oldest-first. Each entry tagged with a colored pill (papers in `--color-chart-4`, ratings in `--color-chart-2`) and linked to the corresponding paper or rating-action deep anchor.
+  2. **Saturation curve** — embeds `SaturationCurve` (Unit 3.6) at width 520.
+  3. **Rating dimensions over time** — embeds `RatingHistoryStream` (Unit 3.8) at width 560.
+- The full force-graph TimelineRibbon (§11 catalog item 5) is deferred to Phase 4 per Unit 3.0 D-7. The Phase-3 version is intentionally minimal — a compact list with date / pill / label / link — so the page still reads as "history" rather than waiting on Phase-4 force-graph work.
+- **Anchor navigation**: page header carries a "Jump: Timeline · Saturation · Dimensions" inline nav with `#timeline`, `#saturation`, `#dimensions` anchors. Each section uses `scroll-mt-20` so the deep-link jump doesn't tuck the heading under site chrome.
+- **`generateStaticParams()`** prerenders all 10 problem slugs. Build surface: **188 → 198 routes** (+10 SSG paths for the `/history` sub-page; previously `ƒ` Dynamic stub). First Load JS shared chunk unchanged at 103 kB.
+- **A11y** (Phase-3 acceptance gate prep):
+  - `<main>`, `<nav aria-label="Breadcrumb">`, `<section aria-labelledby>` per region, `<ol aria-label>` for the timeline.
+  - `<time datetime>` on every timeline entry's date.
+  - Each viz has its own `role="img"` + `aria-label` + `<desc>` for screen-readers (from Units 3.6 and 3.8).
+- **Data flow**: `loadProblem(slug)` + `ratingActionsForProblem(slug).reverse()` (the loader returns newest-first; vizes want chronological). Timeline entries combine `papers` (from `#site/content`, filtered by `contributions[].problem_slug`) with the rating actions, then sort by ISO sort key.
+- Smoke gates green: `pnpm typecheck` (clean), `pnpm build` (**198 routes**, +10 from 188; First Load JS shared chunk unchanged at 103 kB), `pnpm test` (151/151 — no new tests required for this composition unit; the rendering is verified by the SSG prerender).
