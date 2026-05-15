@@ -518,3 +518,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **Schema gap surfaced** (for Phase-3 work): `LeaderboardEntrySchema` lacks `model_name` and `score_scale`. Today's `paper_id` field serves dual duty (benchmark-defining paper + score-reporting paper) — `protocol_notes` carries the model identity. A Phase-3 schema refinement could split these out.
 - Smoke gates green: `pnpm validate-content` (192 files), `pnpm audit-content` (0 errors / 6 warnings — same Q32-expected set), `pnpm build` (178 routes; new `entries.json` doesn't add SSG paths).
 - THINK artifact: `docs/thinking/2.6h-entries-hallucination-reduction.md`.
+
+#### Unit 2.6i — Leaderboard entries for long-horizon-agent-reliability (τ-bench only)
+
+- Phase-2 hygiene follow-on, sibling to Unit 2.6h. Extends the per-problem `entries.json` pattern to the second-most-populated problem in the repo (4 contributing papers, 4 declared benchmarks; 1-to-1 paper↔benchmark mapping). Lands 3 attested entries.
+- **Scope-limited to 3 τ-bench `pass^4` entries** sourced from the [`sierra-research/tau-bench`](https://github.com/sierra-research/tau-bench) README leaderboard tables (Sierra is Shunyu Yao's org and the authoring organization for paper 2406.12045 — primary-source-grade for the benchmark's own numbers):
+  - `claude-3-5-sonnet-20241022` on **retail** → **0.462**
+  - `claude-3-5-sonnet-20241022` on **airline** → **0.225**
+  - `claude-3-5-sonnet-20240620` on **retail** → **0.387**
+- **Metric selection**: `pass^4` — the highest k reported uniformly across rows in the README and the regime the problem.yaml notes pin as the "central artefact" (the pass^1 → pass^k collapse). Shipping the easier `pass^1` column would undercut the problem's editorial framing.
+- All 3 entries set `verified: true` qualified by the leaderboard page's [inclusive-OR definition](app/problems/[slug]/leaderboard/page.tsx#L62-L64); each `protocol_notes` field carries model variant, domain, strategy (TC = tool-calling per 2406.12045), the source URL, and the metric. Scores are Sierra-attested, not independently replicated.
+- Score scale: decimals (0–1), preserving the README's verbatim format (§15.6 defensible default; consistent with 2.6h's "preserve primary-source format" precedent — OpenAI reports percentages, Sierra reports decimals).
+- **3 of 4 declared benchmarks remain empty** (documented in the THINK doc with unblocking conditions):
+  - `swe-bench-verified` — [swebench.com](https://www.swebench.com/) leaderboard is JS-rendered; `WebFetch` returns the static shell only. A Phase-5 leaderboard-ingest tool with a headless browser would unblock.
+  - `osworld` — paper abstract DOES attest "best model 12.24%, human 72.36%" but the score lacks model-name attribution; the schema's `protocol_notes` would render "best model (unspecified) — 12.24%" which is editorially weak. Full-PDF read or the [os-world.github.io](https://os-world.github.io/) JS-rendered leaderboard would resolve.
+  - `re-bench` — METR paper abstract reports only ratios ("4× human at 2h budget", "0.5× human at 32h"). Schema requires `score: z.number()`, not a ratio; mismatched with the declared `success-rate` metric. Full-PDF table read would unblock.
+- `entries-contributions-agreement` audit check (warning-class, [lib/content/cross-link-audit.ts:273-292](lib/content/cross-link-audit.ts#L273-L292)) passes — paper 2406.12045 declares `contributions[0]: { problem_slug: long-horizon-agent-reliability, benchmark_id: tau-bench }`, matching every entry.
+- No code, schema, route, or bundle changes. Build surface unchanged at **178 routes**; First Load JS shared chunk unchanged at 103 kB. The `/problems/long-horizon-agent-reliability/leaderboard` page now renders 3 entries on the `tau-bench` benchmark instead of empty-state across the board.
+- Smoke gates green: `pnpm validate-content` (193 files), `pnpm audit-content` (0 errors / 6 warnings — same Q32-expected set), `pnpm build` (178 routes; new `entries.json` doesn't add SSG paths), `pnpm test` (86/86).
+- THINK artifact: `docs/thinking/2.6i-entries-long-horizon-agent-reliability.md`.

@@ -1,0 +1,26 @@
+[
+  {
+    "paper_id": "2406.12045",
+    "benchmark_id": "tau-bench",
+    "score": 0.462,
+    "date": "2024-10-22",
+    "verified": true,
+    "protocol_notes": "Model: claude-3-5-sonnet-20241022. Domain: retail. Strategy: TC (tool-calling, the function-calling strategy reported in 2406.12045). Source: sierra-research/tau-bench README leaderboard (https://github.com/sierra-research/tau-bench). Metric: pass^4 (every-trial success across 4 independent attempts). Score reported as decimal."
+  },
+  {
+    "paper_id": "2406.12045",
+    "benchmark_id": "tau-bench",
+    "score": 0.225,
+    "date": "2024-10-22",
+    "verified": true,
+    "protocol_notes": "Model: claude-3-5-sonnet-20241022. Domain: airline. Strategy: TC (tool-calling). Source: sierra-research/tau-bench README leaderboard (https://github.com/sierra-research/tau-bench). Metric: pass^4. Score reported as decimal."
+  },
+  {
+    "paper_id": "2406.12045",
+    "benchmark_id": "tau-bench",
+    "score": 0.387,
+    "date": "2024-06-20",
+    "verified": true,
+    "protocol_notes": "Model: claude-3-5-sonnet-20240620. Domain: retail. Strategy: TC (tool-calling). Source: sierra-research/tau-bench README leaderboard (https://github.com/sierra-research/tau-bench). Metric: pass^4. Score reported as decimal."
+  }
+]
