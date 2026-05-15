@@ -72,6 +72,26 @@ const methodology = defineCollection({
     })),
 });
 
+const contributing = defineCollection({
+  name: "Contributing",
+  pattern: "contributing/*.mdx",
+  schema: s
+    .object({
+      version: s.string(),
+      title: s.string(),
+      summary: s.string(),
+      date: s.isodate(),
+      supersedes: s.string().optional(),
+      slug: s.path(),
+      body: s.mdx(),
+    })
+    .transform((data) => ({
+      ...data,
+      // Strip the `contributing/` prefix from the path slug for clean URLs.
+      slug: data.slug.replace(/^contributing\//, ""),
+    })),
+});
+
 const BenchmarkS = s.object({
   id: s.string(),
   name: s.string(),
@@ -284,6 +304,7 @@ export default defineConfig({
   collections: {
     taxonomy,
     methodology,
+    contributing,
     problems,
     ratings,
     problemPages,

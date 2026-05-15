@@ -1123,3 +1123,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - THINK artifact: `docs/thinking/4.5-contributing-mdx.md`.
 - Pure content. Smoke gates: `pnpm validate-content` (203 files unchanged — the new MDX is outside the validated globs until Unit 4.6 wires the Velite collection), `pnpm typecheck` (clean — no TS touched), `pnpm test` (190/190 unchanged), `pnpm build` (198 routes unchanged — no new SSG page until 4.6).
 
+#### Unit 4.6 — `/contributing` page composition + Velite `contributing` collection
+
+- Replaces the 10-line `<StubPage>` at `app/contributing/page.tsx` with the live MDX-rendering page, plus a versioned-snapshot `app/contributing/[version]/page.tsx`. Mirrors `app/methodology/page.tsx` + `app/methodology/[version]/page.tsx` 1:1 (collection name, parse/compare-version helpers, latest-vs-snapshot route shape).
+- **`velite.config.ts`**: adds a new `contributing` collection (`name: "Contributing"`, `pattern: "contributing/*.mdx"`) with the same schema shape as `methodology` — `version` / `title` / `summary` / `date` / optional `supersedes` / auto-derived `slug` (with `contributing/` prefix stripped via `.transform()`) / `body: s.mdx()`. Registered in the `collections` map alongside `methodology`.
+- **Routes added**: `/contributing` (○ Static, was the StubPage previously) + `/contributing/v1.0.0` (● SSG via `generateStaticParams()`). Total routes **198 → 200**.
+- **Code duplication note**: the two contributing pages are ~70 lines of near-copies of the methodology pages. Defensible default per the §14 "no premature abstraction" rule — extract a shared `<VersionedMdxPage>` component when a third versioned-MDX doc lands (would need methodology + contributing + a 3rd to justify the abstraction).
+- **Velite Zod-3-internals contract (Q31)** preserved: the new collection schema uses Velite's bundled `s` factory, not `lib/schemas/*`. No new schema duplication beyond what was already there for methodology.
+- **`v{version}` URL convention** (e.g. `/contributing/v1.0.0`) — exact mirror of methodology's pattern.
+- **First Load JS shared chunk: 103 kB UNCHANGED.** MDX renders to HTML at build time; no new client deps.
+- **`pnpm velite` regeneration required** after the config change to refresh `.velite/index.d.ts` (the contributing-collection types). Build-script ordering (`velite && next build`) handles this on CI / next clean build; local typecheck after a `velite.config.ts` edit needs an explicit `pnpm velite` to keep TS happy.
+- **Parallel-curator state**: HEAD = `1c83f61` post-Unit-4.5. The parallel session's `.gitignore` change still sits unstaged in their tree; not modified here.
+- THINK artifact: `docs/thinking/4.6-contributing-page.md`.
+- Smoke gates: `pnpm velite` (build finished in ~1.7s), `pnpm typecheck` (clean), `pnpm test` (190/190 across 28 files), `pnpm validate-content` (203 files — MDX is outside `scripts/validate-content.ts`'s YAML-against-Zod cross-validation scope per Q31; Velite validates MDX at build), `pnpm build` (**200 SSG routes**; First Load JS 103 kB).
+
