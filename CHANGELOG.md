@@ -242,3 +242,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Bundle: `/problems` static-prerendered, 2.2 kB route code + 117 kB First Load JS (≈14 kB for the filter UI on top of the shared baseline). Acceptable.
 - `lib/content/load-problems-index.ts` exposes `getIndexedProblems()` reusable by the landing page (Unit 1.10) and Phase 2's MoversBoard.
 - THINK artifact: `docs/thinking/1.8-problems-index.md`. Smoke: `pnpm typecheck`, `pnpm build` (23 routes — /problems and /problems/[slug] both static; no regression on other routes).
+
+#### Unit 1.9 — Search palette (Fuse.js + Cmd/Ctrl-K)
+
+- `fuse.js@7.3.0` installed; `lib/search/build-index.ts` exports `getSearchIndex()` that joins `problems` + `taxonomy` into a flat `SearchRecord[]` shape (`id`, `kind`, `title`, `subtitle?`, `tags`, `domainTitle?`, `subdomainTitle?`, `href`). `kind: "problem"` is the only kind in Phase 1; paper / author / institution kinds extend the schema later without breaking the renderer.
+- `components/search-palette/` — client dialog. Fuse over 5 weighted keys (title × 3, subtitle × 2, tags × 1.5, domain / subdomain × 1; threshold 0.4, ignoreLocation, minMatchCharLength 1). ↑↓ navigates, Enter opens, Esc closes; backdrop click closes. Locks body scroll while open. `role="dialog"` + `aria-modal` + auto-focused input. Footer keyboard-hint strip.
+- `components/search-trigger/` — visible button with `⌘K` kbd hint; mounts the palette only after hydration via `next/dynamic({ ssr: false })`. Cmd+K / Ctrl+K toggles the palette globally.
+- `components/site-header/` — sticky top-of-page header that mounts in `app/layout.tsx`. Provides primary nav (Domains / Problems / Methodology / Trending), the site title link, plus the `SearchTrigger` and `ThemeToggle` in the right rail. Backdrop-blur on scroll.
+- Bundle: home `/` is now 12.0 kB (up from 11.7 kB after the Unit 1.2 toggle landed; the +0.3 kB is the SearchTrigger placeholder + kbd shortcut hook). The palette itself is lazy-loaded — its Fuse + JSX cost is only paid the first time Cmd+K fires.
+- THINK artifact: `docs/thinking/1.9-search-palette.md`. Smoke: `pnpm build` green; tests untouched (68/68 still).
