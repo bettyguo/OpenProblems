@@ -6,12 +6,14 @@
         "http://localhost:3000/problems/hallucination-reduction",
         "http://localhost:3000/problems/hallucination-reduction/ratings",
         "http://localhost:3000/problems/hallucination-reduction/history",
+        "http://localhost:3000/domains",
         "http://localhost:3000/domains/deep-learning",
         "http://localhost:3000/papers/2310.06770",
         "http://localhost:3000/authors/shunyu-yao",
         "http://localhost:3000/institutions/anthropic",
         "http://localhost:3000/trending",
-        "http://localhost:3000/ratings"
+        "http://localhost:3000/ratings",
+        "http://localhost:3000/contributing"
       ],
       "startServerCommand": "pnpm start",
       "startServerReadyPattern": "Ready",

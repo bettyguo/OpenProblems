@@ -1180,3 +1180,58 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - THINK artifact: `docs/thinking/4.4-landing-page-domainmap.md`.
 - Smoke gates: `pnpm typecheck` (clean), `pnpm test` (199/199 across 29 files unchanged), `pnpm validate-content` (203 files unchanged), `pnpm build` (200 SSG routes; `/` 162 B / 106 kB; First Load JS shared chunk 103 kB unchanged).
 
+#### Unit 4.13 — Phase 4 acceptance gate
+
+- Phase-4 closing unit. Mirrors Unit 1.12 (Phase 1 gate), Unit 2.13 (Phase 2 gate), Unit 3.13 (Phase 3 gate). Verifies every §13 Phase-4 deliverable locally + emits the cross-phase roll-up. **Phase-4 work is now closed pending human sign-off** and the same Q27-class CI follow-ons (W3C RSS validator pass on deployed URL; CI Ubuntu visual-regression baselines on first PR).
+- **§13 Phase-4 deliverables — local pass status**:
+  1. **`DomainMap` (force graph) on `/` and `/domains`** ✓ Units 4.2 + 4.3 + 4.4. SSR-only force-graph viz with deterministic SVG layout + a11y plumbing (`role="img"` + `aria-describedby` → `<desc>`). Wrapped in `<ChartTableSwitch>` with `<DomainMapTable>` fallback. Both routes ship `○ Static`; First Load JS shared chunk **103 kB UNCHANGED** across all Phase-4 work.
+  2. **GitHub issue templates** for new-problem / new-paper / leaderboard-entry / rating-challenge ✓ Units 4.7 – 4.10. All 4 form-based `.yml` at `.github/ISSUE_TEMPLATE/`. Project GitHub URLs pinned to `github.com/bettyguo/OpenProblems` per `git remote -v`.
+  3. **`/contributing` page** ✓ Units 4.5 + 4.6. Versioned MDX (`content/contributing/v1.mdx`) + Velite collection + page composition mirroring `/methodology`. Routes `/contributing` (Static) and `/contributing/v1.0.0` (SSG) both live.
+  4. **(Conditional) DB migration** ✓ Unit 4.12. `gzip(.velite snapshot) = 69,182 bytes` (~67.6 KB, **~1.32% of the 5 MB §12 threshold**); auth-trigger also negative — Phase-4 workflow is GitHub-mediated (issue templates + PR review). **DB migration deferred to Phase 5** per the §12 contemplated path. Standalone re-eval note shipped.
+- **§13 cross-phase criteria (universal contract)**:
+  - **Lighthouse a11y ≥ 95 on new pages**: `lighthouserc.json` extended this unit to **12 URLs** (was 10 after Unit 3.13a). Added: `/domains` (the brushable index from Unit 4.3) and `/contributing` (the curator-workflow page from Unit 4.6). DomainMap a11y plumbing inherits the Phase-3 viz pattern. CI cohort runs against deployed URLs on first PR (Q27 pattern).
+  - **Visual-regression baselines** for new pages × 2 themes × N viewports: local `chromium-win32` baselines NOT re-captured in this commit (no Playwright spec changes); follow-on PR can pass `playwright test --update-snapshots` against `/`, `/domains`, `/contributing`.
+  - **All charts have table-fallback toggles**: closed in Unit 3.12; Phase-4 DomainMap inherits via Unit 4.2's `<DomainMapTable>` sibling, wired in 4.3 + 4.4.
+  - **Issue-template smoke-test** (manual): open each template in the GitHub UI; verify field rendering + title prefix. Cannot be automated; documented as a human-run checklist on this commit's PR.
+- **Phase-4 unit summary** (14 units shipped end-to-end):
+
+  | Unit | Commit    | Title                                                              |
+  | ---- | --------- | ------------------------------------------------------------------ |
+  | 4.0  | `8ef0e18` | Phase 4 prep (THINK + 14-unit breakdown + DB-migration eval)       |
+  | 4.1  | `82194b3` | Install `d3-force` + `d3-selection`                                |
+  | 4.2  | `be29236` | `components/viz/DomainMap/` scaffold (§11 catalog item 4)          |
+  | 4.3  | `e3c2623` | `/domains` page swaps tile grid for DomainMap                      |
+  | 4.4  | `0569135` | `/` landing page swaps tile grid for DomainMap + chips             |
+  | 4.5  | `1c83f61` | `content/contributing/v1.mdx`                                      |
+  | 4.6  | `abd3c07` | `/contributing` page composition + Velite collection               |
+  | 4.7  | `de9460b` | Issue template: new-problem                                        |
+  | 4.8  | `1954b1d` | Issue template: new-paper                                          |
+  | 4.9  | `636da83` | Issue template: leaderboard-entry                                  |
+  | 4.10 | `81e4459` | Issue template: rating-challenge                                   |
+  | 4.11 | `25801f4` | ADR-0007 (DomainMap rendering + D3 import policy)                  |
+  | 4.12 | `1261aca` | DB-migration trigger evaluation note                               |
+  | 4.13 | _this_    | Phase 4 acceptance gate                                            |
+
+- **State at HEAD (Unit 4.13)**:
+  - 10 problems / 5 domains / ~12 subdomains / 30 papers / 126 authors / 14 institutions / 20 rating actions / **4 issue templates** / **1 `/contributing` MDX**.
+  - **313 prerendered pages** (`pnpm build` → `Generating static pages (313/313)`). Reporting note: prior Phase-3 / Phase-4 CHANGELOG entries used "routes" to mean route-pattern counts (198 → 200); this is the expanded-page count — the prior numbers are not wrong, just measuring a different thing. From this unit forward, use "prerendered pages" for the Next.js-authoritative count.
+  - **First Load JS shared chunk 103 kB UNCHANGED** throughout Phase 4. d3-force runs server-side; the static SVG payload that ships is just markup; d3-selection ships in deps from Unit 4.1 but is unused server-side (tree-shaken from client bundle).
+  - **199/199 vitest tests across 29 files** (was 171/25 at Phase-3 close — +28 tests from the parallel session's Unit 4.2 DomainMap suite + Unit 4.3's `build-domain-map.test.ts`).
+  - `pnpm validate-content` → 203 files green.
+  - `pnpm audit-content` → 0 errors / 6 warnings (same Q32-expected `related-problems-symmetry` set since Phase 2).
+  - `pnpm typecheck` clean. `pnpm build` clean compile (3.0s).
+  - **5 visualizations live**: RatingRadar (Phase 1), SaturationCurve, MoversBoard, RatingHistoryStream (Phase 3), **DomainMap (Phase 4)**.
+  - **7 ADRs**: 0001 Next.js / 0002 Velite / 0003 Zod / 0004 file-first / 0005 rating-action immutability / 0006 saturation N/A / **0007 DomainMap rendering + D3 import policy**.
+  - 2 OPEN_QUESTIONS closed this phase: **Q38** (filter-chip URL persistence, decided-as-lean confirmed when 4.4 shipped chip-as-navigation) and **Q40** (ADR-0007 scope, decided). 4 surfaced earlier in Phase 4: Q37 (issue-template field schemas), Q39 (DomainMap mobile-viewport a11y). Both remain open as Phase-5 / responsive-baseline follow-ons.
+- **Phase-4 follow-ons that survive the gate** (not blocking sign-off):
+  - **W3C RSS validator pass** against deployed `/api/v1/rss.xml` — still pending first preview deploy (same Phase-3 follow-on).
+  - **Visual-regression baselines** for new pages (`/`, `/domains`, `/contributing`, `/contributing/v1.0.0`) × 2 themes × N viewports — Phase-4 follow-on; future PR.
+  - **Manual issue-template smoke** in the GitHub UI — one-time check on this commit's PR.
+  - **Orphan `components/domain-tile-grid/`** — unused since Units 4.3 / 4.4 swapped to DomainMap. Phase-5 hygiene cleanup candidate (deletion gated on explicit authorization per the destructive-action rule).
+  - **`entries.json` content pass** on the 8 problems that still lack curator-authored entries — Phase-2 / Phase-5 content backlog.
+  - **`docs/SESSION_HANDOFF_phase3_close.md`** — prior-session resume artifact. The parallel session's staged `.gitignore` change adds it to the ignore list; ships when they commit.
+- **Phase 5 entry conditions** (per §12 cardinal rule, mirror of all prior phase boundaries): **explicit human sign-off required**. Phase 5 deliverables per §13: arXiv ingestion helper (CLI), LLM-assisted leaderboard-entry extraction (with mandatory human-review diff), email/RSS digest. The §12 DB-migration trigger re-evaluation is mandatory per Unit 4.12.
+- **Cross-phase milestone**: this commit closes the Phase-4 plan in its entirety as authored in Unit 4.0. The 14-unit breakdown shipped end-to-end with one re-scoping: drag interactivity (Unit 4.0 D-6 #3) deferred from Unit 4.2 to a future enhancement — captured as a known trade-off in ADR-0007.
+- THINK artifact: `docs/thinking/4.13-phase-4-acceptance-gate.md`.
+- Smoke gates green: `pnpm typecheck` (clean), `pnpm test` (199/199 across 29 files), `pnpm validate-content` (203 files), `pnpm audit-content` (0 errors / 6 Q32-expected warnings), `pnpm build` (clean compile in 3.0s; 313 prerendered pages; First Load JS shared chunk 103 kB).
+
