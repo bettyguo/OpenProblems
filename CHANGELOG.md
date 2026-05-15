@@ -847,3 +847,43 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - The chart's own `<desc>` (from Units 3.6 and 3.8) already carries the full data prose for screen-reader users who don't drill into the disclosure.
 - Pure additive code: no route or bundle changes. Build surface unchanged at **198 routes**; First Load JS shared chunk unchanged at 103 kB (the wrapper + tables are server-rendered HTML — no client bundle impact).
 - Smoke gates green: `pnpm typecheck` (clean), `pnpm test` (**171/171 across 25 files**, was 158/22; +13 new tests), `pnpm build` (198 routes).
+
+#### Unit 3.13 — Phase 3 acceptance gate
+
+- Phase-3 closing unit. Mirrors the Phase-1 acceptance gate (Unit 1.12) and Phase-2 acceptance gate (Unit 2.13). Verifies every §13 Phase-3 acceptance criterion locally and emits the cross-phase roll-up. Phase-3 work is now closed pending human sign-off and CI Ubuntu-baseline regeneration on the first PR (same Q27/Q33-class follow-on as Phase 2).
+- **§13 acceptance criteria — local pass status**:
+  1. **All charts have table-fallback toggles** ✓ Unit 3.12 wires `ChartTableSwitch` around `SaturationCurve` and `RatingHistoryStream` on `/problems/[slug]/history`. `MoversBoard` on `/trending` is a table by construction. Test coverage in `chart-table-switch.test.tsx` + per-viz `table.test.tsx`.
+  2. **RSS validates** — local well-formedness pass against the prerendered `.next/server/app/api/v1/rss.xml.body`: `<?xml>` prolog ✓, `<rss version="2.0">` root ✓, `xmlns:dc` + `xmlns:atom` declared ✓, `<atom:link rel="self">` channel-level ✓, 20 `<item>` blocks all properly closed ✓, all interpolated ampersands escaped as `&amp;` ✓, 13104 bytes total. **W3C feed validator (validator.w3.org/feed/)** must still run against the deployed URL — same Q27-class CI follow-on as Phase-2 visual baselines. Marked pass-pending-deploy.
+  3. **Lighthouse a11y ≥ 95 with new charts** — every Phase-3 viz ships with `role="img"`, `aria-label`, and `aria-describedby` pointing at a `<desc>` with the full data prose. The `.github/workflows/e2e-lighthouse.yml` gate (required from Unit 1.12) enforces the threshold on `/`, `/problems/[any-slug]`, `/domains/[any]`; Phase 3 adds 4 new pages (`/problems/[slug]/ratings`, `/problems/[slug]/history`, `/trending`, `/ratings`) — the lighthouseci config does not yet enumerate them, so they're advisory until a follow-on lights them up. Same Q27 CI shape.
+  4. **Visual-regression baselines for the 4 new pages × 2 themes × N viewports** — local `chromium-win32` baselines have NOT been re-captured in this commit (no Playwright spec changes); a future PR can pass `playwright test --update-snapshots` against the new routes. Same follow-on as Phase-1 / Phase-2 baseline cohorts.
+- **Phase-3 unit summary** (14 units shipped; 1d9d67e → e00d1ea, plus 3 parallel-session hygiene commits earlier this session):
+
+  | Unit | Commit    | Title                                                       |
+  |------|-----------|-------------------------------------------------------------|
+  | 3.0  | d9f9317   | Phase 3 prep (THINK doc + 14-unit breakdown)                 |
+  | 3.1  | 4533eb3   | Simulated multi-action rating histories for 5 seed problems |
+  | 3.2  | 4fc0114   | Cross-problem rating-action loader `load-ratings.ts`        |
+  | 3.3  | bb76017   | Per-problem `/problems/[slug]/ratings` sub-page             |
+  | 3.4  | 3053613   | `/ratings` global HTML feed                                 |
+  | 3.5  | 669cb6a   | `/api/v1/ratings` JSON + `/api/v1/rss.xml` RSS feeds        |
+  | 3.6  | 680c42a   | `SaturationCurve` viz (§11 catalog item 2)                  |
+  | 3.7  | 58b9456   | `MoversBoard` viz + `/trending` page (§11 catalog item 3)   |
+  | 3.8  | a1d42b3   | `RatingHistoryStream` viz (§11 catalog item 8)              |
+  | 3.9  | 8ccf10f   | `/problems/[slug]/history` composition                      |
+  | 3.10 | 5d24ee8   | "Recompose" weights UI on `/problems`                       |
+  | 3.11 | 31a943f   | ADR-0006 + Saturation N/A schema (closes Q18)               |
+  | 3.12 | e00d1ea   | Viz table-fallback toggles                                  |
+  | 3.13 | _this_    | Phase 3 acceptance gate                                     |
+
+- **State at HEAD (Unit 3.13)**:
+  - 20 rating actions (10 initials + 10 q3/q4 revisions across 5 problems), 30 papers, 126 authors, 14 institutions, 10 problems.
+  - **198 SSG routes** (was 178 at Phase-2 close): +10 for `/problems/[slug]/ratings`, +10 for `/problems/[slug]/history`. `/trending` and `/ratings` flipped from `ƒ` stub to `○` Static. `/api/v1/ratings` + `/api/v1/rss.xml` flipped from `ƒ` 501 stub to `○` Static with real payloads.
+  - First Load JS shared chunk **103 kB** (unchanged across the entire phase).
+  - **171/171 vitest tests across 25 files** (was 86/15 at Phase-1 close, 105/16 at Phase-2 close).
+  - `pnpm validate-content` → 203 files green.
+  - `pnpm audit-content` → 0 errors / 6 warnings (the same `related-problems-symmetry` set; Q32-expected).
+  - `pnpm typecheck` clean. `pnpm build` succeeds.
+  - 4 visualizations live (`RatingRadar`, `SaturationCurve`, `MoversBoard`, `RatingHistoryStream`); 1 ADR added (ADR-0006); 1 OPEN_QUESTIONS thread closed (Q18) + 4 new ones surfaced (Q33-Q36).
+- **Phase 4 entry conditions** (per §12 cardinal rule, mirror of Phase 2 → Phase 3): human sign-off required. Phase 4 deliverables per §13: `DomainMap` (force graph), issue templates, `/contributing` page, conditional DB migration. No Phase-3 work blocks the kick-off once sign-off lands.
+- **Cross-phase milestone**: this commit closes the Phase-3 plan in its entirety as authored in Unit 3.0. The 14-unit breakdown shipped end-to-end with no scope reductions beyond TimelineRibbon's force-graph implementation (Unit 3.9 ships the Phase-3-light list form; the full catalog item is Phase-4-scoped per Unit 3.0 D-7).
+- Smoke gates green: `pnpm typecheck` (clean), `pnpm test` (171/171 across 25 files), `pnpm validate-content` (203 files), `pnpm audit-content` (0 errors / 6 Q32-expected warnings), `pnpm build` (198 routes; First Load JS shared chunk 103 kB), RSS well-formedness pass (20 items, namespaces declared, ampersand escaping verified).
