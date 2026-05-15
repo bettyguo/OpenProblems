@@ -1,8 +1,14 @@
 import Link from "next/link";
-import { DomainTileGrid } from "@/components/domain-tile-grid";
+import { taxonomy } from "#site/content";
 import { RecentlyRated } from "@/components/recently-rated";
+import { ChartTableSwitch } from "@/components/viz/_shared/chart-table-switch";
+import { DomainMap } from "@/components/viz/DomainMap";
+import { DomainMapTable } from "@/components/viz/DomainMap/table";
+import { buildDomainMap } from "@/lib/content/build-domain-map";
 
 export default function HomePage() {
+  const { nodes, links } = buildDomainMap();
+
   return (
     <main className="mx-auto max-w-5xl px-6 py-12">
       <section aria-labelledby="hero-heading" className="max-w-prose">
@@ -66,7 +72,23 @@ export default function HomePage() {
             All domains →
           </Link>
         </div>
-        <DomainTileGrid />
+        <nav aria-label="Browse by domain" className="mb-4 flex flex-wrap gap-2">
+          {taxonomy.domains.map((d) => (
+            <Link
+              key={d.id}
+              href={`/domains/${d.id}`}
+              className="border-border hover:border-accent/60 hover:bg-muted/40 hover:text-accent rounded-full border px-3 py-1 text-xs font-medium transition-colors"
+            >
+              {d.title}
+            </Link>
+          ))}
+        </nav>
+        <ChartTableSwitch
+          ariaLabel="Domain map teaser and tabular fallback"
+          chart={<DomainMap nodes={nodes} links={links} ariaLabel="Map of LLM research domains" />}
+          table={<DomainMapTable nodes={nodes} />}
+          label="View domains as table"
+        />
       </section>
 
       <section aria-labelledby="methodology-heading" className="border-border mt-16 border-t pt-8">

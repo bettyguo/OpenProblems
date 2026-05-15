@@ -1164,3 +1164,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - THINK artifact: `docs/thinking/4.3-domains-page-domainmap.md`.
 - Smoke gates: `pnpm typecheck` (clean), `pnpm test` (**199/199 across 29 files**, was 190/190 across 28; +9 build-domain-map tests), `pnpm validate-content` (203 files unchanged), `pnpm build` (200 SSG routes; `/domains` 146 B / 103 kB; First Load JS shared chunk 103 kB unchanged).
 
+#### Unit 4.4 — `/` landing-page wiring with DomainMap + domain chips
+
+- Replaces the "By domain" section's `<DomainTileGrid />` on `app/page.tsx` with the live `<DomainMap />` (wrapped in `<ChartTableSwitch>` with `<DomainMapTable />` fallback, mirroring Unit 4.3) plus a row of 5 navigation chips above it — one `<Link href="/domains/<id>">` per domain.
+- **Reuses `buildDomainMap()` from Unit 4.3.** Same loader, same data shape, same composite-aggregation rule. Same DomainMap component identically configured. The two surfaces stay visually identical and one fix updates both.
+- **Chip behavior**: navigation-only (each chip links to `/domains/<id>`). The fuller "filter chips with `dimmedIds` URL-search-param state" from Unit 4.0 D-6 interaction #4 (Q38 lean) is deferred — that pattern fits `/domains` rather than landing, and the per-unit description for 4.4 specifies "link into /domains/[domain]" (navigation), not in-place filter.
+- **Hero section, "Recently rated", "Methodology" unchanged.** Only the "By domain" section is touched.
+- **Bundle**: `/` route size **198 B → 162 B** (smaller in-bundle as the inline SVG payload replaces the tile-grid JSX). First Load JS shared chunk **103 kB UNCHANGED**.
+- **Route count: 200 UNCHANGED.**
+- **Orphan-component note**: `components/domain-tile-grid/index.tsx` has no remaining active imports after Units 4.3 + 4.4. The file is left in place for now — deleting a tracked pre-existing file is a destructive action that should be a separate, explicitly-authorized hygiene unit. Flag as a Phase-5 cleanup candidate.
+- **Scope explicitly deferred**:
+  - **Multi-select dimming chips with `?d=<id>,<id>` URL state** (Q38 lean / D-6 interaction #4): Phase-5 enhancement when the brushable-filter pattern has clear user-research demand.
+  - **Hero-section changes**: Unit 4.0 had a passing reference to "replace the existing tile-grid hero" — but the actual landing page has the tile-grid in the "By domain" section, not the hero. Hero stays untouched.
+- **Parallel-curator state**: HEAD = `e3c2623` post-Unit-4.3. No collision.
+- THINK artifact: `docs/thinking/4.4-landing-page-domainmap.md`.
+- Smoke gates: `pnpm typecheck` (clean), `pnpm test` (199/199 across 29 files unchanged), `pnpm validate-content` (203 files unchanged), `pnpm build` (200 SSG routes; `/` 162 B / 106 kB; First Load JS shared chunk 103 kB unchanged).
+
