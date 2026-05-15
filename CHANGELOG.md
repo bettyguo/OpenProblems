@@ -440,3 +440,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Tradeoffs flagged: per §15.6 the page ships empty; the §13 acceptance gate (Unit 2.13) was not contingent on this content. With this commit, **all 13 units of the 2.0 Phase-2 plan are now done** (2.0–2.13, plus the 2.6b hygiene unit). Phase 3 (§12) can begin once you sign off on Phase 2.
 - Smoke gates green: `pnpm typecheck`, `pnpm test` (86/86), `pnpm validate-content` (77 files), `pnpm audit-content` (0 errors / 6 warnings), `pnpm build` (178 routes; the +10 over Unit 2.12 are the 10 leaderboard pages SSG-prerendered).
 - THINK artifact: `docs/thinking/2.9-leaderboard-page.md`.
+
+#### Unit 2.6c — ROR ID backfill for Unit-2.6b institutions
+
+- Closes the explicit deferral in Unit 2.6b ("`ror_id` deliberately omitted (no fabricated IDs per §15.6 — a follow-on curator pass pulls them from `ror.org`)"). This is that pass.
+- Adds the `ror_id:` field to 4 of the 5 institutions seeded in Unit 2.6b. Each ID was retrieved from the ROR public API (`https://api.ror.org/v2/organizations?query=...`) and cross-checked against the organization's location and founding year on the matching record:
+  - `brown-university` → [`05gq02987`](https://ror.org/05gq02987) (Brown University, Providence RI, est. 1764)
+  - `caltech` → [`05dxps055`](https://ror.org/05dxps055) (California Institute of Technology, Pasadena CA, est. 1891)
+  - `nvidia` → [`03jdj4y14`](https://ror.org/03jdj4y14) (NVIDIA Corporation, Santa Clara CA, est. 1993 — parent record)
+  - `huawei` → [`00cmhce21`](https://ror.org/00cmhce21) (Huawei Technologies (China), Shenzhen — parent record)
+- **InstaDeep is a documented exception**: ROR v2 search returns `number_of_results: 0` for both the plain-query and `names.value`-advanced search variants. The organization is not registered with ROR (a known gap in ROR's coverage of private AI/ML startups). Per §15.6, `ror_id` is left omitted on `instadeep.yaml` rather than fabricated; a future content commit can add it if and when ROR registers InstaDeep.
+- All 4 added IDs satisfy the strict regex in `lib/schemas/institution.ts` (`^0[\da-z]{6}\d{2}$`): 9-character format with leading `0`, six alphanumeric-lowercase, trailing 2 digits. `pnpm validate-content` enforces this at commit time.
+- Scope intentionally limited to the 5 institutions named in Unit 2.6b's deferral. The other 9 pre-2.6b institutions (`anthropic`, `google-deepmind`, `meta-fair`, `microsoft-research`, `mit`, `openai`, `princeton-university`, `stanford-university`, `uc-berkeley`) also lack `ror_id`; a separate hygiene unit (call it 2.6d) can extend the same pattern across them if a future audit asks for it.
+- No code, schema, route, or bundle changes. Pure metadata addition. Build surface unchanged at **178 routes**; First Load JS shared chunk unchanged at 103 kB.
+- Smoke gates green: `pnpm validate-content` (77 files), `pnpm audit-content` (0 errors / 6 warnings — same Q32-expected `related-problems-symmetry` set), `pnpm build` (178 routes; all 14 `/institutions/[slug]` pages prerender).
+- THINK artifact: `docs/thinking/2.6c-ror-id-backfill.md`.
