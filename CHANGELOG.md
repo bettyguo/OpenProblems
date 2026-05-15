@@ -1033,3 +1033,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - THINK artifact: `docs/thinking/4.8-issue-template-new-paper.md`.
 - Smoke gates: `pnpm validate-content` (203 files unchanged), `pnpm typecheck` (clean), `pnpm test` (190/190 unchanged). `pnpm build` not re-run. Manual smoke deferred to Unit 4.13.
 
+#### Unit 4.9 — Issue template: leaderboard-entry (`.github/ISSUE_TEMPLATE/leaderboard-entry.yml`)
+
+- Third of the 4 form-based GitHub issue templates §13 names. Same structural pattern as Units 4.7 / 4.8.
+- **Field schema** (6 form fields + 1 markdown intro):
+  - **Intro markdown** — links `MASTER_PROMPT.md` (§9 leaderboard + §15.6) and `content/problems/`. Notes the `verified: boolean` is curator-side; submitters don't self-attest. Cross-links the `[New paper]` template for papers not yet ingested.
+  - **Problem slug** (input, required) — selects which `entries.json` the row lands in.
+  - **Benchmark id** (input, required) — must match a `benchmarks[].id` declared in the parent problem's `problem.yaml`. Helper text explains where to look up the id.
+  - **Paper id** (input, required) — usually the arXiv ID. Helper text directs submitters to file `[New paper]` first if the paper isn't yet ingested.
+  - **Score** (input, required) — numeric. Helper text reminds about `metric_direction` (`higher-is-better` / `lower-is-better`).
+  - **Date** (input, required) — ISO `YYYY-MM-DD`.
+  - **Protocol notes** (textarea, optional) — freeform; placeholder mirrors the `entries.json` precedent from Unit 2.6h: `Model: <name>. Source: <url>. <metric notes>`.
+- **Design call: `verified: boolean` not surfaced**. The schema field is curator-controlled; presenting it on the form invites self-attestation that the curator workflow would then have to override. Verification is the curator's primary review act per §15.6.
+- **5 required fields** (top of Q37's 3–5 range). All 5 (`problem`, `benchmark`, `paper`, `score`, `date`) map 1:1 to `LeaderboardEntrySchema` row columns and are load-bearing.
+- **Cross-validation deferred to ingest**: benchmark-exists-on-problem, paper-already-ingested, date-not-in-future — all checked during curator review, not at the form layer (GitHub Forms doesn't support cross-field validation).
+- **YAML quoting applied preemptively** per Unit 4.8's lesson: any single-line value with an internal `:` is quoted. None ended up needing it in this template's placeholders, but the audit pass is now part of the issue-template rhythm.
+- **Parallel-curator state**: HEAD = `1954b1d` post-Unit-4.8. No collision.
+- THINK artifact: `docs/thinking/4.9-issue-template-leaderboard-entry.md`.
+- Smoke gates: `pnpm validate-content` (203 files unchanged), `pnpm typecheck` (clean), `pnpm test` (190/190 unchanged). `pnpm build` not re-run. Manual smoke deferred to Unit 4.13.
+

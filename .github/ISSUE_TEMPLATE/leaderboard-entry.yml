@@ -1,0 +1,98 @@
+name: "Leaderboard entry"
+description: Propose a new leaderboard result for an existing problem + benchmark.
+title: "[Leaderboard entry] "
+labels:
+  - leaderboard-entry
+  - needs-triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for proposing a leaderboard entry!
+
+        This form captures the row a curator will add to the problem's
+        `entries.json` after verification. The schema's `verified: boolean`
+        is set by the curator during review — submitters don't self-attest.
+
+        Reading before you submit:
+        - [`MASTER_PROMPT.md`](https://github.com/bettyguo/OpenProblems/blob/main/MASTER_PROMPT.md) — §9 leaderboard framing and §15.6 primary-source rule.
+        - [`content/problems/`](https://github.com/bettyguo/OpenProblems/tree/main/content/problems) — each problem's `problem.yaml` declares the available `benchmarks[]` (the `id:` field is what to use below).
+        - If the paper itself isn't yet ingested into the encyclopedia, file a `[New paper]` issue first and link this one to it.
+
+  - type: input
+    id: problem_slug
+    attributes:
+      label: Problem slug
+      description: |
+        Which problem's leaderboard does this entry belong to? Use the
+        directory name under [`content/problems/`](https://github.com/bettyguo/OpenProblems/tree/main/content/problems).
+      placeholder: e.g. hallucination-reduction
+    validations:
+      required: true
+
+  - type: input
+    id: benchmark_id
+    attributes:
+      label: Benchmark id
+      description: |
+        Must match a `benchmarks[].id` declared in that problem's
+        `problem.yaml`. Open the file, find the `benchmarks:` array,
+        and use one of the listed `id:` values (e.g. `simpleqa`,
+        `halueval`, `truthfulqa-2026`). Freeform input — the curator
+        cross-checks during review.
+      placeholder: e.g. simpleqa
+    validations:
+      required: true
+
+  - type: input
+    id: paper_id
+    attributes:
+      label: Paper id
+      description: |
+        The paper that reports the score. Typically the arXiv ID
+        (e.g. `2411.04368`). Must already exist in the encyclopedia —
+        if it doesn't, file a `[New paper]` issue first.
+      placeholder: e.g. 2411.04368
+    validations:
+      required: true
+
+  - type: input
+    id: score
+    attributes:
+      label: Score
+      description: |
+        Numeric value of the result. Use the same scale as the benchmark
+        reports (percentages as percentages, ratios as ratios, etc.).
+        Check the benchmark's `metric_direction` in the problem YAML —
+        `higher-is-better` and `lower-is-better` are both common.
+      placeholder: e.g. 42.6
+    validations:
+      required: true
+
+  - type: input
+    id: date
+    attributes:
+      label: "Date (YYYY-MM-DD)"
+      description: |
+        When the result was obtained or first publicly reported. ISO
+        format `YYYY-MM-DD`. For model releases, the public-availability
+        date is the convention.
+      placeholder: e.g. 2024-12-05
+    validations:
+      required: true
+
+  - type: textarea
+    id: protocol_notes
+    attributes:
+      label: Protocol notes
+      description: |
+        Freeform — the established format in existing `entries.json`
+        files is: "Model: <name>. Source: <url>. <metric definition
+        or eval-setup notes>." Include the model identifier, the
+        canonical source URL (per §15.6 primary-source rule), and
+        any eval-setup detail the curator needs to verify.
+      placeholder: |
+        Model: gpt-4.5-preview-2025-02-27. Source: https://github.com/openai/simple-evals.
+        F-score per the correct/incorrect/not_attempted protocol defined in 2411.04368.
+    validations:
+      required: false
