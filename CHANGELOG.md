@@ -641,3 +641,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **No vizes on this page** — Phase 3 acceptance gate's "table-fallback toggles" requirement applies to chart components (Units 3.6 / 3.7 / 3.8 / 3.9), not to text-rendering pages. This page is naturally a table-shaped surface.
 - **Test coverage**: rendering is exercised by the SSG build (188 routes prerender clean). No Vitest unit test added — Phase-1 / Phase-2 page-level testing convention is Playwright e2e (out of scope for this unit; e2e baselines refresh in Unit 3.13 acceptance gate).
 - Smoke gates green: `pnpm typecheck` (clean), `pnpm build` (188 routes, +10 from 178; First Load JS shared chunk unchanged at 103 kB).
+
+#### Unit 3.4 — `/ratings` global HTML feed
+
+- Phase-3 deliverable (§13: "`/ratings` global feed (HTML + JSON + RSS)"). This unit ships the HTML view. JSON + RSS land in Unit 3.5.
+- Replaces the Unit 1.x StubPage at `app/ratings/page.tsx` with a static feed page reading `allRatingActions()` from Unit 3.2's loader. Renders newest-first across **all** problems (not scoped to one) — the rating-agency public "action tape" framing from §3.1 / §8.5.
+- **Each feed entry** (compact line per `RatingAction`):
+  - Metadata line: ISO date, curator, methodology version (font-mono).
+  - Problem title as link to `/problems/<slug>/ratings#<filename-without-extension>` — deep-link anchors land on the matching `<article>` in Unit 3.3's per-problem ratings page.
+  - "revision" vs "initial action" tag.
+  - Primary delta pill (cyan `--color-chart-2`) showing the headline change (e.g. `saturation 35 → 32`). Falls back to "Initial action — no prior to diff against" or "Rationale-only refresh (no dimensional change)".
+  - Watchlist transition pill (`--color-chart-3`) when `diff.watchlistChanged`.
+- **Subscribe links**: header carries `RSS` → `/api/v1/rss.xml` and `JSON` → `/api/v1/ratings`. Both targets are 501-stub routes today (from Unit 1.7-ish API scaffolding); Unit 3.5 makes them real.
+- **Page renders as `○` Static** (no `generateStaticParams` needed; no dynamic params). Build surface unchanged at **188 routes** (the `/ratings` slot was already counted as a stub). First Load JS shared chunk unchanged at 103 kB.
+- **A11y notes** (for Phase-3 acceptance gate):
+  - Semantic landmarks: `<main>`, `<header>`, `<ol aria-label="Rating actions feed">`, `<article>` per entry.
+  - `<time datetime>` for the machine-readable date.
+  - `metadata.title` + `metadata.description` set for the route — feeds into the document head.
+  - Divider via Tailwind `divide-y` on the `<ol>` rather than CSS-only horizontal rules — preserves the semantic list while visually separating entries.
+- **No vizes** — same reasoning as Unit 3.3; this is a text-shaped surface.
+- Smoke gates green: `pnpm typecheck` (clean), `pnpm build` (188 routes; First Load JS shared chunk unchanged at 103 kB).
