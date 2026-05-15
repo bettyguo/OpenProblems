@@ -902,3 +902,48 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - THINK artifact: `docs/thinking/3.13a-lighthouse-phase3-pages.md`.
 - Pure config edit. No app, schema, content, or test changes. Build / typecheck / test / validate-content / audit-content surfaces unchanged from Unit 3.13.
 - Smoke gates green: `pnpm typecheck` (clean), `pnpm test` (171/171 across 25 files), `pnpm validate-content` (203 files).
+
+### Phase 4 — DomainMap & Community
+
+#### Unit 4.0 — Phase 4 prep (THINK doc + 14-unit breakdown + DB-migration trigger evaluation)
+
+- Phase 4 kickoff per §12 cardinal rule. Phase 3 sign-off granted 2026-05-15; Phase-3 closure at HEAD `709679f` (Unit 3.13a). Docs-only unit: lays out the Phase-4 unit breakdown, resolves Phase-4-blocking questions into defensible defaults, evaluates the §12 DB-migration trigger, and surfaces residual ambiguity for the implementing session(s).
+- **14-unit breakdown** (4.0 – 4.13):
+
+  | Unit | Title                                                                                                            |
+  | ---- | ---------------------------------------------------------------------------------------------------------------- |
+  | 4.0  | Phase 4 prep (this doc)                                                                                          |
+  | 4.1  | D3 sub-package install (`d3-force` + `d3-selection` + `d3-scale` + `@types/*`) + Storybook smoke                  |
+  | 4.2  | `components/viz/DomainMap/` (catalog item 4 — force graph; SSR + client hydration; SVG render)                   |
+  | 4.3  | `/domains` index page update (replace tile grid; brushable DomainMap; tile grid → table fallback under `<details>`) |
+  | 4.4  | `/` landing page wiring (DomainMap teaser + filter chips that deep-link to `/domains/[domain]`)                   |
+  | 4.5  | `content/contributing/v1.mdx` (versioned editorial workflow doc)                                                  |
+  | 4.6  | `/contributing` page composition (replace stub; mirror `/methodology` MDX pattern)                                |
+  | 4.7  | `.github/ISSUE_TEMPLATE/new-problem.yml`                                                                          |
+  | 4.8  | `.github/ISSUE_TEMPLATE/new-paper.yml`                                                                            |
+  | 4.9  | `.github/ISSUE_TEMPLATE/leaderboard-entry.yml`                                                                    |
+  | 4.10 | `.github/ISSUE_TEMPLATE/rating-challenge.yml`                                                                     |
+  | 4.11 | ADR-0007 — DomainMap rendering target (SVG vs Canvas) + D3 sub-package import policy                              |
+  | 4.12 | DB-migration trigger evaluation note (explicit numerical justification; defers to Phase 5)                        |
+  | 4.13 | Phase 4 acceptance gate — DomainMap a11y ≥ 95; visual-regression baselines; issue-template smoke; CHANGELOG roll-up |
+
+- **Phase-4-blocking decisions resolved here** (D-1 through D-9 in the THINK doc):
+  - **D-1 DomainMap render target**: SVG, not Canvas / HTML-CSS. ~30–40 nodes today; SVG handles 1000+ comfortably; a11y plumbing precedent carries from existing 4 SVG vizes. Recorded as ADR-0007 in Unit 4.11.
+  - **D-2 D3 import surface**: tree-shaken sub-packages only (`d3-force` + `d3-selection` + `d3-scale`, plus optional `d3-zoom`). Projected client-bundle bump ~20–25 KB gz; First Load JS shared chunk 103 → ~125–135 KB after Phase 4. Within Lighthouse-perf ≥ 0.95 envelope.
+  - **D-3 Node hierarchy**: 3 levels (domain → subdomain → problem); subdomains collapsed by default, click-to-expand. ~15 visible nodes at default; matches §11 "brushable" framing.
+  - **D-4 Node sizing**: bubble area ∝ composite rating; `radius = sqrt(composite) × k`. Uses §8.3 composite-weight defaults (Recompose UI URL params do NOT propagate — Q36 lean confirmed: `/problems` only).
+  - **D-5 Color encoding**: 5 design-token chart hues (`--chart-difficulty` … `--chart-industry-call`) double-purpose as 5 domain hues. Decorative only; label + `<desc>` are the primary disambiguators. WCAG SC 1.4.1 clean.
+  - **D-6 Interactivity**: hover/focus highlight + native `<title>` tooltip; click navigates; drag pins node; multi-select filter chips with URL search-param persistence (`?d=…`, mirrors Unit 3.10 Recompose); zoom/pan **scoped out**.
+  - **D-7 `/domains` index**: DomainMap primary, the existing tile grid drops under a `<details>` table-fallback. Pattern reuse: `chart-table-switch.tsx` from Unit 3.12.
+  - **D-8 Issue templates**: GitHub form-based `.yml` (not legacy `.md`). 4–6 required fields per template + free-text notes; title prefixes per type; `description` blocks link to MASTER_PROMPT.md + relevant THINK / runbook.
+  - **D-9 `/contributing` tone**: distilled `CURATION_PROMPT.md` + `PAPER_INGEST_RUNBOOK.md`, written for an external curator (not Claude). Versioned MDX (`content/contributing/v1.mdx`), `/methodology` rendering pattern.
+- **DB-migration trigger evaluation (§12)**:
+  - Measured at HEAD `709679f`: `.velite/` uncompressed = **464,600 bytes (~454 KB)**; `tar -czf` = **68,969 bytes (~67 KB)**.
+  - Threshold: 5 MB. Current usage: **~1.3% of trigger**. **Deferred to Phase 5.**
+  - Auth-for-submissions trigger: also negative — Phase 4's workflow is issue-template + PR review, not authenticated user submissions. Auth ships in Phase 5+ per §5.8.
+  - Documented in detail in Unit 4.12.
+- **Phase-4-blocking decisions deferred to per-unit implementation**: D-10 (force-simulation tuning constants — tune empirically in Unit 4.2; record in ADR-0007), D-11 (filter-chip default state — lean: all active), D-12 (landing-page DomainMap "teaser" vs full — lean: identical viz, different viewport heights).
+- **OPEN_QUESTIONS.md amended** with Q37–Q40: issue-template form-field schemas (Q37), filter-chip URL persistence (Q38 — leans to URL params), DomainMap node a11y on small viewports (Q39 — lean: viewport `< 640px` defaults to table-fallback), ADR-0007 scope (Q40 — lean: cover both SVG-vs-Canvas + D3 import policy).
+- **Phase-3 closure confirmed** at HEAD `709679f` post-Unit-3.13a: 198 SSG routes; 171/171 tests across 25 files; 203 content files; 0 errors / 6 Q32-expected warnings; First Load JS 103 KB; 4 vizes shipped (RatingRadar, SaturationCurve, MoversBoard, RatingHistoryStream); 1 new ADR (ADR-0006); 1 OPEN_QUESTIONS thread closed (Q18) plus 4 surfaced (Q33–Q36).
+- THINK artifact: `docs/thinking/4.0-phase-4-prep.md`.
+- Smoke gates: docs-only — no `pnpm test` / `pnpm build` / `pnpm validate-content` run needed beyond the existing Phase-3-closure state.

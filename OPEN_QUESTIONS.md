@@ -222,3 +222,27 @@ The composite-weight Recompose control (`/problems` page, §13) stores weights i
 **Status:** open · **Surfaced:** Unit 3.0 THINK · **Blocks:** Unit 3.10 reach.
 
 When the user re-weights via the Recompose control, do leaderboards on `/`, `/domains/[domain]`, `/domains/[domain]/[subdomain]` also re-sort, or is the recompose scoped to the `/problems` index page only? Lean: `/problems` only for Phase 3 — cross-page weight propagation needs a global state lift (Zustand / Context / URL-sync-across-pages) that's more architectural than scoping suggests. Phase 4 enhancement if user-research signals demand it.
+
+## Q37. Issue-template form-field schemas
+
+**Status:** open · **Surfaced:** Unit 4.0 THINK · **Blocks:** Units 4.7–4.10 (the 4 `.github/ISSUE_TEMPLATE/*.yml` files).
+
+§13 names 4 templates: new-problem / new-paper / leaderboard-entry / rating-challenge. Each needs a field schema (form-based `.yml` per Unit 4.0 D-8). Lean: minimum-viable per template — 3–5 required fields covering the data needed to draft the corresponding YAML (e.g., for new-paper: arXiv ID, title, primary problem slug, lead-author ORCID; for new-problem: proposed slug, domain, one-paragraph statement, primary contributing paper) plus 2–4 optional context fields and a free-text "additional notes" textarea. Detailed schemas decided in the per-template THINK docs.
+
+## Q38. Filter-chip URL persistence on DomainMap
+
+**Status:** decided-as-lean · **Surfaced:** Unit 4.0 THINK · **Blocks:** Units 4.3 + 4.4 (DomainMap consumers).
+
+Filter-chip selection on the `/domains` and `/` DomainMap surfaces — persist to URL search params (`?d=domain-a,domain-b`) for deep-link sharing, or keep ephemeral? Lean: **URL search params**, mirroring Unit 3.10's Recompose pattern. Confirmed in Unit 4.0 D-6. Override path: revert to ephemeral if hydration-mismatch issues surface during Unit 4.3 / 4.4 build-out.
+
+## Q39. DomainMap node accessibility on small viewports
+
+**Status:** open · **Surfaced:** Unit 4.0 THINK · **Blocks:** Units 4.3 + 4.4 responsive behaviour and Unit 4.13 acceptance gate.
+
+At viewport widths `< 640px` (mobile), 30+ force-layout nodes overlap meaningfully and become un-tappable. Lean: default to the `<details>` table-fallback on `< 640px` (still toggleable up to the viz via the disclosure). Re-evaluate after the first responsive smoke pass in Unit 4.3.
+
+## Q40. ADR-0007 scope
+
+**Status:** decided-as-lean · **Surfaced:** Unit 4.0 THINK · **Blocks:** Unit 4.11 ADR shape.
+
+ADR-0007 ships after Unit 4.2 to record the realized DomainMap rendering decisions. Two decision-clusters could plausibly split into separate ADRs: (a) SVG-vs-Canvas-vs-HTML-CSS, (b) the D3 sub-package import policy (tree-shaken vs umbrella). Lean: **single ADR covering both** — they form one decision-cluster ("how we render force graphs in this codebase") and splitting adds bureaucratic overhead without architectural value.
