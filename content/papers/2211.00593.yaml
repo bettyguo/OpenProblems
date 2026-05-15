@@ -1,0 +1,18 @@
+id: "2211.00593"
+title: "Interpretability in the Wild: a Circuit for Indirect Object Identification in GPT-2 small"
+authors: []
+institutions:
+  - uc-berkeley
+venue: NeurIPS 2022
+year: 2022
+arxiv_id: "2211.00593"
+tldr: |
+  Reverse-engineers a 26-head circuit in GPT-2 small that implements indirect-object identification,
+  validated end-to-end by activation patching and path patching. Established the small-model
+  circuit-recovery playbook the field used through 2024; IOI became the canonical comparison surface
+  for new interpretability methods.
+contributions:
+  - problem_slug: mechanistic-interpretability
+    benchmark_id: ioi-family
+    metric: circuit-recovery
+    evidence: https://arxiv.org/abs/2211.00593

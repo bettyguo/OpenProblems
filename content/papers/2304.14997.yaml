@@ -1,0 +1,17 @@
+id: "2304.14997"
+title: "Towards Automated Circuit Discovery for Mechanistic Interpretability"
+authors: []
+institutions: []
+venue: NeurIPS 2023
+year: 2023
+arxiv_id: "2304.14997"
+tldr: |
+  Introduces ACDC, an algorithm that automates much of the manual labour in finding task-specific
+  circuits by iteratively pruning the model's computation graph against an ablation-based faithfulness
+  criterion. Recovers known circuits (IOI, induction heads, docstring) and made circuit-discovery
+  benchmarkable on a method-comparison axis.
+contributions:
+  - problem_slug: mechanistic-interpretability
+    benchmark_id: circuit-recovery
+    metric: faithfulness
+    evidence: https://arxiv.org/abs/2304.14997

@@ -315,3 +315,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `/institutions/[slug]` sections (RSC): header (display_name + type + country + homepage); Affiliated authors (every author whose `affiliations[].institution` matches this slug); Papers (every paper with this slug in `paper.institutions[]`); ranked Subdomain coverage (one entry per `(domain, subdomain)` weighted by paper count, deduped per paper, sorted by paperCount desc with subdomain-title alphabetical tiebreak).
 - Empty-state copy on each section names which Phase 2 unit fills it in, so the page reads coherently before the seed-paper content batches commit.
 - Bundle: build surface goes from 117 → **125 routes** — `/authors/[slug]` (5 paths, 181 B / 106 kB First Load JS) and `/institutions/[slug]` (8 paths, 181 B / 106 kB) both `●` SSG; the +8 over Unit 2.2 is the 8 institution paths newly prerendered (the 5 author paths were already on the surface from Unit 2.2's loaders). Other route bundles unchanged.
+
+#### Unit 2.5 — Seed papers batch 2 (10 papers across 4 problems)
+
+- Second Phase-2 paper-content batch. Lands 10 paper YAMLs covering `mechanistic-interpretability` (3), `scalable-oversight` (3), `multi-agent-llm-coordination` (2), and `long-context-rag` (2). Brings `content/papers/` to **20 of the 30–50 §13 target**; Unit 2.6 closes the floor.
+- Papers (`id == arxiv_id`):
+  - **mechanistic-interpretability** — `2211.00593` (IOI circuit, Wang et al. NeurIPS 2022; backs the `ioi-family` benchmark) · `2309.08600` (Sparse Autoencoders Find Highly Interpretable Features, Cunningham et al. arXiv 2023; backs `saebench`) · `2304.14997` (Towards Automated Circuit Discovery / ACDC, Conmy et al. NeurIPS 2023; backs `circuit-recovery`).
+  - **scalable-oversight** — `1805.00899` (AI Safety via Debate, Irving/Christiano/Amodei 2018; backs `debate-arena`) · `2211.03540` (Measuring Progress on Scalable Oversight, Anthropic 2022; sandwich-experiment foundational) · `2311.12022` (GPQA, Rein et al. COLM 2024; backs `gpqa-diamond`).
+  - **multi-agent-llm-coordination** — `2308.00352` (MetaGPT, Hong et al. ICLR 2024) · `2308.11432` (A Survey on LLM-based Autonomous Agents, Wang et al. 2023).
+  - **long-context-rag** — `2005.11401` (RAG, Lewis et al. NeurIPS 2020; foundational) · `2404.06654` (RULER, Hsieh et al. COLM 2024; backs `ruler`).
+- Conventions inherited from Unit 2.4: `authors[]` left empty (the 12 seed-author YAMLs on disk don't cover any of these 10 papers — Phase-2 cross-link audit / Unit 2.11 will surface for backfill); `institutions[]` only populated where the lead lab matches an existing seed slug (`uc-berkeley`, `openai`, `anthropic` ×2, `meta-fair` here — 5 of 10); every `evidence:` is an `https://arxiv.org/abs/<id>` URL; no `score:` fields per §15.6.
+- HF MCP `paper_search` was unavailable while this unit ran (`Server not found`); proceeded under the CURATION contract's "MCP unavailable — passive review only" rule using only the anchor signals already named in the four problem.yamls.
+- Smoke gates green: `pnpm validate-content` reports **62 content files** (was 52 after Unit 2.4: +10 paper YAMLs); `pnpm typecheck` clean; `pnpm build` 133 routes (no new SSG paths — `/papers/[id]` stays `ƒ` dynamic until Unit 2.7 lands the paper detail page).
+- THINK artifact: `docs/thinking/2.5-seed-papers-batch-2.md`.

@@ -1,0 +1,15 @@
+id: "2308.11432"
+title: "A Survey on Large Language Model based Autonomous Agents"
+authors: []
+institutions: []
+venue: arXiv 2023
+year: 2023
+arxiv_id: "2308.11432"
+tldr: |
+  Synthesises the first wave of LLM-based autonomous agent systems across construction, applications,
+  and evaluation. The construction taxonomy (profile, memory, planning, action) and the evaluation
+  taxonomy informed every later survey of the field and named the failure modes (coordination
+  overhead, brittle memory) that the 2024–26 multi-agent surveys then quantified.
+contributions:
+  - problem_slug: multi-agent-llm-coordination
+    evidence: https://arxiv.org/abs/2308.11432

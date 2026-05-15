@@ -1,0 +1,17 @@
+id: "2404.06654"
+title: "RULER: What's the Real Context Size of Your Long-Context Language Models?"
+authors: []
+institutions: []
+venue: COLM 2024
+year: 2024
+arxiv_id: "2404.06654"
+tldr: |
+  Releases RULER, a synthetic long-context evaluation suite spanning multi-needle retrieval,
+  variable tracking, common-word extraction, and question answering across context lengths up to
+  128K+ tokens. Documented the gap between claimed and effective context length on every then-
+  current frontier model; became the community standard probe for long-context evaluation.
+contributions:
+  - problem_slug: long-context-rag
+    benchmark_id: ruler
+    metric: composite-recall
+    evidence: https://arxiv.org/abs/2404.06654

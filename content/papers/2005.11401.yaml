@@ -1,0 +1,16 @@
+id: "2005.11401"
+title: "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks"
+authors: []
+institutions:
+  - meta-fair
+venue: NeurIPS 2020
+year: 2020
+arxiv_id: "2005.11401"
+tldr: |
+  Introduces RAG, a model architecture that combines a parametric seq2seq generator with a
+  non-parametric dense retriever over Wikipedia, trained end-to-end. Established the retrieval-
+  augmented generation pattern that became the dominant production composition by 2023–2024 — and
+  whose long-context limits this problem entry tracks.
+contributions:
+  - problem_slug: long-context-rag
+    evidence: https://arxiv.org/abs/2005.11401

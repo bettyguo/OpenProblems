@@ -1,0 +1,16 @@
+id: "2211.03540"
+title: "Measuring Progress on Scalable Oversight for Large Language Models"
+authors: []
+institutions:
+  - anthropic
+venue: arXiv 2022
+year: 2022
+arxiv_id: "2211.03540"
+tldr: |
+  Introduces the sandwich-experiment methodology: non-expert humans + a strong LLM assistant attempt
+  questions that domain experts can answer, with the gap to expert accuracy as the oversight metric.
+  Made scalable oversight an empirical problem rather than a conceptual one; the design pattern
+  underwrites most 2023–2025 oversight evaluations.
+contributions:
+  - problem_slug: scalable-oversight
+    evidence: https://arxiv.org/abs/2211.03540

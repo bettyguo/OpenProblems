@@ -1,0 +1,15 @@
+id: "2308.00352"
+title: "MetaGPT: Meta Programming for A Multi-Agent Collaborative Framework"
+authors: []
+institutions: []
+venue: ICLR 2024
+year: 2023
+arxiv_id: "2308.00352"
+tldr: |
+  Proposes a multi-agent software-engineering framework where agents play role-typed positions
+  (product manager, architect, engineer, QA) and communicate via standardised operating procedures.
+  One of the canonical 2023 multi-agent-framework demos that motivated the 2024–26 survey wave
+  documenting the team-size scaling wall.
+contributions:
+  - problem_slug: multi-agent-llm-coordination
+    evidence: https://arxiv.org/abs/2308.00352

@@ -1,0 +1,16 @@
+id: "2309.08600"
+title: "Sparse Autoencoders Find Highly Interpretable Features in Language Models"
+authors: []
+institutions: []
+venue: arXiv 2023
+year: 2023
+arxiv_id: "2309.08600"
+tldr: |
+  Trains sparse autoencoders on residual-stream activations of language models and shows the learned
+  dictionary features are human-interpretable and admit feature-level interventions. The result
+  opened the 2024–25 SAE wave that became the dominant frontier-scale interpretability tool, and
+  later motivated SAEBench as a method-comparison surface.
+contributions:
+  - problem_slug: mechanistic-interpretability
+    benchmark_id: saebench
+    evidence: https://arxiv.org/abs/2309.08600

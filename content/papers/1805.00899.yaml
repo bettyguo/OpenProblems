@@ -1,0 +1,17 @@
+id: "1805.00899"
+title: "AI Safety via Debate"
+authors: []
+institutions:
+  - openai
+venue: arXiv 2018
+year: 2018
+arxiv_id: "1805.00899"
+tldr: |
+  Proposes a two-player zero-sum game in which AI debaters argue for opposite answers and a human judge
+  picks the winner, with the hypothesis that the game's equilibrium favours truth. Foundational
+  framing for the scalable-oversight literature — every later protocol (recursive reward modeling,
+  prover-verifier games, sandwich experiments) sits inside this framing.
+contributions:
+  - problem_slug: scalable-oversight
+    benchmark_id: debate-arena
+    evidence: https://arxiv.org/abs/1805.00899

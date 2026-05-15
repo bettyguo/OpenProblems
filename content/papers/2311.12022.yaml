@@ -1,0 +1,18 @@
+id: "2311.12022"
+title: "GPQA: A Graduate-Level Google-Proof Q&A Benchmark"
+authors: []
+institutions:
+  - anthropic
+venue: COLM 2024
+year: 2023
+arxiv_id: "2311.12022"
+tldr: |
+  Releases GPQA, a multiple-choice benchmark of biology, physics, and chemistry questions written by
+  PhD-domain experts and validated to resist non-expert solving even with web access. The Diamond
+  split (highest-quality questions) became the canonical capability-gulf evaluation surface for
+  scalable-oversight protocols.
+contributions:
+  - problem_slug: scalable-oversight
+    benchmark_id: gpqa-diamond
+    metric: judge-accuracy-vs-expert
+    evidence: https://arxiv.org/abs/2311.12022
