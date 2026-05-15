@@ -1,0 +1,111 @@
+name: "Rating challenge"
+description: Challenge a current rating on a problem with new evidence.
+title: "[Rating challenge] "
+labels:
+  - rating-challenge
+  - needs-triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for surfacing a rating challenge!
+
+        Per [ADR-0005](https://github.com/bettyguo/OpenProblems/blob/main/docs/adr/0005-rating-action-immutability.md),
+        existing rating-action YAML files cannot be edited, deleted, or
+        renamed once committed. The dispute resolution path is to draft
+        a **new** rating-action YAML capturing the current state — the
+        curator does that drafting. What the challenge needs is
+        **evidence**, not a draft.
+
+        Reading before you submit:
+        - [`MASTER_PROMPT.md`](https://github.com/bettyguo/OpenProblems/blob/main/MASTER_PROMPT.md) — §8 rating methodology (the 5 dimensions and their encodings) and §15.6 primary-source rule.
+        - [`/ratings`](https://github.com/bettyguo/OpenProblems#ratings) — current rating-action history (the live site).
+        - [`docs/adr/0005-rating-action-immutability.md`](https://github.com/bettyguo/OpenProblems/blob/main/docs/adr/0005-rating-action-immutability.md) — why disputes produce new YAMLs, not edits.
+
+  - type: input
+    id: problem_slug
+    attributes:
+      label: Problem slug
+      description: |
+        Which problem's rating is being challenged? Use the directory
+        name under [`content/problems/`](https://github.com/bettyguo/OpenProblems/tree/main/content/problems).
+      placeholder: e.g. hallucination-reduction
+    validations:
+      required: true
+
+  - type: dropdown
+    id: dimension
+    attributes:
+      label: Dimension
+      description: |
+        Which of the 5 rating dimensions does this challenge target?
+        Per MASTER_PROMPT §8. Pick the primary one — if multiple
+        dimensions move together, file separate challenges or note
+        the secondary moves in "Additional context".
+      options:
+        - difficulty
+        - saturation
+        - urgency
+        - value
+        - industry_call
+    validations:
+      required: true
+
+  - type: dropdown
+    id: direction
+    attributes:
+      label: Direction
+      description: |
+        Which way should the dimension move?
+        - "up" = the dimension's value should be higher (more difficult / more saturated / more urgent / more valuable / stronger industry call)
+        - "down" = the opposite
+        - "watchlist" = add this problem to the MoversBoard watchlist signal (no dimension change, but flag for active monitoring)
+      options:
+        - up
+        - down
+        - watchlist
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence / rationale
+      description: |
+        What's the new signal that motivates the challenge? A new
+        benchmark result, a fresh paper, an industry announcement, a
+        deployment milestone, an unrecognised methodological flaw, a
+        ceiling reframing — anything that materially changes the
+        editorial picture. Cite primary sources per §15.6.
+      placeholder: |
+        Brief framing of why the current rating no longer fits, with
+        specific citations the curator can verify.
+    validations:
+      required: true
+
+  - type: textarea
+    id: source_urls
+    attributes:
+      label: Source URL(s)
+      description: |
+        Bulleted list of supporting URLs — arXiv abstracts, papers,
+        leaderboards, blog posts from primary parties (lab announcements,
+        not secondary coverage per §15.6). Curator verifies each.
+      placeholder: |
+        - https://arxiv.org/abs/2411.04368
+        - https://openai.com/index/<announcement-slug>
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional context
+      description: |
+        Anything else — proposed score / grade range, prior related
+        challenges, watchlist concerns, dimensions that move together,
+        signals you considered and discarded.
+      placeholder: |
+        Anything that helps the curator scope the new rating-action.
+    validations:
+      required: false

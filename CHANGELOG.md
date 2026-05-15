@@ -1052,3 +1052,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - THINK artifact: `docs/thinking/4.9-issue-template-leaderboard-entry.md`.
 - Smoke gates: `pnpm validate-content` (203 files unchanged), `pnpm typecheck` (clean), `pnpm test` (190/190 unchanged). `pnpm build` not re-run. Manual smoke deferred to Unit 4.13.
 
+#### Unit 4.10 — Issue template: rating-challenge (`.github/ISSUE_TEMPLATE/rating-challenge.yml`)
+
+- **Fourth and final** of the 4 form-based GitHub issue templates §13 names. Closes the issue-template inventory the Phase-4 plan opened. Unit 4.0's D-8 deliverable list is complete.
+- **Field schema** (6 form fields + 1 markdown intro):
+  - **Intro markdown** — links `MASTER_PROMPT.md` (§8 rating methodology + §15.6) and `docs/adr/0005-rating-action-immutability.md`. Frames the workflow: ADR-0005 forbids editing existing rating-action YAMLs; the curator drafts a **new** YAML capturing the current state in response to the challenge. The challenge needs evidence, not a draft.
+  - **Problem slug** (input, required) — which problem's rating is being challenged.
+  - **Dimension** (**dropdown**, required) — closed enum: `difficulty`, `saturation`, `urgency`, `value`, `industry_call`. **First template to use `dropdown`** because this is the first closed-set field across the 4 templates.
+  - **Direction** (**dropdown**, required) — closed enum: `up`, `down`, `watchlist`. Helper text explains each option.
+  - **Evidence / rationale** (textarea, required) — the meat of the challenge; §15.6 primary-source rule reinforced.
+  - **Source URL(s)** (textarea, optional) — bulleted list; helper text reinforces that secondary coverage doesn't qualify under §15.6.
+  - **Additional context** (textarea, optional) — proposed score range, related challenges, watchlist concerns.
+- **`dropdown` rationale**: dimension and direction are both closed sets (5 and 3 options respectively). Freeform would invite typos that waste curator triage time. Other 3 templates (4.7 / 4.8 / 4.9) stayed freeform because their constrained-looking fields (problem-slug, benchmark-id, paper-id) are actually open-ended sets that evolve with content.
+- **Watchlist surfaced as a `direction` option, not a separate `boolean`**. Keeps the form to a single decision tree: "what should change about this rating?"
+- **4 required + 2 optional fields**. Within Q37's 3–5 lean range.
+- **No `confidence` / `rationale` boilerplate** required. Challengers aren't curators; the curator authors the eventual rating-action YAML's confidence-and-rationale fields per §8.5.
+- **Parallel-curator state**: HEAD = `636da83` post-Unit-4.9. No collision.
+- THINK artifact: `docs/thinking/4.10-issue-template-rating-challenge.md`.
+- Smoke gates: `pnpm validate-content` (203 files unchanged), `pnpm typecheck` (clean), `pnpm test` (190/190 unchanged). `pnpm build` not re-run. Manual smoke (open all 4 templates in the GitHub UI on a non-main branch and verify field rendering + title prefixes) deferred to Unit 4.13 acceptance gate per Unit 4.0.
+
