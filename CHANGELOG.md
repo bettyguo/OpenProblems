@@ -2432,6 +2432,42 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **Smoke gates**: docs-only; unchanged from Unit 8.7 snapshot (388/388 tests; ~590 routes; 103 kB First Load JS; 19 LHCI URLs; 0 errors / 6 warnings audit).
 - THINK artifact: `docs/thinking/8.8-open-questions-hygiene.md`.
 
+#### Unit 8.9 — Phase 8 acceptance gate
+
+- Phase-8 closing unit. Mirrors Units 1.12 / 2.13 / 3.13 / 4.13 / 5.13 / 6.10 / 7.11. Verifies the §13 Bilingual-rollout-completion sub-thread (per Unit 8.0 D-1) is operational locally at HEAD, emits the cross-phase roll-up, and lists Phase-8 follow-ons that survive into Phase 9+. Docs-only.
+- **§13 Bilingual sub-thread (rollout completion) — local pass status** (one row per Phase-8 surface):
+  - Bulk page migration: every bare `app/<route>/page.tsx` → `app/[locale]/<route>/page.tsx` (22 routes) — Unit 8.1 ✓.
+  - `middleware.ts` enforcing `localePrefix: "always"` per ADR-0011 D-B — Unit 8.1 ✓; 51.8 kB server-side bundle.
+  - `lib/i18n/navigation.ts` Link wrapper (next-intl `createSharedPathnamesNavigation`) — Unit 8.1 ✓; 7 component files + 1 search-palette `useRouter` migrated.
+  - `TALK_PATHNAME_REGEX` extension for locale-aware Giscus paths — Unit 8.1 ✓; backward-compat preserved.
+  - `lighthouserc.json` URL prefix normalization (13 URLs prefixed with `/en/`) — Unit 8.1 ✓.
+  - Home-page FR hero translation + `messages.home.*` namespace (15 keys) — Unit 8.2 ✓.
+  - Explicit `NEXT_LOCALE` cookie config (name / maxAge / sameSite / path / secure) — Unit 8.3 ✓.
+  - `useTranslations` for LocaleToggle aria-label — Unit 8.4 **DEFERRED** (blocked on HTML shell migration; parallel session preserved existing structure).
+  - `lib/site-url.ts` extraction (5 SITE call sites consolidated) — Unit 8.5 ✓; preview deploys substitute hostname via `NEXT_PUBLIC_SITE_URL`.
+  - Universal sitemap locale alternates (`entryWithAlternates` helper) — Unit 8.5 ✓; +4 new sitemap test assertions.
+  - `/contributing` FR pilot (`content/contributing/v1.1.fr.mdx` + `resolveLocalized`) — Unit 8.6 ✓; second sibling-file consumer.
+  - Phase-8 hygiene status pass (Class A/B/C catalog) — Unit 8.7 ✓.
+  - OPEN_QUESTIONS hygiene + ADR review (Q51 wording refined; no net promotions) — Unit 8.8 ✓.
+- **§14 universal contract**: Lighthouse a11y/perf/SEO ≥ 95 gates — 19 URLs enrolled (+1 from Unit 8.6); documented `html-has-lang` axe-rule risk on `/fr/...` pages survives Phase 8 (real LHCI run lands first PR). W3C feed validator carries Phase-3/5/6/8 compound deferral. Visual baselines for locale-pilot pages deferred (no Playwright spec changes this phase). No auto-merge (ADR-0009) — Phase 8 added one LLM-translated MDX (`v1.1.fr.mdx`) marked `translation_source: "machine-assisted"` per ADR-0011 D-G; curator-reviewable; standard git-apply flow. File-first / no DB (ADR-0004) held; DB-migration trigger ~1.6% of 5 MB at Phase-8 close (cold). First Load JS shared chunk = **103 kB UNCHANGED** through every Phase-8 unit.
+- **Phase-8 unit summary**: 9 numbered units + 1 deferral marker. Landing order: 8.0 prep (`0ee1ad9`) → 8.1 bulk migration (`31ea2d5`) → 8.2 home-FR (`defb122`) → 8.3 cookie config (`5e2b509`) → 8.4 DEFERRED → 8.5 site-url + universal alternates (`90bd3c3`) → 8.6 /contributing FR (`bad59fa`) → 8.7 hygiene (`c05e1ab`) → 8.8 OQ hygiene (`8ba25e0`) → 8.9 (this).
+- **State at HEAD (Unit 8.9)**:
+  - **Content**: unchanged at schema-validated count (203); **+1 raw MDX** (`v1.1.fr.mdx` from Unit 8.6) → 36 raw MDX files. Counts: 10 problems / 5 domains / ~12 subdomains / 30 papers / 126 authors / 14 institutions / 20 rating actions / 4 issue templates / methodology v1 (EN + FR) / contributing v1.0 (EN) + v1.1 (EN + **FR**) / 2 `entries.json` files.
+  - **~590 prerendered pages** (was 341 at Phase-7 close → +~245 from Unit 8.1's locale-doubling → +2 from Unit 8.6's contributing version expansion = ~590-592). First Load JS shared chunk = **103 kB UNCHANGED**.
+  - **388/388 vitest tests across 44 files** (was 383/44; +5 net this phase: +1 from Unit 8.1's TALK_PATHNAME_REGEX refactor + +4 from Unit 8.5's sitemap test rewrite; no new test files).
+  - `pnpm validate-content` → 203 files green. `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2). `pnpm typecheck` clean. `pnpm build` clean compile.
+  - **5 visualizations live** (unchanged from Phase 4).
+  - **11 ADRs** (unchanged from Phase 7; Phase 8 added **zero new ADRs**).
+  - **0 new dependencies in Phase 8**.
+  - **`lighthouserc.json`** enrols **19 URLs** (was 18 at Phase-7 close; +1 from Unit 8.6).
+  - **OPEN_QUESTIONS state**: 18 resolved + 8 decided-as-lean + 19 still open = **45 total entries** (unchanged from Phase-7 close; Q51 wording refined in Unit 8.8 but stays decided-as-lean).
+- **Phase-8 follow-ons that survive the gate** (non-blocking; per Unit 8.7 Class A/B catalog): Unit 8.4 deferred indefinitely (HTML shell migration unblock required); HTML shell migration itself + `<html lang={locale}>` + SiteHeader-under-provider; fallback-hint UI for `didFallback`; `content/contributing/v1.0.fr.mdx`; bulk content backfill (~200 EN files; Q51 horizon); `messages.{contributing,methodology,…}.*` chrome strings; StatusPill localization; recently-rated empty-state copy; site-header nav labels via `useTranslations` (blocks on 8.4); trailing-slash normalization for `NEXT_PUBLIC_SITE_URL`; per-entry sitemap `lastModified` / `changeFrequency` / `priority`; first LHCI run for 5 locale-pilot URLs; visual baselines.
+- **Pre-existing follow-ons** (carryover from prior phases, unchanged from Unit 7.11): orphan `components/domain-tile-grid/` deletion; `entries.json` backfill on 8 problems; `<managingEditor>` on RSS (Q2 DNS); W3C validator passes (first deploy + Q47); `pnpm clean-drafts` script; Phase-2 ROR-ID + InstaDeep orphan; `NEXT_PUBLIC_GISCUS_REPO_ID` + Discussions enablement (Q47); real-API GraphQL smoke (Q47 + `GITHUB_TOKEN`).
+- **Phase 9 entry conditions**: per §12, **explicit human sign-off required**. Phase 6 closed Discussions; Phase 7+8 closed Bilingual (infrastructure + route coverage + 2 content surfaces). Remaining §13 threads: auth + read+write API (DB-trigger flip MANDATORY on first write-path unit; ~14-unit phase; breaks Phase-4 "no user accounts" pact); subscriber-list (can decouple from auth via third-party); monetization (premature). Unit 8.4 + HTML shell migration could land as Phase-9 prefix if chosen thread needs the unblock. DB-migration trigger re-eval mandatory at Phase 9 kickoff; currently ~1.6% of 5 MB (cold).
+- **Cross-phase milestone**: this commit closes the **Bilingual rollout-completion sub-thread** of Phase 8 to the level Unit 8.0 D-1 + ADR-0011 scoped it: **route-complete + pilot-validated-with-2-content-surfaces**. 9 commits + 0 new ADRs + 0 new dependencies + 0 client-bundle regressions + 0 test regressions + 5 new tests + 0 OPEN_QUESTIONS net movements (Q51 wording refined).
+- **Phase-8 scope drift**: HTML shell migration **dropped from scope mid-flight** at Unit 8.1 (parallel session preserved existing `app/layout.tsx`-owns-`<html>` structure with a "this change was intentional" system reminder). Surfaced into Unit 8.4 territory, then deferred indefinitely. No scope additions. Parallel-curator coordination at unprecedented intensity (Unit 8.1 mid-flight file deletions; Unit 8.6 FR content authored by parallel session).
+- THINK artifact: `docs/thinking/8.9-phase-8-acceptance-gate.md`.
+
 
 
 
