@@ -1457,3 +1457,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - THINK artifact: `docs/thinking/5.9-digest-hub.md`.
 - Smoke gates: `pnpm typecheck` (clean), `pnpm test` (284/284 unchanged), `pnpm build` (clean compile in 3.3s; **319 prerendered pages**; `/digest` static at 199 B; First Load JS 103 kB unchanged).
 
+#### Unit 5.10 — DB-migration trigger re-evaluation (post-Phase-5 close)
+
+- Phase-5 mandatory re-eval per Unit 4.12 re-eval trigger #3 + Unit 5.0 D-8 commitment. Mirrors Unit 4.12's standalone-note shape so Phase-6+ curators have one canonical re-check reference per phase boundary.
+- **Measurement at HEAD `4b9b562`**: `gzip(.velite snapshot) = 72,383 bytes (~70.7 KB)` — **~1.38% of the 5 MB threshold**. Movement across the boundary:
+  - Unit 4.12 (Phase 4 close): 69,182 bytes (~1.32%).
+  - Unit 5.0 (Phase 5 kickoff): 72,274 bytes (~1.38%).
+  - Unit 5.10 (Phase 5 close): 72,383 bytes (~1.38%).
+- **Phase 5 added ~109 bytes net to the snapshot** — essentially noise. All Phase-5 deliverables (Units 5.1–5.9) are **code + scripts + docs**, not content. The snapshot is content-driven; Phase 5's surfaces didn't move the needle.
+- **Auth trigger still negative**: every Phase-5 surface is curator-side or public-read (CLIs run locally, RSS feeds + `/digest` are public read-only). First Phase-6+ auth trigger candidate remains an email-subscription opt-in flow (Q44-adjacent).
+- **Phase-5-specific observation**: the LLM-drafting pipeline (Units 5.3 + 5.5) writes to `drafts/` only — NEVER to `content/`. Curator-mediated bottleneck means the size trigger is **latent**: even 100 ingest runs don't grow `content/` until curators `git apply` the diffs. The size trigger fires on **applied** content, not **drafted** content. This is by design (§13 no-auto-merge + ADR-0009); the curator bottleneck is the intended safety property.
+- **Decision**: DB migration **deferred to Phase 6+**. Same as Units 4.12 + 5.0. The cumulative re-eval notes (4.12 → 5.0 → 5.10) establish durable framing for the Phase-6 reassessment.
+- **Re-evaluation triggers carried forward** (unchanged): content scale 3× / `> 600` files / `> 1 MB` gzipped internal alarm; first Phase-6+ write-path; Phase 6 kickoff mandatory; rating-action volume 200; **NEW** operational signal (not migration trigger): drafts directory > 100 stale files → flags `pnpm clean-drafts` script need for Phase 6 hygiene.
+- **Anchor ADR**: ADR-0004 (file-first; no DB through Phase 3) + ADR-0009 (curator-mediated drafts; keeps the trigger latent during Phase 5).
+- **Parallel-curator state**: HEAD = `4b9b562` post-Unit-5.9. No collision.
+- Pure docs. THINK artifact: `docs/thinking/5.10-db-migration-trigger-eval.md`.
+- Smoke gates: `pnpm validate-content` (203 files unchanged), `pnpm typecheck` (clean — no TS touched), `pnpm test` (284/284 unchanged).
+
