@@ -1802,6 +1802,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline); typecheck / test / build untouched since no source files modified. **Real LHCI run deferred** — runs on the first PR containing this commit (Q27-class CI-on-deploy pattern).
 - THINK artifact: `docs/thinking/6.7-lighthouse-talk-enrolment.md`.
 
+#### Unit 6.8 — Phase-6 hygiene status pass (deferrals carried into Phase 7+)
+
+- Seventh code-track unit of Phase 6; docs-only. Mirrors the Phase-5 Unit 5.11 framing — a status-pass on hygiene candidates that REMAIN deferred because they require either explicit human authorization (destructive actions per Units 4.4 / 5.11 policy) or curator-editorial work the harness cannot perform unilaterally.
+- **State verified at HEAD `d2c635e`**:
+  - Orphan `components/domain-tile-grid/index.tsx` still exists; `grep -rn` finds only the self-reference; **still orphan, still gated** on explicit "delete the orphan tile-grid" authorization.
+  - 2 `entries.json` files across 10 problems (hallucination-reduction + long-horizon-agent-reliability); **8 problems still without entries** — unchanged through Phases 5 and 6; backfill still gated on curator session + `ANTHROPIC_API_KEY`.
+- **Newly-surfaced Phase-6 operational gates** (added to the deferrals table):
+  - **Q47** — GitHub Discussions enablement on `bettyguo/OpenProblems`. Owner action; gates Phase-6 read surfaces (GraphQL non-empty; iframe live; card badges populating; digest discussion items). Until resolved: every Phase-6 read gracefully renders empty/placeholder per ADR-0010's design.
+  - **`NEXT_PUBLIC_GISCUS_REPO_ID`** env var. Generated at giscus.app after Q47 resolves. Until set: Unit 6.4 renders "embed unavailable" curator message.
+  - **`/problems/[slug]/talk` Playwright visual baselines** (`chromium-win32`) — deferred until a `playwright test --update-snapshots` run.
+  - **Real-API smoke for Unit 6.2's GraphQL client** — gated on Q47 + `GITHUB_TOKEN` in CI.
+  - **W3C feed validator pass against `/api/v1/digest/<slug>` with discussion items** (Unit 6.6 effects) — gated on Q47 + at least one discussion with comments + first preview deploy.
+- **Cross-phase deferral lineage table**: documents which prior-phase items (orphan tile-grid, entries backfill, `<managingEditor>`, W3C validator passes, `pnpm clean-drafts`) carry from Phase 5 into Phase 7+ without closure in Phase 6.
+- **What the curator could authorize in a future session**: "delete the orphan tile-grid" → 1-commit destructive-action unit; "backfill entries for problem X" → 1 commit per problem (curator-driven); "enable repo Discussions + paste the repoId" → out-of-band on github.com + giscus.app then 1-commit env-setting unit. None Phase-6-acceptance-blocking.
+- **Phase 6 closed NO prior-phase hygiene items**. The phase added 5 new operational/visual gates (all flowing through ADR-0010's graceful-degradation design). HEAD is fully functional with or without any of the operational unlocks.
+- Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline unchanged); typecheck / test / build untouched (docs-only).
+- THINK artifact: `docs/thinking/6.8-phase-6-hygiene-status.md`.
+
+
 
 
 
