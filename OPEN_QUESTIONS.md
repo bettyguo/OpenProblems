@@ -437,7 +437,7 @@ What the curator review pipeline needs to decide (Phase 12+ architectural questi
 
 ## Q58. Rating-challenge visibility to non-author users
 
-**Status:** open · **Surfaced:** Unit 11.0 D-? (anticipated) + Unit 11.5 hygiene (Class A item 2) · **Blocks:** Phase 12+ public-visibility scope.
+**Status:** resolved 2026-05-16 (Unit 13.3): per-status visibility policy realized in `lib/rating-challenges/PUBLIC_CHALLENGE_STATUSES` + `getPublicChallengesByProblem` + `getAcceptedChallengeCountByProblem` (Unit 13.1) + counter section on problem detail page (Unit 13.2) + per-problem listing route at `/[locale]/problems/[slug]/challenges` (Unit 13.3); `submitted` + `under_review` + `accepted` public on counter + listing (with submitter `@githubLogin` displayed per ADR-0012 D-E semantics); `rejected` + `withdrawn` submitter-only (privacy preservation on editorial decisions + change-of-mind); submitter-login privacy note added to `messages.rating_challenge.description` in EN + FR for explicit submitter awareness. Q58 lean #3 (`/[locale]/u/[handle]/challenges` per-user surface) deferred to Phase 14+ alongside public profile route + per-user privacy model ADR. · **Surfaced:** Unit 11.0 D-? (anticipated) + Unit 11.5 hygiene (Class A item 2) · **Resolved:** Unit 13.3.
 
 Today Phase 11's only consumer of `getUserChallenges` is the submitter's own profile page (`/[locale]/profile`). A user cannot see anyone else's challenges; the problem detail page does not display a count or list of active challenges.
 

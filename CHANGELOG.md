@@ -2470,6 +2470,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 13 — Community-adjacent surfaces (**fourth NON-§13 phase**: Q58 public visibility — honored-deferral pick)
 
+#### Unit 13.5 — OPEN_QUESTIONS hygiene + ADR review (Phase 13 pre-close)
+
+- Sixth Phase-13 unit; docs-only. Mirrors Unit 5.12/6.9/7.10/8.8/9.8/10.4/11.6/12.7 OQ-hygiene precedents. Scans the open-questions ledger for Phase-13 promotions + reviews the 14 ADRs at HEAD. Lands ahead of Unit 13.6 (acceptance gate).
+- **OPEN_QUESTIONS scan**: Phase 13 promotes **1 question** (Q58) + surfaces **0 new questions**.
+  - **Q58 promoted** `open` → `resolved 2026-05-16 (Unit 13.3)`. The per-status visibility policy documented across Unit 11.6 Q58 lean + Unit 12.0 D-10 + Unit 13.0 D-3 fully realized: server-side filtering via `PUBLIC_CHALLENGE_STATUSES` const + `getPublicChallengesByProblem` helper (Unit 13.1); counter UI on problem detail page section 8b (Unit 13.2); per-problem listing route at `/[locale]/problems/[slug]/challenges` (Unit 13.3); submitter-login privacy note on submission form description (Unit 13.3). Q58 lean #3 (`/[locale]/u/[handle]/challenges` per-user surface) deferred to Phase 14+ alongside public profile route.
+  - **No new Q-numbers surfaced**. Two Phase-13-internal candidates flagged in Unit 13.0 + Unit 13.4 risk-surface (NOT promoted unless usage demands): **Q61 candidate** (submitter anonymity option; needs schema + ADR; Phase 14+); **Q62 candidate** (rejection-rationale public visibility; policy decision opposite of D-3 lean; Phase 14+).
+  - **Q54 + Q55 stay open** as operational gates (carried since Phase 9). Phase-13 adds no new operational gates.
+- **Ledger state at HEAD** (Status-field-tally; mechanically auditable):
+  - **21 resolved**: Q1, Q4, Q5, Q12, Q13, Q18, Q27, Q32, Q40, Q41, Q43, Q45, Q46, Q48, Q49, Q50, Q52, Q53, Q56, Q57, **Q58**.
+  - **4 decided-as-lean**: Q38, Q42, Q44, Q51.
+  - **28 open**: Q2, Q3, Q6, Q7, Q8, Q9, Q10, Q11, Q14, Q15, Q16, Q17, Q19, Q25, Q26, Q28, Q29, Q30, Q31, Q33, Q34, Q35, Q36, Q37, Q39, Q47, Q54, Q55.
+  - **Total: 53 entries** (was 53 at Phase-12 close). **Phase-13 delta**: +1 resolved (Q58); -1 open (Q58 left); net **0 size change**.
+- **ADR review**: **14 ADRs at HEAD** (0001 – 0014). **Phase 13 added zero new ADRs**. All 14 ADRs unchanged in body; status remains `accepted` across the set.
+  - **ADR-0004 reaffirmed** by Phase 13's read-only surface (no new tables; no new columns; no new migrations). Content stays file-first; USER-STATE DB unchanged.
+  - **ADR-0005 reaffirmed** by Phase 13's visibility policy preserving editorial-record semantics (accepted is public + terminal; `acceptedActionId` reference publicly visible per Unit 13.3).
+  - **ADR-0011 D-A through D-G** exercised by `messages.public_challenges.*` (Unit 13.2; 16 keys per locale) + `messages.rating_challenge.description` edit (Unit 13.3 privacy note). FR translations honor §3 brand register.
+  - **ADR-0012 D-E** consumed by `getPublicChallengesByProblem` LEFT JOIN exposing `submitterLogin` on public listing.
+  - **ADR-0013 D-F** (USER-STATE only) honored — Phase 13 read-only.
+  - **ADR-0014 D-A** state-machine semantics + D-D acceptance → YAML emission cross-referenced by `acceptedActionId` reference line on public listing.
+- **No prose-shift reconciliations** this unit (zero ADR edits). Phase-13 implementation matched documented Q58 lean verbatim; no surprises at code time.
+- **No new ADRs surfaced**. Phase-13 surface fully covered by existing 14-ADR set. **Phase-14+ ADR-promotion candidates** flagged: **ADR-0015 candidate** (per-user privacy model OR subscriber-list email; thread-choice-dependent); **ADR-0016 candidate** (multi-provider OAuth); **ADR-0017 candidate** (full §8.6 COI + `curatorRoles`).
+- Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2); typecheck / test / build untouched since no source files modified beyond OPEN_QUESTIONS.md + new THINK doc.
+- THINK artifact: `docs/thinking/13.5-open-questions-hygiene.md`.
+
 #### Unit 13.4 — Phase-13 hygiene status pass (Class A / B / C catalog)
 
 - Fifth Phase-13 unit; docs-only. Mirrors Phase-5/6/7/8/9/10/11/12 hygiene precedents. Catalogs **Class A** in-flight Phase-13 items (4 carried; 0 newly surfaced), **Class B** Phase-13-specific follow-ons (8), and **Class C** carryovers (19; unchanged from Unit 12.6). Smaller Class B catalog than Phase-12's 14 items because Phase 13 ships a read-only surface; fewer new architectural questions.
