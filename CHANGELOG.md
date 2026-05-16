@@ -2470,6 +2470,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 14 — Community-adjacent surfaces (**fifth NON-§13 phase**: Public profile page at `/[locale]/u/[handle]` — honored-deferral pick; surfaces ADR-0015)
 
+#### Unit 14.7 — OPEN_QUESTIONS hygiene + ADR review (Phase 14 pre-close)
+
+- Eighth Phase-14 unit; docs-only. Mirrors Unit 5.12 / 6.9 / 7.10 / 8.8 / 9.8 / 10.4 / 11.6 / 12.7 / 13.5 OQ-hygiene precedents. Scans the OPEN_QUESTIONS ledger for Phase-14 promotions + reviews the 15 ADRs at HEAD.
+- **OPEN_QUESTIONS scan**: Phase 14 surfaced **3 candidate questions** anticipated by ADR-0015's deferral clauses but **NOT promoted** to formal `Status: open` ledger entries this unit: **Q63 candidate** (user-editable profile fields per ADR-0015 D-C), **Q64 candidate** (per-user privacy opt-out per D-D), **Q65 candidate** (per-curator activity feed per D-E expansion). Promotion deferred to Phase 15+ kickoff; mirrors Phase-13 precedent (Q61 + Q62 stayed flagged unpromoted at Phase-13 close).
+- **Ledger state at HEAD `0faa3e4`** (mechanical `Status:`-field tally per Unit 9.8 canonical convention; +0 net delta vs Phase-13 close):
+  - **21 resolved**: Q1, Q4, Q5, Q12, Q13, Q18, Q27, Q32, Q40, Q41, Q43, Q45, Q46, Q48, Q49, Q50, Q52, Q53, Q56, Q57, Q58.
+  - **4 decided-as-lean**: Q38, Q42, Q44, Q51.
+  - **28 open**: Q2, Q3, Q6, Q7, Q8, Q9, Q10, Q11, Q14, Q15, Q16, Q17, Q19, Q25, Q26, Q28, Q29, Q30, Q31, Q33, Q34, Q35, Q36, Q37, Q39, Q47, Q54, Q55.
+  - **Total: 53 entries UNCHANGED** from Phase-13 close.
+- **Phase-14+ Q-candidates flagged but NOT in ledger**: Q59 (CLI emit-challenge-action), Q60 (curator authz evolution), Q61 (anonymity option), Q62 (rejection-rationale visibility), **Q63 (user-editable fields; Phase-14 new)**, **Q64 (privacy opt-out; Phase-14 new)**, **Q65 (per-curator activity feed; Phase-14 new)**.
+- **ADR review**: **15 ADRs at HEAD (0001 – 0015)**. Phase 14 added **1 new ADR** (ADR-0015 in Unit 14.1). All 14 prior ADRs unchanged in body; status remains `accepted` for entire set.
+- **ADR-0015 unit-level exercise** (D-A through D-F all realized in Units 14.2 – 14.5):
+  - **D-A** (field partition): Unit 14.2 `PublicProfile` + `ProfileActivity` interfaces enforce shape at type layer; Unit 14.3 + 14.4 consume verbatim.
+  - **D-B** (case-insensitive lookup; case-preserved URL): Unit 14.2 `getPublicProfileByHandle` uses `sql\`LOWER(...)\``; Unit 14.3 renders `profile.githubLogin` canonical case; Unit 14.4 inherits via same helper.
+  - **D-C** (user-editable Phase-15+ deferral): no editing surface Phase 14; Q63 flagged.
+  - **D-D** (privacy opt-out Phase-15+): no opt-out Phase 14; Q64 flagged.
+  - **D-E** (curator-of-record case-sensitive): Unit 14.2 `getCuratorOfRecordSlugs` uses `===` against YAML literal; Unit 14.3 renders badge; Q65 flagged for case-insensitive enhancement + per-curator activity feed.
+  - **D-F** (SiteHeader integration): Unit 14.5 "Your profile" link → `/u/{login}` PUBLIC canonical; Unit 14.3 "Edit your profile" CTA → `/profile` EDIT mode.
+- **Prior ADR cross-references reaffirmed by Phase 14**: ADR-0004 (`getCuratorOfRecordSlugs` scans `#site/content` — file-system as source of truth for `editorial.primary_curator`); ADR-0011 (`messages.public_profile.*` follows sibling-file convention; FR idiomatic); ADR-0012 D-E (`users.githubLogin` text-equal join exercised by `getPublicProfileByHandle` + `getCuratorOfRecordSlugs`); ADR-0013 D-F (USER-STATE only — `getProfileActivity` reads `watchlist` + `ratingChallenges` aggregates); ADR-0014 (mirrored on read side by ADR-0015 D-A's badge surface — curator-of-record visible publicly; curator = submitter block now verifiable from read side).
+- **No prose-shift reconciliations** added; **no supersede markers** added. ADR-0015 supersedes nothing.
+- Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2); typecheck / test / build untouched since no source files modified.
+- THINK artifact: `docs/thinking/14.7-open-questions-hygiene.md`.
+
 #### Unit 14.6 — Phase-14 hygiene status pass (Class A / B / C catalog)
 
 - Seventh Phase-14 unit; docs-only. Mirrors Phase-5/6/7/8/9/10/11/12/13 hygiene precedents. Catalogs **4 Class A** in-flight Phase-14 items (all 4 carried from Unit 13.4; 0 newly surfaced), **11 Class B** Phase-14-specific follow-ons, and **19 Class C** carryovers from prior phases.
