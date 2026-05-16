@@ -57,6 +57,13 @@ export function buildSitemap(): MetadataRoute.Sitemap {
           fr: `${SITE}/fr/about`,
         },
       };
+    } else if (route === "/methodology") {
+      entry.alternates = {
+        languages: {
+          en: `${SITE}/en/methodology`,
+          fr: `${SITE}/fr/methodology`,
+        },
+      };
     }
     entries.push(entry);
   }
@@ -93,7 +100,15 @@ export function buildSitemap(): MetadataRoute.Sitemap {
   // when FR siblings (e.g. methodology/v1.fr.mdx) join the Velite collection.
   for (const m of methodology) {
     if (m.lang !== "en") continue;
-    entries.push({ url: `${SITE}/methodology/${m.slug}` });
+    entries.push({
+      url: `${SITE}/methodology/${m.slug}`,
+      alternates: {
+        languages: {
+          en: `${SITE}/en/methodology/${m.slug}`,
+          fr: `${SITE}/fr/methodology/${m.slug}`,
+        },
+      },
+    });
   }
   for (const c of contributing) {
     if (c.lang !== "en") continue;

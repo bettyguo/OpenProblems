@@ -53,6 +53,28 @@ describe("buildSitemap", () => {
     });
   });
 
+  it("attaches en + fr locale alternates to the /methodology entry (Unit 7.5)", () => {
+    const methEntry = sitemap.find((e) => e.url === `${SITE}/methodology`);
+    expect(methEntry).toBeDefined();
+    expect(methEntry?.alternates).toEqual({
+      languages: {
+        en: `${SITE}/en/methodology`,
+        fr: `${SITE}/fr/methodology`,
+      },
+    });
+  });
+
+  it("attaches en + fr locale alternates to each per-version methodology entry (Unit 7.5)", () => {
+    const v1Entry = sitemap.find((e) => e.url === `${SITE}/methodology/v1`);
+    expect(v1Entry).toBeDefined();
+    expect(v1Entry?.alternates).toEqual({
+      languages: {
+        en: `${SITE}/en/methodology/v1`,
+        fr: `${SITE}/fr/methodology/v1`,
+      },
+    });
+  });
+
   it("does NOT attach locale alternates to routes without a [locale]/ shadow", () => {
     // Only /about has the alternates block today. Routes like /problems or
     // /digest must not carry alternates pointing to URLs that 404.

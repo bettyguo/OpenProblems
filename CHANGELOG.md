@@ -2056,6 +2056,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
 - THINK artifact: `docs/thinking/7.5-methodology-fr-pilot.md`.
 
+#### Unit 7.5a — Methodology FR pilot follow-ons (LHCI enrolment + sitemap locale-alternates)
+
+- Sixth code unit of Phase 7. Closes the two follow-ons Unit 7.5's CHANGELOG flagged as deferred ("provisional 7.7a" for LHCI + "provisional 7.8b" for sitemap-alternates). Combined into one unit because both are tiny consistency fixes mirroring what 7.7 + 7.8 established for `/about`; splitting into two ~5-line commits would be ceremony without benefit.
+- **`lighthouserc.json`** — enrols `/en/methodology` + `/fr/methodology` (16 → **18** URLs). Mirrors Unit 7.7's `/en/about` + `/fr/about` pattern. Versioned pages (`/[locale]/methodology/v1.0.0`) not enrolled (LHCI canaries canonical landing surfaces, not versioned snapshots — same choice as Unit 7.7).
+- **`lib/sitemap/build-sitemap.ts`**:
+  - `/methodology` static-route entry now carries `alternates.languages = { en: …/en/methodology, fr: …/fr/methodology }` (mirrors the `/about` block from Unit 7.8).
+  - Per-version methodology entries (`/methodology/v1`) also carry `alternates.languages` pointing to `/en/methodology/v1` + `/fr/methodology/v1`. Scales automatically when future versions land.
+- **`lib/sitemap/build-sitemap.test.ts`** +2 cases: `/methodology` alternates assertion (mirrors the `/about` test) + per-version `/methodology/v1` alternates assertion.
+- **NOT in this unit** (deferred):
+  - `/contributing` locale alternates — `app/[locale]/contributing/` doesn't exist; adding alternates pointing to non-existent URLs would violate the sitemap-test "no alternates without [locale] shadow" invariant. Defer until Unit 7.3a (bulk migration) or a dedicated `/contributing` FR pilot (curator-track per Q51 lean).
+  - Versioned methodology in LHCI — version pages mirror the latest-page rendering pipeline 1:1; double-canarying offers no signal.
+  - LOCALE_ALTERNATE_ROUTES table extraction — with 2 entries (`/about`, `/methodology`) the inline if-chain is 4 lines; extract when count reaches 5+ (matches the SITE-constant extraction trigger flagged in Unit 7.8).
+- **Page count delta**: 341 → **341 UNCHANGED** (no route changes; sitemap.xml regenerates with the new alternates as a single SSG entry).
+- **Bundle impact**: First Load JS shared chunk = **103 kB UNCHANGED**.
+- **Smoke gates**:
+  - `pnpm validate-content` → 203 files unchanged.
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **383/383 across 44 files** (was 381/44; +2 sitemap assertions).
+  - `pnpm build` → **341 prerendered pages UNCHANGED**. First Load JS shared chunk = 103 kB UNCHANGED.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- THINK artifact: `docs/thinking/7.5a-fr-pilot-followons.md`.
+
 #### Unit 7.6 — `components/locale-toggle/` site-header UI
 
 - Fourth code unit of Phase 7. Renumbered out-of-sequence: lands ahead of 7.5 (methodology FR pilot) because Unit 7.4 was authored by a parallel-curator session (commit `f315458`); locale-toggle scope is fully disjoint from the routing layer + content loaders that 7.5 would touch, so it's the lowest-collision next step. Implements [ADR-0011 D-F](docs/adr/0011-i18n-strategy.md) — site-header placement, click cycles to next locale, aria-label describes next action.
