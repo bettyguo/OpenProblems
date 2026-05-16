@@ -1377,3 +1377,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - THINK artifact: `docs/thinking/5.5-extract-leaderboard-cli.md`.
 - Smoke gates: `pnpm typecheck` (clean), `pnpm test` (**262/262 across 34 files**, was 243/33; +19 entry-draft tests), `pnpm validate-content` (203 files unchanged), `pnpm build` (clean compile, 313 pages, First Load JS 103 kB unchanged), `pnpm extract-leaderboard --help` (works).
 
+#### Unit 5.6 — ADR-0009: Human-review diff format for LLM-assisted drafts
+
+- Records the realized no-auto-merge contract from Units 5.3 (`ingest-arxiv`) + 5.5 (`extract-leaderboard`). Same MADR-after-realization pattern as ADR-0006 (Unit 3.11) / ADR-0007 (Unit 4.11). Status `accepted` on the authoring commit — both consumers shipped.
+- **Constitutional anchor**: §13 "must produce a human-review diff; no auto-merge." Applied by parallel construction to the arXiv-ingest path (Unit 5.3) since `content/papers/<id>.yaml` is editorial-canonical content too.
+- **6 decisions** documented (D-A through D-F):
+  - **D-A** File-naming: `drafts/<unit>-<isoTimestamp>-<slug>.diff` + `.diff.meta.json` sidecar. ISO timestamp colons + dots replaced with hyphens for filesystem safety. `<slug>` = arxivId (5.3) or `<arxivId>-<problemSlug>` (5.5).
+  - **D-B** Unified-diff, `git apply`-compatible. **New-file case** (no target): `--- /dev/null` + `+++ b/<target>` + `new file mode 100644` (realized via `paper-draft.ts::buildUnifiedDiff`). **Modify-existing case**: standard unified diff via `diff@9::createPatch(...)` (realized via `entry-draft.ts::buildEntriesDiff`).
+  - **D-C** Audit sidecar shape (inherits ADR-0008 D-E base; script-specific additive keys allowed — Unit 5.5 adds `problem_slug` / `existing_entries` / `proposed_entries` / `merged_entries`). `prompt_sha256` + `completion_sha256` are SHA-256 hex digests enabling exact reproduction.
+  - **D-D** No-auto-merge contract: Phase-5 CLIs NEVER write to `content/`. Curator runs `git apply drafts/<file>.diff` after review (may edit the diff first). A future ADR may authorize auto-apply for low-risk subsets; ADR-0009 is the working contract for all LLM-drafted output through Phase 5.
+  - **D-E** `drafts/` lifecycle: gitignored, no retention policy, safe to delete unapplied. Cross-curator coordination: drafts are per-machine; not shared. `LLM_OPENPROBLEMS_DAILY_BUDGET_USD` is per-machine too — multi-curator shared-budget framing deferred to Phase 6+.
+  - **D-F** `verified: false` discipline: leaderboard entries from Unit 5.5 always ship `verified: false`. Merge-layer enforcement is defense-in-depth (system prompt also instructs omission). Curator flips on independent verification against the primary-source URL.
+- **6 considered options** with explicit Pros/Cons per ADR README rule: unified-diff (chosen), direct apply (violates §13), auto-PR (auto-merge in spirit + auth-trigger), custom JSON-patch (no `git apply`), inline annotations (pollutes canonical content), one-diff-per-row (atomicity churn).
+- **ADR README index updated** with ADR-0009.
+- **Anti-spoofing note**: the `.meta.json` sidecar is curator-side, unsigned, and is NOT trusted for verification. The actual verification path is `git apply` + manual review — documented explicitly in ADR-0009's Consequences section.
+- **Parallel-curator state**: HEAD = `27e00e6` post-Unit-5.5. No collision.
+- THINK artifact: `docs/thinking/5.6-adr-human-review-diff.md`.
+- Pure docs unit — no app, schema, content, or test code touched.
+- Smoke gates: `pnpm typecheck` (clean), `pnpm test` (262/262 unchanged), `pnpm validate-content` (203 files unchanged).
+
