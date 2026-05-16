@@ -2468,6 +2468,39 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **Phase-8 scope drift**: HTML shell migration **dropped from scope mid-flight** at Unit 8.1 (parallel session preserved existing `app/layout.tsx`-owns-`<html>` structure with a "this change was intentional" system reminder). Surfaced into Unit 8.4 territory, then deferred indefinitely. No scope additions. Parallel-curator coordination at unprecedented intensity (Unit 8.1 mid-flight file deletions; Unit 8.6 FR content authored by parallel session).
 - THINK artifact: `docs/thinking/8.9-phase-8-acceptance-gate.md`.
 
+### Phase 9 — Community-adjacent surfaces (final §13 Phase-6+ thread: Auth + read+write API)
+
+#### Unit 9.0 — Phase 9 prep (THINK doc + 10-unit Auth-thread breakdown + DB-trigger re-eval; §5.7 trigger (a) fires this phase)
+
+- Phase 9 kickoff per §12 cardinal rule. Phase 8 closed at HEAD `c41cf31` (Unit 8.9 acceptance gate; Bilingual rollout-completion sub-thread closed to route-complete + 2-content-surfaces). **Phase 9 sign-off granted via "Continue" override** in the unit-rhythm rhythm (fourth invocation of this pattern; precedents: Phase 5 → 6 in Unit 6.0; Phase 6 → 7 in Unit 7.0; Phase 7 → 8 in Unit 8.0). Docs-only unit.
+- **§13 ledger progress**: Discussions thread CLOSED (Phase 6); Bilingual thread CLOSED (Phase 7 + 8); **Auth + read+write API thread STARTED (Phase 9 — closes §13 Phase-6+ enumeration)**; subscriber-list + monetization remain inferred-not-§13.
+- **D-1. First-thread recommendation = Auth + read+write API (final §13 Phase-6+ thread)**. Rationale: final §13 Phase-6+ entry; sequential thread-closure precedent; triggers the §5.7 DB migration that's been deferred since Phase 4 (re-eval'd at Units 4.12 / 5.10 / 6.0 / 7.0 / 8.0 D-2 — every prior phase logged "still cold; flips on first auth write-path"); architectural decisions can't keep marinating indefinitely; Phase-4 "no user accounts" pact break is the announced consequence (warned 5 phases in a row).
+- **Alternative threads** enumerated with deferral rationale (overridable if redirected): subscriber-list (third-party variant — not §13; defers keystone auth further; could land Phase 10); Unit 8.4 + HTML shell migration (parallel session preserved existing structure twice; re-attempting defies that signal); monetization (premature without auth + API maturity).
+- **10-unit breakdown** (9.0 – 9.9):
+  - 9.0 Phase 9 prep (this doc) — docs.
+  - 9.1 ADR-0012 — Auth provider selection (NextAuth.js v5 + GitHub OAuth) — docs (ADR).
+  - 9.2 ADR-0013 — DB choice (Turso/libSQL + Drizzle) — docs (ADR).
+  - 9.3 DB scaffold: Drizzle setup + initial schema (`users`, `accounts`, `sessions`, `verification_tokens`); first migration; local-dev SQLite file `.gitignore`d — code + config.
+  - 9.4 Auth wrapper: `lib/auth/` with NextAuth.js v5 + Drizzle adapter + GitHub provider + DB-backed session strategy — code.
+  - 9.5 Session middleware + auth-aware UI (sign-in/sign-out button in SiteHeader; `auth()` helper) — code. **Composes with the existing next-intl middleware from Phase 8**.
+  - 9.6 **First write-path: watchlist toggle** — `watchlist` Drizzle table; `POST /api/v1/watchlist/[slug]` route; toggle UI on `/[locale]/problems/[slug]`; auth-required — code + schema. **§5.7 trigger (a) FIRES here**.
+  - 9.7 Phase-9 hygiene status pass — docs.
+  - 9.8 OPEN_QUESTIONS hygiene + ADR review — docs.
+  - 9.9 Phase 9 acceptance gate — gate.
+- **D-2. DB-migration trigger re-eval** (MANDATORY at Phase 9 kickoff per Units 4.12 / 5.10 / 6.0 / 7.0 / 8.0). Measured at HEAD `c41cf31`: `tar -czf .velite/ = 86,828 bytes (~84.8 KB) = ~1.656% of 5 MB threshold` (was 1.558% at Phase 8 kickoff; +0.098 pp delta from Phase-8 surfaces). Content file count: 203 schema-validated (unchanged) + 36 raw MDX (+1 from Phase 8) = 239 raw content files (still under 600-file trigger). **§5.7 trigger (b) NOT FIRED**; **§5.7 trigger (a) FIRES on Phase 9's Unit 9.6 watchlist write-path**. **Decision**: DB lands in Phase 9 per the cascading commitment from Units 4.12 / 5.10 / 6.0 / 7.0 / 8.0 D-2; Unit 9.2 (DB ADR + Drizzle setup) lands the DB BEFORE Unit 9.6's write-path.
+- **Decisions resolved in this unit**: D-1 (first-thread = Auth + read+write API + rationale + alternatives table); D-2 (DB trigger 1.656% — fires in Phase 9 on Unit 9.6); D-3 (auth provider lean: NextAuth.js v5 + GitHub OAuth; pin in Unit 9.1); D-4 (DB choice lean: Turso/libSQL + Drizzle; pin in Unit 9.2); D-5 (first write-path: watchlist toggle; rating-challenge submission deferred to Phase 10); D-6 (session shape: DB-backed sessions via NextAuth.js v5 Drizzle adapter).
+- **Decisions deferred** (D-7 through D-14): NextAuth.js v5 version pin (Unit 9.1); Drizzle ORM version pin (Unit 9.2); DB hosting tier (Unit 9.3); GitHub OAuth app registration (Unit 9.4 — Q54 operational gate); sign-in/sign-out UI placement (Unit 9.5); watchlist table schema (Unit 9.6); watchlist UI (Unit 9.6); auth-required API routes (Unit 9.6).
+- **Newly surfaced open questions (Q54-Q56)**:
+  - **Q54** (GitHub OAuth app registration) — `open (operational, not architectural)`; mirrors Q47-class operational gate. Blocks Unit 9.4 + 9.6 end-to-end smoke; curator-of-record needs to register the OAuth app in `bettyguo` GitHub org.
+  - **Q55** (DB hosting tier for production) — `open (operational)`. Lean: single Turso database; free tier indefinitely; tier upgrade trigger deferred to a Phase 10+ Q-promotion if user count grows.
+  - **Q56** (Watchlist table key shape) — `decided-as-lean`. `problem_slug` stays plain `text` column with no FK; `content/problems/` is the source of truth for problem metadata; DB is the source of truth for USER-STATE only (preserves ADR-0004 file-first / no-DB-for-content). Resolves in Unit 9.6 schema implementation.
+- **Forward-looking DB-migration re-eval triggers** (carried from Unit 8.0; mostly obsolete after Phase 9): content scale 3× / `> 600` files / `> 1 MB` gzipped (still cold); **first Phase-N+ write-path lands — FIRES in Phase 9**; Phase 10 kickoff (procedural); rating-action volume reaches 200; drafts-dir > 100 stale.
+- **Order rationale**: 9.1 + 9.2 ADRs first (architectural decisions need pinning before code; independent); 9.3 DB scaffold (depends on 9.2); 9.4 Auth wrapper (depends on 9.1 + 9.3); 9.5 Session middleware + UI (depends on 9.4; **composes with the existing next-intl middleware from Phase 8** — HIGH collision potential if parallel session is mid-edit); 9.6 Watchlist write-path (depends on 9.5; **trigger (a) fires here**); 9.7 / 9.8 hygiene; 9.9 closes.
+- **Parallel-curator awareness**: docs-only, no collision risk this unit. **Unit 9.5 has the highest collision risk** (touches `middleware.ts` from Phase 8 — chains NextAuth.js v5 with next-intl). Middleware composition pattern (next-intl `createMiddleware` callback wraps NextAuth's middleware OR vice-versa) pinned in Unit 9.5's THINK doc.
+- **Scope cap**: Phase 9 = "auth foundation + ONE write-path (watchlist)". Rating-challenge submission deferred to Phase 10. Multi-provider OAuth deferred. User profile page deferred. The cap keeps Phase 9 to ~10 units; expansion happens in Phase 10.
+- Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2); typecheck / test / build untouched since no source files modified.
+- THINK artifact: `docs/thinking/9.0-phase-9-prep.md`.
+
 
 
 

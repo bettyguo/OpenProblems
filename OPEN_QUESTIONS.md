@@ -368,3 +368,41 @@ Should `editorial.primary_curator` (already on `problem.yaml`) be per-locale or 
 **Decision** (per [ADR-0011](.\docs\adr\0011-i18n-strategy.md) D-G): **global**. The curator chain (who decided X) doesn't fragment by locale; translation provenance ([Q52](#q52-translation-provenance-schema)) is a separate concern from authorship. Translation provenance answers "how did this rendered language come into being"; `primary_curator` answers "who is responsible for the editorial decision the text encodes". Two separate concerns.
 
 No schema change required: `lib/schemas/problem.ts` already declares `primary_curator: z.string().min(1)` (single string, not per-locale). Q52's `translation_source` field carries the translation-specific provenance independently. Promoted on ADR-pin alone (matching the Q50 precedent — runtime choice was resolved by ADR-0011 D-A in Unit 7.1 before bulk implementation).
+
+## Q54. GitHub OAuth app registration
+
+**Status:** open (operational, not architectural) · **Surfaced:** Unit 9.0 · **Blocks:** Unit 9.4 auth wrapper smoke; Unit 9.6 watchlist write-path end-to-end smoke; Phase-9 acceptance gate's "OAuth flow end-to-end" check.
+
+The Phase-9 auth thread depends on a registered GitHub OAuth app. Operational gate (mirrors Q47 for Discussions) — requires the curator-of-record to:
+
+1. Register the OAuth app under the `bettyguo` GitHub org with `Homepage URL: https://llm-openproblems.org` (Q2 placeholder; may shift when DNS lands), `Authorization callback URL: https://llm-openproblems.org/api/auth/callback/github` (NextAuth.js v5 default callback path under `localePrefix: "always"` middleware).
+2. Generate the OAuth app's Client ID + Client Secret.
+3. Store `GITHUB_CLIENT_ID` + `GITHUB_CLIENT_SECRET` in Vercel project env (production + preview scopes).
+4. Add a separate OAuth app for local-dev (`http://localhost:3000` Homepage + `http://localhost:3000/api/auth/callback/github` callback).
+5. Optionally: a third OAuth app per-curator for individual local-dev (so multiple curators don't share secrets).
+
+Until resolved, Unit 9.4's auth wrapper code lands BUT can't smoke against a real OAuth flow; Unit 9.6's watchlist toggle UI lands BUT can't be exercised end-to-end. Each unit's smoke gate documents the operational deferral.
+
+**Lean**: same-day curator unblock at Unit 9.4 if possible; otherwise unit ships in "infrastructure-complete, awaiting OAuth app" state and the acceptance-gate (9.9) records the carryover.
+
+## Q55. DB hosting tier for production
+
+**Status:** open (operational) · **Surfaced:** Unit 9.0 · **Blocks:** Phase-9 acceptance gate's "DB persists across requests" check; Phase-9 LHCI run latency baseline.
+
+Per [ADR-0013](./docs/adr/0013-db-choice.md) (TBD; lean Unit 9.2): Turso/libSQL free tier supports project scale (500 databases / 8 GB total / 1 billion row reads/month). For production, we need to:
+
+1. Decide between a single Turso database (single-tenant) vs branched databases (one per preview deploy via Turso branching).
+2. Set production tier upgrade trigger (e.g., monthly active users > X → upgrade to paid tier).
+3. Decide on backup/snapshot cadence.
+
+**Lean**: single Turso database (single-tenant); free tier indefinitely; manual snapshot on every preview deploy via `pnpm db:snapshot` script (deferred follow-on). Phase 9 acceptance ships with free-tier; tier upgrade decision deferred to a Phase 10+ Q-promotion if user count grows.
+
+## Q56. Watchlist table key shape
+
+**Status:** decided-as-lean · **Surfaced:** Unit 9.0 · **Resolves:** in Unit 9.6 schema implementation.
+
+For the Unit 9.6 watchlist write-path: does `problem_slug` reference `content/problems/<slug>/problem.yaml` (file-system) or a `problems` Drizzle table (DB)?
+
+**Lean**: keep `problem_slug` as a plain `text` column with no FK constraint; `content/problems/` stays the source of truth for problem metadata; the DB table is the source of truth for **user-specific state only** (watchlist memberships, future user preferences, rating-challenge drafts). File-first / no-DB-for-content (ADR-0004) preserved — Phase 9 adds a USER-STATE DB layer; it does NOT migrate content into the DB.
+
+Realized at code time in Unit 9.6: `CREATE TABLE watchlist (user_id TEXT NOT NULL, problem_slug TEXT NOT NULL, created_at INTEGER NOT NULL, PRIMARY KEY (user_id, problem_slug), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)`. No FK on `problem_slug` (file-system reference); orphan entries (problem_slug pointing at a deleted problem.yaml) handled via a periodic cleanup script (deferred follow-on; orphan tolerated until script lands).
