@@ -100,6 +100,24 @@
     "status_accepted": "Acceptée",
     "back_to_problem": "← Retour au problème"
   },
+  "public_profile": {
+    "aria_label": "Profil public de @{login}",
+    "not_found_title": "Utilisateur introuvable",
+    "not_found_message": "Aucun utilisateur avec ce nom d'utilisateur n'existe sur LLM OpenProblems.",
+    "display_name_fallback": "Utilisateur anonyme",
+    "member_since_label": "Membre depuis {date}",
+    "curator_of_record_label": "{count, plural, one {Curateur de # problème} other {Curateur de # problèmes}}",
+    "activity_heading": "Activité",
+    "watching_count": "{count, plural, =0 {Aucun problème suivi} one {1 problème suivi} other {# problèmes suivis}}",
+    "pending_challenges_count": "{count, plural, =0 {0 contestation en attente} one {1 contestation en attente} other {# contestations en attente}}",
+    "accepted_challenges_count": "{count, plural, =0 {0 acceptée} one {1 acceptée} other {# acceptées}}",
+    "view_all_challenges_link": "Voir toutes les contestations →",
+    "edit_profile_cta": "Modifier votre profil",
+    "empty_activity_message": "@{login} n'a suivi aucun problème ni soumis de contestation pour l'instant.",
+    "challenges_page_title": "Contestations de notation de @{login}",
+    "challenges_empty_message": "@{login} n'a aucune contestation publique pour l'instant.",
+    "challenges_empty_cta": "Soumettre une contestation →"
+  },
   "curator": {
     "heading": "Curation : contestations de notation",
     "description": "Examiner les contestations soumises par la communauté à propos des notations existantes. Acceptez pour émettre une nouvelle action de notation ; rejetez avec une note.",

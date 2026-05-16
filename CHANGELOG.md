@@ -2470,6 +2470,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 14 — Community-adjacent surfaces (**fifth NON-§13 phase**: Public profile page at `/[locale]/u/[handle]` — honored-deferral pick; surfaces ADR-0015)
 
+#### Unit 14.3 — Public profile shell page at `/[locale]/u/[handle]` + `messages.public_profile.*` (EN + FR) + curator-of-record badge
+
+- Fourth Phase-14 unit; second code unit. Establishes the **first per-USER read-side public surface** in the project. Largest UI consumer of Unit 14.2's `lib/users/` module. Realizes ADR-0015 D-A (field partition) + D-B (case-preserved-URL, case-insensitive lookup, no redirect) + D-E (curator-of-record case-sensitive) + D-F ("Edit your profile" CTA when own profile).
+- **`messages/{en,fr}.json` (edits)**: adds `messages.public_profile.*` namespace with **16 keys per locale** (32 total). Pre-added ALL keys upfront per atomic-i18n discipline (Phase-13 Unit 13.2 + Phase-12 Unit 12.4 precedent); Unit 14.4 sub-route + Unit 14.5 SiteHeader consume a subset without further messages edits. Keys: `aria_label` / `not_found_title` / `not_found_message` / `display_name_fallback` / `member_since_label` / `curator_of_record_label` (ICU plural) / `activity_heading` / `watching_count` (ICU plural) / `pending_challenges_count` (ICU plural) / `accepted_challenges_count` (ICU plural) / `view_all_challenges_link` / `edit_profile_cta` / `empty_activity_message` / `challenges_page_title` / `challenges_empty_message` / `challenges_empty_cta`. FR keys idiomatic equivalents.
+- **`app/[locale]/u/[handle]/page.tsx` (new)**: public profile route. `force-dynamic` per Unit 14.0 D-11 (DB reads on every request). No auth gate. Handle resolution via `getPublicProfileByHandle` (case-insensitive lookup per ADR-0015 D-B) → `notFound()` on null. Parallel data fetch: `getProfileActivity(profile.userId)` (3 parallel COUNT queries inside) + `auth()` (signed-in session for "Edit your profile" CTA visibility) + sync `getCuratorOfRecordSlugs(profile.githubLogin)` file scan.
+- **Layout** (per Unit 14.0 D-5 + D-14 through D-17):
+  - **Header card**: avatar 64×64 rounded (bare `<img>` per Phase-10 Unit 10.2 D-10 precedent; `loading="lazy"`); display name fallback chain (`name → githubLogin → translated fallback`; NO email per D-A public surface); `@githubLogin` in mono; member-since-date as `<time dateTime="YYYY-MM-DD">`; curator-of-record badge (inline pill with `accent`-tinted background; ICU plural "Curator of N problem(s)"; hover `title=` attribute reveals slug list); "Edit your profile" CTA on right only when `session.user.id === profile.userId`.
+  - **Activity section**: ICU-plural rendering of all 3 counts; empty-state card when `totalActivity === 0` ("@login hasn't watched any problems or submitted any challenges yet"); "View all challenges →" link only when `pendingChallengeCount + acceptedChallengeCount > 0` (avoids linking to empty sub-route).
+- **Render-canonical-case discipline**: profile body always renders `profile.githubLogin` (canonical case from DB row), regardless of URL `[handle]` segment case. ADR-0015 D-B realization: URL case is the link-time choice; profile identity is the canonical case.
+- **Build smoke**: new route `ƒ /[locale]/u/[handle]` registered as Dynamic (1.92 kB / 108 kB First Load JS). Total dynamic page+API routes: **6** (+1 vs Phase-13 close = 5). First Load JS shared chunk = **103 kB UNCHANGED**. Middleware bundle = **160 kB UNCHANGED**.
+- **Smoke gates**:
+  - `pnpm typecheck` clean.
+  - `pnpm test` → 480/480 across 52 vitest files unchanged (no test files touched).
+  - `pnpm build` → ~593 prerendered + 6 dynamic; First Load JS 103 kB unchanged; middleware 160 kB unchanged.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- **Not in this unit** (Units 14.4 – 14.5 follow):
+  - Per-user challenges sub-route at `/[locale]/u/[handle]/challenges` (Unit 14.4 — Q58 lean #3 closure; consumes pre-added `challenges_*` keys).
+  - Per-problem listing `@login`-to-Link upgrade (Unit 14.4 — closes Phase-13 Unit 13.3 D-13 dangling-target wart).
+  - SiteHeader "Your profile" link (Unit 14.5).
+- THINK artifact: `docs/thinking/14.3-public-profile-shell.md`.
+
 #### Unit 14.2 — `lib/users/` module + `getPublicChallengesByUser` extension + tests
 
 - Third Phase-14 unit; **first code-shipping unit**. Mirrors Phase-13 Unit 13.1 + Phase-12 Unit 12.3 "helper + tests" cadence. Introduces a new `lib/users/` module + extends `lib/rating-challenges/` with one per-user analogue helper. No new DB tables / columns / migrations / env vars / dependencies.

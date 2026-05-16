@@ -100,6 +100,24 @@
     "status_accepted": "Accepted",
     "back_to_problem": "← Back to problem"
   },
+  "public_profile": {
+    "aria_label": "Public profile of @{login}",
+    "not_found_title": "User not found",
+    "not_found_message": "No user with that handle exists on LLM OpenProblems.",
+    "display_name_fallback": "Anonymous user",
+    "member_since_label": "Member since {date}",
+    "curator_of_record_label": "{count, plural, one {Curator of # problem} other {Curator of # problems}}",
+    "activity_heading": "Activity",
+    "watching_count": "{count, plural, =0 {Watching no problems} one {Watching 1 problem} other {Watching # problems}}",
+    "pending_challenges_count": "{count, plural, =0 {0 pending challenges} one {1 pending challenge} other {# pending challenges}}",
+    "accepted_challenges_count": "{count, plural, =0 {0 accepted} one {1 accepted} other {# accepted}}",
+    "view_all_challenges_link": "View all challenges →",
+    "edit_profile_cta": "Edit your profile",
+    "empty_activity_message": "@{login} hasn't watched any problems or submitted any challenges yet.",
+    "challenges_page_title": "@{login}'s rating challenges",
+    "challenges_empty_message": "@{login} has no public challenges yet.",
+    "challenges_empty_cta": "Submit a challenge →"
+  },
   "curator": {
     "heading": "Curator: rating challenges",
     "description": "Review community-submitted challenges to existing ratings. Accept to emit a new rating action; reject with notes.",
