@@ -66,7 +66,12 @@
     "watching_heading": "Suivis",
     "watching_aria_label": "Problèmes que vous suivez",
     "empty_message": "Vous ne suivez aucun problème pour l'instant.",
-    "empty_cta": "Parcourir les problèmes →"
+    "empty_cta": "Parcourir les problèmes →",
+    "challenges_heading": "Vos contestations de notation",
+    "challenges_aria_label": "Contestations de notation que vous avez soumises",
+    "challenges_empty_message": "Vous n'avez soumis aucune contestation de notation pour l'instant.",
+    "challenges_empty_cta": "Parcourir les problèmes pour en trouver un dont vous souhaitez contester la notation →",
+    "challenges_status_submitted": "Soumise"
   },
   "home": {
     "hero_heading": "Problèmes ouverts notés en recherche en LLM et IA.",

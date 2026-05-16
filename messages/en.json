@@ -66,7 +66,12 @@
     "watching_heading": "Watching",
     "watching_aria_label": "Problems you're watching",
     "empty_message": "You're not watching any problems yet.",
-    "empty_cta": "Browse problems →"
+    "empty_cta": "Browse problems →",
+    "challenges_heading": "Your rating challenges",
+    "challenges_aria_label": "Rating challenges you've submitted",
+    "challenges_empty_message": "You haven't submitted any rating challenges yet.",
+    "challenges_empty_cta": "Browse problems to find one whose rating you'd like to challenge →",
+    "challenges_status_submitted": "Submitted"
   },
   "home": {
     "hero_heading": "Rated open problems in LLM & AI research.",

@@ -11,8 +11,16 @@ import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { Link } from "@/lib/i18n/navigation";
 import { isLocale } from "@/lib/i18n/routing";
+import { getUserChallenges } from "@/lib/rating-challenges";
 import { cn } from "@/lib/utils";
 import { getWatchedSlugs } from "@/lib/watchlist";
+
+const RATIONALE_PREVIEW_CHARS = 200;
+
+function truncateRationale(rationale: string): string {
+  if (rationale.length <= RATIONALE_PREVIEW_CHARS) return rationale;
+  return rationale.slice(0, RATIONALE_PREVIEW_CHARS).trimEnd() + "…";
+}
 
 /**
  * `/[locale]/profile` — the first protected route in the project
@@ -77,6 +85,9 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   const watched = watchedSlugs
     .map((slug) => problems.find((p) => p.slug === slug))
     .filter((p): p is NonNullable<typeof p> => Boolean(p));
+
+  const challenges = await getUserChallenges(userId);
+  const tRC = await getTranslations("rating_challenge");
 
   const displayName =
     session.user.name ?? githubLogin ?? session.user.email ?? t("display_name_fallback");
@@ -152,6 +163,62 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                 <WatchlistToggle slug={problem.slug} className="shrink-0" />
               </li>
             ))}
+          </ul>
+        )}
+      </section>
+
+      <section aria-label={t("challenges_aria_label")} className="mt-12">
+        <h2 className="font-serif text-xl font-semibold tracking-tight">
+          {t("challenges_heading")}
+        </h2>
+
+        {challenges.length === 0 ? (
+          <div className="border-border mt-6 rounded border border-dashed p-8 text-center">
+            <p className="text-muted-foreground text-sm">{t("challenges_empty_message")}</p>
+            <Link
+              href="/problems"
+              className="text-accent mt-3 inline-block text-sm underline-offset-2 hover:underline"
+            >
+              {t("challenges_empty_cta")}
+            </Link>
+          </div>
+        ) : (
+          <ul className="border-border mt-6 divide-y divide-current/10 border-t border-b">
+            {challenges.map((challenge) => {
+              const problem = problems.find((p) => p.slug === challenge.problemSlug);
+              const submittedDate = challenge.createdAt.toISOString().slice(0, 10);
+              return (
+                <li key={challenge.id} className="py-3">
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                    <Link
+                      href={`/problems/${challenge.problemSlug}`}
+                      className="hover:text-accent font-serif text-base font-medium underline-offset-2 hover:underline"
+                    >
+                      {problem?.title ?? challenge.problemSlug}
+                    </Link>
+                    <time
+                      dateTime={submittedDate}
+                      className="text-muted-foreground font-mono text-xs"
+                    >
+                      {submittedDate}
+                    </time>
+                  </div>
+                  <p className="text-muted-foreground mt-1.5 text-xs">
+                    <span className="font-medium">{tRC(`dim_${challenge.dimension}`)}</span>
+                    <span className="mx-1.5" aria-hidden>
+                      →
+                    </span>
+                    <span className="font-mono">{challenge.proposedValue}</span>
+                    <span className="bg-muted text-foreground ml-2 rounded-full px-1.5 py-0.5 font-mono text-[10px] tracking-wide uppercase">
+                      {t(`challenges_status_${challenge.status}`)}
+                    </span>
+                  </p>
+                  <p className="text-foreground/90 mt-2 text-sm">
+                    {truncateRationale(challenge.rationale)}
+                  </p>
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>

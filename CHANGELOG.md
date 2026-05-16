@@ -2470,6 +2470,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 11 — Community-adjacent surfaces (**second NON-§13 phase**: Rating-challenge submission — honored-deferral pick)
 
+#### Unit 11.4 — Profile page extension: "Your rating challenges" section
+
+- Fourth code unit of Phase 11. Lands the profile-page consumer for Unit 11.2's `getUserChallenges` helper. Adds a "Your rating challenges" section below the existing "Watching" section on `/[locale]/profile`. Mirrors the watchlist dense-list pattern per Unit 11.0 D-9.
+- **`app/[locale]/profile/page.tsx` (edit)**:
+  - Adds `getUserChallenges` import from `@/lib/rating-challenges`.
+  - Adds `RATIONALE_PREVIEW_CHARS = 200` const + `truncateRationale` helper (clips long rationales for the dense-list preview; appends ellipsis on overflow; trims trailing whitespace before the ellipsis for clean visuals).
+  - Loads `getUserChallenges(userId)` alongside the existing `getWatchedSlugs(userId)` query — two awaits in parallel-ish (Drizzle/libsql queries serialize on the single connection but the two awaits land in sequence).
+  - Loads `tRC` from `getTranslations("rating_challenge")` so the dense list can reuse the `dim_*` keys from Unit 11.3 (no key duplication under `profile.*`).
+  - Renders a new `<section>` below the watchlist section: heading + empty-state CTA + dense `<ul>` of per-challenge rows.
+- **Per-row shape**:
+  - Problem title (linked to `/problems/<slug>`; falls back to raw `problemSlug` for orphan rows pointing at deleted content per ADR-0013 D-F).
+  - Submitted-date `<time dateTime={ISO-YYYY-MM-DD}>` — `createdAt` is a `Date` (Drizzle's `mode: "timestamp_ms"` shape); rendered as `YYYY-MM-DD` via `toISOString().slice(0,10)`.
+  - Dimension label via `tRC(\`dim_${challenge.dimension}\`)` + Unicode `→` separator + `proposedValue` in mono font + status pill (uppercase tracking-wide; tiny rounded-full styling so it sits inline).
+  - Rationale preview (200-char truncation; full text on the future Phase 12+ detail page).
+- **Empty state**: bordered-dashed empty-state card (mirrors the watchlist empty-state shape) — "You haven't submitted any rating challenges yet." + "Browse problems to find one whose rating you'd like to challenge →" CTA linking to `/problems`.
+- **`messages/en.json` + `messages/fr.json` (edit)**: `profile.*` namespace gains **5 new keys per locale**: `challenges_heading`, `challenges_aria_label`, `challenges_empty_message`, `challenges_empty_cta`, `challenges_status_submitted`. FR translations use "Contestations de notation" for the section heading + "Soumise" (feminine, agreeing with "contestation") for the status. Dimension translations (`dim_difficulty`, etc.) intentionally NOT duplicated — the section consumes the Unit-11.3 `rating_challenge.*` namespace directly via a second `getTranslations` call.
+- **NOT in this unit** (deferred): per-challenge detail page (Phase 12+); status transitions (Phase 12+ when curator review pipeline lands); withdraw-own-challenge UI (Phase 12+); search/filter on the challenges list (premature without volume).
+- **Smoke gates**:
+  - `pnpm validate-content` → 203 files unchanged.
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **403/403 across 46 files** UNCHANGED (no test files touched; profile page is exercised via manual build smoke).
+  - `pnpm build` → **profile route stays at 1.9 kB / 108 kB First Load JS** (UNCHANGED from Phase-10 close — the new section is server-rendered + shares with existing patterns); `/api/v1/rating-challenges` and all 5 problem-detail-page routes register cleanly. **First Load JS shared chunk = 103 kB UNCHANGED**. **Middleware bundle = 159 kB UNCHANGED**. One transient `.next` chunk-not-found build flake on the first attempt; resolved by clean-rebuild (`Remove-Item -Recurse -Force .next; pnpm build`); recorded as Windows-specific build noise unrelated to Phase 11 changes.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- THINK artifact: omitted — implementation is contained in Unit 11.0's D-9 design block.
+- Next: Unit 11.5 (Phase-11 hygiene status pass).
+
 #### Unit 11.3 — Submission form on problem detail page + `messages.rating_challenge.*` (EN + FR)
 
 - Third code unit of Phase 11. Lands the rating-challenge UI surface on `/[locale]/problems/[slug]`. Pure server-rendered + server-action driven; **zero client JS added** (First Load JS shared chunk = **103 kB UNCHANGED** through every Phase-11 unit so far). Inline `<details>` collapsible per Unit 11.0 D-8 (rather than separate route); injected as section 8a between section 8 ("Recent rating actions") and section 9 ("Related problems") to keep the rating-related content adjacent.
