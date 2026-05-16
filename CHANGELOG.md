@@ -2470,6 +2470,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 11 — Community-adjacent surfaces (**second NON-§13 phase**: Rating-challenge submission — honored-deferral pick)
 
+#### Unit 11.3 — Submission form on problem detail page + `messages.rating_challenge.*` (EN + FR)
+
+- Third code unit of Phase 11. Lands the rating-challenge UI surface on `/[locale]/problems/[slug]`. Pure server-rendered + server-action driven; **zero client JS added** (First Load JS shared chunk = **103 kB UNCHANGED** through every Phase-11 unit so far). Inline `<details>` collapsible per Unit 11.0 D-8 (rather than separate route); injected as section 8a between section 8 ("Recent rating actions") and section 9 ("Related problems") to keep the rating-related content adjacent.
+- **`components/rating-challenge-form/index.tsx` (new)**: server component with three render branches:
+  - **Signed out** → sign-in CTA linking to `/api/auth/signin/github?callbackUrl=...` (matches Auth.js v5's canonical entry per ADR-0012 D-D; preserves the user's destination via the `callbackUrl` query param).
+  - **Signed in (no submission state)** → `<details>` collapsible (default-closed); `<summary>` shows "Open submission form".
+  - **Signed in with `error` prop** → `<details>` rendered with `open` attribute so the form is visible + the validation error is shown above the inputs via `role="alert"`.
+  - **Just-submitted banner** (`submitted` prop) → role="status" success banner above the `<details>` regardless of open/closed state.
+- **Form inputs** (HTML5-validated browser-side; server-action re-validates):
+  - `<select name="dimension">` populated from `DIMENSIONS` (5 options); `required` attr.
+  - `<input name="proposedValue">` text; `required` attr; placeholder + hint describe per-dimension format (S/A/B/C/D/E, 0-100, N/A, 0-5).
+  - `<textarea name="rationale">` with `minLength={RATIONALE_MIN}` (50) + `maxLength={RATIONALE_MAX}` (2000) per Unit 11.2; hint message uses next-intl ICU interpolation (`t("rationale_hint", { min, max })`).
+  - Hidden `slug` + `locale` inputs propagate context to the server action.
+- **`submitAction` server action** (inline `"use server"` per Phase-9 watchlist-toggle precedent): validates slug + auth + dimension + proposedValue + rationale using the same `validate*` helpers from `lib/rating-challenges`. **On validation failure**: `redirect()` back to `/${locale}/problems/${slug}?challenge_error_field=...&challenge_error_message=...#rating-challenge`. **On unauthenticated**: `redirect()` to `/api/auth/signin/github?callbackUrl=...`. **On success**: `submitChallenge()` → `revalidatePath("/[locale]/problems/[slug]", "page")` → `redirect()` to `...?challenge_submitted=1#rating-challenge`.
+- **Form-state-lost-on-redirect tradeoff acknowledged** (Unit 11.0 D-8): on a validation failure the redirect clears form inputs; the user retypes. Accepted MVP tradeoff to keep the **First Load JS = 103 kB UNCHANGED** invariant. Alternative paths (`useActionState` client island, fetch-based AJAX form) would each add client-bundle weight; rejected per the project's "zero client bundle delta unless absolutely necessary" Phase-9+ discipline.
+- **`app/[locale]/problems/[slug]/page.tsx` (edit)**:
+  - Extends the page signature to accept `searchParams?: Promise<...>` (Next 15 async-params pattern).
+  - Parses `challenge_error_field` + `challenge_error_message` from searchParams into a `ChallengeError | undefined` value (`pickString` helper guards against array variants per Next's union type).
+  - Reads `challenge_submitted=1` flag.
+  - Injects `<RatingChallengeForm slug={slug} locale={locale} submitted={...} {...(challengeError ? { error } : {})} />` as a new section 8a. Conditional spread sidesteps `exactOptionalPropertyTypes: true` complaining about `error: undefined`.
+- **`messages/en.json` + `messages/fr.json` (edit)**: `rating_challenge.*` namespace adds **22 keys per locale** covering heading + description + sign-in prompt + open-form summary + submitted banner + dimension/proposedValue/rationale form labels/placeholders/hints + submit button + error-field translations (`field_dimension`, `field_proposedValue`, `field_rationale`). FR translations honor §3 brand register ("Contester cette notation"; "Demande de l'industrie" for industry_call dimension; "Argumentaire" for rationale).
+- **NOT in this unit** (deferred): profile-page extension (Unit 11.4 — "Your rating challenges" section); rate-limiting (Unit 11.0 D-10; per-user surface; Phase 12+); curator review pipeline + status transitions (Phase 12+; Q57 anticipated in Unit 11.6); per-dimension dynamic input (Phase 12+ when client island can be justified); preserve-form-state-on-error (Phase 12+ alongside `useActionState` client island).
+- **Smoke gates**:
+  - `pnpm validate-content` → 203 files unchanged.
+  - `pnpm typecheck` clean (post-`exactOptionalPropertyTypes` fix via conditional-spread on `error` prop).
+  - `pnpm test` → **403/403 across 46 files** UNCHANGED (no test files touched; integration coverage comes via build + manual dev-server exercise; the API route's 9 tests already cover the same validation contract via the helper functions).
+  - `pnpm build` → ~590 prerendered pages + 3 dynamic API routes. **Problem detail page route stays at 1.9 kB / 108 kB First Load JS** (UNCHANGED from Phase-10 close — the new server-rendered form section adds zero client weight). **First Load JS shared chunk = 103 kB UNCHANGED**. **Middleware bundle = 159 kB UNCHANGED**.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- THINK artifact: omitted — implementation is contained in Unit 11.0's D-3 through D-8; design constraints (zero client JS; redirect-with-search-param for errors) flow directly from the 103-kB-First-Load-JS invariant.
+- Next: Unit 11.4 (profile-page extension — "Your rating challenges" dense list below watchlist).
+
 #### Unit 11.2 — `lib/rating-challenges/` helpers + `POST /api/v1/rating-challenges` route + tests
 
 - Second code unit of Phase 11. Lands the rating-challenge submission backend layer on top of Unit 11.1's `ratingChallenges` table. Mirrors the Phase-9 Unit 9.6 watchlist pattern: thin Drizzle helpers (auth-agnostic) + REST API route (handles auth + validation + delegates to helpers) + Vitest tests (mocks `@/lib/auth` + partially mocks `@/lib/rating-challenges` to keep validation helpers real while stubbing `submitChallenge`).

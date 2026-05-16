@@ -1,5 +1,7 @@
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { RatingChallengeForm } from "@/components/rating-challenge-form";
+import type { ChallengeError } from "@/components/rating-challenge-form";
 import { RatingRadar } from "@/components/viz/RatingRadar";
 import { StatusPill } from "@/components/ui/status-pill";
 import { WatchlistToggle } from "@/components/watchlist-toggle";
@@ -13,16 +15,29 @@ import { SITE } from "@/lib/site-url";
 
 interface ProblemPageProps {
   params: Promise<{ locale: string; slug: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }
 
 export function generateStaticParams() {
   return locales.flatMap((locale) => allProblemSlugs().map((slug) => ({ locale, slug })));
 }
 
-export default async function ProblemPage({ params }: ProblemPageProps) {
+function pickString(raw: string | string[] | undefined): string | undefined {
+  if (Array.isArray(raw)) return raw[0];
+  return raw;
+}
+
+export default async function ProblemPage({ params, searchParams }: ProblemPageProps) {
   const { locale, slug } = await params;
   if (!isLocale(locale)) notFound();
   setRequestLocale(locale);
+
+  const sp = (await searchParams) ?? {};
+  const errorField = pickString(sp.challenge_error_field);
+  const errorMessage = pickString(sp.challenge_error_message);
+  const challengeError: ChallengeError | undefined =
+    errorField && errorMessage ? { field: errorField, message: errorMessage } : undefined;
+  const challengeSubmitted = pickString(sp.challenge_submitted) === "1";
 
   const loaded = loadProblem(slug);
   if (!loaded) notFound();
@@ -271,6 +286,14 @@ export default async function ProblemPage({ params }: ProblemPageProps) {
           View full history →
         </Link>
       </section>
+
+      {/* 8a. Rating-challenge submission (Unit 11.3) */}
+      <RatingChallengeForm
+        slug={slug}
+        locale={locale}
+        submitted={challengeSubmitted}
+        {...(challengeError ? { error: challengeError } : {})}
+      />
 
       {/* 9. Related problems */}
       {problem.related_problems && problem.related_problems.length > 0 && (
