@@ -2470,6 +2470,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 14 — Community-adjacent surfaces (**fifth NON-§13 phase**: Public profile page at `/[locale]/u/[handle]` — honored-deferral pick; surfaces ADR-0015)
 
+#### Unit 14.1 — ADR-0015: Per-user privacy model + public profile contract (15 ADRs total)
+
+- Second Phase-14 unit; first new ADR since Phase 12 (ADR-0014, Unit 12.1). Docs-only. Pins the per-user privacy contract for `/[locale]/u/[handle]` before any code lands; mirrors Phase-12 Unit 12.1's "ADR ahead of helpers" ordering.
+- **Closes Q58 lean #3 deferred from Phase 13 explicitly** (Unit 13.0 D-9 + Unit 13.5: "per-user privacy model needs its own ADR"). Phase 13 deferred the per-user surface to leave room for THIS ADR to land in Phase 14.
+- **Six pinned D-clauses**:
+  - **D-A. Public-profile field partition** — pins which fields are PUBLIC on `/u/{handle}` (`name` + `image` + `githubLogin` + `createdAt` join-date + watchlist count + submitted/under_review/accepted challenge counts + curator-of-record badge); which are SUBMITTER-ONLY (`rejected` + `withdrawn` counts; inherits Phase-13 Unit 13.0 D-3 status-gated partition verbatim); which are NEVER public (`email`; `LOP_CURATOR_LOGINS` membership). Establishes the **public-data invariant**: no new public-data category introduced — every public field is already public elsewhere (github.com profile + problem-detail-page attribution + problem.yaml `primary_curator`).
+  - **D-B. Handle routing canonical case** — case-preserved URL + case-insensitive DB lookup (`LOWER(githubLogin) = LOWER(?)`) + NO redirect on case mismatch (mirrors github.com pattern). Profile body renders canonical case from `users.githubLogin` regardless of URL case.
+  - **D-C. User-editable fields (Phase 15+ deferral)** — Phase 14 ships READ-ONLY. `users.name` + `users.image` populated from GitHub OAuth profile via Auth.js v5; no editing surface. **Q63 candidate** flagged (user-editable name + bio + image override; requires writes API + new DB columns + new migration + XSS sanitization + possible image-upload pipeline ADR).
+  - **D-D. Per-user privacy opt-out (Phase 15+ flag)** — Phase 14 ships NO opt-out. Rationale: per D-A's public-data invariant, no NEW public-data category is introduced. **Q64 candidate** flagged (requires `users.profilePublic` boolean column + migration + writes surface). Footer link to `/about` placeholder Phase 14; Phase 15+ expands to `/about/privacy` explainer.
+  - **D-E. Curator-of-record badge case-sensitivity** — case-SENSITIVE comparison between `editorial.primary_curator` (YAML literal) and `users.githubLogin` canonical case. Phase 15+ may relax to case-insensitive if observed mismatches accumulate. **Q65 candidate** flagged (per-curator activity feed / contribution timeline — requires `getCuratorActions(handle)` helper + `/u/{handle}/curated` sub-route).
+  - **D-F. SiteHeader integration shape** — "Your profile" link signed-in only → `/u/{login}` (PUBLIC canonical); `/profile` becomes EDIT-mode surface; avatar 16×16 + `@login` truncated 12 chars; hidden when `users.githubLogin === null` (Phase-9 retrofit edge from Unit 9.6 deferred `events.linkAccount` on prior sign-ins).
+- **Rejected options** (one-sentence rationale each):
+  - **Option 2 — Full per-user-editable Phase 14**: doubles scope (writes surface + new migration + XSS audit + image upload pipeline ADR); Phase 15+ writes surface is the natural home.
+  - **Option 3 — Opt-in public profile (default private)**: adds writes surface + breaks Phase-13 `@login` link future; no new public data is introduced, so defaulting to opt-out is over-conservative.
+  - **Option 4 — `/[locale]/users/[handle]` URL alternative**: `/u/{login}` matches GitHub's pattern + ADR-0012 identity inheritance; `/authors/[slug]` already exists for paper authors (different identity system); conflating would create routing confusion.
+- **No new dependencies / env vars / DB migrations** anticipated. Stack stable across Phase 14.
+- **First Load JS unchanged** anticipated (server-rendered surfaces; zero client-bundle delta).
+- **§5.7 trigger unchanged** (no new tables; no ALTERs).
+- **Architectural relationships pinned**: inherits Phase-13 Unit 13.0 D-3 status-gated partition verbatim (D-A); closes Phase-13 Unit 13.3 D-13 dangling `@login` link target (D-A + Unit 14.4); mirrors ADR-0014 D-C curator-of-record write-side block on the read side (D-A's badge surface); reuses ADR-0012 D-E `users.githubLogin` joining; establishes per-user public surface pattern that Phase 15+ per-user surfaces inherit.
+- **`docs/adr/README.md`** (edit): ADR-0015 row added; index paragraph extended; "next ADR will be numbered 0016".
+- Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2); typecheck / test / build untouched since no source files modified.
+- THINK artifact: `docs/thinking/14.1-adr-0015-per-user-privacy.md`. ADR: `docs/adr/0015-per-user-privacy-model.md`.
+
 #### Unit 14.0 — Phase 14 prep (THINK doc + 9-unit public-profile breakdown + procedural DB-trigger re-eval)
 
 - Phase 14 kickoff per §12 cardinal rule. Phase 13 closed at HEAD `c3e3cbf` (Unit 13.6 acceptance gate; fourth NON-§13 phase; community-feedback loop closed end-to-end across Phase 11 submission + Phase 12 review + Phase 13 public read-side; 7 units shipped + 0 deferrals + 0 scope drift; first read-side public surface for USER-STATE content; first status-gated visibility policy). **Phase 14 sign-off granted via "Continue" override** in the unit-rhythm rhythm (ninth invocation; precedents: Phase 5 → 6 in Unit 6.0; Phase 6 → 7 in Unit 7.0; Phase 7 → 8 in Unit 8.0; Phase 8 → 9 in Unit 9.0; Phase 9 → 10 in Unit 10.0; Phase 10 → 11 in Unit 11.0; Phase 11 → 12 in Unit 12.0; Phase 12 → 13 in Unit 13.0). Docs-only unit.
