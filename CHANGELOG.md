@@ -2470,6 +2470,54 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 10 — Community-adjacent surfaces (**first NON-§13 phase**: Profile page + Phase-9 UI polish)
 
+#### Unit 10.5 — Phase 10 acceptance gate (Profile page + Phase-9 UI polish — **first NON-§13 phase; first zero-architectural-surface phase**)
+
+- Phase-10 closing unit. Mirrors Units 1.12 / 2.13 / 3.13 / 4.13 / 5.13 / 6.10 / 7.11 / 8.9 / 9.9. Verifies every Phase-10 deliverable (the **Profile page + Phase-9 UI polish** thread per Unit 10.0 D-1) is operational locally at HEAD, emits the cross-phase roll-up, and lists Phase-10 follow-ons that survive into Phase 11+.
+- **§13 ledger remains CLOSED**. This is the **first acceptance gate of a NON-§13 phase**, marking the project's transition from §13-driven thread closure to follow-on-catalog-driven thread selection. The §13 enumeration closed at Unit 9.9; Phase 10 pulled from the Phase-9 Class B catalog (Unit 9.7 item 1 — profile page).
+- **Phase-10 deliverable status (all rows green; no DEFERRED rows; matches Phase 9's 10/10 discipline)**:
+  - `lib/watchlist/` extension: `getWatchedSlugs(userId)` helper (Unit 10.1).
+  - Profile page route + auth-required (Unit 10.2 — first protected route).
+  - Profile page header (avatar + display name + GitHub login pill + sign-out) (Unit 10.2).
+  - Profile page watchlist section + empty-state CTA (Unit 10.2).
+  - `messages.profile.*` namespace EN + FR (Unit 10.2 — 6 keys per locale).
+  - Phase-10 hygiene status pass (Unit 10.3 — 2 Class A + 8 Class B + 14 Class C).
+  - OPEN_QUESTIONS hygiene + ADR review (Unit 10.4 — zero net surface; first zero-architectural-surface phase).
+  - Phase 10 acceptance gate (this unit).
+- **§14 universal cross-phase contract status**:
+  - **First Load JS shared chunk = 103 kB UNCHANGED** through every Phase-10 unit. Profile page server-rendered; sign-out form server-action; `<WatchlistToggle>` reuse server-rendered. Zero client-bundle delta.
+  - **Middleware bundle = 159 kB UNCHANGED**. Route protection landed at page layer, not middleware.
+  - **`lighthouserc.json` URL count = 19 UNCHANGED**. Profile-page LHCI enrolment deferred as Class A item 2.
+  - **File-first / no DB held for CONTENT** per ADR-0004 + ADR-0013 D-F. Profile page exercises BOTH surfaces cleanly: file-first `problems` from `#site/content` for problem metadata + USER-STATE DB (`watchlist` + `users.githubLogin`).
+  - **No auto-merge** (ADR-0009): Phase 10 added no LLM-translated content.
+- **State at HEAD `63ed3aa` + this acceptance-gate commit**:
+  - Content: 10 problems / 5 domains / ~12 subdomains / 30 papers / 126 authors / 14 institutions / 20 rating actions / 4 issue templates / methodology v1 (EN + FR) / contributing v1.0 (EN) + v1.1 (EN + FR) / 2 `entries.json` files. **203 schema-validated content files + 36 raw MDX = 239 raw content files** UNCHANGED from Phase 9 close.
+  - **0 new ADRs** in Phase 10 → 13 ADRs total (unchanged).
+  - **0 new dependencies** in Phase 10 (was +5 in Phase 9).
+  - **New code layers (Phase-10 net-new)**: `app/[locale]/profile/page.tsx` (1 file; 160 lines) + `lib/watchlist/` extension (`getWatchedSlugs` + `WATCHLIST_LIMIT` constant; ~25 net lines). That's it. No new components; no new lib directories; no new ADRs; no new dependencies; no new migrations; no new env vars; no new tests; no new gitignore patterns; no new middleware composition.
+  - **DB schema tables: 5 UNCHANGED**. **Migrations: 2 UNCHANGED**. **Env contract: +0**.
+  - **Routes**: +2 SSG entries (`/en/profile` + `/fr/profile`; rendered request-time via `dynamic = "force-dynamic"`). 2 dynamic API routes from Phase 9 unchanged. Page-route count nominally +1.
+  - **Tests**: **394/394 across 45 files UNCHANGED through every Phase-10 unit**. No test files added in Phase 10 (Unit 10.1 helper test deferred per Drizzle-type-system rationale; Unit 10.2 Playwright smoke deferred per Class A item 1).
+  - **OPEN_QUESTIONS state** (per Unit 9.8 mechanical `Status:`-field tally): 19 resolved + 4 decided-as-lean + 28 open = **51 entries UNCHANGED from Phase 9 close**. Phase 10 surfaced no new Qs; no promotions; no status changes — **first zero-architectural-surface phase in the project's history**.
+- **Phase-10 follow-ons that survive the gate** (non-blocking; from Unit 10.3):
+  - **Class A (2 — in-flight Phase-10 items)**: profile-page Playwright smoke test (deferred from 10.2); LHCI enrolment for `/en/profile` + `/fr/profile` (deferred until first observed LHCI run).
+  - **Class B (8 — Phase-10-specific follow-ons)**: public profile rendering at `/[locale]/u/[handle]` (Unit 10.0 D-3 alternative); user-editable fields; per-user statistics surface; **auth-aware middleware-based route protection** (Phase-9 Class B item 12 **PARTIALLY RESOLVED in Phase 10** — server-component-level protection landed; middleware lift deferred until 2+ protected routes exist); profile-page styling polish; per-user discussion-activity surface; profile photo upload; redundant `isWatched()` query inside reused `<WatchlistToggle>`.
+  - **Class C (14 — carryovers from Phase 9 + earlier)**: see Unit 10.3. Q54 / Q55 / CI `AUTH_SECRET` / `pnpm db:migrate` doc (all Phase-9 Class A); rating-challenge submission write-path (Phase-9 Unit 9.0 D-5 deferral; Phase 11+ candidate); email notifications; watchlist count on `/problems`; bulk-import/clear; orphan-row cleanup (ADR-0013 D-F intentional); rate-limiting; multi-provider OAuth (ADR-0012 D-B forbidden); createUser vs linkAccount docs; first LHCI run validating Phase-9 surfaces; OAuth callback URL stability (Q2 DNS coupling); HTML shell migration **STILL ON HOLD** per parallel-session signal; Phase-8 chrome strings + FR backfill + StatusPill localization + nav labels (Q51 + Unit 8.4 unblock); sitemap hints; trailing-slash normalization.
+- **Phase-10 firsts** (project-wide): first NON-§13 phase; **first zero-architectural-surface phase** (0 new ADRs / 0 new Qs / 0 prose edits); first protected route (`/[locale]/profile`); first inline-server-action-driven page (sign-out alongside watchlist toggle reuse); first page that JOINs Auth.js v5 session state with a per-user Drizzle SELECT inside the page handler.
+- **Phase-10 over-vs-under against the 10.0 plan**: **6 units shipped + 0 deferred**. No scope drift. One small landing-time correction (Unit 10.2 ESLint disable comment for `@next/next/no-img-element` removed — rule not loaded per Q19 regression). Matches Unit 10.0 prep's 6-unit breakdown verbatim.
+- **Phase-10 vs Phase-9 contrast**: Phase 9 was the architectural keystone (10 units; +5 deps; +2 ADRs; +5 code layers; +2 migrations; +5 DB tables; +6 tests; ~+107 kB middleware). Phase 10 was the consolidation (6 units; +0 deps; +0 ADRs; +1 file + 1 helper; +0 migrations; +0 tests; +0 middleware delta). The contrast is by design (Unit 10.0 D-1 framing).
+- **Parallel-curator activity log**: no parallel-session activity observed in Phase 10. Lower activity than Phase 9's high-water mark; consistent with the smaller scope.
+- **Phase 11 entry conditions**: per §12 cardinal rule, **explicit human sign-off required**. **§13 ledger remains CLOSED**. Phase 11+ thread options (all inferred-not-§13):
+  - **Rating-challenge submission write-path** (Phase-9 Unit 9.0 D-5 explicit deferral; ~6-8 units; second write-path; honored-deferral pattern's defensible next pick).
+  - **Subscriber-list (third-party email)** (Phase-5 D-4 punt completion; ~6 units; needs ADR-0014).
+  - **Multi-provider OAuth expansion** (~3-4 units; needs follow-on ADR; ADR-0012 D-B forbids).
+  - **Public profile page at `/[locale]/u/[handle]`** (Phase-10 Class B item 1; ~3-4 units; builds on Phase-10 surface).
+  - **HTML shell migration + Unit 8.4 unblock** — STILL ON HOLD; explicit authorization required.
+  - **Monetization** — premature without observed traffic; Phase 12+.
+  - **Q51 curator-track bulk FR backfill** — orthogonal long-running thread.
+- **DB-migration trigger re-eval at Phase 11 kickoff**: procedural-only formality. Trigger (a) FIRED in Unit 9.6; DB now in active use including the Phase-10 profile-page reads. Trigger (b) still cold (~1.6% of 5 MB; content count unchanged).
+- Smoke gates: `pnpm validate-content` → 203 unchanged; `pnpm typecheck` clean; `pnpm test` → 394/394 across 45 files UNCHANGED; `pnpm build` → ~590 prerendered pages + 2 dynamic API routes + 2 profile route entries; First Load JS = 103 kB UNCHANGED; middleware = 159 kB UNCHANGED; `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- THINK artifact: `docs/thinking/10.5-phase-10-acceptance-gate.md`.
+
 #### Unit 10.4 — OPEN_QUESTIONS hygiene + ADR review (Phase 10 pre-close)
 
 - Fourth Phase-10 unit; docs-only. Mirrors Unit 5.12 / 6.9 / 7.10 / 8.8 / 9.8 OQ-hygiene precedents. Scans the open-questions ledger for Phase-10 promotions + reviews the 13 ADRs at HEAD for stale status / supersede markers.
