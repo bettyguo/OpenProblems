@@ -75,7 +75,11 @@
     "challenges_status_under_review": "Under review",
     "challenges_status_accepted": "Accepted",
     "challenges_status_rejected": "Rejected",
-    "challenges_status_withdrawn": "Withdrawn"
+    "challenges_status_withdrawn": "Withdrawn",
+    "challenges_curator_notes_label": "Curator notes",
+    "challenges_action_attached_label": "Rating action:",
+    "challenges_withdraw": "Withdraw",
+    "challenges_withdraw_aria_label": "Withdraw this rating challenge"
   },
   "curator": {
     "heading": "Curator: rating challenges",

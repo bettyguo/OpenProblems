@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { problems } from "#site/content";
@@ -11,7 +12,12 @@ import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { Link } from "@/lib/i18n/navigation";
 import { isLocale } from "@/lib/i18n/routing";
-import { getUserChallenges } from "@/lib/rating-challenges";
+import {
+  getUserChallenges,
+  isAllowedWithdrawal,
+  withdrawChallenge,
+  type ChallengeStatus,
+} from "@/lib/rating-challenges";
 import { cn } from "@/lib/utils";
 import { getWatchedSlugs } from "@/lib/watchlist";
 
@@ -88,6 +94,26 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
   const challenges = await getUserChallenges(userId);
   const tRC = await getTranslations("rating_challenge");
+
+  const withdrawChallengeAction = async (formData: FormData) => {
+    "use server";
+    const actionSession = await auth();
+    if (!actionSession?.user?.id) {
+      redirect(`/api/auth/signin/github?callbackUrl=/${locale}/profile`);
+    }
+    const challengeId = String(formData.get("challengeId") ?? "");
+    if (!challengeId) {
+      redirect(`/${locale}/profile`);
+    }
+    try {
+      await withdrawChallenge(challengeId, actionSession.user.id);
+    } catch {
+      // Swallow — concurrent withdrawal / terminal state / not-your-challenge
+      // surface as no-op; re-render will reflect the actual state.
+    }
+    revalidatePath(`/[locale]/profile`, "page");
+    redirect(`/${locale}/profile`);
+  };
 
   const displayName =
     session.user.name ?? githubLogin ?? session.user.email ?? t("display_name_fallback");
@@ -187,6 +213,11 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
             {challenges.map((challenge) => {
               const problem = problems.find((p) => p.slug === challenge.problemSlug);
               const submittedDate = challenge.createdAt.toISOString().slice(0, 10);
+              const reviewedDate = challenge.reviewedAt
+                ? challenge.reviewedAt.toISOString().slice(0, 10)
+                : null;
+              const status = challenge.status as ChallengeStatus;
+              const canWithdraw = isAllowedWithdrawal(status);
               return (
                 <li key={challenge.id} className="py-3">
                   <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
@@ -209,13 +240,66 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                       →
                     </span>
                     <span className="font-mono">{challenge.proposedValue}</span>
-                    <span className="bg-muted text-foreground ml-2 rounded-full px-1.5 py-0.5 font-mono text-[10px] tracking-wide uppercase">
+                    <span
+                      className={cn(
+                        "ml-2 rounded-full px-1.5 py-0.5 font-mono text-[10px] tracking-wide uppercase",
+                        status === "accepted"
+                          ? "bg-emerald-100 text-emerald-900 dark:bg-emerald-900/30 dark:text-emerald-200"
+                          : status === "rejected"
+                            ? "bg-red-100 text-red-900 dark:bg-red-900/30 dark:text-red-200"
+                            : status === "withdrawn"
+                              ? "bg-muted/60 text-muted-foreground"
+                              : "bg-muted text-foreground",
+                      )}
+                    >
                       {t(`challenges_status_${challenge.status}`)}
                     </span>
                   </p>
                   <p className="text-foreground/90 mt-2 text-sm">
                     {truncateRationale(challenge.rationale)}
                   </p>
+                  {challenge.reviewNotes && (status === "accepted" || status === "rejected") && (
+                    <div className="border-border bg-muted/40 mt-3 rounded border p-3">
+                      <p className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
+                        {t("challenges_curator_notes_label")}
+                        {reviewedDate && (
+                          <>
+                            <span className="mx-1.5" aria-hidden>
+                              ·
+                            </span>
+                            <time dateTime={reviewedDate} className="font-mono">
+                              {reviewedDate}
+                            </time>
+                          </>
+                        )}
+                      </p>
+                      <p className="text-foreground/90 mt-1 text-sm whitespace-pre-wrap">
+                        {truncateRationale(challenge.reviewNotes)}
+                      </p>
+                    </div>
+                  )}
+                  {status === "accepted" && challenge.acceptedActionId && (
+                    <p className="text-muted-foreground mt-2 text-xs">
+                      <span>{t("challenges_action_attached_label")}</span>
+                      <span className="ml-1.5 font-mono">{challenge.acceptedActionId}</span>
+                    </p>
+                  )}
+                  {canWithdraw && (
+                    <form action={withdrawChallengeAction} className="mt-3">
+                      <input type="hidden" name="challengeId" value={challenge.id} />
+                      <button
+                        type="submit"
+                        className={cn(
+                          "border-border bg-background text-muted-foreground inline-flex h-7 items-center justify-center rounded-md border px-2 text-[11px] font-medium",
+                          "hover:text-foreground hover:bg-muted focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none",
+                          "transition-colors",
+                        )}
+                        aria-label={t("challenges_withdraw_aria_label")}
+                      >
+                        {t("challenges_withdraw")}
+                      </button>
+                    </form>
+                  )}
                 </li>
               );
             })}

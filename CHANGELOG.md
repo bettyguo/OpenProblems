@@ -2470,6 +2470,40 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 12 — Community-adjacent surfaces (**third NON-§13 phase**: Curator review pipeline — Q57 keystone)
 
+#### Unit 12.5 — Withdraw-own-challenge UI + profile-page status awareness
+
+- Sixth Phase-12 unit; fourth code unit. Lands the **submitter-side UI** that completes the Phase-12 community-feedback loop. Phase 11's profile-page "Your rating challenges" surface gets four post-Phase-11 statuses (`under_review`, `accepted`, `rejected`, `withdrawn`) rendering correctly + curator-notes preview + acceptedActionId reference + withdraw button per ADR-0014 D-A submitter-side transition (`submitted`/`under_review` → `withdrawn`).
+- **`app/[locale]/profile/page.tsx` (edit)**:
+  - Imports added: `revalidatePath` (next/cache); `isAllowedWithdrawal` + `withdrawChallenge` + `ChallengeStatus` (from `@/lib/rating-challenges`).
+  - **`withdrawChallengeAction`** (inline `"use server"` server-action; mirrors Phase-9 watchlist + Phase-11 challenge-submission pattern): re-validates session → reads `challengeId` from form → calls `withdrawChallenge(challengeId, session.user.id)` wrapped in `try/catch` (swallows concurrent-withdrawal / terminal-state / not-your-challenge errors as no-ops — the re-render reflects actual state). `revalidatePath("/[locale]/profile", "page")` + `redirect()` back to profile.
+  - **Status pill color-coding** (CSS-only; no JS surface): `accepted` → emerald (positive); `rejected` → red (negative); `withdrawn` → muted (neutral; submitter-initiated termination); `submitted`/`under_review` → default neutral (matches Phase-11 styling).
+  - **Curator-notes preview block** (visible when `status ∈ {accepted, rejected}` AND `reviewNotes` non-null): bordered card below the rationale preview with "Curator notes · YYYY-MM-DD" header + 200-char truncated `reviewNotes` (reuses Phase-11 `truncateRationale` helper since the truncation rule is identical). Surfaces the curator's decision rationale to the submitter without requiring email notifications (Phase-12 D-9 pull-based awareness).
+  - **`acceptedActionId` reference line** (visible when `status === "accepted"` AND `acceptedActionId` non-null): "Rating action: <filename>" in mono font. Phase 12 ships filename-only; Phase 13+ Q58 will link to the rendered rating-action surface (per `/problems/[slug]/ratings` route already exposed since Phase 3).
+  - **Withdraw button** (visible when `isAllowedWithdrawal(status)` — i.e., `submitted` or `under_review`): inline `<form action={withdrawChallengeAction}>` with hidden `challengeId` input + small outlined button. ARIA-labeled. Mirrors Phase-9 `WatchlistToggle` signed-in-with-action shape (zero-client-JS server-action). Hidden when `status ∈ {accepted, rejected, withdrawn}` per server-side state machine.
+- **`messages/en.json` + `messages/fr.json` (edits)** — `profile.*` namespace gains **4 new keys per locale** (Unit 12.5 net total; combined with Unit 12.4's 4 status keys, Phase-12 profile keys = 8 new since Phase 11; +16 across EN + FR):
+  - `challenges_curator_notes_label`: "Curator notes" / "Notes du curateur".
+  - `challenges_action_attached_label`: "Rating action:" / "Action de notation :".
+  - `challenges_withdraw`: "Withdraw" / "Retirer".
+  - `challenges_withdraw_aria_label`: "Withdraw this rating challenge" / "Retirer cette contestation de notation".
+- **State-machine round-trip on submitter side**:
+  - `submitted` → submitter withdraws → `withdrawn` (terminal).
+  - `under_review` → submitter withdraws mid-review → `withdrawn` (terminal).
+  - `accepted` / `rejected` / `withdrawn` → withdraw button HIDDEN (terminal; `isAllowedWithdrawal(status) === false`).
+  - Curator-side `start_review` / `accept` / `reject` transitions are still server-side; the profile page READS `status` + `reviewedAt` + `reviewNotes` + `acceptedActionId` and renders accordingly. No write surface for curator transitions on profile page — those live on `/[locale]/curator/challenges/[id]` per ADR-0014 D-F.
+- **NOT in this unit** (deferred):
+  - Email notifications when challenge is reviewed — Phase 13+ alongside `lib/email/` (couples to subscriber-list Phase-5 D-4 punt).
+  - Profile-page filter on challenge status (show only `accepted` / only `submitted`) — Phase 13+ when volume justifies.
+  - Per-challenge detail page at `/[locale]/profile/challenges/[id]` — Phase 13+ Class B follow-on from Phase-11 hygiene.
+  - Public profile route at `/[locale]/u/[handle]/challenges` (couples to Q58 + Phase-10 Class B item 1) — Phase 13+.
+- **Smoke gates**:
+  - `pnpm validate-content` → 203 files unchanged.
+  - `pnpm typecheck` clean (status discriminator `ChallengeStatus` narrows correctly through the per-row JSX guards; `revalidatePath` import added; `withdrawChallenge` typing matches; `isAllowedWithdrawal` predicate satisfies the visibility gate).
+  - `pnpm test` → **456/456 across 50 files** UNCHANGED (no test files touched; profile-page state-machine logic is exercised via the existing `isAllowedWithdrawal` + `withdrawChallenge` tests from Unit 12.3's state-machine + helper-suite).
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+  - `pnpm build` — profile route stays at 1.91 kB / 108 kB First Load JS (UNCHANGED from Phase-10 close — Unit 12.5 added zero client-bundle weight; withdraw button is a server-action; status pills are CSS-only). **First Load JS shared chunk = 103 kB UNCHANGED**. **Middleware bundle = 160 kB UNCHANGED**.
+- THINK artifact: omitted — implementation contained in ADR-0014 D-A submitter-side withdraw transition + Unit 12.0 D-11 (withdraw-own-challenge sub-scope absorbed into Phase 12) + Unit 12.0 D-9 (pull-based notification via profile-page status updates) + Unit 12.0 D-18 (200-char preview length matching Unit 11.4's rationale truncation precedent).
+- Next: Unit 12.6 (Phase-12 hygiene status pass).
+
 #### Unit 12.4 — Curator dashboard route + review API + `messages.curator.*` (EN + FR)
 
 - Fifth Phase-12 unit; third code unit. Lands the **curator-side UI surface** for the Phase-12 keystone thread. **Third + fourth dynamic API routes / fourth + fifth page routes net for Phase 12** — `/[locale]/curator/challenges` (list view; SSG-listed but `force-dynamic`) + `/[locale]/curator/challenges/[id]` (detail view; `force-dynamic`) + `POST /api/v1/rating-challenges/[id]/review`. **Second protected page route in the project** (after Phase-10 `/[locale]/profile`); middleware-based protection lift still gated on 3+ protected page routes per Phase-9 Class B item 12 + ADR-0014 D-F deferral. **+10 tests / +1 test file** (was 446/49; now **456/50**).
