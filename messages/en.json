@@ -25,6 +25,11 @@
     "title": "About",
     "description": "Project description, governance, and contact. Phase 1."
   },
+  "auth": {
+    "sign_in": "Sign in",
+    "sign_out": "Sign out",
+    "signed_in_fallback": "Signed in"
+  },
   "home": {
     "hero_heading": "Rated open problems in LLM & AI research.",
     "hero_description": "A taxonomy-organized encyclopedia of open problems, scored on five revisable dimensions — Difficulty, Saturation, Urgency, Value, Industry Call — with an immutable rating-action log behind every score.",

@@ -25,6 +25,11 @@
     "title": "À propos",
     "description": "Description du projet, gouvernance et contact. Phase 1."
   },
+  "auth": {
+    "sign_in": "Se connecter",
+    "sign_out": "Se déconnecter",
+    "signed_in_fallback": "Connecté"
+  },
   "home": {
     "hero_heading": "Problèmes ouverts notés en recherche en LLM et IA.",
     "hero_description": "Une encyclopédie organisée par taxonomie des problèmes ouverts, notés sur cinq dimensions révisables — Difficulté, Saturation, Urgence, Valeur, Demande de l'industrie — avec un journal d'actions de notation immuable derrière chaque score.",

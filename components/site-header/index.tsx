@@ -1,11 +1,31 @@
+import { AuthControl } from "@/components/auth-control";
 import { LocaleToggle } from "@/components/locale-toggle";
 import { SearchTrigger } from "@/components/search-trigger";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { auth } from "@/lib/auth";
 import { Link } from "@/lib/i18n/navigation";
 import { getSearchIndex } from "@/lib/search/build-index";
 
-export function SiteHeader() {
+/**
+ * Defensive `auth()` caller — swallows any DB-read failure (e.g., when
+ * `local.db` is unmigrated in CI / on a fresh clone) so SSG builds + tests
+ * don't crash on missing auth infrastructure. Treats every failure as
+ * "no session" (signed-out branch renders).
+ *
+ * Production runtime: `auth()` returns a valid `Session | null` from the
+ * Drizzle-adapter session table; this wrapper is a no-op around success.
+ */
+async function safeAuth() {
+  try {
+    return await auth();
+  } catch {
+    return null;
+  }
+}
+
+export async function SiteHeader() {
   const index = getSearchIndex();
+  const session = await safeAuth();
   return (
     <header className="border-border bg-background/80 sticky top-0 z-40 border-b backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center gap-3 px-6 py-3">
@@ -48,6 +68,7 @@ export function SiteHeader() {
           <SearchTrigger index={index} />
           <LocaleToggle />
           <ThemeToggle />
+          <AuthControl session={session} />
         </div>
       </div>
     </header>

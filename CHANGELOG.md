@@ -2601,6 +2601,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
 - THINK artifact: `docs/thinking/9.4-auth-wrapper.md`.
 
+#### Unit 9.5 — Middleware composition + auth-aware SiteHeader UI
+
+- Fifth code unit of Phase 9. Wires the Auth.js v5 wrapper from Unit 9.4 into the project's request pipeline + adds the sign-in / sign-out surface in SiteHeader. **Composes with the existing next-intl middleware from Phase 8** — flagged as the highest-collision unit in [Unit 9.0 D-6](docs/thinking/9.0-phase-9-prep.md); landing executed without parallel-session collision.
+- **`middleware.ts` (edit)**: wrapped `createMiddleware({...})` (next-intl from Units 8.1 + 8.3) with `auth()` from `lib/auth`. Pattern: `export default auth((req) => intlMiddleware(req))`. Auth.js loads the session via the Drizzle-adapter `sessions` table (if a valid session cookie is present); the inner handler delegates to next-intl for `localePrefix: "always"` routing. `localeCookie` config preserved from Unit 8.3.
+- **`components/site-header/index.tsx` (edit)**: converted from sync to async server component; calls `auth()` defensively via a new `safeAuth()` wrapper (try/catch returning `null` on any DB-read failure); passes session to `AuthControl`. **Defensive wrapping rationale**: `auth()` reads from the Drizzle `sessions` table, which can be unreachable in CI (no DB), on fresh clones (no `pnpm db:migrate` run yet), or during transient production outages. `safeAuth()` treats every failure as "no session" → signed-out branch renders; production normal-operation path is a no-op around success.
+- **`components/auth-control/index.tsx` (new)**: server component rendering sign-in / sign-out via Auth.js v5's canonical server-action `<form action={...}>` pattern. Signed-in branch shows the GitHub user's `name` (or `email` fallback, or `auth.signed_in_fallback` translation) + a "Sign out" submit button; signed-out branch shows a "Sign in" submit button that triggers `signIn("github", { redirectTo: "/" })`. Mirrors `ThemeToggle` / `LocaleToggle` `h-9` outlined sizing. No client JS — entirely server-rendered + server-action driven.
+- **`messages/en.json` + `messages/fr.json` (edit)**: `auth.*` namespace added with 3 keys per locale (`sign_in` / `sign_out` / `signed_in_fallback`). FR: "Se connecter" / "Se déconnecter" / "Connecté".
+- **NOT in this unit** (deferred to Unit 9.6):
+  - `events.createUser` / `linkAccount` callback that populates `users.githubLogin` from the GitHub OAuth profile on first sign-in — Unit 9.6 alongside the watchlist write-path (which depends on `githubLogin` for joining to file-system curator-of-record).
+  - Watchlist table + write-path — Unit 9.6.
+  - OAuth app smoke-test against real github.com — Q54 operational unblock.
+- **Composition order**: chose `auth()` outer + intl inner. Future auth-aware redirects (e.g., a protected `/profile` route) get session context for free before intl handles locale routing. Alternative (intl outer, auth inner) rejected — Auth.js v5's middleware API doesn't expose an inner-call shape cleanly.
+- **Smoke gates**:
+  - `pnpm validate-content` → 203 files unchanged.
+  - `pnpm typecheck` clean.
+  - `pnpm test` → 388/388 across 44 files unchanged (`safeAuth()` handles the no-DB CI case).
+  - `pnpm build` → ~590 prerendered pages unchanged. First Load JS shared chunk = **103 kB UNCHANGED** (AuthControl is server-side; sign-in / sign-out forms are server-actions; zero client bundle delta).
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- THINK artifact: `docs/thinking/9.5-middleware-compose-auth-ui.md`.
+
 
 
 
