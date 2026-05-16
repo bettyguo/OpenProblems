@@ -1680,6 +1680,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
 - THINK artifact: `docs/thinking/6.2-github-graphql-client.md`.
 
+#### Unit 6.3 — `app/problems/[slug]/talk/page.tsx` (talk-page route shell + Giscus embed slot)
+
+- Second code unit of Phase 6. Lands the talk-page route that Unit 6.4's Giscus embed will populate. Mirrors the existing `[slug]/<sub>/page.tsx` pattern (leaderboard / history / ratings) for breadcrumb shape, `loadProblem` + `notFound`, and `generateStaticParams` from `allProblemSlugs`.
+- **New file** `app/problems/[slug]/talk/page.tsx`:
+  - Pure SSG shell; no client-side dependencies; no new package adds.
+  - Breadcrumb: `Problems / <Problem Title> / Discussion`.
+  - h1 "Discussion" + a one-line subtitle linking back to the problem detail and stating "Comments are hosted on GitHub Discussions and authored via your GitHub account" (sets visitor expectations re: auth-via-GitHub per ADR-0010 D-A).
+  - `<section id="discussions">` slot with placeholder text "Discussion thread loading…" — Unit 6.4 will populate this slot by importing the `GiscusEmbed` component into the same position.
+  - `<noscript>` block linking to `https://github.com/bettyguo/OpenProblems/discussions` with instructions for finding the thread by its pathname-based title (per ADR-0010 D-C mapping + the negative consequence "JS-disabled visitors see no comments").
+  - Back-link to the problem detail page (small inline link, mirroring the bottom-of-page pattern of leaderboard / history sub-pages).
+- **Edit** `app/problems/[slug]/page.tsx`: added a one-line "Discuss this problem →" link below the curator-stamp paragraph (top of page, before the rating-snapshot section). Mirrors the existing inline `text-accent` link style ("View full leaderboard →" / "View full history →" elsewhere on the page). Unit 6.5 will UPGRADE this link to include the activity-count badge (`getDiscussionByPath` from Unit 6.2).
+- **Q48 (decided-as-lean)** — indexing posture: talk pages should be sitemap-included + linked from problem detail. This unit lands the link; sitemap inclusion is deferred (no sitemap surface exists at HEAD).
+- **Decisions consciously deferred to subsequent units**:
+  - D-7 Giscus version pin → Unit 6.4 (when `@giscus/react` lands in package.json).
+  - D-10 SSR vs CSR for the activity count → Unit 6.5 (the count is the card-badge feature).
+  - D-11 theme sync → Unit 6.4 (the component owns it).
+- **Decisions consciously NOT taken in this unit**: did not call `getDiscussionByPath` at SSG time. Would add 10 build-time GraphQL calls × 1 per problem; Q47 unresolved means queries currently return empty regardless; cosmetic value only at HEAD. Defer to Unit 6.5 where the count is the load-bearing feature.
+- **Page count delta**: 323 → **333** (+10 SSG routes: one per problem). Matches Unit 6.0 D-6 prediction.
+- **Bundle impact**: First Load JS shared chunk = **103 kB unchanged**. Per-route chunk for `/problems/[slug]/talk` = 201 B (matches the size profile of other pure-SSG sub-routes like `[slug]/ratings`).
+- Smoke gates:
+  - `pnpm validate-content` → 203 files unchanged (no content added).
+  - `pnpm typecheck` clean.
+  - `pnpm test` → 302/302 across 37 files unchanged (page tests are Playwright e2e per §14.2; no new vitest file needed).
+  - `pnpm build` → **333 prerendered pages** (was 323; +10 talk pages). Compile in 3.1s. First Load JS = 103 kB unchanged.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- THINK artifact: `docs/thinking/6.3-talk-page-route.md`.
+
+
 
 
 

@@ -63,6 +63,14 @@ export default async function ProblemPage({ params }: ProblemPageProps) {
         {" · "}
         <span className="font-mono">@{problem.editorial.primary_curator}</span>
       </p>
+      <p className="mt-3 text-xs">
+        <Link
+          href={`/problems/${slug}/talk`}
+          className="text-accent underline-offset-2 hover:underline"
+        >
+          Discuss this problem →
+        </Link>
+      </p>
 
       {/* 2. RatingRadar + 3. TL;DR */}
       <section
