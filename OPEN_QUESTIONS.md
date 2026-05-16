@@ -292,3 +292,37 @@ Next.js 15 App Router supports both `[slug]/route.ts` (plain dynamic) and `[slug
 - **Discoverability compensation**: `content-type: application/rss+xml` header + Unit 5.9's `/digest` hub `<link rel="alternate">` tags cover the auto-discovery use case.
 
 **Decision**: future dynamic API routes use the plain `[<param>]/route.ts` convention. Concatenated dotted-suffix routes are forbidden by routing-style convention (no ADR — this is a code-style choice, not a load-bearing architectural decision). Override path: a future deliverable that genuinely requires `.xml` in the URL can re-evaluate (rare).
+
+## Q46. Discussions backend (Giscus embed vs first-party GraphQL)
+
+**Status:** decided-as-lean · **Surfaced:** Unit 6.0.
+
+Phase 6's first thread (per [6.0 prep doc](./docs/thinking/6.0-phase-6-prep.md) D-1) is GitHub Discussions integration. Two backends are viable for the comment UI: Giscus embed (iframe widget; community-maintained) or a first-party GraphQL build (server-rendered thread from the GitHub GraphQL API).
+
+**Lean** (subject to ADR-0010 in Unit 6.1): **Giscus for the embed + first-party GraphQL for the read-side metadata** (counts, last-activity-at, surfaced on problem cards + digest). Giscus handles the auth-via-GitHub UX without us building it; GraphQL gives us programmatic access for the metadata side. Decoupling means metadata is build-time-cheap; comment rendering stays on GitHub's infra.
+
+ADR-0010 (Unit 6.1) will pin the realized contract.
+
+## Q47. GitHub repository discussions enablement
+
+**Status:** open (operational, not architectural) · **Surfaced:** Unit 6.0.
+
+GitHub Discussions must be enabled in the `bettyguo/OpenProblems` repository settings for any Phase-6 Discussions work to function. Requires owner action; out-of-band for docs units. Check before Unit 6.2 (`lib/discussions/github-graphql.ts`) ships — the GraphQL queries against a discussions-disabled repo return empty.
+
+Not architectural; tracked as a gating operational checklist item rather than a question with a "right answer".
+
+## Q48. Talk-page indexing posture
+
+**Status:** decided-as-lean · **Surfaced:** Unit 6.0.
+
+Should `/problems/<slug>/talk` pages be in the sitemap + linked from problem detail pages?
+
+**Lean**: yes — sitemap-included; surface a "Discuss" link from `app/problems/[slug]/page.tsx`. Revisit after talk-page Lighthouse a11y baseline lands (Unit 6.7). Rationale: discussion activity is genuine content; hiding the route from indexing would defeat the discovery purpose.
+
+## Q49. Comment moderation routing
+
+**Status:** decided-as-lean · **Surfaced:** Unit 6.0.
+
+When a Giscus comment is flagged in the embed, where does the curator chain pick it up?
+
+**Lean**: **defer entirely to GitHub Discussions' native moderation**. Don't build a first-party moderation queue alongside. Revisit only if curator workload signals a real backlog or if moderation needs to flow into rating-action evidence chains (which would couple Discussions to the editorial pipeline in a way Phase 6 v1 doesn't require).

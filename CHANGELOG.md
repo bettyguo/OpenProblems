@@ -1596,3 +1596,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - `pnpm audit-content` → 0 errors / 6 warnings unchanged (the Q32-expected `related-problems-symmetry` set since Phase 2).
 - Page count delta: 322 → **323**. Phase-5 deliverable count unchanged (this is documentation of existing surfaces). v1.0 audit URL `/contributing/v1.0.0` preserved.
 
+### Phase 6 — Community surfaces (first thread: GitHub Discussions)
+
+#### Unit 6.0 — Phase 6 prep (THINK doc + 11-unit Discussions-thread breakdown + DB-migration trigger re-eval)
+
+- Phase 6 kickoff per §12 cardinal rule. Phase 5 closed at HEAD `20dd465` (Unit 5.13 acceptance gate); post-acceptance hygiene units 5.13a (`9283e9a`) and 5.13b (`01a8903`) brought HEAD to the Phase-6 boundary. **Phase 6 sign-off granted via "Continue" override** in the unit-rhythm rhythm (per `docs/SESSION_HANDOFF_phase5_close.md` option (c); §12 normally requires explicit sign-off — this unit flags the override transparently). Docs-only unit.
+- **§13 Phase 6+ scope is open-ended**: three candidate threads (GitHub Discussions, read+write API with token auth, bilingual rendering) plus two implicit (email subscriber list per Phase-5 D-4 punt; monetization per the Phase-5 handoff framing). This prep doc commits ONLY to the first-thread recommendation (§D-1); if the human redirects, Unit 6.1 regenerates the breakdown thread-specifically.
+- **D-1. First-thread recommendation = GitHub Discussions integration**. Rationale: lowest blast radius (no auth, no DB trigger, no first-party identity); closest to the rating-agency framing (Discussions ARE the signal the rating loop consumes); lets the auth-provider choice marinate; independent of the bilingual thread; scope manageable (11 units vs the Phase 0-5 cadence of 14). Alternative threads enumerated with deferral rationale: auth (~14+ units; triggers DB migration), bilingual (~14+ units + ongoing translation backfill), subscriber-list (4-6 units; coupled to auth or third-party), monetization (~8+ units; premature without auth + API maturity).
+- **11-unit breakdown** (6.0 – 6.10) under the Discussions thread:
+  - 6.0 Phase 6 prep (this doc) — docs.
+  - 6.1 ADR-0010 — Discussions backend (Giscus embed + GraphQL read-side) + per-problem mapping — docs (ADR).
+  - 6.2 `lib/discussions/github-graphql.ts` — GitHub GraphQL client for discussion metadata — code.
+  - 6.3 `app/problems/[slug]/talk/page.tsx` — talk-page route shell + Giscus embed slot — code.
+  - 6.4 `components/discussions/GiscusEmbed.tsx` — client-only iframe wrapper + theme sync — code.
+  - 6.5 `components/problem-card/` extension — discussion-activity badge — code.
+  - 6.6 `lib/digest/build-digest.ts` extension — fold discussion threads into per-domain RSS — code.
+  - 6.7 `lighthouserc.json` extension — enrol `/problems/<slug>/talk` for one representative problem — code.
+  - 6.8 Phase-6 hygiene: orphan `components/domain-tile-grid/` deletion (requires explicit auth per the Unit 4.4 / 5.11 destructive-action policy) + entries.json backfill candidate — code + content.
+  - 6.9 OPEN_QUESTIONS hygiene + ADR review — docs.
+  - 6.10 Phase 6 acceptance gate — talk-page SSG smoke; GraphQL rate-limit smoke; CHANGELOG roll-up — gate.
+- **D-2. DB-migration trigger re-evaluation** (MANDATORY at Phase 6 kickoff per Unit 5.10 + 4.12). Measured at HEAD `01a8903`: `tar -czf .velite/ = 75,206 bytes (~73.4 KB) = ~1.434% of the 5 MB §12 threshold` (was ~1.38% at Phase 5 kickoff per Unit 5.0; +0.05 pp delta is the `contributing v1.1.mdx` compile from Unit 5.13b). Auth trigger negative under the Discussions-first thread (Discussions uses GitHub's auth; no first-party identity storage). **Decision**: DB migration **deferred to Phase 7+ OR Phase 6.X mid-phase if the human redirects to the auth thread** (which would flip the trigger immediately on the first write-path unit). Same conclusion as Units 4.12 / 5.10 / 5.0 under the Discussions-first thread.
+- **Decisions resolved in this unit**: D-1 (first-thread = Discussions, with rationale + alternatives table), D-2 (DB trigger 1.434% — deferred), D-3 (Giscus embed + GraphQL read-side split — lean; pinned in ADR-0010), D-4 (pathname-based per-problem discussion mapping — lean), D-5 (read-side surfacing on problem cards + digest), D-6 (talk-page route shape mirrors existing `[slug]/<sub>` pattern).
+- **Decisions deferred** (D-7 through D-11): Giscus version pin (Unit 6.4), GitHub token scope (Unit 6.2), GraphQL rate-limit handling (Unit 6.2), discussion-card SSR vs CSR (Unit 6.5), talk-page theme sync (Unit 6.4).
+- **Newly surfaced open questions**: Q46 (Discussions backend lean — decided-as-lean), Q47 (GitHub repo discussions enablement — open operational), Q48 (talk-page indexing posture — decided-as-lean), Q49 (comment moderation routing — decided-as-lean, defer to GitHub native).
+- **Forward-looking DB-migration re-eval triggers** (carried from Unit 5.10): content scale 3× / `> 600` files / `> 1 MB` gzipped; **first Phase-6+ write-path lands (auth flips)** — under Discussions-first, stays cold throughout Phase 6; Phase 7 kickoff (mandatory); rating-action volume reaches 200; drafts-dir > 100 stale (operational signal, not migration trigger).
+- **Order rationale**: 6.1 first (ADR gates code); 6.2 → 6.3 → 6.4 sequential (data layer → route shell → client embed); 6.5 / 6.6 parallel (both consume 6.2); 6.7 late (LHCI after route stable); 6.8 / 6.9 hygiene in parallel; 6.10 closes.
+- **Parallel-curator awareness**: docs-only, no collision risk. Subsequent Phase 6 units split cleanly per the dep chain above.
+- THINK artifact: `docs/thinking/6.0-phase-6-prep.md`.
+- Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings unchanged (Q32 baseline since Phase 2); typecheck / test / build untouched since no source files modified.
+
+
