@@ -2053,8 +2053,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - No code touched; `validate-content` / `typecheck` / `test` / `build` / `audit-content` unaffected from Unit 7.6's snapshot.
 - THINK artifact: `docs/thinking/7.7-lhci-locale-pilot.md`.
 
+#### Unit 7.8 — `app/sitemap.ts` + Q48 sitemap-half closure (Phase-6 carryover)
 
-
+- Sixth code unit of Phase 7. Picks up [OPEN_QUESTIONS Q48](OPEN_QUESTIONS.md#q48-talk-page-indexing-posture) sitemap-half (partially-resolved at Phase-6 close — link-half done in Unit 6.3; sitemap-half open). Ships the first sitemap surface; includes locale alternates for the two `[locale]/about` pilot URLs (Unit 7.3 baseline).
+- **New helper** — `lib/sitemap/build-sitemap.ts`:
+  - Exports `buildSitemap()` (pure function) consuming velite collections (`problems`, `papers`, `authors`, `institutions`, `taxonomy`, `methodology`, `contributing`).
+  - Enumerates 10 static routes + every problem detail page + 4 problem sub-routes (`history` / `leaderboard` / `ratings` / `talk`) per problem + papers / authors / institutions / domains + subdomains / methodology + contributing versioned pages.
+  - For `/about` attaches `alternates: { languages: { en, fr } }` per [ADR-0011 D-E](docs/adr/0011-i18n-strategy.md) (English-canonical slugs; FR URL = `/fr/<same-slug>`). Only `/about` carries alternates today (the only route with a `[locale]/` shadow at HEAD); the alternates table extends systematically when Unit 7.3a expands `[locale]/<route>` coverage.
+  - Exports `SITE = "https://llm-openproblems.org"` (Q2 placeholder; hardcoded across 3 call sites — `lib/digest/rss.ts:16`, `app/api/v1/rss.xml/route.ts:27`, this file; all update together when DNS lands).
+  - Returns entries sorted by URL for deterministic builds.
+- **New tests** — `lib/sitemap/build-sitemap.test.ts`: **13 cases** — non-empty, canonical SITE prefix on every URL, unique URLs (no duplicates), sorted, includes every static route, locale alternates on `/about` only, 10 problem detail pages, 10 talk URLs (Q48 closure), every sub-route ≥ 10 occurrences, domain + subdomain pages, versioned methodology + contributing pages, no `/api/` or `/_not-found` entries.
+- **New route** — `app/sitemap.ts`: Next.js convention entry-point (default export, `MetadataRoute.Sitemap` return type, calls `buildSitemap()`). 5 lines. Builds into `/sitemap.xml` at build time.
+- **Q48 closure** — `OPEN_QUESTIONS.md` Q48 status updated from `partially-resolved` → `resolved 2026-05-16 (Unit 7.8)`. Both halves now done: link-half resolved in Unit 6.3 / 6.5; sitemap-half resolved in this unit.
+- **NOT in this unit** (deferred):
+  - No `app/robots.ts` — sister convention; complementary; deferred until a User-Agent / Disallow policy is established (no AI-scraping policy enumerated yet).
+  - No per-entry `lastModified` / `changeFrequency` / `priority` — modern crawlers treat these as hints; Google [deprecated reliance](https://developers.google.com/search/blog/2023/04/sitemaps-lastmod-ping) on changeFrequency + priority in 2023. Defer until Lighthouse SEO flags a need.
+  - No locale alternates for routes other than `/about` — strict fail-closed; would link to 404s. Unit 7.3a expands.
+  - No `SITE` extraction into `lib/site-url.ts` — 3 hardcoded call sites is acceptable; extract at 5+. Deferred follow-on.
+  - No sitemap-index (single `/sitemap.xml` is fine for ~80 URLs; Google's 50 k limit is far away).
+- **Page count delta**: 335 → **336** (+1 for `/sitemap.xml`).
+- **Bundle impact**: First Load JS shared chunk = **103 kB UNCHANGED**. `/sitemap.xml` is a server-only route (153 B route chunk; below the 1 kB reporting threshold for shared-chunk impact).
+- **Smoke gates**:
+  - `pnpm validate-content` → 203 files unchanged.
+  - `pnpm typecheck` clean (new files use `MetadataRoute.Sitemap` from `next`).
+  - `pnpm test` → **370/370 across 42 files** (was 357/41; +13 from `lib/sitemap/build-sitemap.test.ts` new file).
+  - `pnpm build` → **336 prerendered pages** (was 335; +1 `/sitemap.xml`). First Load JS shared chunk = 103 kB UNCHANGED.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- THINK artifact: `docs/thinking/7.8-sitemap.md`.
 
 
 

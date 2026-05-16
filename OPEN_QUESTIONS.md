@@ -313,13 +313,13 @@ Not architectural; tracked as a gating operational checklist item. Unblocks (in 
 
 ## Q48. Talk-page indexing posture
 
-**Status:** partially-resolved · **Surfaced:** Unit 6.0 · **Refined:** Unit 6.9.
+**Status:** resolved 2026-05-16 (Unit 7.8) · **Surfaced:** Unit 6.0 · **Refined:** Unit 6.9 · **Resolved:** Unit 7.8.
 
 Should `/problems/<slug>/talk` pages be in the sitemap + linked from problem detail pages?
 
-**Decision-half (linked from detail)**: **resolved** — Unit 6.3 ships the "Discuss this problem →" link from `app/problems/[slug]/page.tsx`. Unit 6.5 upgraded the link with a parenthesized count when known.
+**Decision-half (linked from detail)**: **resolved Unit 6.3** — Unit 6.3 ships the "Discuss this problem →" link from `app/problems/[slug]/page.tsx`. Unit 6.5 upgraded the link with a parenthesized count when known.
 
-**Decision-half (sitemap-included)**: **still open** — no sitemap surface (`app/sitemap.ts`) exists at HEAD. The lean stays "yes, include when a sitemap lands"; tracked as a Phase 7+ hygiene candidate if/when a sitemap is added. Not blocking Phase 6 acceptance.
+**Decision-half (sitemap-included)**: **resolved Unit 7.8** — `app/sitemap.ts` + `lib/sitemap/build-sitemap.ts` now enumerate every `/problems/<slug>/talk` URL alongside the other problem sub-routes. Builder verified by `lib/sitemap/build-sitemap.test.ts` (10 talk URLs at HEAD for the 10 problems).
 
 ## Q49. Comment moderation routing
 
