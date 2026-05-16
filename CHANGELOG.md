@@ -1506,3 +1506,60 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Pure docs. THINK artifact: `docs/thinking/5.12-open-questions-hygiene.md`.
 - Smoke gates: `pnpm validate-content` (203 files unchanged), `pnpm typecheck` (clean), `pnpm test` (284/284 unchanged).
 
+#### Unit 5.13 — Phase 5 acceptance gate
+
+- Phase-5 closing unit. Mirrors Units 1.12 / 2.13 / 3.13 / 4.13. Verifies every §13 Phase-5 deliverable locally + emits the cross-phase roll-up. **Phase-5 work is now closed pending human sign-off** and the same Q27-class CI follow-on (W3C feed validator on the deployed digest URLs).
+- **§13 Phase-5 deliverables — local pass status**:
+  1. **arXiv ingestion helper CLI** ✓ Unit 5.3 (`scripts/ingest-arxiv.ts`, Sonnet 4.6 default). Drafts to `drafts/` + audit sidecar; curator-mediated `git apply` per ADR-0009.
+  2. **LLM-assisted leaderboard-entry extraction (with human-review diff; no auto-merge)** ✓ Unit 5.5 (`scripts/extract-leaderboard.ts`, Opus 4.7 default). `verified: false` forced by merge layer per ADR-0009 D-F.
+  3. **Email\RSS digest per-domain weekly summary** ✓ Units 5.7 (builder) + 5.8 (5 per-domain RSS endpoints) + 5.9 (`/digest` HTML hub with `<link rel="alternate">` auto-discovery). **Email scoped out** of Phase 5 per Unit 5.0 D-4 (auth-trigger flips on subscriber list); ships in Phase 6+.
+- **§13 cross-phase criteria (universal contract)**:
+  - **Lighthouse a11y ≥ 95**: `lighthouserc.json` extended this unit to **13 URLs** (was 12 after Unit 4.13). Added: `/digest`. The 5 per-domain `/api/v1/digest/<slug>` RSS endpoints are XML — Lighthouse doesn't meaningfully apply; W3C feed validator is the right gate (deferred).
+  - **W3C feed validator** on the 5 deployed digest feeds — Q27-class follow-on; first preview deploy.
+  - **Visual-regression baselines** for `/digest` × 2 themes × N viewports — future PR.
+  - **No-auto-merge contract** (ADR-0009): both Phase-5 CLIs verified write to `drafts/` only.
+- **Phase-5 unit summary** (14 units shipped end-to-end):
+
+  | Unit | Commit    | Title                                                                                                |
+  | ---- | --------- | ---------------------------------------------------------------------------------------------------- |
+  | 5.0  | `42fa01f` | Phase 5 prep (THINK + 14-unit breakdown + DB-migration re-eval)                                       |
+  | 5.1  | `5ccad5c` | ADR-0008 — LLM provider = Anthropic + cost-governance pact                                            |
+  | 5.2  | `f9d9a6d` | `lib/curate/arxiv-client.ts` (Atom API client + filesystem cache)                                     |
+  | 5.3  | `25fd29e` | `scripts/ingest-arxiv.ts` (LLM-drafting paper YAML CLI)                                               |
+  | 5.4  | `da50dbf` | `lib/curate/pdf-text.ts` (PDF text extraction)                                                        |
+  | 5.5  | `27e00e6` | `scripts/extract-leaderboard.ts` (LLM PDF→entries CLI)                                                |
+  | 5.6  | `655abdc` | ADR-0009 — Human-review diff format for LLM drafts                                                    |
+  | 5.7  | `6c33ed9` | `lib/digest/build-digest.ts` (per-domain weekly summary builder)                                      |
+  | 5.8  | `3a08fac` | `/api/v1/digest/[domain]` RSS endpoint                                                                |
+  | 5.9  | `4b9b562` | `/digest` HTML hub                                                                                    |
+  | 5.10 | `4ef69c2` | DB-migration trigger re-eval (Phase 5 close)                                                          |
+  | 5.11 | `f964ef4` | Phase-5 hygiene status pass (deferrals to Phase 6)                                                    |
+  | 5.12 | `0fa9743` | OPEN_QUESTIONS hygiene + ADR review                                                                   |
+  | 5.13 | _this_    | Phase 5 acceptance gate                                                                               |
+
+- **State at HEAD (Unit 5.13)**:
+  - Content unchanged from Phase 4 close (Phase 5 added code + scripts + docs, not content): 10 problems / 5 domains / 30 papers / 126 authors / 14 institutions / 20 rating actions / 4 issue templates / 2 MDX docs / 2 `entries.json` files.
+  - **Plus new Phase-5 surfaces**: 2 LLM-using CLIs (`ingest-arxiv`, `extract-leaderboard`), 5 per-domain RSS digest endpoints, `/digest` hub page.
+  - **322 prerendered pages** (was 313 at Phase-4 close; +5 from digest RSS feeds + 1 from `/digest` hub + 3 from minor Next.js internal accounting drift across builds).
+  - **First Load JS shared chunk 103 kB UNCHANGED** throughout Phase 5. Every Phase-5 deliverable is server-side (Node CLIs + SSG endpoints + SSR pages); no client-bundle impact.
+  - **284/284 vitest tests across 36 files** (was 199/29 at Phase-4 close — **+85 tests** from arxiv-client (13) + paper-draft (15) + anthropic (8) + pdf-text (8) + entry-draft (19) + build-digest (9) + rss-endpoint (13)).
+  - `pnpm validate-content` → 203 files green. `pnpm audit-content` → 0 errors / 6 Q32-expected warnings.
+  - `pnpm typecheck` clean. `pnpm build` clean compile in 3.3s.
+  - **5 visualizations live** (unchanged from Phase 4).
+  - **9 ADRs** — added **ADR-0008** (LLM provider) + **ADR-0009** (human-review diff format) in Phase 5.
+  - **5 OPEN_QUESTIONS** newly surfaced + 1 newer in Phase 5 (Q41–Q45). **Q41 + Q43 + Q45 closed**; Q42 + Q44 promoted to `decided-as-lean`; Q38 refined.
+- **Phase-5 follow-ons surviving the gate** (non-blocking):
+  - **W3C feed validator pass** on 5 deployed `/api/v1/digest/<slug>` URLs.
+  - **Visual-regression baselines** for `/digest` × 2 themes × N viewports.
+  - **Orphan `components/domain-tile-grid/`** deletion (deferred to Phase-6 hygiene per Unit 5.11 destructive-action policy).
+  - **`entries.json` content backfill** on 8 remaining problems (curator editorial work; toolchain ready from Unit 5.5).
+  - **`/contributing` v1.x bump** documenting LLM-assisted workflow + ADR-0008 D-F conflict-of-interest disclosure.
+  - **`pnpm clean-drafts` script** (operational hygiene if `drafts/` accumulates).
+  - **`<managingEditor>` on RSS feeds** (Q44 / Q33; gated on Q2 DNS).
+  - **`docs/SESSION_HANDOFF_phase3_close.md`** still untracked at HEAD.
+- **Phase 6 entry conditions** (per §12 cardinal rule): explicit human sign-off required. §13 Phase-6+ scope is open-ended ("Discussions, API auth, monetization"); Unit 6.0 prep would refine. Mandatory re-eval triggers carried from Unit 5.10.
+- **Cross-phase milestone**: Phase 5 ships the **intelligence-layer pipeline** end-to-end (arXiv → LLM draft → human-review diff → curator apply) + the **digest pipeline** end-to-end (rating actions + entries → per-domain RSS + HTML hub). Cost-governance pact in place from day zero (ADR-0008). No auto-merge contract enforced (ADR-0009).
+- **3 documented deviations** from Unit 5.0's plan: (1) email scoped out of Phase 5; (2) `[domain].xml/route.ts` → `[domain]/route.ts` (Q45); (3) hygiene unit 5.11 deferred to Phase 6.
+- THINK artifact: `docs/thinking/5.13-phase-5-acceptance-gate.md`.
+- Smoke gates green: `pnpm typecheck` (clean), `pnpm test` (284/284 across 36 files), `pnpm validate-content` (203 files), `pnpm audit-content` (0 errors / 6 warnings), `pnpm build` (clean compile in 3.3s; 322 prerendered pages; First Load JS shared chunk 103 kB), `pnpm ingest-arxiv --help` ✓, `pnpm extract-leaderboard --help` ✓.
+

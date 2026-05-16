@@ -13,7 +13,8 @@
         "http://localhost:3000/institutions/anthropic",
         "http://localhost:3000/trending",
         "http://localhost:3000/ratings",
-        "http://localhost:3000/contributing"
+        "http://localhost:3000/contributing",
+        "http://localhost:3000/digest"
       ],
       "startServerCommand": "pnpm start",
       "startServerReadyPattern": "Ready",
