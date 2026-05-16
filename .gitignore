@@ -80,3 +80,6 @@ desktop.ini
 .pdf-cache/
 .llm-spend.log
 drafts/
+
+# --- Phase-6 Discussions read-side cache (Unit 6.2 / ADR-0010 D-E) ---
+.github-cache/

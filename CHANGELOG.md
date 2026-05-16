@@ -1652,5 +1652,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - THINK artifact: `docs/thinking/6.1-adr-0010-discussions-backend.md`.
 - Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings unchanged (Q32 baseline); typecheck / test / build untouched since no source files modified.
 
+#### Unit 6.2 — `lib/discussions/github-graphql.ts` (first-party GitHub GraphQL read-side client)
+
+- First **code** unit of Phase 6. Implements ADR-0010 D-B (first-party GraphQL read-side) + D-D (`GITHUB_TOKEN` env discipline; never write) + D-E (filesystem cache `.github-cache/<query-hash>.json`; gitignored).
+- Mirrors the Phase-5 `lib/curate/arxiv-client.ts` cache pattern + `lib/curate/anthropic.ts` env-token + `clientFactory`-injection precedents. Reading env at call time (not module load), throwing a clear ADR-0010-citing error when `GITHUB_TOKEN` is unset, exposing `clientFactory` for full network mocking in tests — all three patterns transfer verbatim.
+- **New dependency**: `@octokit/graphql@^9.0.3` in `dependencies` (not `devDependencies`) per the precedent that SSG-time imports ship as part of the build pipeline. Pure JS; no postinstall script; no `pnpm-workspace.yaml` `allowBuilds` change needed. 10 packages added in total (octokit transitive deps).
+- **New exports** in `lib/discussions/github-graphql.ts`:
+  - `interface DiscussionMetadata` — `{ discussionId, url, title, commentCount, lastActivityAt, categoryName }`.
+  - `interface RecentActivityItem` — `{ discussionId, url, title, commentCount, updatedAt, latestCommentAt }` for the digest pipeline (Unit 6.6).
+  - `interface GraphqlClientOptions` — `{ noCache?, cacheDir?, clientFactory?, repoOwner?, repoName? }` (all optional; defaults preserve the canonical `bettyguo/OpenProblems` repo + `.github-cache/` dir).
+  - `type GraphqlClient` — generic callable shape `<T>(query, variables?) => Promise<T>`.
+  - `async queryGitHub<T>(document, variables, options)` — the core cache + auth + call wrapper.
+  - `async getDiscussionByPath(pathname, options)` — returns `DiscussionMetadata | null` (null when search returns 0 nodes, i.e., no discussion has been lazily created yet per ADR-0010 D-C).
+  - `async getRecentDiscussionActivity(since, options)` — filters by `since` Date; returns matching items in `updatedAt`-desc order.
+  - `__testing` export with internal helpers (`sha256`, `cacheKeyFor`, `readCache`, `writeCache`, `defaultClientFactory`, the two query constants).
+- **`.gitignore`** updated with a new Phase-6 comment block adding `.github-cache/` (mirrors the Phase-5 cache-dir pattern).
+- **18 new vitest tests** in `lib/discussions/github-graphql.test.ts` covering: `sha256` stability / uniqueness; `cacheKeyFor` shape; round-trip cache read/write; null on missing cache file; null on malformed cache file; cache-hit short-circuits client invocation; cache-miss calls client + writes cache + serves second call from cache; `noCache: true` skips read but still writes; `defaultClientFactory` throws ADR-0010-citing error when `GITHUB_TOKEN` unset; `defaultClientFactory` returns callable when set; `getDiscussionByPath` parses metadata correctly; `getDiscussionByPath` returns null when search returns 0 nodes; `getDiscussionByPath` passes repo-scoped pathname search query; `getRecentDiscussionActivity` filters by `since`; `getRecentDiscussionActivity` returns `latestCommentAt: null` for 0-comment discussions.
+- **Decisions deferred to per-unit implementation** (D-7 through D-11 from Unit 6.0): Giscus version pin (Unit 6.4); D-8 GitHub token scope (`public_repo` minimum) — pinned in this unit's `defaultClientFactory` via the `bearer` header; D-9 GraphQL rate-limit handling (no retry/backoff for v1; SSG-time builds fit comfortably under 5000 points/hour); D-10 SSR vs CSR (Unit 6.5); D-11 talk-page theme sync (Unit 6.4).
+- **Q47 (open operational)** unchanged: discussions must be enabled in the `bettyguo/OpenProblems` repository settings before this client's queries return non-empty. Tests use full network mocks via `clientFactory`; real-API integration smoke deferred to a Q47-resolution follow-on or Unit 6.10's acceptance gate.
+- **Tradeoffs flagged**: (1) cache files are per-build ephemeral; no TTL inside the cache; CI builds fresh; (2) no retry/backoff on GraphQL errors — fail surfaces as build error; (3) `getDiscussionByPath` returns `null` for "no discussion yet" rather than throwing (pathname-based lazy creation makes missing discussions the normal happy-path); (4) repo owner/name defaults to `bettyguo/OpenProblems` (consistent with Phase-4 issue-template URLs + `/contributing` MDX cross-refs).
+- **Bundle impact**: lib not yet imported by any SSG page (Units 6.3-6.6 add the import paths). First Load JS shared chunk = **103 kB unchanged**.
+- Smoke gates:
+  - `pnpm validate-content` → 203 files unchanged (lib doesn't add content).
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **302/302 across 37 files** (was 284/36; +18 new tests in 1 new file).
+  - `pnpm build` → **323 prerendered pages unchanged**. Compile in 3.2s. First Load JS shared chunk = 103 kB unchanged.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- THINK artifact: `docs/thinking/6.2-github-graphql-client.md`.
+
+
 
 
