@@ -2107,6 +2107,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **Smoke gates**: docs-only; unchanged from Unit 7.10 snapshot (370/370 tests; 336 routes; 103 kB First Load JS).
 - THINK artifact: `docs/thinking/7.9-phase-7-hygiene.md`.
 
+#### Unit 7.8a — `app/robots.ts` (sister convention to `app/sitemap.ts`)
+
+- Sister-unit to [Unit 7.8](docs/thinking/7.8-sitemap.md) (sitemap). Closes the Class B follow-on from [Unit 7.9](docs/thinking/7.9-phase-7-hygiene.md): "`app/robots.ts` — sister convention". Ships the permissive baseline + sitemap-pointer; no AI-scraping policy decision made (deferred to a future ADR if/when the project takes a posture).
+- **New route** — `app/robots.ts`: Next.js convention entry-point (default export, `MetadataRoute.Robots` return type, ~8 lines). Returns `rules: [{ userAgent: "*", allow: "/" }]` + `sitemap: ${SITE}/sitemap.xml` + `host: SITE`. Reuses `SITE` from `lib/sitemap/build-sitemap.ts` (2nd consumer; centralization threshold from Unit 7.8 not yet hit at 5+).
+- **New tests** — `app/robots.test.ts`: 3 cases asserting permissive rule shape, Sitemap directive URL, canonical host.
+- **NOT in this unit**: no AI-bot blocks (no `User-agent: GPTBot`); no `Disallow` paths (machine routes naturally not surfaced); no `Crawl-delay`; no hreflang directives (not in robots spec; lives in sitemap alternates + future `<link rel="alternate">` meta).
+- **Page count delta**: 336 → **337** (+1 for `/robots.txt`).
+- **Bundle impact**: First Load JS shared chunk = **103 kB UNCHANGED**.
+- **Smoke gates**:
+  - `pnpm typecheck` clean.
+  - `pnpm test` → +3 cases (3 tests in 1 new file). Total: **373/373 across 43 files** (was 370/42).
+  - `pnpm build` → 337 routes; `/robots.txt` listed as Static prerendered alongside `/sitemap.xml`. First Load JS shared chunk = 103 kB UNCHANGED.
+- THINK artifact: `docs/thinking/7.8a-robots.md`.
+
 
 
 
