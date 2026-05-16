@@ -1948,6 +1948,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
 - THINK artifact: `docs/thinking/7.2-lib-i18n-runtime.md`.
 
+#### Unit 7.3 — `app/[locale]/` layout + about-page wiring proof (deliberate scope cut)
+
+- Second code unit of Phase 7. **Deliberate scope cut from Unit 7.0 §F's original plan** ("App Router locale segment restructure"). Ships the wiring PROOF — `app/[locale]/layout.tsx` + a single `app/[locale]/about/page.tsx` pilot — that proves the next-intl rendering pipeline works end-to-end. Bulk migration of the other 21 page files (every existing `app/<route>/page.tsx`) + middleware deferred to a follow-on (provisionally 7.3a) to avoid a 300+-line 22-file structural change in one commit at this point in the session (17 commits across 3 phases already shipped).
+- **New files**:
+  - `app/[locale]/layout.tsx` — locale-aware layout. `generateStaticParams()` returns `locales.map(l => ({ locale: l }))`; `isLocale()` validates (`notFound()` on unrecognized — `/xx/about` 404s); `setRequestLocale(locale)` enables SSG with next-intl context; `getMessages()` from `next-intl/server` loads via `lib/i18n/request.ts`; wraps `{children}` in `<NextIntlClientProvider locale={locale} messages={messages}>` so client components downstream can use `useTranslations`.
+  - `app/[locale]/about/page.tsx` — about-page pilot. Awaits `params` for `locale`; validates via `isLocale()`; calls `setRequestLocale(locale)`; uses `getTranslations("about")` (server-side) to fetch the namespace; renders title + description. Visually mirrors the existing `app/about/page.tsx` stub shape but with translated content.
+- **Edited message files**:
+  - `messages/en.json` — added `about.title = "About"` + `about.description = "Project description, governance, and contact. Phase 1."` (matches existing stub copy verbatim).
+  - `messages/fr.json` — added FR translations: `about.title = "À propos"` + `about.description = "Description du projet, gouvernance et contact. Phase 1."`.
+- **Coexistence** verified: `app/about/page.tsx` (existing static segment) wins for `/about`; `app/[locale]/about/page.tsx` (new dynamic segment) wins for `/<locale>/about`. Next.js routes static segments preferentially over dynamic catch-alls — no conflict.
+- **NOT in this unit** (deferred): middleware (`localePrefix: "always"` per ADR-0011 D-B); bulk page migration; link-generator updates (`lib/digest/build-digest.ts` digest links, `TALK_PATHNAME_REGEX`, `lighthouserc.json`); `app/[locale]/page.tsx` (home under [locale] — would 404 currently); FR /methodology pilot (Unit 7.4 reshapes per the sibling-file Velite extension landing in Unit 7.5).
+- **Unit 7.0 §F deviation** documented: about-page absorbs the wiring-proof role originally assigned to /methodology; Unit 7.4 shifts to translating /methodology via the sibling-file pattern when Velite extensions ship in Unit 7.5.
+- **Page count delta**: 333 → **335** (+2 for `/en/about` + `/fr/about`).
+- **Bundle impact**: First Load JS shared chunk = **103 kB UNCHANGED**. Per-route chunk for `/[locale]/about` = 150 B (no client-side weight; the about page is purely server-rendered via `getTranslations`; NextIntlClientProvider serialization is below the 1 kB reporting threshold). The provider only adds bundle weight when a client component downstream actually calls `useTranslations`.
+- **Smoke gates**:
+  - `pnpm validate-content` → 203 files unchanged.
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **332/332 across 39 files unchanged** (no new vitest file in this unit; wiring is build-validated; future unit-level tests would mock next-intl context which is non-trivial).
+  - `pnpm build` → **335 prerendered pages** (was 333; +2 talk-pages-equivalent expansion). Compile in 3.8s. First Load JS shared chunk = 103 kB UNCHANGED.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- THINK artifact: `docs/thinking/7.3-locale-layout-wiring-proof.md`.
+
+
 
 
 

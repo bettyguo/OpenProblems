@@ -20,5 +20,9 @@
   "fallbackNotice": {
     "untranslated": "This page is not yet translated to French; reading the English original.",
     "contribute": "Help translate it."
+  },
+  "about": {
+    "title": "About",
+    "description": "Project description, governance, and contact. Phase 1."
   }
 }
