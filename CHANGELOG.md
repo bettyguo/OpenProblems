@@ -2470,6 +2470,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 14 — Community-adjacent surfaces (**fifth NON-§13 phase**: Public profile page at `/[locale]/u/[handle]` — honored-deferral pick; surfaces ADR-0015)
 
+#### Unit 14.5 — SiteHeader "Your profile" link (signed-in only; ADR-0015 D-F)
+
+- Sixth Phase-14 unit; fourth code unit. Wires public profile route discoverability into the global chrome per ADR-0015 D-F. **Phase-14 thread architectural completion**: SiteHeader now discovers the route tree the prior units shipped (Unit 14.3 shell + Unit 14.4 sub-route).
+- **`components/site-header/index.tsx` (edit)**: adds `safeLogin(userId)` defensive wrapper paralleling existing `safeAuth()` (DB-read failure → null; treats Phase-9 retrofit edge as "no link"); calls it when session is present; renders an inline `<Link href="/u/{githubLogin}">` with avatar 16×16 + `@login` truncated to `PROFILE_LINK_LOGIN_TRUNCATE = 12` chars. Hidden when `users.githubLogin === null` (Phase-9 retrofit edge from Unit 9.6 deferred `events.linkAccount`) OR on mobile (`hidden ... sm:inline-flex` matches existing nav cluster desktop-first pattern).
+- **Placement**: prepended inside the right-side controls cluster, before `SearchTrigger`. Reconciles Unit 14.0 D-10 + ADR-0015 D-F's "between Trending nav and right-side controls" wording with the existing `ml-auto` flex layout. Adjacency to `AuthControl` reinforces "your account surface" affordance.
+- **Target = `/u/{login}` (PUBLIC canonical)**, NOT `/profile` (edit mode). Mirrors ADR-0015 D-F's `/profile`-vs-`/u/{login}` semantic split: public profile route is the canonical "your profile" link; `/profile` is the EDIT-mode surface, reachable from the public profile shell's "Edit your profile" CTA (Unit 14.3 rendered conditionally on own-profile).
+- **Visual register**: `font-mono text-xs underline-offset-2 hover:underline` matches the per-problem listing `@login` register established by Unit 14.4. `aria-label` + `title` reuse `public_profile.aria_label` ("Public profile of @{login}") pre-added in Unit 14.3 — **ZERO new i18n keys** this unit (atomic-i18n pre-add discipline payoff).
+- **Truncation**: handles longer than 12 chars render as `@truncated…`; full handle visible in `title` tooltip via aria-label reuse.
+- **No avatar fallback complexity**: if `session.user.image === null` (some GitHub accounts lack avatars), avatar omitted but `@login` text renders. Link still navigates. Mirrors Phase-10 + 14.3 graceful-degradation pattern.
+- **Phase-9 Class B item 12 (middleware-based auth-route protection) threshold unchanged**: lift fires when **3+ protected page routes** exist. Phase 10 = `/profile` (1); Phase 12 = `/curator/challenges` + detail (2). Phase 14's new `/u/[handle]` + `/u/[handle]/challenges` routes are NOT auth-protected (any visitor can view); they don't count toward the threshold. Lift remains deferred at Phase-14 close.
+- **Smoke gates**:
+  - `pnpm typecheck` clean.
+  - `pnpm test` → 480/480 across 52 vitest files unchanged (SiteHeader has no tests).
+  - `pnpm build` → ~593 prerendered + 7 dynamic page+API routes (no new routes). **First Load JS shared chunk = 103 kB UNCHANGED**. **Middleware bundle = 160 kB UNCHANGED**.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- **Not in this unit** (Phase 15+ candidates):
+  - Mobile-nav variant of "Your profile" (current desktop-first pattern OK at MVP scale).
+  - Avatar-dropdown with profile + sign-out shortcut (overkill for v1; AuthControl handles sign-out).
+  - Curator-mode SiteHeader badge (Phase 15+ if curator pool grows; out of Phase 14 scope per Unit 14.0 D-1 scope cap).
+- **Phase-14 thread architectural completion at this unit**: the public profile thread now spans lib helpers (Unit 14.2) + shell page (Unit 14.3) + sub-route (Unit 14.4) + chrome-level discoverability (this unit). Remaining Phase-14 units are docs hygiene (14.6 + 14.7) + acceptance gate (14.8).
+- THINK artifact: `docs/thinking/14.5-site-header-your-profile-link.md`.
+
 #### Unit 14.4 — Per-user challenges sub-route + Phase-13 per-problem listing `@login`-to-Link upgrade (Q58 lean #3 closure)
 
 - Fifth Phase-14 unit; third code unit. **Closes Q58 lean #3 deferred from Phase 13** (Unit 13.0 D-9 + Unit 13.5 explicit Phase-14+ carveout): `/[locale]/u/[handle]/challenges` per-user surface lands. **Also closes Phase-13 Unit 13.3 D-13** dangling `@login` plain-text link target via the per-problem listing's submitter-login upgrade.
