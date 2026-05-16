@@ -2601,6 +2601,57 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
 - THINK artifact: `docs/thinking/9.4-auth-wrapper.md`.
 
+#### Unit 9.9 — Phase 9 acceptance gate (Auth + read+write API thread — **final §13 Phase-6+ thread**)
+
+- Phase-9 closing unit. Mirrors Units 1.12 / 2.13 / 3.13 / 4.13 / 5.13 / 6.10 / 7.11 / 8.9. Verifies every Phase-9 §13 deliverable (the **Auth + read+write API** thread per Unit 9.0 D-1) is operational locally at HEAD, emits the cross-phase roll-up, and lists Phase-9 follow-ons that survive into Phase 10+.
+- **§13 ledger CLOSED at this gate.** Phase 6 closed Discussions (Unit 6.10); Phase 7 + 8 closed Bilingual rendering (Units 7.11 + 8.9); **Phase 9 closes Auth + read+write API** (this unit). After sign-off, the §13 Phase-6+ enumeration is fully closed; Phase 10+ thread options are ALL inferred-not-§13 (subscriber-list / rating-challenge submission / profile page / HTML shell migration / monetization / multi-provider OAuth / Q51 content backfill).
+- **§13 Auth + read+write API thread — deliverable status (all rows green; no DEFERRED rows; contrast Phase 8's Unit 8.4 deferral)**:
+  - ADR-0012 (Unit 9.1 — NextAuth.js v5 + GitHub OAuth + Drizzle adapter + DB sessions + redirect UX).
+  - ADR-0013 (Unit 9.2 — Turso/libSQL + Drizzle + USER-STATE-only).
+  - DB scaffold (Unit 9.3 — schema + client + drizzle.config + `0000_initial_auth` migration; 4 tables + `githubLogin`).
+  - Auth runtime (Unit 9.4 — `lib/auth/` wrapper + `/api/auth/[...nextauth]` route).
+  - Middleware composition (Unit 9.5 — `auth((req) => intlMiddleware(req))`; bundle 159 kB).
+  - Auth-aware SiteHeader UI (Unit 9.5 — `AuthControl`; `safeAuth()` defensive wrapper; `messages.auth.*`).
+  - Watchlist write-path (Unit 9.6 — `watchlist` table per Q56 resolution; `0001_watchlist` migration; `events.linkAccount` callback populating `users.githubLogin`; `lib/watchlist/` helpers; `POST/DELETE /api/v1/watchlist/[slug]` with 6 tests; `WatchlistToggle` UI; `messages.watchlist.*`). **§5.7 trigger (a) FIRES here**.
+  - Phase-9 hygiene status pass (Unit 9.7 — 4 Class A + 12 Class B + 14 Class C).
+  - OPEN_QUESTIONS hygiene + ADR review (Unit 9.8 — Q56 promoted; ADR-0012 D-A + ADR-0013 D-E prose-shifts reconciled inline).
+  - Phase 9 acceptance gate (this unit).
+- **§14 universal cross-phase contract status**:
+  - **First Load JS shared chunk = 103 kB UNCHANGED** through every Phase-9 unit. All Phase-9 surfaces are server-side; sign-in / sign-out / star / unstar are server-actions; auth-aware SiteHeader is async server component. Zero client-bundle delta.
+  - **Middleware bundle = 159 kB** (was 51.8 kB at Phase-8 close; +~107 kB from Auth.js + Drizzle adapter). Server-side; ~15% of Vercel Edge's 1 MB budget. Monitor on multi-provider expansion.
+  - **`lighthouserc.json` URL count = 19 UNCHANGED** (no new locale-pilot surfaces in Phase 9). First LHCI run validating auth-aware SiteHeader on `/en/` is a Class B follow-on (triggers on first preview-deploy PR with Phase-9 commits).
+  - **File-first / no DB held for CONTENT** per ADR-0004 + ADR-0013 D-F. **§5.7 trigger (a) FIRED in Unit 9.6** — first first-party DB write landed (deferred 5 phases at Units 4.12 / 5.10 / 6.0 / 7.0 / 8.0 D-2). Phase-4 "no user accounts" pact broken per the announced consequence.
+  - **No auto-merge** (ADR-0009): Phase 9 added no LLM-translated content.
+- **State at HEAD `c668cbb` + this acceptance-gate commit**:
+  - Content: 10 problems / 5 domains / ~12 subdomains / 30 papers / 126 authors / 14 institutions / 20 rating actions / 4 issue templates / methodology v1 (EN + FR) / contributing v1.0 (EN) + v1.1 (EN + FR) / 2 `entries.json` files. **203 schema-validated content files + 36 raw MDX** = 239 raw content files **UNCHANGED** from Phase-8 close.
+  - **2 new ADRs** (ADR-0012 + ADR-0013) → 13 ADRs total.
+  - **5 new dependencies** (`next-auth@5.0.0-beta.31` exact-pin + `@auth/drizzle-adapter@1.11.2` + `drizzle-orm@0.45.2` + `@libsql/client@0.17.3` + `drizzle-kit@0.31.10`).
+  - **New code layers** (Phase-9 net-new): `lib/db/` + `lib/auth/` + `lib/watchlist/` + `components/auth-control/` + `components/watchlist-toggle/` + `app/api/auth/[...nextauth]/` + `app/api/v1/watchlist/[slug]/`.
+  - **DB schema tables (0 → 5)**: `user`, `account`, `session`, `verificationToken`, `watchlist`. All USER-STATE per ADR-0013 D-F.
+  - **Migrations (+2)**: `0000_initial_auth.sql` + `0001_watchlist.sql` (drizzle-kit 0-indexed monotonic sequence).
+  - **Env contract (+5 env vars)**: `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET`, `AUTH_SECRET`, `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`.
+  - **Routes**: ~590 prerendered pages **UNCHANGED** + **2 new dynamic API routes** (`ƒ /api/auth/[...nextauth]` + `ƒ /api/v1/watchlist/[slug]`).
+  - **Tests**: 388/388 across 44 files → **394/394 across 45 files** (+6 tests / +1 file; all from Unit 9.6's watchlist API route tests).
+  - **OPEN_QUESTIONS state** (mechanical `Status:`-field tally per Unit 9.8 convention): 19 resolved + 4 decided-as-lean + 28 open = **51 entries** (+3 from Q54 + Q55 + Q56 surfacing; Q56 promoted within Phase 9). Phase-9 surfaced 3 new Qs; net 1 promotion (Q56); Q54 + Q55 stay open as operational gates.
+- **Phase-9 follow-ons that survive the gate** (non-blocking; from Unit 9.7):
+  - **Class A (4 — in-flight operational)**: Q54 GitHub OAuth app registration; Q55 Turso production DB provisioning; CI dummy `AUTH_SECRET` for build smoke; `pnpm db:migrate` doc for new contributors in `/contributing` v1.2.
+  - **Class B (12 — Phase-9-specific follow-ons)**: profile page; rating-challenge submission write-path; email notifications on watched-problem rating actions; watchlist count on `/problems` index; bulk-import/clear UI; orphan-row cleanup script (ADR-0013 D-F intentional); rate-limiting; multi-provider OAuth expansion (ADR-0012 D-B forbidden in Phase 9); `createUser` vs `linkAccount` documentation; first LHCI run; OAuth callback URL stability (Q2 DNS); auth-aware route protection.
+  - **Class C (14 — carryovers from prior phases)**: see Unit 9.7. Includes **HTML shell migration + Unit 8.4 unblock STILL ON HOLD per parallel-session preservation signal**; Phase-6 Q47 Discussions operational gate; Phase-8 chrome strings + FR backfill + StatusPill localization + nav labels; sitemap hints; trailing-slash normalization.
+- **Phase-9 firsts** (project-wide): first first-party DB; first first-party write-path; first §5.7 DB-migration trigger fire; first `users`/`sessions` project state; first multi-runtime middleware composition (`auth((req) => intlMiddleware(req))`); first exact-pinned `dependencies` entry (`next-auth@5.0.0-beta.31` per beta convention).
+- **Phase-9 over-vs-under against the 9.0 plan**: **10 units shipped + 0 deferred**. No scope drift (vs Phase 8's mid-flight HTML shell migration drop). 10/10 units; matches Unit 9.0 prep's breakdown.
+- **Parallel-curator activity log**: highest of any phase to date. Primary session shipped 9.0 / 9.1 / 9.2 / 9.3 / 9.4 / 9.6 / 9.7 / 9.8 / 9.9 (this); parallel session shipped Unit 9.5 (`1bb2ede`) verbatim. Demonstrates that the constitution + auto-memory + ADR ledger converge two independent sessions on the same canonical solution for well-scoped units.
+- **Phase 10 entry conditions**: per §12 cardinal rule, **explicit human sign-off required**. **§13 ledger CLOSED**; no remaining §13 Phase-6+ deliverable to pull. Phase 10+ thread options ALL inferred-not-§13:
+  - **Subscriber-list (third-party email provider)** — Phase-5 D-4 punt completion; ~6 units; decoupled from auth.
+  - **Rating-challenge submission write-path** — second write-path; Phase-9 Unit 9.0 D-5 explicit deferral; ~6 units.
+  - **Profile page + Phase-9 UI polish** — `/[locale]/profile`; ~4-5 units.
+  - **HTML shell migration + Unit 8.4 unblock** — STILL ON HOLD; explicit curator authorization required.
+  - **Multi-provider OAuth expansion** (Google / GitLab / email-link) — ADR-0012 D-B forbidden in Phase 9; follow-on ADR required.
+  - **Monetization thread** — premature without observed user traffic; Phase 11+ candidate.
+  - **Q51 curator-track bulk FR content backfill** — orthogonal long-running thread.
+- **DB-migration trigger re-eval at Phase 10 kickoff**: procedural-only formality now that the DB exists. Trigger (a) FIRED in Unit 9.6; trigger (b) still cold (~1.6% of 5 MB; content count unchanged).
+- Smoke gates: `pnpm validate-content` → 203 unchanged; `pnpm typecheck` clean; `pnpm test` → 394/394 across 45 files unchanged; `pnpm build` → ~590 prerendered pages + 2 dynamic API routes unchanged; First Load JS = 103 kB unchanged; middleware = 159 kB unchanged; `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- THINK artifact: `docs/thinking/9.9-phase-9-acceptance-gate.md`.
+
 #### Unit 9.8 — OPEN_QUESTIONS hygiene + ADR review (Phase 9 pre-close)
 
 - Eighth Phase-9 unit; docs-only. Mirrors Unit 5.12 / 6.9 / 7.10 / 8.8 OQ-hygiene precedents. Scans the open-questions ledger for Phase-9 promotions + reviews the 13 ADRs at HEAD for stale status / supersede markers + reconciles two prose-shift candidates (ADR-0012 D-A pin convention; ADR-0013 D-E migration filename numbering). Lands ahead of Unit 9.9 (Phase 9 acceptance gate); the gate cites the updated state.
