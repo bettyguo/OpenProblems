@@ -8,6 +8,7 @@ import { tryGetDiscussionByPath } from "@/lib/discussions/github-graphql";
 import { Link } from "@/lib/i18n/navigation";
 import { isLocale, locales } from "@/lib/i18n/routing";
 import { dimensionsToRadar } from "@/lib/ratings/normalize";
+import { SITE } from "@/lib/site-url";
 
 interface ProblemPageProps {
   params: Promise<{ locale: string; slug: string }>;
@@ -16,8 +17,6 @@ interface ProblemPageProps {
 export function generateStaticParams() {
   return locales.flatMap((locale) => allProblemSlugs().map((slug) => ({ locale, slug })));
 }
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://llm-openproblems.org";
 
 export default async function ProblemPage({ params }: ProblemPageProps) {
   const { locale, slug } = await params;
@@ -296,7 +295,7 @@ export default async function ProblemPage({ params }: ProblemPageProps) {
   title  = {${problem.title}},
   author = {LLM OpenProblems contributors},
   year   = {${problem.editorial.last_curated.slice(0, 4)}},
-  url    = {${SITE_URL}/${locale}/problems/${slug}},
+  url    = {${SITE}/${locale}/problems/${slug}},
   note   = {Last curated ${problem.editorial.last_curated}; methodology v${
     latestRating?.methodology_version ?? "1.0.0"
   }},

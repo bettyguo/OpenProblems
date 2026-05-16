@@ -75,13 +75,69 @@ describe("buildSitemap", () => {
     });
   });
 
-  it("does NOT attach locale alternates to routes without a [locale]/ shadow", () => {
-    // Only /about has the alternates block today. Routes like /problems or
-    // /digest must not carry alternates pointing to URLs that 404.
+  it("attaches locale alternates to the home / route (Unit 8.5)", () => {
+    const homeEntry = sitemap.find((e) => e.url === `${SITE}/`);
+    expect(homeEntry).toBeDefined();
+    expect(homeEntry?.alternates).toEqual({
+      languages: {
+        en: `${SITE}/en`,
+        fr: `${SITE}/fr`,
+      },
+    });
+  });
+
+  it("attaches locale alternates to /problems and /digest (Unit 8.5 — every route has a [locale] shadow)", () => {
     const problemsEntry = sitemap.find((e) => e.url === `${SITE}/problems`);
-    expect(problemsEntry?.alternates).toBeUndefined();
+    expect(problemsEntry?.alternates).toEqual({
+      languages: {
+        en: `${SITE}/en/problems`,
+        fr: `${SITE}/fr/problems`,
+      },
+    });
     const digestEntry = sitemap.find((e) => e.url === `${SITE}/digest`);
-    expect(digestEntry?.alternates).toBeUndefined();
+    expect(digestEntry?.alternates).toEqual({
+      languages: {
+        en: `${SITE}/en/digest`,
+        fr: `${SITE}/fr/digest`,
+      },
+    });
+  });
+
+  it("attaches locale alternates to dynamic-segment routes (Unit 8.5)", () => {
+    // Pick any problem detail page; locale alternates should match the slug.
+    const problemDetailEntry = sitemap.find(
+      (e) =>
+        e.url.startsWith(`${SITE}/problems/`) &&
+        !e.url.match(/\/(history|leaderboard|ratings|talk)$/),
+    );
+    expect(problemDetailEntry).toBeDefined();
+    const slug = problemDetailEntry?.url.replace(`${SITE}/problems/`, "") ?? "";
+    expect(problemDetailEntry?.alternates).toEqual({
+      languages: {
+        en: `${SITE}/en/problems/${slug}`,
+        fr: `${SITE}/fr/problems/${slug}`,
+      },
+    });
+  });
+
+  it("attaches locale alternates to /contributing versioned entries (Unit 8.5)", () => {
+    const v1Entry = sitemap.find((e) => e.url === `${SITE}/contributing/v1`);
+    expect(v1Entry?.alternates).toEqual({
+      languages: {
+        en: `${SITE}/en/contributing/v1`,
+        fr: `${SITE}/fr/contributing/v1`,
+      },
+    });
+  });
+
+  it("every sitemap entry carries locale alternates (Unit 8.5 invariant)", () => {
+    // Post-Unit 8.1 every route has a [locale]/ shadow, so the Unit 7.8
+    // invariant "no alternates without shadow" flips: every URL carries
+    // alternates pointing at /en/<path> and /fr/<path>.
+    for (const entry of sitemap) {
+      expect(entry.alternates?.languages?.en).toBeDefined();
+      expect(entry.alternates?.languages?.fr).toBeDefined();
+    }
   });
 
   it("includes every problem detail page (10 problems at HEAD)", () => {

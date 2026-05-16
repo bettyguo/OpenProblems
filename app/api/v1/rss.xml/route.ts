@@ -1,5 +1,6 @@
 import { problems } from "#site/content";
 import { allRatingActions, diffRatingAction } from "@/lib/content/load-ratings";
+import { SITE } from "@/lib/site-url";
 
 /**
  * GET /api/v1/rss.xml
@@ -21,10 +22,6 @@ import { allRatingActions, diffRatingAction } from "@/lib/content/load-ratings";
  * Must pass W3C feed validator — verified in Unit 3.13 acceptance gate.
  */
 export const dynamic = "force-static";
-
-// The site URL is the placeholder from MASTER_PROMPT.md §5.10 pending Q2.
-// RSS feeds require absolute URLs; this matches the Phase-0 stub convention.
-const SITE = "https://llm-openproblems.org";
 
 const CHANNEL_TITLE = "LLM OpenProblems — Rating actions";
 const CHANNEL_DESCRIPTION =

@@ -8,14 +8,10 @@ import {
   problems,
   taxonomy,
 } from "#site/content";
+import { SITE } from "@/lib/site-url";
 
-/**
- * Canonical site URL (Q2 placeholder). Hardcoded across three call sites —
- * `lib/digest/rss.ts`, `app/api/v1/rss.xml/route.ts`, and here. When DNS
- * lands (Q2), all three update together. If the call-site count grows to
- * 5+, extract into a shared `lib/site-url.ts` (deferred follow-on).
- */
-export const SITE = "https://llm-openproblems.org";
+/** Re-export for backward-compat with downstream importers (Unit 8.5). */
+export { SITE };
 
 const STATIC_ROUTES = [
   "/",
@@ -33,86 +29,82 @@ const STATIC_ROUTES = [
 const PROBLEM_SUBROUTES = ["", "/history", "/leaderboard", "/ratings", "/talk"] as const;
 
 /**
+ * Builds a sitemap entry with locale alternates for every project route.
+ *
+ * Post-Unit 8.1 every page route has a `/[locale]/` shadow, so the
+ * sitemap-test invariant "no alternates without a shadow" is vacuously
+ * satisfied — every URL carries `alternates.languages` pointing at its
+ * `/en/<path>` + `/fr/<path>` variants per ADR-0011 D-E (English-canonical
+ * slugs; locale-prefixed URLs are alternates of the bare canonical).
+ *
+ * For the home route the canonical is `${SITE}` and the alternates are
+ * `${SITE}/en` and `${SITE}/fr` (Next.js `app/[locale]/page.tsx`).
+ */
+function entryWithAlternates(route: string): MetadataRoute.Sitemap[number] {
+  const suffix = route === "/" ? "" : route;
+  return {
+    url: `${SITE}${route}`,
+    alternates: {
+      languages: {
+        en: `${SITE}/en${suffix}`,
+        fr: `${SITE}/fr${suffix}`,
+      },
+    },
+  };
+}
+
+/**
  * Builds the project sitemap by enumerating static + dynamic routes from
- * the Velite content collections. Returns the entries sorted by URL for
- * determinism across builds.
+ * the Velite content collections. Returns entries sorted by URL for
+ * deterministic builds.
  *
- * Locale alternates per ADR-0011 D-E (English-canonical slugs): currently
- * only `/about` has `[locale]/` shadows (`/en/about` + `/fr/about` from
- * Unit 7.3). When Unit 7.3a expands `[locale]/<route>` coverage, the
- * `ALTERNATES` table below extends accordingly.
- *
- * Q48 sitemap-half closure: every `/problems/[slug]/talk` URL is enrolled
- * (10 talk pages for the 10 problems at HEAD).
+ * Q48 sitemap-half closure (Unit 7.8): every `/problems/[slug]/talk` URL
+ * is enrolled. Unit 8.5 extends locale alternates to every route — bulk
+ * migration in Unit 8.1 guarantees every route has a `[locale]/` shadow.
  */
 export function buildSitemap(): MetadataRoute.Sitemap {
   const entries: MetadataRoute.Sitemap = [];
 
   for (const route of STATIC_ROUTES) {
-    const entry: MetadataRoute.Sitemap[number] = { url: `${SITE}${route}` };
-    if (route === "/about") {
-      entry.alternates = {
-        languages: {
-          en: `${SITE}/en/about`,
-          fr: `${SITE}/fr/about`,
-        },
-      };
-    } else if (route === "/methodology") {
-      entry.alternates = {
-        languages: {
-          en: `${SITE}/en/methodology`,
-          fr: `${SITE}/fr/methodology`,
-        },
-      };
-    }
-    entries.push(entry);
+    entries.push(entryWithAlternates(route));
   }
 
   // Problem detail + every sub-route per problem.
   for (const problem of problems) {
     for (const sub of PROBLEM_SUBROUTES) {
-      entries.push({ url: `${SITE}/problems/${problem.slug}${sub}` });
+      entries.push(entryWithAlternates(`/problems/${problem.slug}${sub}`));
     }
   }
 
   // Papers / Authors / Institutions.
   for (const paper of papers) {
-    entries.push({ url: `${SITE}/papers/${paper.id}` });
+    entries.push(entryWithAlternates(`/papers/${paper.id}`));
   }
   for (const author of authors) {
-    entries.push({ url: `${SITE}/authors/${author.slug}` });
+    entries.push(entryWithAlternates(`/authors/${author.slug}`));
   }
   for (const institution of institutions) {
-    entries.push({ url: `${SITE}/institutions/${institution.slug}` });
+    entries.push(entryWithAlternates(`/institutions/${institution.slug}`));
   }
 
   // Domain + subdomain pages from the taxonomy.
   for (const domain of taxonomy.domains) {
-    entries.push({ url: `${SITE}/domains/${domain.id}` });
+    entries.push(entryWithAlternates(`/domains/${domain.id}`));
     for (const subdomain of domain.subdomains) {
-      entries.push({ url: `${SITE}/domains/${domain.id}/${subdomain.id}` });
+      entries.push(entryWithAlternates(`/domains/${domain.id}/${subdomain.id}`));
     }
   }
 
-  // Methodology + Contributing versioned pages. Bare paths serve EN; locale-
-  // aware variants live under /[locale]/... (Unit 7.5+; sitemap enrolment is
-  // Unit 7.8's scope per Q48 sitemap-half). Filter prevents duplicate URLs
-  // when FR siblings (e.g. methodology/v1.fr.mdx) join the Velite collection.
+  // Methodology + Contributing versioned pages. Filter prevents duplicate
+  // URLs when FR siblings (e.g. methodology/v1.fr.mdx) join the Velite
+  // collection — the alternates block already covers the FR variant.
   for (const m of methodology) {
     if (m.lang !== "en") continue;
-    entries.push({
-      url: `${SITE}/methodology/${m.slug}`,
-      alternates: {
-        languages: {
-          en: `${SITE}/en/methodology/${m.slug}`,
-          fr: `${SITE}/fr/methodology/${m.slug}`,
-        },
-      },
-    });
+    entries.push(entryWithAlternates(`/methodology/${m.slug}`));
   }
   for (const c of contributing) {
     if (c.lang !== "en") continue;
-    entries.push({ url: `${SITE}/contributing/${c.slug}` });
+    entries.push(entryWithAlternates(`/contributing/${c.slug}`));
   }
 
   return entries.sort((a, b) => a.url.localeCompare(b.url));

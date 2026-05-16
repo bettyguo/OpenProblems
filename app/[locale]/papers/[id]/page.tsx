@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { allPaperIds, loadPaper } from "@/lib/content/load-paper";
 import { Link } from "@/lib/i18n/navigation";
 import { isLocale, locales } from "@/lib/i18n/routing";
+import { SITE } from "@/lib/site-url";
 
 interface PaperPageProps {
   params: Promise<{ locale: string; id: string }>;
@@ -11,8 +12,6 @@ interface PaperPageProps {
 export function generateStaticParams() {
   return locales.flatMap((locale) => allPaperIds().map((id) => ({ locale, id })));
 }
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://llm-openproblems.org";
 
 export default async function PaperPage({ params }: PaperPageProps) {
   const { locale, id } = await params;
@@ -246,7 +245,7 @@ export default async function PaperPage({ params }: PaperPageProps) {
   title  = {${paper.title}},
   author = {${citationAuthors}},
   year   = {${paper.year}},${paper.venue ? `\n  note   = {${paper.venue}},` : ""}${paper.arxiv_id ? `\n  eprint = {${paper.arxiv_id}},\n  archivePrefix = {arXiv},` : ""}${paper.doi ? `\n  doi    = {${paper.doi}},` : ""}
-  url    = {${SITE_URL}/papers/${paper.id}},
+  url    = {${SITE}/${locale}/papers/${paper.id}},
 }`}
         </pre>
       </section>

@@ -1,4 +1,5 @@
 import type { DigestPayload } from "@/lib/digest/build-digest";
+import { SITE } from "@/lib/site-url";
 
 /**
  * RSS-rendering helpers for the per-domain digest endpoint (Unit 5.8).
@@ -12,8 +13,8 @@ import type { DigestPayload } from "@/lib/digest/build-digest";
  * Mirrors Unit 3.5's `/api/v1/rss.xml/route.ts` rendering shape.
  */
 
-// Site URL matches Unit 3.5's Phase-0 stub (awaiting Q2 DNS resolution).
-export const SITE = "https://llm-openproblems.org";
+/** Re-export for backward-compat with downstream importers (Unit 8.5). */
+export { SITE };
 
 export function xmlEscape(s: string): string {
   return s

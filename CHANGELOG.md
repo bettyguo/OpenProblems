@@ -2338,6 +2338,45 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
 - THINK artifact: `docs/thinking/8.3-locale-cookie-config.md`.
 
+#### Unit 8.4 — `useTranslations` for LocaleToggle aria-label — DEFERRED
+
+- **Status**: deferred indefinitely. Unit 8.0 prep scoped Unit 8.4 to replacing the hardcoded `"Passer au français"` / `"Switch to English"` aria-label pair in `components/locale-toggle/index.tsx` with `useTranslations`. The work depends on SiteHeader being rendered **under** the `NextIntlClientProvider`, which depends on the HTML shell migration (moving `<html>` / `<body>` / fonts / `ThemeProvider` / `SiteHeader` from `app/layout.tsx` into `app/[locale]/layout.tsx`).
+- The HTML shell migration was originally planned for Unit 8.1 but **dropped mid-flight** when a parallel session signaled (via system reminder) that the existing `app/layout.tsx`-owns-`<html>` structure was intentional. Unit 8.1's CHANGELOG flagged the deferral; the shell migration would have re-attempted in Unit 8.4.
+- Without the shell migration, Unit 8.4 has no tractable scope: SiteHeader cannot reach `NextIntlClientProvider` context, and `useTranslations` would throw at render time.
+- **Pending explicit authorization** to move the HTML shell, Unit 8.4 stays deferred. Unit numbering jumps 8.3 → 8.5 directly. The acceptance gate (Unit 8.9) will record this in the §13 ledger as a survives-Phase-8 follow-on alongside Unit 7.7's `html-has-lang` axe-rule risk (whose closure was the original motivation for the shell migration).
+- No code, content, or doc change in this unit beyond this CHANGELOG entry.
+
+#### Unit 8.5 — `lib/site-url.ts` extraction + universal sitemap locale alternates
+
+- Fifth code unit of Phase 8. Realizes Unit 8.0 prep D-5. Consolidates the `SITE` constant into a shared module (5 call sites today — crosses the Unit 7.8 5+ extraction threshold) and extends locale alternates to every sitemap entry now that Unit 8.1's bulk migration guarantees every route has a `/[locale]/` shadow.
+- **New file** — `lib/site-url.ts`:
+  - `export const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://llm-openproblems.org";`
+  - Unifies two divergent patterns (env-fallback in pages vs hardcoded in libs). Preview deploys (Vercel, Netlify) substitute their actual hostname in RSS / sitemap / citation blocks; local dev + CI + tests fall through to the production placeholder.
+  - Comment block records Q2 (DNS) as the trigger for updating the fallback literal — all consumers pick it up.
+- **Edits** — `lib/sitemap/build-sitemap.ts`:
+  - Imports `SITE` from `lib/site-url`; re-exports for backward-compat with `app/robots.ts`, `lib/sitemap/build-sitemap.test.ts`, `app/robots.test.ts`.
+  - New helper `entryWithAlternates(route)` builds a sitemap entry with `alternates.languages = { en: ${SITE}/en${route}, fr: ${SITE}/fr${route} }`.
+  - Helper applied uniformly across all enumerations: STATIC_ROUTES, problem detail + 4 sub-routes per problem, papers, authors, institutions, domains + subdomains, versioned methodology + contributing.
+  - The Unit 8.0 prep's "LOCALE_ALTERNATE_ROUTES table" framing collapses into the helper function — after Unit 8.1 every route has a shadow, so the "routes with alternates" set is congruent with "all routes." Explicit Set adds maintenance overhead without expressive benefit; the helper IS the table.
+- **Edits** — other call sites:
+  - `lib/digest/rss.ts`: imports `SITE` from `lib/site-url`; re-exports for backward-compat with `app/api/v1/digest/[domain]/route.test.ts`.
+  - `app/api/v1/rss.xml/route.ts`: replaces local `const SITE` with import (route files can't re-export per Phase-5 lesson, so this one doesn't need backward-compat).
+  - `app/[locale]/problems/[slug]/page.tsx`, `app/[locale]/papers/[id]/page.tsx`: replace local `SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "..."` with import of `SITE`. Citation URLs now include the locale segment (e.g., `${SITE}/${locale}/papers/${paper.id}`) — matches Unit 8.1's canonical URL shape under `localePrefix: "always"`. Curators citing papers from `/fr/` get a French-prefixed URL.
+- **Test updates** — `lib/sitemap/build-sitemap.test.ts`:
+  - Replaces the now-flipped "no alternates without shadow" test (line 78 of the prior version) with a universal invariant: every sitemap entry carries `alternates.languages.{en,fr}`.
+  - Adds 4 new assertions: home `/` alternates (with the asymmetric URL formatting — canonical `${SITE}/`, alternates `${SITE}/en` + `${SITE}/fr`); `/problems` + `/digest` now carry alternates (was previously asserted to NOT carry them); dynamic-segment routes carry alternates (sample-checked on the first problem detail page); `/contributing/v1` carries alternates.
+- **NOT in this unit** (deferred):
+  - Sitemap `lastModified` / `changeFrequency` / `priority` per entry — Unit 7.8 follow-on; observation-driven; no Lighthouse SEO signal yet.
+  - Trailing-slash normalization for `NEXT_PUBLIC_SITE_URL` env var (would double-slash if a user sets `NEXT_PUBLIC_SITE_URL=https://example.com/`) — kept simple; documented in `lib/site-url.ts` comment.
+  - Translating the citation BibTeX block keys (`title = {...}`, `author = {...}`) into FR — BibTeX is a stable technical format; deferred to Q51 curator-track if ever pursued.
+- **Smoke gates**:
+  - `pnpm validate-content` → 203 files unchanged.
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **388/388 across 44 files** (was 384/44; +4 net from sitemap test rewrite — 1 deleted "no alternates" + 5 added; 5 - 1 = 4 net delta).
+  - `pnpm build` → ~590 prerendered pages unchanged. Compile 3.8s. First Load JS shared chunk = **103 kB UNCHANGED**.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- THINK artifact: `docs/thinking/8.5-site-url-and-locale-alternates.md`.
+
 
 
 
