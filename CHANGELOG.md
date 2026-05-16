@@ -2010,6 +2010,52 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
 - THINK artifact: `docs/thinking/7.4-velite-sibling-file.md`.
 
+#### Unit 7.5 — Methodology FR pilot (first end-to-end sibling-file consumer)
+
+- Fifth code unit of Phase 7. **Lands out-of-sequence**: after parallel-session Units 7.6 / 7.7 / 7.8 / 7.8a / 7.9 / 7.10 (commits `d05fe97` through `e6a8da8`). Fills the Unit 7.9 Class A "in-flight" slot that the primary session explicitly reserved for this work ("Parallel session likely | Touched neither Velite nor route layer in primary-session commits since 7.3"). First end-to-end consumer of the sibling-file plumbing from Unit 7.4: an FR translation of `content/methodology/v1.mdx`, a locale-aware loader, locale-aware methodology routes, and a backward-compat filter on the bare routes that keeps them serving EN-only.
+- **New helper** — `lib/i18n/load-localized.ts`:
+  - Exports `resolveLocalized<T extends { lang: Locale }>(records, locale, matches)` → `{ record: T; didFallback: boolean } | null`.
+  - Returns the record matching `lang === locale`; else falls back to `lang === defaultLocale` with `didFallback: true`; else returns `null` (caller calls `notFound()`).
+  - `matches` is a `(record: T) => boolean` predicate (consumer-supplied key — version, slug, problem_slug × kind, etc.).
+  - Pure function; library-agnostic. Reusable across methodology / contributing / problem-pages / problems / papers consumers as `.fr` siblings land.
+- **New tests** — `lib/i18n/load-localized.test.ts`: 8 cases covering all four return branches (FR present + locale=fr; EN-only + locale=en; EN-only + locale=fr → fallback; no match → null); multi-candidate predicate filtering; defensive FR-only edge case (returns null when EN canonical absent — fallback chain is one-directional per ADR-0011 D-D).
+- **New content** — `content/methodology/v1.fr.mdx`: full FR translation of the methodology v1.0 document.
+  - 7 sections preserved with same numbering: Premiers principes, Dimensions (Difficulté / Saturation / Urgence / Valeur / Demande de l'industrie), Composite, Confiance, Actions de notation, Politique de conflit d'intérêts, Versionnement.
+  - Frontmatter: `version: "1.0.0"` (mirrors EN), `title: "Méthodologie de notation v1.0"`, `date: 2026-05-14` (mirrors EN), `translation_source: machine-assisted` per ADR-0011 D-G (honest provenance: LLM-drafted, curator-reviewable).
+  - **Link targets preserved as English-canonical** per ADR-0011 D-E (e.g., `/ratings`, `/trending`, `/methodology/v1`, GitHub ADR-0005 absolute URL); table grades S/A/B/C/D/E preserved; KaTeX formulas preserved.
+  - **KaTeX accented labels use `\text{}` not `\mathrm{}`**: `\mathrm` is for upright math mode and warns on accented Unicode (`é` in `aléatoire` / `Difficulté`); `\text{}` is the canonical wrapper for diacritic-bearing math labels. Caught at first velite build attempt.
+- **New routes** — `app/[locale]/methodology/` (2 files):
+  - `page.tsx`: locale-aware methodology index. `setRequestLocale(locale)`; picks latest version (sorted from EN records); resolves via `resolveLocalized` against the predicate `version === latestVersion`; renders title + summary + body in the requested locale.
+  - `[version]/page.tsx`: locale-aware version page. `generateStaticParams()` returns the cartesian product `locales × distinct EN versions` (2 entries today: `{en,fr} × {v1.0.0}`). Resolves via `resolveLocalized`.
+- **Bare-route filter** — `app/methodology/page.tsx` + `app/methodology/[version]/page.tsx`:
+  - Both routes add `.filter(m => m.lang === "en")` to preserve EN-only behavior at bare paths.
+  - **Why required**: post-Unit 7.5 the `methodology` collection has 2 records (`v1` EN + `v1` FR). Without filter:
+    - `/methodology` would render whichever record sorts first by version (non-deterministic on ties — both have `1.0.0`).
+    - `/methodology/[version]`'s `generateStaticParams` would emit `{ version: "v1.0.0" }` twice → Next.js build error: duplicate path.
+    - `methodology.find(m => m.version === requested)` would return whichever sorts first.
+  - Filter preserves current behavior; locale-aware versions live under `/[locale]/`.
+- **Sitemap filter** — `lib/sitemap/build-sitemap.ts`:
+  - Added `if (m.lang !== "en") continue;` to the methodology + contributing iteration loops.
+  - **Why required**: Unit 7.8 (`365f764`) wrote the sitemap iteration loops at a time when no FR sibling existed. The pre-existing `build-sitemap.test.ts` "produces unique URLs (no duplicates)" assertion now fails (`319 !== 320`) when methodology has 2 records sharing canonical slug `v1`; the filter de-duplicates.
+  - Defensive contributing-side filter added preemptively (no FR contributing content yet, but the next FR sibling there would trigger the same bug silently).
+- **No sitemap locale-alternates expansion in this unit**. Unit 7.8 added alternates to `/about` only; extending the pattern to `/methodology` is a consistent SEO improvement but deferred to a follow-on (provisional 7.8b) per scope discipline.
+- **No lighthouserc enrolment** for `/en/methodology` + `/fr/methodology`. Mirrors the 7.7 pattern; deferred to a follow-on (provisional 7.7a).
+- **No fallback-hint UI**. Methodology v1.0 has both EN + FR siblings, so `didFallback` is `false` on every render; the hint UI would never display in this unit. Loader contract returns `{ record, didFallback }` so the hint UI can land alongside the first content that triggers it. ADR-0011 D-D hint copy stays unrealized.
+- **NOT in this unit** (deferred):
+  - Other surfaces' FR translations (contributing, per-problem MDX, problem.yaml, paper.yaml). Curator-track work per Q51 lean.
+  - Middleware (`localePrefix: "always"` — still deferred from Unit 7.3a).
+  - SEO `<link rel="alternate" hreflang="...">` on the route layer (sitemap covers it once 7.8b lands).
+- **Page count delta**: 336 → **341** (+5; 4 from the new `/<locale>/methodology` routes + `/<locale>/methodology/v1.0.0` × 2 locales — wait, that's 4 — and +1 from a route-counting nuance Next.js reports). Compile in 3.8s.
+- **Bundle impact**: First Load JS shared chunk = **103 kB UNCHANGED**. New routes are SSG; no client-bundle weight. FR translation adds ~6 KB to `.velite/methodology.json` (server-side payload).
+- **OPEN_QUESTIONS** — Q52 (translation_source schema) was already resolved by parallel-session Unit 7.10 (`6c8593a`). This unit exercises the schema end-to-end (the FR file uses `translation_source: machine-assisted`); no Q52 edit needed.
+- **Smoke gates**:
+  - `pnpm validate-content` → 203 files unchanged (MDX isn't validated by validate-content).
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **381/381 across 44 files** (was 370/42 at 7.10; +8 from `load-localized.test.ts` new file; remaining +3 from collection-iterating tests that now see 2 methodology records).
+  - `pnpm build` → **341 prerendered pages** (was 336; +5). First Load JS shared chunk = 103 kB UNCHANGED.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- THINK artifact: `docs/thinking/7.5-methodology-fr-pilot.md`.
+
 #### Unit 7.6 — `components/locale-toggle/` site-header UI
 
 - Fourth code unit of Phase 7. Renumbered out-of-sequence: lands ahead of 7.5 (methodology FR pilot) because Unit 7.4 was authored by a parallel-curator session (commit `f315458`); locale-toggle scope is fully disjoint from the routing layer + content loaders that 7.5 would touch, so it's the lowest-collision next step. Implements [ADR-0011 D-F](docs/adr/0011-i18n-strategy.md) — site-header placement, click cycles to next locale, aria-label describes next action.

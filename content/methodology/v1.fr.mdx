@@ -1,0 +1,122 @@
+---
+version: "1.0.0"
+title: Méthodologie de notation v1.0
+summary: Comment LLM OpenProblems note les problèmes ouverts en recherche en IA — premiers principes, les cinq dimensions, la formule composite, la confiance, le journal des actions de notation, et la politique de conflit d'intérêts.
+date: 2026-05-14
+translation_source: machine-assisted
+---
+
+LLM OpenProblems occupe pour les **problèmes ouverts de la recherche en IA** la même place conceptuelle que Moody's, S&P et Fitch occupent pour la dette souveraine : un tiers qui publie des notations transparentes, méthodologiquement fondées, horodatées et révisables, que la communauté peut utiliser comme signal de coordination. Cette page expose la méthodologie.
+
+## 1. Premiers principes
+
+Cinq engagements façonnent chaque action de notation :
+
+1. **Transparente.** Chaque action de notation cite le curateur et les signaux considérés.
+2. **Révisable.** Les notations peuvent évoluer à la hausse comme à la baisse. L'historique est un objet de premier ordre — voir [le flux global des actions de notation](/ratings).
+3. **Versionnée.** Une notation produite sous la v1.0 n'est jamais réévaluée silencieusement par la v1.1. Les notations portent la version de la méthodologie sous laquelle elles ont été émises.
+4. **Multidimensionnelle.** Les problèmes ouverts ne se prêtent pas à un ordre total. Une simple valeur scalaire serait trompeuse.
+5. **Discrétisée.** Les notes en lettres et les paliers en étoiles préviennent toute fausse précision.
+
+## 2. Dimensions
+
+Chaque problème ouvert porte cinq dimensions de notation, évaluées indépendamment, chacune avec une justification, chacune avec son historique.
+
+### 2.1 Difficulté — S, A, B, C, D, E
+
+*Conditionnellement aux méthodes actuelles, à quel point un progrès substantiel est-il difficile ?*
+
+| Note | Signification |
+|------|---------------|
+| **S** | Problèmes ouverts emblématiques résistant depuis plusieurs décennies (p. ex. la génération longue forme fiablement véridique, les garanties formelles de sûreté de l'AGI). |
+| **A** | Problèmes ouverts majeurs présentant une structure non résolue significative ; l'état de l'art progresse de manière sous-log-linéaire en compute. |
+| **B** | Problèmes activement attaqués où l'état de l'art progresse avec le compute ou les données, sans clôture en vue. |
+| **C** | Bornés par l'ingénierie ; le progrès dépend essentiellement du compute et des données. |
+| **D** | Proches de la clôture ; il ne reste que des cas limites. |
+| **E** | Effectivement résolus sur la famille de benchmarks dominante ; le benchmark lui-même peut être obsolète. |
+
+### 2.2 Saturation — 0 à 100
+
+*À quel point l'état de l'art actuel s'approche-t-il du plafond atteignable ?*
+
+Lorsqu'un plafond existe (score d'expert humain, borne théorique, baseline aléatoire), la saturation se calcule par
+
+$$
+\mathrm{Saturation} = 100 \cdot \frac{\mathrm{SOTA} - \text{aléatoire}}{\text{plafond} - \text{aléatoire}}
+$$
+
+Le plafond doit être cité. En l'absence de plafond, la saturation est rapportée comme **N/A** accompagnée d'un palier qualitatif (Faible / Moyen / Élevé).
+
+Un signal de dérivée seconde accompagne la saturation : $\Delta(\mathrm{SOTA}, 12\text{mois}) / \Delta(\mathrm{SOTA}, 36\text{mois}) \in [0, 1]$. Des valeurs faibles indiquent que le problème sature — autrement dit, le progrès récent est plus lent que la moyenne sur les 3 années précédentes.
+
+### 2.3 Urgence — 0 à 5 étoiles
+
+*À quel point le progrès est-il sensible au temps ?*
+
+Signaux : rapports de sûreté de l'IA citant le problème ; applications avales bloquées ; échéances réglementaires ou légales ; crises de reproductibilité.
+
+### 2.4 Valeur — 0 à 5 étoiles
+
+*Impact scientifique ou économique attendu en cas d'avancée substantielle.*
+
+Signaux : retombées interdomaines ; nombre de problèmes avals débloqués ; taille de la communauté économique ou scientifique concernée.
+
+### 2.5 Demande de l'industrie — 0 à 5 étoiles
+
+*Avec quelle insistance l'industrie réclame-t-elle des avancées ?*
+
+Signaux : fréquence des offres d'emploi citant le mot-clef ; financement en capital-risque dans le domaine applicatif adjacent ; présence dans les feuilles de route publiques des grands laboratoires industriels.
+
+## 3. Le composite — à titre indicatif uniquement
+
+Un composite indicatif unique existe pour le tri sur la page d'accueil et l'index des problèmes :
+
+$$
+\mathrm{Composite} = w_d \cdot \text{Difficulté} + w_v \cdot \text{Valeur} + w_u \cdot \text{Urgence} + w_i \cdot \text{Industrie} + w_s \cdot \frac{100 - \mathrm{Saturation}}{20}
+$$
+
+Les poids par défaut sont
+
+$$
+(w_d, w_v, w_u, w_i, w_s) = (0{,}25,\, 0{,}25,\, 0{,}20,\, 0{,}15,\, 0{,}15)
+$$
+
+Le composite n'est **jamais affiché seul**. Tout tri sur le composite doit toujours présenter les cinq dimensions sous-jacentes à côté. Les poids sont des valeurs éditoriales par défaut ; l'index des problèmes expose un contrôle « Recomposer » pour que chaque lecteur puisse les repondérer selon ses propres priorités.
+
+## 4. Confiance
+
+Chaque dimension porte une `confidence ∈ [0, 1]`. L'interface rend la confiance sous forme d'opacité ou de petite barre à côté de la valeur. Une notation dont la confiance descend en dessous de `0,5` sur une dimension est marquée **WATCH** — par analogie avec une liste de surveillance de crédit — et remontée sur le [tableau de bord des tendances](/trending) jusqu'à ce qu'un curateur la promeuve.
+
+## 5. Actions de notation
+
+Tout changement sur une dimension d'un problème émet une action de notation — un enregistrement immuable, horodaté et signé. Chaque action liste les valeurs *antérieures* et *nouvelles* par dimension affectée, accompagnées d'une justification. Les actions alimentent trois surfaces :
+
+- Le flux global [`/ratings`](/ratings) (HTML + JSON + RSS).
+- La sous-page propre au problème `/problems/<slug>/ratings`.
+- Les listes « movers » du tableau de bord [`/trending`](/trending).
+
+Les noms de fichiers encodent la date et la dimension affectée, p. ex. :
+
+```text
+content/problems/hallucination-reduction/ratings/
+  2026-05-14-initial.yaml
+  2026-08-01-upgrade-saturation.yaml
+```
+
+L'invariant de journal d'audit est appliqué à trois niveaux : convention de système de fichiers, hook pre-commit Husky, et gate CI GitHub Actions. Modifier le fichier d'une action passée est mécaniquement impossible dans le flux de travail normal — voir [ADR-0005](https://github.com/openproblems/llm-openproblems/blob/main/docs/adr/0005-rating-action-immutability.md) pour le raisonnement.
+
+## 6. Politique de conflit d'intérêts
+
+Un curateur ne doit pas être l'auteur d'une action de notation sur un problème pour lequel lui-même (ou un collaborateur direct au cours des 24 derniers mois) détient une entrée actuelle dans le top-5 du leaderboard. Les affiliations de chaque contributeur sont publiques — voir [`content/authors/`](https://github.com/openproblems/llm-openproblems/tree/main/content/authors).
+
+Lorsque le statut d'un curateur change en cours de cycle (nouvelle collaboration, nouvel article accepté dans une conférence majeure), il se récuse des problèmes affectés et un co-curateur prend le relais. La récusation est elle-même une entrée du journal des actions de notation, de type `recusal`, accompagnée d'une brève justification.
+
+## 7. Versionnement de la méthodologie
+
+Ce document est en `v1.0.0`. Les révisions futures suivent SemVer :
+
+- **Patch** (`1.0.0 → 1.0.1`) — clarifications rédactionnelles. Aucun impact sur les notations.
+- **Mineure** (`1.0.0 → 1.1.0`) — additive : nouvelle dimension, nouvelle catégorie de signal. Les notations existantes sont préservées avec leur version originale.
+- **Majeure** (`1.0.0 → 2.0.0`) — dimension supprimée, sémantique modifiée, échelle rééquilibrée. Un ADR de migration documente la conversion ou le refus de conversion pour chaque notation existante.
+
+Chaque version de la méthodologie est accessible à son URL versionnée : `/methodology/v1`, `/methodology/v1.1`, `/methodology/v2`, … Les anciennes URL ne se cassent jamais.

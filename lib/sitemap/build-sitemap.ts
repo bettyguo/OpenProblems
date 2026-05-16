@@ -87,11 +87,16 @@ export function buildSitemap(): MetadataRoute.Sitemap {
     }
   }
 
-  // Methodology + Contributing versioned pages.
+  // Methodology + Contributing versioned pages. Bare paths serve EN; locale-
+  // aware variants live under /[locale]/... (Unit 7.5+; sitemap enrolment is
+  // Unit 7.8's scope per Q48 sitemap-half). Filter prevents duplicate URLs
+  // when FR siblings (e.g. methodology/v1.fr.mdx) join the Velite collection.
   for (const m of methodology) {
+    if (m.lang !== "en") continue;
     entries.push({ url: `${SITE}/methodology/${m.slug}` });
   }
   for (const c of contributing) {
+    if (c.lang !== "en") continue;
     entries.push({ url: `${SITE}/contributing/${c.slug}` });
   }
 

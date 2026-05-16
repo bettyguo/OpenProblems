@@ -17,7 +17,11 @@ function compareVersions(a: string, b: string): number {
 }
 
 export default function MethodologyPage() {
-  const latest = [...methodology].sort((a, b) => compareVersions(b.version, a.version))[0];
+  // Bare route serves EN-only. Locale-aware FR variants live under
+  // /[locale]/methodology/ (Unit 7.5). Filter prevents the methodology
+  // collection's FR records from sorting first and rendering FR at /methodology.
+  const enMethodology = methodology.filter((m) => m.lang === "en");
+  const latest = [...enMethodology].sort((a, b) => compareVersions(b.version, a.version))[0];
   if (!latest) notFound();
 
   return (
@@ -33,7 +37,7 @@ export default function MethodologyPage() {
       <p className="text-muted-foreground mt-3 text-base">{latest.summary}</p>
       <nav aria-label="Methodology versions" className="border-border mt-6 border-t pt-4">
         <span className="text-muted-foreground text-xs">Other versions: </span>
-        {methodology
+        {enMethodology
           .slice()
           .sort((a, b) => compareVersions(b.version, a.version))
           .map((m, i) => (
@@ -43,7 +47,7 @@ export default function MethodologyPage() {
               className="text-foreground hover:text-accent ml-1 text-xs underline-offset-2 hover:underline"
             >
               v{m.version}
-              {i < methodology.length - 1 ? "," : ""}
+              {i < enMethodology.length - 1 ? "," : ""}
             </Link>
           ))}
       </nav>

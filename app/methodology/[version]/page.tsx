@@ -9,7 +9,8 @@ interface MethodologyVersionPageProps {
 export default async function MethodologyVersionPage({ params }: MethodologyVersionPageProps) {
   const { version } = await params;
   const requested = version.startsWith("v") ? version.slice(1) : version;
-  const doc = methodology.find((m) => m.version === requested);
+  // Bare route serves EN-only (locale-aware variants under /[locale]/methodology/).
+  const doc = methodology.find((m) => m.lang === "en" && m.version === requested);
   if (!doc) notFound();
 
   return (
@@ -33,5 +34,6 @@ export default async function MethodologyVersionPage({ params }: MethodologyVers
 }
 
 export function generateStaticParams() {
-  return methodology.map((m) => ({ version: `v${m.version}` }));
+  // EN-only; FR versions render under /[locale]/methodology/[version].
+  return methodology.filter((m) => m.lang === "en").map((m) => ({ version: `v${m.version}` }));
 }
