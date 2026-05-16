@@ -343,11 +343,11 @@ ADR-0011 also pins the surrounding decisions: D-C content-storage shape = siblin
 
 ## Q51. Bilingual content backfill cadence
 
-**Status:** decided-as-lean · **Surfaced:** Unit 7.0.
+**Status:** decided-as-lean · **Surfaced:** Unit 7.0 · **Refined:** Unit 8.8.
 
 Translating 30 papers + 10 problems + 5 domains + ~12 subdomains + 4 issue templates is curator-editorial work. The infrastructure (i18n runtime + content storage + locale routing) lands in Phase 7; the actual translation backfill happens incrementally.
 
-**Lean**: **defer full content backfill to a curator-track that runs in parallel with future phases**. Phase 7 acceptance ships INFRASTRUCTURE complete (FR pilot on `/methodology` validates the pipeline end-to-end); CONTENT completion is a long-tail editorial workstream that doesn't block subsequent phases. New translations land via individual PRs over time.
+**Lean** (refined Unit 8.8 post-Phase-8 close): **defer full content backfill to a curator-track that runs in parallel with future phases**. Phase 7 acceptance ships INFRASTRUCTURE complete (FR pilot on `/methodology` validates the pipeline end-to-end); Phase 8 acceptance ships ROUTE coverage (Unit 8.1 bulk migration; every page route has a `[locale]/` shadow under `localePrefix: "always"`) + TWO content surfaces translated as pilots (home hero in Unit 8.2 via `messages.home.*`; `/contributing/v1.1` in Unit 8.6 via sibling-file MDX). Remaining ~200 EN files (problems / papers / per-problem MDX / issue-template forms) are the curator-track horizon. Promotion to `resolved` deferred until either bulk content backfill lands (cadence proven by ~50%+ surface coverage) or §13 ledger explicitly retires the bilingual thread without further content work.
 
 ## Q52. Translation provenance schema
 

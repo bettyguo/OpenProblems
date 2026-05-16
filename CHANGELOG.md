@@ -2420,6 +2420,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **Smoke gates**: docs-only; unchanged from Unit 8.6 snapshot (388/388 tests; ~590 routes; 103 kB First Load JS; 19 LHCI URLs; 0 errors / 6 warnings audit).
 - THINK artifact: `docs/thinking/8.7-phase-8-hygiene.md`.
 
+#### Unit 8.8 — OPEN_QUESTIONS hygiene + ADR review (Phase 8 pre-close)
+
+- Eighth Phase-8 unit. Docs-only. Mirrors Unit 5.12 / 6.9 / 7.10 OQ-hygiene precedents.
+- **OPEN_QUESTIONS scan**: **zero new open questions surfaced** in Phase 8 — ADR-0011 covered every decision Phase 8 executed; the D-decisions in Unit 8.0 prep + per-unit refinements were tactical-not-architectural.
+- **Q51 wording refined** (no status change; stays `decided-as-lean`): the Phase-7 lean was "infrastructure ships in Phase 7; content backfill is curator-track in parallel." Refined wording captures Phase 8's contribution — "Phase 7 ships INFRASTRUCTURE complete; Phase 8 ships ROUTE coverage + TWO content surfaces translated as pilots (home hero in 8.2; `/contributing/v1.1` in 8.6). Remaining ~200 EN files are curator-track horizon. Promotion to `resolved` deferred until either bulk content backfill lands (~50%+ coverage) or §13 ledger explicitly retires the bilingual thread."
+- **No net promotions**: Q51 stays decided-as-lean per the wording-refinement reasoning. The resolved-set (18 entries: Q1 / Q4 / Q5 / Q12 / Q13 / Q18 / Q27 / Q32 / Q40 / Q41 / Q43 / Q45 / Q46 / Q48 / Q49 / Q50 / Q52 / Q53) is unchanged from Unit 7.10 close. Decided-as-lean (8 entries: Q34 / Q35 / Q36 / Q38 / Q39 / Q42 / Q44 / **Q51 refined**); still-open (19 entries: Q2 / Q3 / Q6-Q11 / Q14-Q17 / Q19 / Q25 / Q26 / Q28-Q31 / Q33 / Q37 / Q47).
+- **ADR review pass**: 11 ADRs (0001-0011); all `Status: accepted`; none superseded. Phase 8 added **zero new ADRs**. The HTML-shell-migration deferral (Unit 8.4) is a tactical preservation of the existing layout structure, not a new architectural pin — no ADR-0012 needed today. ADR-0011 D-A through D-G all exercised at scale in Units 8.1-8.6 (D-B `localePrefix: "always"` enforced end-to-end; D-D `fr → en` fallback exercised at `/fr/contributing/v1.0.0`; D-E English-canonical slugs preserved across 22 migrated routes; D-G `translation_source` provenance honored by `v1.1.fr.mdx`); no superseding amendments triggered.
+- **Cross-phase ledger after Unit 8.8**: 18 resolved + 8 decided-as-lean + 19 still open = **45 total entries** (unchanged from Phase 7 close).
+- **File edits**: `OPEN_QUESTIONS.md` Q51 wording refinement; no other edits.
+- **Smoke gates**: docs-only; unchanged from Unit 8.7 snapshot (388/388 tests; ~590 routes; 103 kB First Load JS; 19 LHCI URLs; 0 errors / 6 warnings audit).
+- THINK artifact: `docs/thinking/8.8-open-questions-hygiene.md`.
+
 
 
 
