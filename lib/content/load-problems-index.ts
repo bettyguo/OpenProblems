@@ -1,4 +1,5 @@
 import { problems, ratings, taxonomy } from "#site/content";
+import { tryGetDiscussionByPath } from "@/lib/discussions/github-graphql";
 import {
   composite,
   dimensionsToRadar,
@@ -24,6 +25,12 @@ export interface IndexedProblem {
   composite?: number;
   /** ISO date (YYYY-MM-DD) of the latest rating action; undefined when no rating. */
   latestRatingDate?: string;
+  /** Discussion-thread comment count (>0 only; undefined when no thread or unavailable). */
+  discussionCount?: number;
+  /** GitHub Discussions URL for this problem's talk thread. */
+  discussionUrl?: string;
+  /** ISO 8601 of most recent thread activity. */
+  discussionLastActivityAt?: string;
 }
 
 export function getIndexedProblems(): IndexedProblem[] {
@@ -55,4 +62,31 @@ export function getIndexedProblems(): IndexedProblem[] {
     }
     return base;
   });
+}
+
+/**
+ * Same data as `getIndexedProblems()` plus per-problem Discussion-thread
+ * metadata fetched at SSG build time. Only the `/problems` listing page
+ * needs this; sync callers (domain map, author/institution pages) keep
+ * using `getIndexedProblems()` to avoid forcing async upstream.
+ *
+ * `tryGetDiscussionByPath` returns null gracefully when `GITHUB_TOKEN`
+ * is unset OR when the query fails, so cards just render without badges
+ * — build still succeeds. Cache hits in `.github-cache/` make subsequent
+ * builds free.
+ */
+export async function getIndexedProblemsWithDiscussions(): Promise<IndexedProblem[]> {
+  const bases = getIndexedProblems();
+  const discussions = await Promise.all(
+    bases.map((b) => tryGetDiscussionByPath(`/problems/${b.slug}/talk`)),
+  );
+  for (let i = 0; i < bases.length; i += 1) {
+    const meta = discussions[i];
+    const base = bases[i];
+    if (!base || !meta || meta.commentCount <= 0) continue;
+    base.discussionCount = meta.commentCount;
+    base.discussionUrl = meta.url;
+    base.discussionLastActivityAt = meta.lastActivityAt;
+  }
+  return bases;
 }

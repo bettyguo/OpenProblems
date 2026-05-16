@@ -186,6 +186,20 @@ export function ProblemsIndex({
                   </span>
                 </>
               )}
+              {p.discussionCount !== undefined && (
+                <>
+                  <span aria-hidden>·</span>
+                  <Link
+                    href={`/problems/${p.slug}/talk`}
+                    className="hover:text-foreground underline-offset-2 hover:underline"
+                    aria-label={`${p.discussionCount} discussion comment${p.discussionCount === 1 ? "" : "s"} for ${p.title}`}
+                  >
+                    <span className="font-mono">
+                      {p.discussionCount} comment{p.discussionCount === 1 ? "" : "s"}
+                    </span>
+                  </Link>
+                </>
+              )}
             </div>
             {p.points && (
               <div className="mt-2 flex gap-1" aria-label="Dimension breakdown">

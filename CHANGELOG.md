@@ -1736,6 +1736,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
 - THINK artifact: `docs/thinking/6.4-giscus-embed.md`.
 
+#### Unit 6.5 — Problem-card activity badge + detail-page Discuss-link count upgrade
+
+- Fourth code unit of Phase 6. Closes Unit 6.0 D-5 (read-side surfacing on problem cards) + closes the Unit 6.3 promise to "UPGRADE this link to include the count badge later." Consumes Unit 6.2's `getDiscussionByPath` at SSG build time via a new env-safe wrapper.
+- **New export** `lib/discussions/github-graphql.ts::tryGetDiscussionByPath(pathname, options)` — env-safe wrapper that catches errors (missing `GITHUB_TOKEN`, network failures, GraphQL errors) and returns `null`. Lets SSG builds proceed gracefully when the operational env is missing.
+- **`IndexedProblem` interface extended** with three new optional fields: `discussionCount?: number`, `discussionUrl?: string`, `discussionLastActivityAt?: string`. Additive change; no breaking shape change for existing consumers.
+- **Two-function shape on the loader** (debug+fix during this unit):
+  - `getIndexedProblems()` stays **synchronous** and unchanged — canonical loader for callers that don't need Discussion data (`build-domain-map.ts`, `load-author.ts`, `load-institution.ts`).
+  - **New** `getIndexedProblemsWithDiscussions(): Promise<IndexedProblem[]>` wraps the sync one + fans out `tryGetDiscussionByPath` via `Promise.all`. Populates discussion fields only when result is non-null AND `commentCount > 0` (skip 0-comment threads — empty signal isn't worth surfacing).
+  - First attempt converted `getIndexedProblems()` to async directly; typecheck surfaced 3 cascading consumers; reverted to two-function shape (cleaner blast radius).
+- **`app/problems/page.tsx`** — converted to `async function`; calls `getIndexedProblemsWithDiscussions()`. Other call sites of `getIndexedProblems()` unchanged.
+- **`components/problems-index/index.tsx`** — renders an inline "N comments" badge wrapped in a `<Link>` to the talk page, in the metadata row next to the composite. Aria-label provides screen-reader context ("N discussion comment(s) for <title>"). Only renders when `discussionCount` is defined (i.e., thread exists with > 0 comments).
+- **`app/problems/[slug]/page.tsx`** — async-fetches the same discussion metadata via `tryGetDiscussionByPath`; upgrades the "Discuss this problem →" link to "Discuss this problem (N) →" when count > 0; falls back unchanged otherwise. The cache layer in `lib/discussions/github-graphql.ts` means the cards-listing fetch + the detail-page fetch hit the same `.github-cache/` entry — 1 actual API call per problem per build.
+- **Build-time env behaviour** (validated at smoke):
+  - `GITHUB_TOKEN` set + cache cold → 10 GraphQL calls × 1 per problem; cache populated.
+  - `GITHUB_TOKEN` set + cache warm → 0 API calls; serves from `.github-cache/`.
+  - `GITHUB_TOKEN` **unset** + cache cold → 10 silent fall-throughs to null; **build succeeds**; no badges populated. CI without the token still produces a working site.
+  - `GITHUB_TOKEN` unset + cache warm → serves from cache; badges appear as last cached.
+- **3 new vitest tests** in `lib/discussions/github-graphql.test.ts` for `tryGetDiscussionByPath`: identity passthrough on success; null fall-through on missing `GITHUB_TOKEN`; null fall-through on any inner-call exception.
+- **Q47 (open operational)** unchanged: discussions must be enabled in repo settings before queries return non-empty. Until then, all cards render without badges + detail-page links stay plain. The page-rendering pipeline is fully functional in either Q47 state.
+- **No client-bundle impact**: discussion data is build-time-populated; client renders strings. **First Load JS shared chunk = 103 kB UNCHANGED**.
+- **No new dependency**: ships purely on Phase-6-already-installed deps.
+- Smoke gates:
+  - `pnpm validate-content` → 203 unchanged.
+  - `pnpm typecheck` clean (after sync/async refactor).
+  - `pnpm test` → **312/312 across 38 files** (was 309/38; +3 new tests).
+  - `pnpm build` → 333 routes unchanged. Build **succeeded WITHOUT `GITHUB_TOKEN` set** — validates the env-safe design.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- THINK artifact: `docs/thinking/6.5-problem-card-activity-badge.md`.
+
+
 
 
 

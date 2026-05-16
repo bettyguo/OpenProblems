@@ -155,6 +155,27 @@ interface SearchByPathResponse {
   };
 }
 
+/**
+ * Env-safe wrapper around `getDiscussionByPath`. Catches errors (missing
+ * `GITHUB_TOKEN`, network failures, GraphQL errors) and returns null.
+ *
+ * Use this from build-time SSG callers (Units 6.5 / 6.6) that need to
+ * proceed gracefully when the operational env is missing — the page
+ * builds, the badge simply doesn't appear. Distinguishing "no thread
+ * yet" from "fetch failed" is intentionally lost here; both surface as
+ * "no badge."
+ */
+export async function tryGetDiscussionByPath(
+  pathname: string,
+  options: GraphqlClientOptions = {},
+): Promise<DiscussionMetadata | null> {
+  try {
+    return await getDiscussionByPath(pathname, options);
+  } catch {
+    return null;
+  }
+}
+
 export async function getDiscussionByPath(
   pathname: string,
   options: GraphqlClientOptions = {},

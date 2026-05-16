@@ -4,6 +4,7 @@ import { RatingRadar } from "@/components/viz/RatingRadar";
 import { StatusPill } from "@/components/ui/status-pill";
 import { MDXContent } from "@/lib/mdx/mdx-content";
 import { allProblemSlugs, loadProblem } from "@/lib/content/load-problem";
+import { tryGetDiscussionByPath } from "@/lib/discussions/github-graphql";
 import { dimensionsToRadar } from "@/lib/ratings/normalize";
 
 interface ProblemPageProps {
@@ -22,6 +23,9 @@ export default async function ProblemPage({ params }: ProblemPageProps) {
   if (!loaded) notFound();
 
   const { problem, pages, ratings, latestRating, taxonomy } = loaded;
+  const discussion = await tryGetDiscussionByPath(`/problems/${slug}/talk`);
+  const discussionCount =
+    discussion && discussion.commentCount > 0 ? discussion.commentCount : undefined;
 
   return (
     <main className="mx-auto max-w-prose px-6 py-12">
@@ -68,7 +72,11 @@ export default async function ProblemPage({ params }: ProblemPageProps) {
           href={`/problems/${slug}/talk`}
           className="text-accent underline-offset-2 hover:underline"
         >
-          Discuss this problem →
+          Discuss this problem
+          {discussionCount !== undefined && (
+            <span className="font-mono"> ({discussionCount})</span>
+          )}{" "}
+          →
         </Link>
       </p>
 

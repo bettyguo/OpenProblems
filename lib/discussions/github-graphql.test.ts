@@ -7,6 +7,7 @@ import {
   getDiscussionByPath,
   getRecentDiscussionActivity,
   queryGitHub,
+  tryGetDiscussionByPath,
   type GraphqlClient,
 } from "@/lib/discussions/github-graphql";
 
@@ -222,6 +223,53 @@ describe("getDiscussionByPath", () => {
     expect(capturedVariables).toEqual({
       searchQuery: 'repo:owner-x/repo-y in:title "/problems/x/talk"',
     });
+  });
+});
+
+describe("tryGetDiscussionByPath", () => {
+  it("returns the underlying metadata on success (identity passthrough)", async () => {
+    const client: GraphqlClient = async () =>
+      ({
+        search: {
+          nodes: [
+            {
+              id: "D_ok",
+              url: "https://x/ok",
+              title: "/problems/ok/talk",
+              comments: { totalCount: 3 },
+              updatedAt: "2026-05-16T11:00:00Z",
+              category: { name: "talk" },
+            },
+          ],
+        },
+      }) as never;
+
+    const got = await tryGetDiscussionByPath("/problems/ok/talk", {
+      cacheDir: tmpDir,
+      clientFactory: () => client,
+    });
+
+    expect(got).not.toBeNull();
+    expect(got?.discussionId).toBe("D_ok");
+    expect(got?.commentCount).toBe(3);
+  });
+
+  it("returns null when the inner call throws (GITHUB_TOKEN unset path)", async () => {
+    delete process.env["GITHUB_TOKEN"];
+    // No clientFactory + no cache hit → defaultClientFactory throws → caught.
+    const got = await tryGetDiscussionByPath("/problems/no-token/talk", { cacheDir: tmpDir });
+    expect(got).toBeNull();
+  });
+
+  it("returns null when the client throws for any other reason (network/GraphQL)", async () => {
+    const client: GraphqlClient = async () => {
+      throw new Error("simulated GraphQL error");
+    };
+    const got = await tryGetDiscussionByPath("/problems/fail/talk", {
+      cacheDir: tmpDir,
+      clientFactory: () => client,
+    });
+    expect(got).toBeNull();
   });
 });
 

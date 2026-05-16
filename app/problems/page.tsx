@@ -1,9 +1,9 @@
 import { taxonomy } from "#site/content";
 import { ProblemsIndex } from "@/components/problems-index";
-import { getIndexedProblems } from "@/lib/content/load-problems-index";
+import { getIndexedProblemsWithDiscussions } from "@/lib/content/load-problems-index";
 
-export default function ProblemsPage() {
-  const initial = getIndexedProblems();
+export default async function ProblemsPage() {
+  const initial = await getIndexedProblemsWithDiscussions();
   const domains = taxonomy.domains.map((d) => ({ id: d.id, title: d.title }));
 
   return (
