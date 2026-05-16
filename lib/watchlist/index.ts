@@ -1,7 +1,16 @@
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 
 import { db } from "@/lib/db";
 import { watchlist } from "@/lib/db/schema";
+
+/**
+ * Cap on the number of slugs `getWatchedSlugs` returns. 50 is generous
+ * for Phase 10 (the project has 10 problems; per-user watchlists won't
+ * exceed 10 today). Future-proofs against runaway list rendering when
+ * the problem catalog grows; profile-page list pagination is a Phase
+ * 11+ enhancement when the cap becomes constraining.
+ */
+const WATCHLIST_LIMIT = 50;
 
 /**
  * Watchlist helpers — Drizzle-shaped CRUD for the per-user `watchlist`
@@ -39,4 +48,24 @@ export async function removeFromWatchlist(userId: string, problemSlug: string): 
   await db
     .delete(watchlist)
     .where(and(eq(watchlist.userId, userId), eq(watchlist.problemSlug, problemSlug)));
+}
+
+/**
+ * Returns the slugs the user is watching, most-recently-added first,
+ * capped at {@link WATCHLIST_LIMIT}. Used by the profile page (Unit 10.2)
+ * to render the watched-problems list.
+ *
+ * Ordering is `createdAt DESC` so the user sees their latest watch
+ * action at the top — matches what the profile page's empty-state →
+ * filled-state transition will feel like (just-watched problems land at
+ * the top of the list).
+ */
+export async function getWatchedSlugs(userId: string): Promise<string[]> {
+  const rows = await db
+    .select({ problemSlug: watchlist.problemSlug })
+    .from(watchlist)
+    .where(eq(watchlist.userId, userId))
+    .orderBy(desc(watchlist.createdAt))
+    .limit(WATCHLIST_LIMIT);
+  return rows.map((r) => r.problemSlug);
 }

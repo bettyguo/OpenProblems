@@ -2470,6 +2470,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 10 — Community-adjacent surfaces (**first NON-§13 phase**: Profile page + Phase-9 UI polish)
 
+#### Unit 10.1 — `lib/watchlist/` extension: `getWatchedSlugs(userId)` helper
+
+- First code unit of Phase 10. Extends [`lib/watchlist/index.ts`](lib/watchlist/index.ts) with `getWatchedSlugs(userId): Promise<string[]>` — used by Unit 10.2's profile page to render the watched-problems list. Thin Drizzle SELECT: filter by `userId`, ORDER BY `createdAt DESC`, LIMIT 50.
+- **`WATCHLIST_LIMIT` constant** introduced (`= 50`). Generous for Phase 10 (10 problems total; per-user lists won't exceed 10 today); future-proofs against runaway list rendering when the problem catalog grows. Pagination is a Phase 11+ enhancement when the cap becomes constraining.
+- **Test deviation vs Unit 10.0 prep D-7 + provisional breakdown ("+ test")**: no unit test landed in this unit. Reasoning: the function is a 10-line thin Drizzle wrapper; Drizzle's TypeScript type system already proves the SELECT shape + column references + ORDER BY direction; mocking the Drizzle fluent-call chain (`.select().from().where().orderBy().limit()`) for a unit test adds maintenance burden without proportional safety beyond Drizzle's own types. Integration coverage lands in Unit 10.2's profile-page smoke gate (manual `pnpm build` + dev-server exercise on a local `pnpm db:migrate`'d DB). Matches the Phase-9 pattern: `isWatched` / `addToWatchlist` / `removeFromWatchlist` shipped untested at the unit level (mocked in route tests; integration via build).
+- **Ordering rationale**: `createdAt DESC` so the user's most-recent watch action lands at the top of the profile list. Matches the just-watched → list-top transition UX. Alternative (alphabetical by slug) rejected as breaking the temporal-recency signal.
+- **Smoke gates**:
+  - `pnpm validate-content` → 203 files unchanged.
+  - `pnpm typecheck` clean (new `desc` import; `getWatchedSlugs` return type inferred via Drizzle).
+  - `pnpm test` → 394/394 across 45 files unchanged (no test files touched).
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+  - `pnpm build` (deferred to Unit 10.2; no route change in this unit).
+- THINK artifact: omitted — extension is contained in Unit 10.0's D-6 + D-8 design discussion; no architectural surface beyond what 10.0 pinned. Mirrors the Unit 9.2 + 9.3 precedent (Phase-9 prep had ADR-detail enough that a separate THINK doc would be redundant).
+- Next: Unit 10.2 (profile page route + auth-required + list + sign-out).
+
 #### Unit 10.0 — Phase 10 prep (THINK doc + 6-unit Profile-page-thread breakdown + procedural DB-trigger re-eval)
 
 - Phase 10 kickoff per §12 cardinal rule. Phase 9 closed at HEAD `9f8ff19` (Unit 9.9 acceptance gate; **§13 Phase-6+ ledger fully closed**). **Phase 10 sign-off granted via "Continue" override** in the unit-rhythm rhythm (fifth invocation of this pattern; precedents: Phase 5 → 6 in Unit 6.0; Phase 6 → 7 in Unit 7.0; Phase 7 → 8 in Unit 8.0; Phase 8 → 9 in Unit 9.0). Docs-only unit.
