@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { GiscusEmbed } from "@/components/discussions/GiscusEmbed";
 import { allProblemSlugs, loadProblem } from "@/lib/content/load-problem";
 
 interface TalkPageProps {
@@ -54,7 +55,7 @@ export default async function TalkPage({ params }: TalkPageProps) {
         aria-label="Discussion thread"
         className="border-border mt-10 border-t pt-8"
       >
-        <p className="text-muted-foreground text-sm italic">Discussion thread loading…</p>
+        <GiscusEmbed />
       </section>
 
       <noscript>

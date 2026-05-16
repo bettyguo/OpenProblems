@@ -1707,6 +1707,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
 - THINK artifact: `docs/thinking/6.3-talk-page-route.md`.
 
+#### Unit 6.4 — `components/discussions/GiscusEmbed.tsx` (client-only iframe wrapper + theme sync)
+
+- Third code unit of Phase 6. Closes ADR-0010 D-A (embed = Giscus) + the deferred D-7 (Giscus version pin) + D-11 (theme sync via `next-themes`). Replaces Unit 6.3's placeholder text in the `<section id="discussions">` slot with the actual Giscus iframe wrapper.
+- **New dependency**: `@giscus/react@^3.1.0` in `dependencies` (pure JS, no postinstall; +8 transitive packages). Mirror of the Phase-5 `@anthropic-ai/sdk` + Unit 6.2 `@octokit/graphql` precedents — runtime imports go in `dependencies`.
+- **New file** `components/discussions/GiscusEmbed.tsx`:
+  - `"use client"` directive (uses `useState` + `useEffect` + `useTheme`).
+  - Hydration-safe placeholder pre-mount (mirrors `components/theme-toggle/index.tsx` pattern — `useState(false)` + `useEffect(() => setMounted(true), [])` returning a `<p>Loading discussion…</p>` placeholder until hydrated).
+  - `NEXT_PUBLIC_GISCUS_REPO_ID` env-driven config (build-time-baked per Next.js convention). When unset, renders a curator-facing "embed unavailable" message naming the env var and linking to giscus.app — explicit > implicit (silent absence would mask the operational gate).
+  - Pinned Giscus props per ADR-0010: `repo="bettyguo/OpenProblems"`, `mapping="pathname"` (D-C), `strict="1"` (exact path matching), `loading="lazy"` (D-A), `inputPosition="bottom"`, `lang="en"`, `reactionsEnabled="1"`, `emitMetadata="0"`. No `category` / `categoryId` — defaults to the repo's general category.
+  - Exports a pure helper `mapResolvedThemeToGiscus(string | undefined): "dark" | "light"` for unit testing. Binary map: `"dark" → "dark"`, everything else (including `undefined` and `"system"`) → `"light"`.
+- **Edit** `app/problems/[slug]/talk/page.tsx`: replaced the Unit-6.3 placeholder `<p>Discussion thread loading…</p>` inside the `<section id="discussions">` slot with `<GiscusEmbed />`. Slot structure unchanged.
+- **7 new vitest tests** in `components/discussions/GiscusEmbed.test.tsx`:
+  - 4 for the pure helper `mapResolvedThemeToGiscus` ("dark", "light", undefined, other-strings).
+  - 3 for the SSR pre-hydration state (placeholder text present, `<p>` with muted-foreground class, no iframe markup pre-hydration).
+  - Tests wrap in `<ThemeProvider>` from `next-themes` to keep `useTheme()` safe during SSR rendering.
+- **Q47 (open operational)** unchanged: discussions must be enabled in `bettyguo/OpenProblems` settings AND a curator must run [giscus.app](https://giscus.app)'s config UI to generate `NEXT_PUBLIC_GISCUS_REPO_ID`. Until both land, all talk pages render the "embed unavailable" placeholder at HEAD. The page is otherwise fully functional (shell renders, breadcrumb works, no-JS fallback works).
+- **Decisions consciously NOT taken**: did not hard-code a placeholder `repoId` (would produce a broken-looking iframe at HEAD); did not extract theme-sync via manual `postMessage` (the `@giscus/react` library handles it internally when the `theme` prop changes); did not add custom OKLCH-aligned theme via Giscus's `https://...` theme URL (defer to a future refinement if the binary mapping feels visually wrong).
+- **Bundle impact** — exactly as ADR-0010 D-A predicted:
+  - First Load JS shared chunk = **103 kB UNCHANGED** ✓ (iframe + wrapper add weight only to the talk-page route chunk).
+  - Per-route `/problems/[slug]/talk` chunk: **2.26 kB** (was 201 B at Unit 6.3; +2.06 kB for the wrapper). Below the ADR estimate of "~3-5 kB".
+  - Total First Load for talk page = 108 kB (vs. 106 kB at the existing problem-detail page; +2 kB delta is the wrapper alone).
+- Smoke gates:
+  - `pnpm validate-content` → 203 files unchanged.
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **309/309 across 38 files** (was 302/37; +7 new tests in 1 new file).
+  - `pnpm build` → 333 routes unchanged; First Load shared chunk 103 kB unchanged.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- THINK artifact: `docs/thinking/6.4-giscus-embed.md`.
+
+
 
 
 
