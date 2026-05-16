@@ -2470,6 +2470,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 10 — Community-adjacent surfaces (**first NON-§13 phase**: Profile page + Phase-9 UI polish)
 
+#### Unit 10.4 — OPEN_QUESTIONS hygiene + ADR review (Phase 10 pre-close)
+
+- Fourth Phase-10 unit; docs-only. Mirrors Unit 5.12 / 6.9 / 7.10 / 8.8 / 9.8 OQ-hygiene precedents. Scans the open-questions ledger for Phase-10 promotions + reviews the 13 ADRs at HEAD for stale status / supersede markers.
+- **OPEN_QUESTIONS scan**: **Phase 10 surfaced 0 new questions; 0 net promotions; 0 status changes**. ADR-0012 + ADR-0013 covered every Phase-10 implementation decision; per-unit D-decisions in Unit 10.0 prep were all tactical-not-architectural. Q54 / Q55 / Q47 stay `open (operational)`; Q56 stays `resolved 2026-05-16 (Unit 9.6)`.
+- **Phase-10 Q-touches without status change**: Q54 (profile page joins OAuth-app-registration exposure — `auth()` called inside the route handler); Q55 (profile page reads `users.githubLogin` from production DB — adds per-request DB read alongside Phase-9 session read; Vercel Turso provisioning still gates); Q56 (`watchlist` table read by `getWatchedSlugs` exercised in production by profile-page render; already resolved in Phase 9). All operational gates unchanged.
+- **Ledger state at HEAD** (per Unit 9.8 mechanical `Status:`-field tally): 19 resolved + 4 decided-as-lean + 28 open = **51 total entries UNCHANGED from Phase-9 close**.
+- **ADR review**: **13 ADRs at HEAD** (0001 – 0013). Phase 10 added zero new ADRs; none needed prose edits or supersede markers. Active ADRs for Phase-10 implementation: ADR-0004 (file-first reaffirmed — profile page reads file-first content + USER-STATE DB; separation holds); ADR-0005 (no new migration); ADR-0011 (i18n — `messages.profile.*` 6 keys EN + FR consume sibling-file pattern; profile page uses `getTranslations()` server-side); ADR-0012 (profile page is first protected route consuming `auth()` + `signOut`); ADR-0013 (profile page reads `users.githubLogin` via Drizzle + reuses `lib/watchlist/` helpers). All D-decisions across ADRs 0012 + 0013 hold without amendment.
+- **Phase-9 Class B item 12 partial resolution (auth-aware route protection)**: server-component-level protection landed in Unit 10.2 as a tactical implementation, not an architectural commitment. The middleware-based lift IF it ever happens would warrant ADR-0014, but that's Phase 11+ scope (when 2+ protected routes exist).
+- **Phase-10 OQ + ADR delta vs Phase-9 close**: 0 new questions; 0 promotions; 0 status changes; 0 new ADRs; 0 ADR prose edits; 0 supersede markers. **Phase 10 is the first zero-architectural-surface phase in the project's history** — consistent with the "consolidation" framing per Unit 10.0 D-1.
+- Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2); typecheck / test / build untouched since no source files modified; no OPEN_QUESTIONS.md edit needed (Phase-10 surfaced nothing).
+- THINK artifact: `docs/thinking/10.4-open-questions-hygiene.md`.
+
 #### Unit 10.3 — Phase-10 hygiene status pass (Class A / B / C catalog)
 
 - Third Phase-10 unit; docs-only. Mirrors the Phase-5 (Unit 5.11), Phase-6 (Unit 6.8), Phase-7 (Unit 7.9), Phase-8 (Unit 8.7), and Phase-9 (Unit 9.7) hygiene passes. Catalogs **Class A in-flight Phase-10 items** (2), **Class B Phase-10-specific follow-ons that survive the phase** (8), and **Class C carryovers from prior phases** (14 — mostly Phase-9 Class A + B + carryovers from earlier).
