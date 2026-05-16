@@ -1,0 +1,24 @@
+{
+  "site": {
+    "title": "LLM OpenProblems",
+    "tagline": "A rated, taxonomy-organized encyclopedia of open problems in LLM and AI research."
+  },
+  "nav": {
+    "problems": "Problems",
+    "domains": "Domains",
+    "papers": "Papers",
+    "methodology": "Methodology",
+    "contributing": "Contributing",
+    "digest": "Digest"
+  },
+  "localeToggle": {
+    "label": "Switch language",
+    "current": "Current language",
+    "to_en": "Switch to English",
+    "to_fr": "Passer au français"
+  },
+  "fallbackNotice": {
+    "untranslated": "This page is not yet translated to French; reading the English original.",
+    "contribute": "Help translate it."
+  }
+}

@@ -1926,6 +1926,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2); typecheck / test / build untouched since no source files modified.
 - THINK artifact: `docs/thinking/7.1-adr-0011-i18n-strategy.md`.
 
+#### Unit 7.2 — `next-intl` runtime install + `lib/i18n/` infrastructure + seed messages
+
+- First code unit of Phase 7. Installs the `next-intl` runtime dependency, ships the `lib/i18n/` config files, the seed translation catalogues, and the Next.js plugin wiring. Per ADR-0011 D-A. **No observable behavior change at HEAD** — no page imports next-intl, no middleware, no `app/[locale]/` segment yet. Routes still SSG at their existing paths. Unit 7.3 will wire the route restructure + middleware atomically.
+- **Dependency**: `next-intl@^3` (pnpm resolved to `3.26.5`). Pure JS; no postinstall. The most recent next-intl major is 4.x (4.12.0 was the auto-pick when `pnpm add next-intl` was run without a constraint), but ADR-0011 D-A pinned `^3.x`; per the ADR-immutability rule (`docs/adr/README.md`), substantive ADR sections are never edited after acceptance, so the dependency was downgraded to `^3` rather than amending the ADR. A future ADR-0012 (if/when next-intl 4.x becomes load-bearing) would supersede ADR-0011's version-pin clause.
+- **New files**:
+  - `lib/i18n/routing.ts` — single source of truth for `locales = ["en", "fr"] as const`, `defaultLocale = "en"`, and `isLocale(value)` type-narrowing helper. Library-agnostic (no next-intl import); middleware / route segments / loaders all share one definition.
+  - `lib/i18n/request.ts` — `getRequestConfig` callback from `next-intl/server`. Resolves the requested locale via `requestLocale`, falls back to `defaultLocale` for unknown locales (ADR-0011 D-D graceful fallback), and loads `messages/<locale>.json` via a per-locale switch (avoids `AbstractIntlMessages` type-narrowing issues from a dynamic-template import).
+  - `messages/en.json` — seed catalogue: `site.{title,tagline}` + `nav.{problems,domains,papers,methodology,contributing,digest}` + `localeToggle.{label,current,to_en,to_fr}` + `fallbackNotice.{untranslated,contribute}`.
+  - `messages/fr.json` — FR translations for every seed key. Subsequent units (Unit 7.4 `/methodology` pilot) consume + expand.
+  - `lib/i18n/routing.test.ts` — **9 new vitest tests**: locales-array shape (2), defaultLocale identity + membership (2), isLocale truthy/falsy/null/case-sensitive (5; covers `en` / `fr` / unknown / `EN` / `null` / `undefined` / type-narrowing compile check).
+- **Edited file**:
+  - `next.config.ts` — wrapped with `withNextIntl = createNextIntlPlugin("./lib/i18n/request.ts")`; `export default withNextIntl(config)`. Plugin is build-time plumbing; does not affect pages that don't import next-intl.
+- **OPEN_QUESTIONS status changes** (closing two of Unit 7.0's deferred decisions): D-7 (next-intl version pin) → realized as `^3` per ADR-0011 D-A; D-8 (translation lookup format) → realized as JSON-per-locale per ADR-0011 D-A.
+- **No client-bundle impact** at HEAD — next-intl is imported only by `lib/i18n/request.ts` (Node-side, not bundled into page chunks) and the `next.config.ts` plugin (build-time-only). Verified via `pnpm build`: First Load JS shared chunk = **103 kB UNCHANGED**.
+- **Smoke gates**:
+  - `pnpm validate-content` → 203 files unchanged.
+  - `pnpm typecheck` clean (after one fix-up: `Record<string, unknown>` cast on the dynamic-import-template result didn't satisfy `AbstractIntlMessages`; resolved by replacing the template with a per-locale switch returning typed JSON modules).
+  - `pnpm test` → **332/332 across 39 files** (was 323/38; +9 new in `lib/i18n/routing.test.ts`).
+  - `pnpm build` → **333 prerendered pages unchanged**. First Load JS shared chunk = **103 kB UNCHANGED**.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- THINK artifact: `docs/thinking/7.2-lib-i18n-runtime.md`.
+
+
 
 
 

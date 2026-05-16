@@ -1,4 +1,10 @@
 import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
+
+// next-intl plugin (Unit 7.2; ADR-0011 D-A). Points at the per-request i18n
+// config in lib/i18n/request.ts. Pure build-time plumbing — does not affect
+// pages that don't import next-intl.
+const withNextIntl = createNextIntlPlugin("./lib/i18n/request.ts");
 
 const config: NextConfig = {
   reactStrictMode: true,
@@ -13,4 +19,4 @@ const config: NextConfig = {
   },
 };
 
-export default config;
+export default withNextIntl(config);
