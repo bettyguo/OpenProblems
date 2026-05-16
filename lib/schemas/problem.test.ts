@@ -40,4 +40,22 @@ describe("OpenProblemSchema", () => {
   it("rejects a title shorter than 5 characters", () => {
     expect(OpenProblemSchema.safeParse({ ...VALID, title: "abc" }).success).toBe(false);
   });
+
+  it("accepts an optional translation_source = 'human' (ADR-0011 D-G)", () => {
+    expect(OpenProblemSchema.safeParse({ ...VALID, translation_source: "human" }).success).toBe(
+      true,
+    );
+  });
+
+  it("accepts an optional translation_source = 'machine-assisted'", () => {
+    expect(
+      OpenProblemSchema.safeParse({ ...VALID, translation_source: "machine-assisted" }).success,
+    ).toBe(true);
+  });
+
+  it("rejects an unknown translation_source value", () => {
+    expect(OpenProblemSchema.safeParse({ ...VALID, translation_source: "auto" }).success).toBe(
+      false,
+    );
+  });
 });

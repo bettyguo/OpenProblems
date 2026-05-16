@@ -52,6 +52,27 @@ const taxonomy = defineCollection({
   schema: TaxonomySchema,
 });
 
+// Sibling-file locale infix per ADR-0011 D-C: `.<locale>` before the
+// extension (e.g. `methodology/v1.fr.mdx`). Velite's `s.path()` strips the
+// extension so we match a bare `.fr` suffix on the slug. Inlined here
+// (rather than imported from `lib/i18n/locale-filename.ts`) to keep
+// velite.config.ts self-contained — the runtime helper is the source of
+// truth for SSR / SSG consumers; this regex is the build-time mirror.
+// Update both sides together when adding a locale.
+const LOCALE_SLUG_INFIX = /\.(en|fr)$/;
+const TRANSLATION_SOURCES = ["human", "machine-assisted"] as const;
+
+function stripLocaleSuffix(slugLike: string): { lang: "en" | "fr"; slug: string } {
+  const match = LOCALE_SLUG_INFIX.exec(slugLike);
+  if (match) {
+    return {
+      lang: match[1] as "en" | "fr",
+      slug: slugLike.slice(0, -match[0].length),
+    };
+  }
+  return { lang: "en", slug: slugLike };
+}
+
 const methodology = defineCollection({
   name: "Methodology",
   pattern: "methodology/*.mdx",
@@ -64,12 +85,21 @@ const methodology = defineCollection({
       supersedes: s.string().optional(),
       slug: s.path(),
       body: s.mdx(),
+      translation_source: s.enum(TRANSLATION_SOURCES).optional(),
     })
-    .transform((data) => ({
-      ...data,
-      // Strip the `methodology/` prefix from the path slug for clean URLs.
-      slug: data.slug.replace(/^methodology\//, ""),
-    })),
+    .transform((data) => {
+      // Detect the optional `.fr` locale suffix on the slug; canonical slug
+      // strips both the `methodology/` prefix and the locale infix.
+      const { lang, slug } = stripLocaleSuffix(data.slug);
+      return {
+        ...data,
+        lang,
+        slug: slug.replace(/^methodology\//, ""),
+      };
+    })
+    .refine((data) => data.lang === "en" || data.translation_source !== undefined, {
+      message: "translation_source is required on translated (.fr) files (ADR-0011 D-G)",
+    }),
 });
 
 const contributing = defineCollection({
@@ -84,12 +114,19 @@ const contributing = defineCollection({
       supersedes: s.string().optional(),
       slug: s.path(),
       body: s.mdx(),
+      translation_source: s.enum(TRANSLATION_SOURCES).optional(),
     })
-    .transform((data) => ({
-      ...data,
-      // Strip the `contributing/` prefix from the path slug for clean URLs.
-      slug: data.slug.replace(/^contributing\//, ""),
-    })),
+    .transform((data) => {
+      const { lang, slug } = stripLocaleSuffix(data.slug);
+      return {
+        ...data,
+        lang,
+        slug: slug.replace(/^contributing\//, ""),
+      };
+    })
+    .refine((data) => data.lang === "en" || data.translation_source !== undefined, {
+      message: "translation_source is required on translated (.fr) files (ADR-0011 D-G)",
+    }),
 });
 
 const BenchmarkS = s.object({
@@ -115,21 +152,34 @@ const ExternalLinksS = s.object({
   canonical_survey: s.string().url().optional(),
 });
 
-const ProblemS = s.object({
-  slug: s.string(),
-  title: s.string(),
-  subtitle: s.string().optional(),
-  domain: s.string(),
-  subdomain: s.string(),
-  tags: s.array(s.string()),
-  status: s.enum(["open", "partially-solved", "converging", "solved", "retired"]),
-  posed_year: s.number().int(),
-  authors_who_posed: s.array(s.string()).optional(),
-  related_problems: s.array(s.string()).optional(),
-  benchmarks: s.array(BenchmarkS),
-  external_links: ExternalLinksS.optional(),
-  editorial: EditorialS,
-});
+const ProblemS = s
+  .object({
+    slug: s.string(),
+    title: s.string(),
+    subtitle: s.string().optional(),
+    domain: s.string(),
+    subdomain: s.string(),
+    tags: s.array(s.string()),
+    status: s.enum(["open", "partially-solved", "converging", "solved", "retired"]),
+    posed_year: s.number().int(),
+    authors_who_posed: s.array(s.string()).optional(),
+    related_problems: s.array(s.string()).optional(),
+    benchmarks: s.array(BenchmarkS),
+    external_links: ExternalLinksS.optional(),
+    editorial: EditorialS,
+    translation_source: s.enum(TRANSLATION_SOURCES).optional(),
+    // path is e.g. "problems/hallucination-reduction/problem" for the EN
+    // canonical or "problems/hallucination-reduction/problem.fr" for the FR
+    // sibling. Used solely to derive `lang`; not surfaced to consumers.
+    path: s.path(),
+  })
+  .transform((data) => {
+    const { lang } = stripLocaleSuffix(data.path);
+    return { ...data, lang };
+  })
+  .refine((data) => data.lang === "en" || data.translation_source !== undefined, {
+    message: "translation_source is required on translated (.fr) files (ADR-0011 D-G)",
+  });
 
 const DimensionGrade = s.object({
   grade: s.enum(["S", "A", "B", "C", "D", "E"]),
@@ -185,7 +235,10 @@ const RatingActionS = s
 
 const problems = defineCollection({
   name: "Problem",
-  pattern: "problems/*/problem.yaml",
+  // Glob admits `problem.yaml` (EN canonical) + `problem.fr.yaml` (FR
+  // sibling) under each problem directory. The schema's `path` transform
+  // derives the lang for each match.
+  pattern: "problems/*/problem*.yaml",
   schema: ProblemS,
 });
 
@@ -197,20 +250,29 @@ const ratings = defineCollection({
 
 const problemPages = defineCollection({
   name: "ProblemPage",
-  pattern: "problems/*/{background,definition,history}.mdx",
+  // Glob extension admits `.fr` sibling files alongside `background.mdx`
+  // etc. The schema's transform validates the kind against the strict
+  // enum after stripping the locale suffix.
+  pattern: "problems/*/{background,definition,history}*.mdx",
   schema: s
     .object({
       title: s.string(),
       summary: s.string(),
       slug: s.path(),
       body: s.mdx(),
+      translation_source: s.enum(TRANSLATION_SOURCES).optional(),
     })
     .transform((data) => {
-      // path is e.g. "problems/hallucination-reduction/background"
-      const m = data.slug.match(/^problems\/([^/]+)\/(background|definition|history)$/);
+      // path is e.g. "problems/hallucination-reduction/background" or
+      // "problems/hallucination-reduction/background.fr" for the FR sibling.
+      const { lang, slug } = stripLocaleSuffix(data.slug);
+      const m = slug.match(/^problems\/([^/]+)\/(background|definition|history)$/);
       const problemSlug = m?.[1] ?? "";
       const kind = (m?.[2] ?? "background") as "background" | "definition" | "history";
-      return { ...data, problem_slug: problemSlug, kind };
+      return { ...data, lang, slug, problem_slug: problemSlug, kind };
+    })
+    .refine((data) => data.lang === "en" || data.translation_source !== undefined, {
+      message: "translation_source is required on translated (.fr) files (ADR-0011 D-G)",
     }),
 });
 
@@ -223,19 +285,31 @@ const ContributionS = s.object({
   evidence: s.string().url(),
 });
 
-const PaperS = s.object({
-  id: s.string(),
-  title: s.string(),
-  authors: s.array(s.string()),
-  institutions: s.array(s.string()),
-  venue: s.string().optional(),
-  year: s.number().int(),
-  arxiv_id: s.string().optional(),
-  doi: s.string().optional(),
-  github: s.string().url().optional(),
-  tldr: s.string(),
-  contributions: s.array(ContributionS),
-});
+const PaperS = s
+  .object({
+    id: s.string(),
+    title: s.string(),
+    authors: s.array(s.string()),
+    institutions: s.array(s.string()),
+    venue: s.string().optional(),
+    year: s.number().int(),
+    arxiv_id: s.string().optional(),
+    doi: s.string().optional(),
+    github: s.string().url().optional(),
+    tldr: s.string(),
+    contributions: s.array(ContributionS),
+    translation_source: s.enum(TRANSLATION_SOURCES).optional(),
+    // path is e.g. "papers/attention-is-all-you-need" for the EN canonical
+    // or "papers/attention-is-all-you-need.fr" for the FR sibling.
+    path: s.path(),
+  })
+  .transform((data) => {
+    const { lang } = stripLocaleSuffix(data.path);
+    return { ...data, lang };
+  })
+  .refine((data) => data.lang === "en" || data.translation_source !== undefined, {
+    message: "translation_source is required on translated (.fr) files (ADR-0011 D-G)",
+  });
 
 const AffiliationS = s.object({
   institution: s.string(),

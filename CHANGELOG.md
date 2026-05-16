@@ -1970,6 +1970,46 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
 - THINK artifact: `docs/thinking/7.3-locale-layout-wiring-proof.md`.
 
+#### Unit 7.4 — Velite sibling-file pattern + content-schema plumbing
+
+- Third code unit of Phase 7. **Renumbered from Unit 7.0 §F's original 7.5**: Unit 7.3's deviation note inverted the 7.4 ↔ 7.5 dependency by re-scoping the methodology FR pilot to consume the sibling-file pattern. Ships the schema plumbing the pattern requires; no `*.fr.{mdx,yaml}` content files land in this unit (methodology FR pilot — the first sibling-file consumer — lands next, provisionally Unit 7.5).
+- **New helper** — `lib/i18n/locale-filename.ts`:
+  - Exports `parseLocaleFromPath(slugLike)` → `{ lang: Locale; canonicalSlug: string }`.
+  - Detects the trailing `.<locale>` infix (where `<locale>` is in `locales` from `lib/i18n/routing.ts`); EN-canonical paths return `{ lang: defaultLocale, canonicalSlug: slugLike }` unchanged.
+  - Library-agnostic; no next-intl import; pure string parsing. Single source of truth for runtime consumers (the locale-aware loader landing in Unit 7.5).
+- **New tests** — `lib/i18n/locale-filename.test.ts`: 9 cases covering EN/FR detection across methodology / contributing / problemPages / problem.yaml / paper.yaml slugs; edge cases for unknown locales (`xx` treated as part of slug), explicit `.en` infix, double `.fr.fr` infix (only outermost is the locale), empty-string input.
+- **Velite collection extensions** — `velite.config.ts` (5 collections):
+  - `methodology`, `contributing`, `problemPages`: added `translation_source: s.enum(["human", "machine-assisted"]).optional()` to schema; transform calls `stripLocaleSuffix(data.slug)` to derive `lang` + strip the `.fr` infix from canonical slug; post-transform `.refine` enforces `translation_source` is set when `lang !== "en"`.
+  - `problems`, `papers`: added `path: s.path()` (Velite-magic field; lets transform see filename) + `translation_source` + the same lang-derivation transform + refine.
+- **Glob extensions**:
+  - `problems`: `problems/*/problem.yaml` → `problems/*/problem*.yaml` (admits `problem.fr.yaml`).
+  - `problemPages`: `problems/*/{background,definition,history}.mdx` → `problems/*/{background,definition,history}*.mdx` (admits `.fr.mdx` siblings).
+  - `methodology`, `contributing`, `papers`: existing `*.mdx` / `*.yaml` globs already match `.fr` siblings; no change.
+- **Inline locale-suffix helper** in `velite.config.ts`: `LOCALE_SLUG_INFIX = /\.(en|fr)$/` + `stripLocaleSuffix()` function. Intentionally duplicates `lib/i18n/locale-filename.ts`'s regex rather than importing it — `velite.config.ts` is self-contained per existing convention (rehype + remark npm imports only; no `@/lib/...` imports). Both sides updated together when adding a new locale.
+- **Source-of-truth schema mirror** (per Q31 dual-schema contract):
+  - `lib/schemas/problem.ts`: exported new `TranslationSourceSchema = z.enum(["human", "machine-assisted"])` + type alias `TranslationSource`; added `translation_source: TranslationSourceSchema.optional()` to `OpenProblemSchema`.
+  - `lib/schemas/paper.ts`: imports `TranslationSourceSchema` from `@/lib/schemas/problem`; added `translation_source: TranslationSourceSchema.optional()` to `PaperSchema`.
+- **Schema tests**:
+  - `lib/schemas/problem.test.ts` +3 cases: accepts `translation_source: "human"` and `"machine-assisted"`; rejects unknown value `"auto"`.
+  - `lib/schemas/paper.test.ts` +2 cases: same pattern.
+- **Q31 dual-schema contract**: Velite-side carries `lang` + `path` as derived/magic fields (not in YAML); canonical Zod-4 schema carries only `translation_source` (the user-authored field). Validate-content treats EN canonical YAML unchanged; future `.fr.yaml` files will need a `translation_source` value to satisfy Velite's refine (validate-content remains permissive on the field — Velite is the gate for the FR-requires-source rule).
+- **`.velite/*.json` shape change**: every record now carries `lang: "en"` (derived from filename — currently all-EN since no `.fr` siblings exist). Consumers using destructuring (`const { slug, title } = problem`) unaffected; consumers using `Object.keys(problem)` enumeration would observe the new `lang` field.
+- **NOT in this unit** (deferred):
+  - No `*.fr.{mdx,yaml}` content files. First FR content lands in the next unit (provisional 7.5 methodology pilot).
+  - No locale-aware loader (`lib/i18n/load-localized.ts`). Will land with first consumer in 7.5.
+  - No `scripts/validate-content.ts` extension. The script's literal `problem.yaml` lookup is unchanged; extends when first `.fr.yaml` lands.
+  - No taxonomy / authors / institutions / ratings extension. Authors + institutions are slug-identified with no translatable user-facing prose; ratings are numeric dimensions; taxonomy is `single: true` (separate treatment). Deferred.
+- **Page count delta**: 335 → **335 UNCHANGED** (no route changes; .velite payload carries new `lang` field per record but no new routes).
+- **Bundle impact**: First Load JS shared chunk = **103 kB UNCHANGED**. Helper is server-side only; no client-bundle weight.
+- **OPEN_QUESTIONS**: Q52 (`translation_source` schema) is now realized in code per ADR-0011 D-G. Can be closed in Unit 7.10 OPEN_QUESTIONS hygiene (or earlier).
+- **Smoke gates**:
+  - `pnpm validate-content` → 203 files unchanged (no content delta).
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **346/346 across 40 files** (was 332/39; +9 from `locale-filename.test.ts` new file + 3 from `problem.test.ts` + 2 from `paper.test.ts`).
+  - `pnpm build` → **335 prerendered pages** UNCHANGED. Compile in 2.8s. First Load JS shared chunk = 103 kB UNCHANGED.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- THINK artifact: `docs/thinking/7.4-velite-sibling-file.md`.
+
 
 
 

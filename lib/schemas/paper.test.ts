@@ -51,4 +51,12 @@ describe("PaperSchema", () => {
       }).success,
     ).toBe(true);
   });
+
+  it("accepts an optional translation_source = 'human' (ADR-0011 D-G)", () => {
+    expect(PaperSchema.safeParse({ ...VALID, translation_source: "human" }).success).toBe(true);
+  });
+
+  it("rejects an unknown translation_source value", () => {
+    expect(PaperSchema.safeParse({ ...VALID, translation_source: "auto" }).success).toBe(false);
+  });
 });

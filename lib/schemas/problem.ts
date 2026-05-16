@@ -23,6 +23,12 @@ const EditorialSchema = z.object({
   last_curated: isoDate,
 });
 
+// ADR-0011 D-G — translation provenance for sibling-file translations.
+// Optional on the canonical schema; Velite enforces "required on .fr files"
+// via post-transform refine. EN canonicals omit this field.
+export const TranslationSourceSchema = z.enum(["human", "machine-assisted"]);
+export type TranslationSource = z.infer<typeof TranslationSourceSchema>;
+
 export const OpenProblemSchema = z.object({
   slug,
   title: z.string().min(5).max(120),
@@ -43,5 +49,6 @@ export const OpenProblemSchema = z.object({
   benchmarks: z.array(BenchmarkSchema),
   external_links: ExternalLinksSchema.optional(),
   editorial: EditorialSchema,
+  translation_source: TranslationSourceSchema.optional(),
 });
 export type OpenProblem = z.infer<typeof OpenProblemSchema>;

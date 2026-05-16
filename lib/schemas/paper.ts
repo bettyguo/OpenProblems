@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { slug } from "@/lib/schemas/_primitives";
+import { TranslationSourceSchema } from "@/lib/schemas/problem";
 
 export const ContributionSchema = z.object({
   problem_slug: slug,
@@ -29,5 +30,7 @@ export const PaperSchema = z.object({
   github: z.string().url().optional(),
   tldr: z.string().min(1).max(400),
   contributions: z.array(ContributionSchema),
+  // ADR-0011 D-G — required on `.fr.yaml` siblings; omitted on EN canonical.
+  translation_source: TranslationSourceSchema.optional(),
 });
 export type Paper = z.infer<typeof PaperSchema>;
