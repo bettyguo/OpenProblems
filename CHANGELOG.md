@@ -1576,3 +1576,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Pure docs. No code change, no test change.
 - Smoke gates: `pnpm audit-content` (0 errors / 6 warnings — unchanged Q32-symmetry set); typecheck / test / build untouched since no source files modified.
 
+#### Unit 5.13b — `/contributing` v1.1 bump (LLM-assisted ingest path + COI disclosure)
+
+- Post-acceptance-gate Phase-5 hygiene unit (mirrors `Unit 5.13a` framing — follow-on docs work that belongs to the phase that produced it). Lands the `/contributing` follow-on listed in `docs/SESSION_HANDOFF_phase5_close.md` and `docs/thinking/5.13-phase-5-acceptance-gate.md`.
+- Added `content/contributing/v1.1.mdx` at `version: "1.1.0"`, `supersedes: "1.0.0"`. Carries v1.0's six sections forward verbatim; adds two surfaces:
+  - **§3.6 Conflict-of-interest disclosure** — verbatim from ADR-0008 D-F, which explicitly defers the disclosure to "a future content-side unit (likely a `content/contributing/v1.x` bump or a `/methodology` § appendix)". Sits next to §3.5 "No fabrication" since both are integrity-coded standards. Cross-references ADR-0009's no-auto-merge contract as the mechanical safeguard.
+  - **§7 LLM-assisted curation (Phase 5+)** — top-level section documenting the curator-side ingest path. Sub-sections: §7.1 the two CLIs (`pnpm ingest-arxiv`, `pnpm extract-leaderboard`) with default models per ADR-0008 D-B; §7.2 the no-auto-merge `drafts/` workflow per ADR-0009 D-A / D-B / D-D; §7.3 contributor-facing implications (no `ANTHROPIC_API_KEY` required for issue/PR contributors; `[Rating challenge]` template is the dispute path); §7.4 future-scope pointer to Phase-6 tooling + the digest pipeline (`/digest`, `/api/v1/digest/<domain>`).
+  - Updated **§5 Versioning** to record the v1.1 bump's diff against v1.0 (additive only — §3.1-3.5, §4, §6 unchanged); kept the v1.x / v2.0 framing intact.
+- Loader behaviour (verified at build): `app/contributing/page.tsx` sorts the collection by `version` frontmatter; `/contributing` now renders v1.1.0; `/contributing/v1.1.0` is the new versioned snapshot; `/contributing/v1.0.0` continues to render the v1.0 content from `content/contributing/v1.mdx` (audit trail preserved per the §5 promise).
+- Decision rationale: **add a new file** (`v1.1.mdx`) rather than edit `v1.mdx` in place. Editing in place would lose the v1.0 audit URL and break the §5 promise that "every committed contributing-version stays browsable". The Velite collection's `contributing/*.mdx` glob auto-discovers the new file; no `velite.config.ts` change.
+- **Scope discipline**: docs-only. Did NOT mirror the COI disclosure on `/methodology` (ADR-0008 D-F lists both as candidates; /contributing is the curator-workflow page, which is where the disclosure belongs). Did NOT update README.md or `CURATION_PROMPT.md` / `PAPER_INGEST_RUNBOOK.md` — different audiences (README is dev-onboarding; the runbooks are Claude-curator-targeted vs /contributing's external-curator audience). NOT a Phase-6 thread pull — Phase 6 entry remains gated on explicit human sign-off per §12.
+- **Parallel-curator state**: HEAD = `9283e9a` (Unit 5.13a) at session start. Working tree clean. No collisions.
+- New file ADR cross-refs: ADR-0008 D-F (COI disclosure verbatim), ADR-0009 D-A / D-B / D-D / D-E / D-F (diff format, no-auto-merge, audit-sidecar lifecycle, verified-flag discipline). Implementation cross-refs: `scripts/ingest-arxiv.ts`, `scripts/extract-leaderboard.ts`, `lib/curate/entry-draft.ts::mergeEntries` (verified-false enforcement).
+- Smoke gates:
+  - `pnpm validate-content` → 203 files unchanged. (`lib/content/validate.ts` scope is YAML/JSON only; MDX is validated by Velite at `pnpm build` — corrected the THINK doc's initial 204 prediction.)
+  - `pnpm typecheck` clean (no code touched).
+  - `pnpm test` → 284/284 across 36 files unchanged (no test files touched).
+  - `pnpm build` → **323 prerendered pages** (was 322 at HEAD `9283e9a`; +1 for `/contributing/v1.1.0`). Compile in 2.5s. First Load JS shared chunk = **103 kB unchanged**. Both `/contributing/v1.0.0` and `/contributing/v1.1.0` SSG'd correctly.
+  - `pnpm audit-content` → 0 errors / 6 warnings unchanged (the Q32-expected `related-problems-symmetry` set since Phase 2).
+- Page count delta: 322 → **323**. Phase-5 deliverable count unchanged (this is documentation of existing surfaces). v1.0 audit URL `/contributing/v1.0.0` preserved.
+

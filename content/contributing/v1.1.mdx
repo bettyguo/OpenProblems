@@ -1,0 +1,125 @@
+---
+version: "1.1.0"
+supersedes: "1.0.0"
+title: Contributing to LLM OpenProblems
+summary: Editorial workflow for proposing new problems, papers, leaderboard entries, and rating challenges. The four GitHub issue templates plus the PR review expectations. v1.1 adds the LLM-assisted curation path (curator-side) and the conflict-of-interest disclosure.
+date: 2026-05-16
+---
+
+LLM OpenProblems is a rated, taxonomy-organized encyclopedia of open problems in LLM and AI research. The editorial work — drafting problem YAMLs, ingesting papers, recording leaderboard entries, issuing rating actions — is done by curators in PRs against this repository. Outside contributors propose changes via GitHub issues; curators review, draft the YAML, and ship the PR.
+
+This page is the external-contributor entry point. The constitutional doc is [`MASTER_PROMPT.md`](https://github.com/bettyguo/OpenProblems/blob/main/MASTER_PROMPT.md); read it if you want the full picture of how the encyclopedia thinks. The [methodology page](/methodology) covers how ratings work in detail.
+
+## 1. Who can contribute
+
+- **Anyone with a GitHub account** can open an issue using the four templates below. No first-party auth is required — the site stores no user accounts.
+- **Curators** are the small group with merge access; they draft the YAML on incoming proposals and review each other's PRs.
+- **The curator-of-record** for each editorial action is recorded explicitly: every rating action's `curator` field, every problem's `editorial.primary_curator`, every PR's reviewer history.
+
+If you want to PR a complete YAML yourself instead of filing an issue, you're welcome to — base it on an existing file in [`content/problems/`](https://github.com/bettyguo/OpenProblems/tree/main/content/problems) or [`content/papers/`](https://github.com/bettyguo/OpenProblems/tree/main/content/papers) and follow the editorial standards in §3.
+
+## 2. The four contribution types
+
+| Type | When to use | Template |
+|------|-------------|----------|
+| **New problem** | A research problem belongs in the encyclopedia but isn't there yet. | [`new-problem`](https://github.com/bettyguo/OpenProblems/issues/new?template=new-problem.yml) |
+| **New paper** | A paper materially contributes to an existing problem. | [`new-paper`](https://github.com/bettyguo/OpenProblems/issues/new?template=new-paper.yml) |
+| **Leaderboard entry** | A specific score on a specific benchmark for an already-ingested paper. | [`leaderboard-entry`](https://github.com/bettyguo/OpenProblems/issues/new?template=leaderboard-entry.yml) |
+| **Rating challenge** | You think a current rating dimension should move (or a problem should join the watchlist). | [`rating-challenge`](https://github.com/bettyguo/OpenProblems/issues/new?template=rating-challenge.yml) |
+
+Each template gathers enough signal for a curator to draft the corresponding YAML. You don't need to submit a complete schema — the curator handles field selection, tag assignment, and verification.
+
+## 3. Editorial standards
+
+### 3.1 Primary-source rule
+
+Per `MASTER_PROMPT.md` §15.6, every editorial claim must trace to a primary source: the arXiv paper itself, the lab's announcement page, the benchmark authors' README, the model card. Secondary coverage — blog posts, X threads, recap articles — does not qualify, even if accurate. Issue templates include an "Evidence URL" or "Source URL(s)" field for exactly this purpose; fill it.
+
+### 3.2 ROR / ORCID conventions
+
+- **Institutions** carry a [ROR](https://ror.org) ID when one exists. If an organization (e.g., a research group within a larger corporate parent) doesn't have its own ROR record, omit the field — don't substitute the parent corporation's ID.
+- **Authors** carry an [ORCID](https://orcid.org) iD when published. Curator-side backfill is the norm; contributors don't need to look these up themselves.
+
+### 3.3 Rating-action immutability
+
+Per [ADR-0005](https://github.com/bettyguo/OpenProblems/blob/main/docs/adr/0005-rating-action-immutability.md), committed rating-action YAML files cannot be edited, deleted, or renamed. A pre-commit hook enforces this. The dispute resolution path for a contested rating is always to draft a **new** rating-action YAML capturing the new state — never to amend an existing one. This is why the `[Rating challenge]` template asks for **evidence**, not a draft.
+
+### 3.4 Methodology versioning
+
+A rating produced under methodology v1.0 is never silently re-graded by v1.1 (§8.1). Each rating action records the `methodology_version` it was issued under. New methodology versions land as new ADRs (see [ADR-0006](https://github.com/bettyguo/OpenProblems/blob/main/docs/adr/0006-saturation-na-encoding.md) for the v1.1 saturation-N/A encoding).
+
+### 3.5 No fabrication
+
+Per §15.6, **do not fabricate**: do not invent ROR IDs, do not estimate scores when the paper doesn't report them, do not fill confidence values without rationale. Leaving a field empty is always preferable to filling it with plausible-looking noise. If you're unsure, surface it in the issue's "Additional context" field.
+
+### 3.6 Conflict-of-interest disclosure
+
+Per [ADR-0008](https://github.com/bettyguo/OpenProblems/blob/main/docs/adr/0008-llm-provider-anthropic.md) D-F, the encyclopedia uses Anthropic Claude to draft curator suggestions (see §7 for the workflow). Some indexed papers are authored by Anthropic; others by labs in direct competition with Anthropic. The disclosure is therefore stated plainly:
+
+> This encyclopedia uses Anthropic Claude to draft curator suggestions, including for papers from Anthropic itself. Curators are expected to apply equal scrutiny regardless of authorship.
+
+In practice, this means: every LLM-drafted rating signal, leaderboard entry, or paper YAML passes through the same curator-review step (§4) and the same primary-source verification (§3.1). The diff workflow ([ADR-0009](https://github.com/bettyguo/OpenProblems/blob/main/docs/adr/0009-human-review-diff.md)) prevents auto-merge — there is no path by which an LLM-authored line lands in `content/` without a human curator running `git apply` after review.
+
+If a contributor believes a rating decision was influenced by authorship rather than evidence, the dispute path is the `[Rating challenge]` template (§2) with the evidence the original action overlooked. Curator-of-record assignment is recorded on every rating action, so review chains are fully traceable.
+
+## 4. PR review expectations
+
+When a curator opens a PR addressing an issue:
+
+1. **CI must be green.** `pnpm validate-content`, `pnpm test`, `pnpm typecheck`, `pnpm build`, the Playwright e2e suite, and Lighthouse CI (a11y / perf / SEO / best-practices ≥ 95) all run on every PR. Red CI blocks the merge regardless of approver count.
+2. **One curator + one reviewer.** The curator-of-record drafts; a second curator reviews. Self-review is not sufficient.
+3. **Visual baselines update on merge.** New routes / vizes carry `chromium-win32` and `chromium-linux` Playwright screenshots; baselines refresh on the first PR that introduces the route.
+4. **CHANGELOG entry required.** Every commit lands a per-unit `CHANGELOG.md` entry describing the editorial decision + smoke-gate state. PR titles follow `chore(phase-N): unit N.X — <one-line>`.
+
+The PR review is also the verification surface for the `verified: boolean` on leaderboard entries — submitters don't self-attest; the curator-reviewer verifies the source URL points at the claimed score under the claimed protocol. This is also enforced mechanically for LLM-drafted entries (§7) — the merge layer in `lib/curate/entry-draft.ts` forces `verified: false` regardless of what the LLM proposed; the curator flips it after manual verification.
+
+## 5. Versioning this page
+
+This is v1.1 of the contributor workflow. Bumps:
+
+- **v1.x** — additive changes (new contribution types, new tooling, new standards layered on top of the existing ones).
+- **v2.0** — workflow shape change (e.g., auth-gated submissions per `MASTER_PROMPT.md` §5.8, which is currently deferred per `MASTER_PROMPT.md` §12 and Unit 4.12's DB-migration trigger eval).
+
+Each version is its own MDX file (`content/contributing/v{N}.mdx`), and the page surface links to the previous versions for audit. This mirrors `/methodology`'s versioning.
+
+**v1.1 changelog** (over v1.0): added §3.6 conflict-of-interest disclosure (per ADR-0008 D-F); added §7 documenting the curator-side LLM-assisted ingest path (Phase-5 deliverables — Units 5.3 / 5.5 / 5.7-5.9; ADR-0008 + ADR-0009). No changes to §1, §2, §3.1-3.5, §4, §6 over v1.0; the v1.0 snapshot remains browsable at `/contributing/v1.0.0`.
+
+## 6. Questions, ambiguity, gaps
+
+If something doesn't fit any of the four templates, or you've spotted a gap in the encyclopedia that none of them addresses — open a regular GitHub issue (not via a template) and tag it `meta`. Curators triage these into either: a one-off discussion thread, a new ADR, or a new issue-template in a future contributing-page version.
+
+## 7. LLM-assisted curation (Phase 5+)
+
+Phase 5 of the project shipped two curator-side CLIs that draft editorial content with [Anthropic Claude](https://github.com/bettyguo/OpenProblems/blob/main/docs/adr/0008-llm-provider-anthropic.md). **External contributors do not need to run these** — they're tooling that curators may use to accelerate their own drafting work after an issue is filed. Documenting them here keeps the workflow auditable for everyone.
+
+### 7.1 The two CLIs
+
+| Command | What it drafts | Default model |
+|---------|---------------|---------------|
+| `pnpm ingest-arxiv <arxiv-id>` | A new `content/papers/<id>.yaml` from arXiv metadata + abstract. | Sonnet 4.6 |
+| `pnpm extract-leaderboard <arxiv-id> --problem <slug>` | New rows for `content/problems/<slug>/entries.json` from the paper's PDF tables. | Opus 4.7 |
+
+Both accept `--dry-run` (prints the rendered prompt + token estimate without making the API call) and `--verbose` (prints estimated USD cost before each call). Both require `ANTHROPIC_API_KEY` in the environment for non-dry-run; an optional `LLM_OPENPROBLEMS_DAILY_BUDGET_USD` env var caps daily spend per machine (default: no cap; the `--verbose` cost line + `--dry-run` discipline are the primary safeguards).
+
+### 7.2 The no-auto-merge contract
+
+Per [ADR-0009](https://github.com/bettyguo/OpenProblems/blob/main/docs/adr/0009-human-review-diff.md), the CLIs **never write to `content/`**. They write a unified diff and a JSON audit sidecar to a gitignored `drafts/` directory:
+
+```
+drafts/<unit>-<isoTimestamp>-<slug>.diff
+drafts/<unit>-<isoTimestamp>-<slug>.diff.meta.json
+```
+
+The `.diff` file is `git apply`-compatible — the curator reviews it, optionally edits it (to fix slug typos, normalize whitespace, or trim hallucinated fields), and runs `git apply drafts/<file>.diff` to materialize the change in `content/`. From there the change is a normal PR.
+
+The `.meta.json` sidecar carries per-call audit data — model, input/output token counts, estimated USD cost, SHA-256 hashes of the rendered prompt + completion, the Anthropic request ID, and the timestamp. This makes spot-audit and exact-prompt reproduction tractable months later.
+
+### 7.3 What this means for outside contributors
+
+- **You don't need an `ANTHROPIC_API_KEY`** to file an issue or PR. The four templates in §2 are the only entry point most contributors need.
+- **Drafts shown in PRs may be LLM-assisted.** If a curator used the CLIs, the PR description will say so and link the relevant `.meta.json` audit data. The change still passes through full PR review (§4) — including primary-source verification (§3.1) and `verified: false` enforcement on leaderboard entries — before merging.
+- **The `[Rating challenge]` template** (§2) is the right path if you believe an LLM-drafted action overlooked evidence. The curator chain for the original action is recorded; reviewers will trace it.
+
+### 7.4 Future scope
+
+Phase 6 may add additional curator-side tooling (e.g. a rating-challenge CLI), and the digest pipeline (`/digest` + per-domain RSS feeds at `/api/v1/digest/<domain>`) summarises rating activity weekly. Those surfaces follow the same no-auto-merge + audit-sidecar discipline ADR-0009 establishes; updates to this page (v1.x) document them when they ship.
