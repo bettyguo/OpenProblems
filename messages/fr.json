@@ -100,6 +100,20 @@
     "status_accepted": "Acceptée",
     "back_to_problem": "← Retour au problème"
   },
+  "profile_edit": {
+    "aria_label": "Modifier votre profil",
+    "heading": "Modifier le profil",
+    "description": "Ces champs sont publics sur votre page /u/{login}. Le nom d'affichage remplace le nom dérivé de GitHub.",
+    "display_name_label": "Nom d'affichage",
+    "display_name_placeholder": "Laisser vide pour utiliser votre nom GitHub",
+    "display_name_hint": "Jusqu'à 80 caractères. Texte brut.",
+    "bio_label": "Bio",
+    "bio_placeholder": "Présentez-vous à la communauté",
+    "bio_hint": "Jusqu'à 280 caractères. Texte brut (pas de markdown).",
+    "save_button": "Enregistrer",
+    "success_message": "Profil mis à jour.",
+    "error_label": "Impossible d'enregistrer"
+  },
   "public_profile": {
     "aria_label": "Profil public de @{login}",
     "not_found_title": "Utilisateur introuvable",

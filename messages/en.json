@@ -100,6 +100,20 @@
     "status_accepted": "Accepted",
     "back_to_problem": "← Back to problem"
   },
+  "profile_edit": {
+    "aria_label": "Edit your profile",
+    "heading": "Edit profile",
+    "description": "These fields are public on your /u/{login} page. Display name overrides your GitHub-derived name.",
+    "display_name_label": "Display name",
+    "display_name_placeholder": "Leave blank to use your GitHub name",
+    "display_name_hint": "Up to 80 characters. Plain text.",
+    "bio_label": "Bio",
+    "bio_placeholder": "Tell the community about yourself",
+    "bio_hint": "Up to 280 characters. Plain text (no markdown).",
+    "save_button": "Save changes",
+    "success_message": "Profile updated.",
+    "error_label": "Couldn't save"
+  },
   "public_profile": {
     "aria_label": "Public profile of @{login}",
     "not_found_title": "User not found",

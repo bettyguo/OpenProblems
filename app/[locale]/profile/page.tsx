@@ -18,6 +18,7 @@ import {
   withdrawChallenge,
   type ChallengeStatus,
 } from "@/lib/rating-challenges";
+import { MAX_BIO_CHARS, MAX_DISPLAY_NAME_CHARS, updateProfile } from "@/lib/users";
 import { cn } from "@/lib/utils";
 import { getWatchedSlugs } from "@/lib/watchlist";
 
@@ -65,9 +66,10 @@ export const dynamic = "force-dynamic";
 
 interface ProfilePageProps {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ saved?: string; error?: string }>;
 }
 
-export default async function ProfilePage({ params }: ProfilePageProps) {
+export default async function ProfilePage({ params, searchParams }: ProfilePageProps) {
   const { locale } = await params;
   if (!isLocale(locale)) redirect("/en/profile");
   setRequestLocale(locale);
@@ -78,14 +80,24 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   }
 
   const t = await getTranslations("profile");
+  const tE = await getTranslations("profile_edit");
   const userId = session.user.id;
+  const sp = await searchParams;
+  const editSaved = sp.saved === "1";
+  const editError = typeof sp.error === "string" ? sp.error : null;
 
   const [userRow] = await db
-    .select({ githubLogin: users.githubLogin })
+    .select({
+      githubLogin: users.githubLogin,
+      displayName: users.displayName,
+      bio: users.bio,
+    })
     .from(users)
     .where(eq(users.id, userId))
     .limit(1);
   const githubLogin = userRow?.githubLogin ?? null;
+  const currentDisplayName = userRow?.displayName ?? "";
+  const currentBio = userRow?.bio ?? "";
 
   const watchedSlugs = await getWatchedSlugs(userId);
   const watched = watchedSlugs
@@ -94,6 +106,25 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
   const challenges = await getUserChallenges(userId);
   const tRC = await getTranslations("rating_challenge");
+
+  const updateProfileAction = async (formData: FormData) => {
+    "use server";
+    const actionSession = await auth();
+    if (!actionSession?.user?.id) {
+      redirect(`/api/auth/signin/github?callbackUrl=/${locale}/profile`);
+    }
+    const displayNameRaw = String(formData.get("displayName") ?? "");
+    const bioRaw = String(formData.get("bio") ?? "");
+    const err = await updateProfile(actionSession.user.id, {
+      displayName: displayNameRaw,
+      bio: bioRaw,
+    });
+    revalidatePath(`/[locale]/profile`, "page");
+    if (err) {
+      redirect(`/${locale}/profile?error=${encodeURIComponent(err)}`);
+    }
+    redirect(`/${locale}/profile?saved=1`);
+  };
 
   const withdrawChallengeAction = async (formData: FormData) => {
     "use server";
@@ -156,6 +187,71 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           </button>
         </form>
       </header>
+
+      <section aria-label={tE("aria_label")} className="mt-12">
+        <h2 className="font-serif text-xl font-semibold tracking-tight">{tE("heading")}</h2>
+        <p className="text-muted-foreground mt-2 text-sm">
+          {tE("description", { login: githubLogin ?? "you" })}
+        </p>
+
+        {editSaved && (
+          <p
+            role="status"
+            className="mt-4 rounded border border-emerald-300/60 bg-emerald-50 px-3 py-2 text-sm text-emerald-900 dark:border-emerald-700/40 dark:bg-emerald-900/20 dark:text-emerald-100"
+          >
+            {tE("success_message")}
+          </p>
+        )}
+        {editError && (
+          <p
+            role="alert"
+            className="mt-4 rounded border border-red-300/60 bg-red-50 px-3 py-2 text-sm text-red-900 dark:border-red-700/40 dark:bg-red-900/20 dark:text-red-100"
+          >
+            <span className="font-medium">{tE("error_label")}:</span> {editError}
+          </p>
+        )}
+
+        <form action={updateProfileAction} className="mt-6 space-y-5">
+          <label className="block">
+            <span className="text-foreground text-sm font-medium">{tE("display_name_label")}</span>
+            <input
+              name="displayName"
+              type="text"
+              defaultValue={currentDisplayName}
+              maxLength={MAX_DISPLAY_NAME_CHARS}
+              placeholder={tE("display_name_placeholder")}
+              className="border-border bg-background focus-visible:ring-ring mt-1.5 block w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
+            />
+            <span className="text-muted-foreground mt-1 block text-xs">
+              {tE("display_name_hint")}
+            </span>
+          </label>
+
+          <label className="block">
+            <span className="text-foreground text-sm font-medium">{tE("bio_label")}</span>
+            <textarea
+              name="bio"
+              defaultValue={currentBio}
+              maxLength={MAX_BIO_CHARS}
+              rows={4}
+              placeholder={tE("bio_placeholder")}
+              className="border-border bg-background focus-visible:ring-ring mt-1.5 block w-full resize-y rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
+            />
+            <span className="text-muted-foreground mt-1 block text-xs">{tE("bio_hint")}</span>
+          </label>
+
+          <button
+            type="submit"
+            className={cn(
+              "border-border bg-foreground text-background inline-flex h-9 items-center justify-center rounded-md border px-4 text-sm font-medium",
+              "hover:bg-foreground/90 focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none",
+              "transition-colors",
+            )}
+          >
+            {tE("save_button")}
+          </button>
+        </form>
+      </section>
 
       <section aria-label={t("watching_aria_label")} className="mt-12">
         <h2 className="font-serif text-xl font-semibold tracking-tight">{t("watching_heading")}</h2>

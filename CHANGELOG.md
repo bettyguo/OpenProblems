@@ -2470,6 +2470,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 15 — Community-adjacent surfaces (**sixth NON-§13 phase**: Q63 promotion — user-editable profile fields; surfaces ADR-0016; second ALTER migration)
 
+#### Unit 15.4 — `/[locale]/profile` edit form + `messages.profile_edit.*` namespace (24 keys net; atomic pre-add)
+
+- Fifth Phase-15 unit; third code unit. Realizes ADR-0016 D-C (edit surface route shape — extend existing `/profile`; NOT separate `/profile/edit`) + D-D (server-action driven; NOT REST endpoint) at the UI layer. First write-form UI consumer of Unit 15.3's `updateProfile` helper.
+- **`messages/en.json` (edit)** + **`messages/fr.json` (edit)**: adds new `messages.profile_edit.*` namespace **(12 keys per locale × 2 locales = 24 keys net; ALL pre-added upfront per Phase-14 atomic-i18n discipline)**:
+  - `aria_label` — section landmark label
+  - `heading` — "Edit profile"
+  - `description` — public-visibility note with `{login}` ICU placeholder
+  - `display_name_label` / `display_name_placeholder` / `display_name_hint`
+  - `bio_label` / `bio_placeholder` / `bio_hint`
+  - `save_button` — "Save changes"
+  - `success_message` — "Profile updated."
+  - `error_label` — "Couldn't save"
+- **`app/[locale]/profile/page.tsx` (edit)**: adds three surfaces:
+  - **`searchParams` to ProfilePageProps**: typed `{ saved?: string; error?: string }` for success / error banner feedback (server-action-can't-return-data workaround; pattern: server action `redirect(?saved=1)` or `redirect(?error=<encoded>)`; page reads searchParams and renders banner conditionally; mirrors Phase-11's `redirect("/profile?challenge=submitted")` precedent).
+  - **`updateProfileAction` inline server action**: re-validates session; reads `displayName` + `bio` form fields; calls Unit 15.3's `updateProfile(userId, fields)`; on validation error redirects to `?error=<encoded>`; on success redirects to `?saved=1`. `revalidatePath("/[locale]/profile", "page")` invalidates cached fragments before redirect.
+  - **Edit-form `<section>` placement**: between header card and watchlist section. Mirrors Phase-10 layout precedent (adjacency to identity surface). Pre-populated `defaultValue` from `users.displayName ?? ""` + `users.bio ?? ""` (Server-component non-controlled pattern). `<input maxLength={MAX_DISPLAY_NAME_CHARS}>` + `<textarea maxLength={MAX_BIO_CHARS}>` enforce client-side caps (defense-in-depth alongside server-side validation).
+- **Accessibility**: success banner uses `role="status"` (polite SR announcement); error banner uses `role="alert"` (assertive). Inputs use semantic `<label>` wrapper pattern. Form retains keyboard navigation per existing register.
+- **DELETE / "clear all" affordance NOT added**: submitting the form with empty text inputs achieves clear-field semantics (`updateProfile` collapses empty-after-trim to NULL per ADR-0016 D-B). Mirrors GitHub's "delete displayName by saving empty" pattern. Redundant button avoided.
+- **`maxLength` defense-in-depth rationale**: client `maxLength` prevents accidental over-typing + UX feedback; server-side `validateDisplayName` / `validateBio` authoritative (defends against HTML editing / curl POST / browser bug). Both layers needed.
+- **`searchParams` typed for forward compat**: tomorrow's URL params (e.g., `?tab=watchlist` for tab navigation) extend the same prop shape.
+- **Smoke gates**:
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **497/497 across 52 vitest files unchanged** (no test files touched; client-side smoke covered by typecheck + build).
+  - `pnpm build` → ~593 prerendered + 7 dynamic page+API routes unchanged. **`/[locale]/profile` bundle = 108 kB UNCHANGED** through every Phase 10-15 unit. First Load JS shared chunk = **103 kB UNCHANGED**. Middleware = **160 kB UNCHANGED**.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- **Not in this unit** (Unit 15.5 follows):
+  - `/[locale]/u/[handle]/page.tsx` (Phase 14 public shell) fallback chain + bio section render.
+  - `/[locale]/profile/page.tsx` **display name** rendering update (existing header chain `name → githubLogin → email` extends to `displayName → name → githubLogin → email`).
+  - `components/auth-control/index.tsx` (signed-in pill) fallback chain update.
+- THINK artifact: `docs/thinking/15.4-profile-edit-form.md`.
+
 #### Unit 15.3 — `lib/users/` extension: edit helpers + validation + tests (497 tests across 52 files; +17 from Phase 14)
 
 - Fourth Phase-15 unit; second code unit. Realizes ADR-0016 D-A field set + D-B validation/sanitization contract at the helper layer. Anticipated dependency for Unit 15.4 (edit form) + Unit 15.5 (public consumption).
