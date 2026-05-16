@@ -2314,6 +2314,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
 - THINK artifact: `docs/thinking/8.2-home-page-fr-translation.md`.
 
+#### Unit 8.3 — `NEXT_LOCALE` cookie configuration on middleware
+
+- Third code unit of Phase 8. Realizes Unit 8.0 prep D-9: explicitly pin the `NEXT_LOCALE` cookie configuration on the next-intl middleware (was relying on next-intl defaults from Unit 8.1's `31ea2d5`).
+- **Edit** — `middleware.ts`: `createMiddleware` extended with explicit `localeCookie` config:
+  - `name`: `NEXT_LOCALE` (matches next-intl default; spelled here for clarity).
+  - `maxAge`: `60 * 60 * 24 * 365` (1 year). Returning visitors keep their last-clicked locale; expires before stale browser state outlasts a reasonable curator turnaround.
+  - `sameSite`: `lax`. Required for top-level navigation cookies; LocaleToggle is within-origin.
+  - `path`: `/`. Cookie applies site-wide.
+  - `secure`: `process.env.NODE_ENV === "production"`. `localhost` dev and `pnpm start` smoke tests need the cookie over HTTP; CI Lighthouse + Vercel previews run under HTTPS.
+  - `httpOnly`: intentionally left at next-intl's default (false). Only the middleware reads the cookie today (server-side); `httpOnly: true` would harden against XSS but pre-empt future client-side personalization (e.g., LocaleToggle "remember this choice" UX).
+- Comment block in `middleware.ts` documents each field's rationale + cross-references ADR-0011 D-B (locale-prefix mandate) and ADR-0011 D-F (cookie is for first-visit Accept-Language hint, not state).
+- **NOT in this unit** (deferred):
+  - Custom cookie name (e.g., `op_locale`) — conventional `NEXT_LOCALE` is widely understood; no benefit to deviation.
+  - Encrypted / signed cookie — content is `en` / `fr`, not a secret; tampering forces re-detection.
+  - Multi-locale tracking (e.g., FR for marketing, EN for docs) — Phase-9+ concern coupled to user accounts.
+  - Dedicated middleware integration test — Class B follow-on; existing routing tests + Unit 8.1's smoke pass cover the locale-set-of-truth + end-to-end redirect behavior.
+- **Smoke gates**:
+  - `pnpm validate-content` → 203 files unchanged.
+  - `pnpm typecheck` clean.
+  - `pnpm test` → 384/384 across 44 files unchanged (no test files touched).
+  - `pnpm build` → ~590 prerendered pages unchanged. First Load JS shared chunk = **103 kB UNCHANGED**.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- THINK artifact: `docs/thinking/8.3-locale-cookie-config.md`.
+
 
 
 
