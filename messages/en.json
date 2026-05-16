@@ -36,6 +36,14 @@
     "sign_in_prompt": "Sign in to watch",
     "aria_label": "Toggle this problem on your watchlist"
   },
+  "profile": {
+    "display_name_fallback": "Signed in",
+    "sign_out": "Sign out",
+    "watching_heading": "Watching",
+    "watching_aria_label": "Problems you're watching",
+    "empty_message": "You're not watching any problems yet.",
+    "empty_cta": "Browse problems →"
+  },
   "home": {
     "hero_heading": "Rated open problems in LLM & AI research.",
     "hero_description": "A taxonomy-organized encyclopedia of open problems, scored on five revisable dimensions — Difficulty, Saturation, Urgency, Value, Industry Call — with an immutable rating-action log behind every score.",

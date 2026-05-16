@@ -36,6 +36,14 @@
     "sign_in_prompt": "Se connecter pour suivre",
     "aria_label": "Ajouter ou retirer ce problème de votre liste de suivi"
   },
+  "profile": {
+    "display_name_fallback": "Connecté",
+    "sign_out": "Se déconnecter",
+    "watching_heading": "Suivis",
+    "watching_aria_label": "Problèmes que vous suivez",
+    "empty_message": "Vous ne suivez aucun problème pour l'instant.",
+    "empty_cta": "Parcourir les problèmes →"
+  },
   "home": {
     "hero_heading": "Problèmes ouverts notés en recherche en LLM et IA.",
     "hero_description": "Une encyclopédie organisée par taxonomie des problèmes ouverts, notés sur cinq dimensions révisables — Difficulté, Saturation, Urgence, Valeur, Demande de l'industrie — avec un journal d'actions de notation immuable derrière chaque score.",

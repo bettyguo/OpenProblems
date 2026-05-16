@@ -2470,6 +2470,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 10 — Community-adjacent surfaces (**first NON-§13 phase**: Profile page + Phase-9 UI polish)
 
+#### Unit 10.2 — Profile page (`/[locale]/profile` route — **first protected route**)
+
+- Second code unit of Phase 10 and the watershed unit of the phase. Lands [`app/[locale]/profile/page.tsx`](app/[locale]/profile/page.tsx) — the **first protected route** in the project. Exercises Phase-9 Class B item 12 ("auth-aware route protection") at a single-route scale before any middleware-based lift.
+- **Route protection** = server-component check + redirect (per Unit 10.0 D-4 lean). Page calls `auth()` at the top; if `!session?.user?.id`, calls `redirect(`/api/auth/signin/github?callbackUrl=/${locale}/profile`)`. Locally scoped; no middleware change; no middleware bundle delta (stays at 159 kB).
+- **Dynamic rendering**: `export const dynamic = "force-dynamic"` because the page reads `auth()` + per-user DB row + user's watchlist on every request. SSG would serve stale or empty data; force-dynamic ensures request-time render. Build summary still lists `/en/profile` + `/fr/profile` under the SSG ● marker (parent `[locale]/layout.tsx`'s `generateStaticParams` enumerates locale paths) but the page body is rendered per-request, not prerendered.
+- **Page surface** (per Unit 10.0 D-5 + D-6 + D-7):
+  - **Header**: GitHub avatar (`<img>` per Unit 10.0 D-10 lean — bare `<img>` with `alt=""` for decorative use; avoids `next/image` + `next.config.ts` remotePatterns surface for one external avatar URL pattern; no ESLint disable needed because the `@next/next/no-img-element` rule isn't loaded in this project per OPEN_QUESTIONS Q19 / Phase-0 Unit 0.8 regression note) + display name (chain: `session.user.name → githubLogin → email → translated fallback`) + GitHub login pill (mono-font; pulled from `users.githubLogin` via a separate Drizzle query since the column isn't in the default Auth.js session shape) + sign-out form (inline server-action `<form action={async () => { "use server"; await signOut({ redirectTo: "/" }); }}>` mirroring [`AuthControl`](components/auth-control/index.tsx)'s signed-in branch).
+  - **Watching section**: dense list of watched problems reusing [`<WatchlistToggle>`](components/watchlist-toggle/index.tsx) per Unit 10.0 D-7 (visual consistency with problem-detail pages; redundant `isWatched()` re-check inside the toggle is acceptable given small list size + indexed SQL lookup). Each row: linked problem title + `<StatusPill>` + watchlist toggle (which renders as "Watching ★" since every visible slug is by-definition watched).
+  - **Empty state**: dashed-border card with `t("empty_message")` + link to `/problems` with `t("empty_cta")` ("Browse problems →" / "Parcourir les problèmes →").
+- **`messages/{en,fr}.json` (edit)**: `profile.*` namespace adds 6 keys per locale (`display_name_fallback` / `sign_out` / `watching_heading` / `watching_aria_label` / `empty_message` / `empty_cta`). FR: "Connecté" / "Se déconnecter" / "Suivis" / "Problèmes que vous suivez" / "Vous ne suivez aucun problème pour l'instant." / "Parcourir les problèmes →".
+- **NOT in this unit** (Phase 11+ scope):
+  - Profile-page Playwright smoke test (signed-out redirect + signed-in render).
+  - Public-profile rendering at `/[locale]/u/[handle]` (Unit 10.0 D-3 alternative; deferred).
+  - User-editable fields (display-name override, preferences, etc.).
+  - Per-user statistics (rating actions authored, etc.).
+  - Multi-locale FR translation of the empty-state CTA destination (`/problems` is locale-aware via the next-intl `Link` wrapper).
+- **Smoke gates**:
+  - `pnpm validate-content` → 203 files unchanged.
+  - `pnpm typecheck` clean.
+  - `pnpm test` → 394/394 across 45 files unchanged (no test files touched).
+  - `pnpm build` → ~590 prerendered pages + **+2 route entries** (`/en/profile` + `/fr/profile`, listed under SSG ● per parent locale layout's generateStaticParams but rendered per-request via `dynamic = "force-dynamic"`). Profile page size: 1.9 kB; total First Load JS 108 kB on the profile route (shared = 103 kB UNCHANGED across all routes). Middleware bundle: 159 kB UNCHANGED.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- THINK artifact: omitted — Unit 10.0 prep covered the architectural surface (D-1 through D-12); this implementation lands the leans verbatim. Mirrors the Unit 9.5 + 9.6 pattern where the unit-specific THINK doc was small enough to fold into the phase prep + per-unit CHANGELOG entry.
+- Next: Unit 10.3 (Phase-10 hygiene status pass).
+
 #### Unit 10.1 — `lib/watchlist/` extension: `getWatchedSlugs(userId)` helper
 
 - First code unit of Phase 10. Extends [`lib/watchlist/index.ts`](lib/watchlist/index.ts) with `getWatchedSlugs(userId): Promise<string[]>` — used by Unit 10.2's profile page to render the watched-problems list. Thin Drizzle SELECT: filter by `userId`, ORDER BY `createdAt DESC`, LIMIT 50.
