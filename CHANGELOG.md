@@ -2470,6 +2470,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 11 — Community-adjacent surfaces (**second NON-§13 phase**: Rating-challenge submission — honored-deferral pick)
 
+#### Unit 11.1 — DB scaffold: `ratingChallenges` table + `0002_rating_challenges` migration
+
+- First code unit of Phase 11. Lands the second project-owned DB table (`watchlist` was first in Unit 9.6). Schema decisions per Unit 11.0 D-3 + D-4 + D-5 + D-6 + D-7. **Second migration in Phase 11's surface** (third migration project-wide; drizzle-kit's monotonic 0-indexed sequence: `0000_initial_auth` (Unit 9.3) + `0001_watchlist` (Unit 9.6) + **`0002_rating_challenges`** (this unit)).
+- **`lib/db/schema.ts` (edit)**: adds `ratingChallenges` table export after `watchlist` (preserves the existing watchlist docstring's positional attachment to its export; new table grouped after watchlist as the second write-path).
+  - **UUID PK** via `$defaultFn(() => crypto.randomUUID())` — matches `users.id` strategy per Unit 11.0 D-12.
+  - **`userId` FK** to `user.id` with `ON DELETE cascade` — matches `watchlist` precedent.
+  - **`problemSlug`** plain text, no FK — matches Q56 lean + ADR-0013 D-F (USER-STATE only; content stays file-first per ADR-0004).
+  - **`dimension`** TEXT — app-level enum validation against 5 `RatingActionSchema.dimensions` keys (Unit 11.2 lands the helper).
+  - **`proposedValue`** TEXT — per-dimension format varies; rejected sparse 5-typed-columns + JSON column alternatives.
+  - **`rationale`** required TEXT — app-level validation (min 50 / max 2000 chars) lands in Unit 11.2.
+  - **`status`** TEXT default `"submitted"` — Phase 11 ships only this value; Phase 12+ adds `under_review` / `accepted` / `rejected` / `withdrawn`.
+  - **`createdAt`** timestamp_ms default via `unixepoch() * 1000` — mirrors `users.createdAt` + `watchlist.createdAt`.
+  - **NO composite PK** (single UUID): users can submit multiple challenges per problem (one per dimension or multiple per dimension over time). Differs intentionally from `watchlist`'s `(userId, problemSlug)` composite shape.
+  - **NO speculative curator-review columns** (`reviewedAt` / `reviewerId` / `reviewNotes` / `acceptedActionId`) — per ADR-0005's immutability-and-explicit-evolution ethos, columns land when the surface lands. Phase 12+ migration adds them.
+- **`lib/db/migrations/0002_rating_challenges.sql` (new)**: generated via `pnpm db:generate --name rating_challenges`. Single CREATE TABLE; 1 FK with cascade on `userId`; no indexes (Phase-11 scale doesn't need them; SQLite plans single-table LIMIT 50 queries fine without index hints). Snapshot at `meta/0002_snapshot.json`; journal updated.
+- **NOT in this unit** (deferred per Unit 11.0 breakdown): `lib/rating-challenges/` helpers (Unit 11.2 — `submitChallenge` + `getUserChallenges`); POST API route + tests (Unit 11.2); submission form UI (Unit 11.3); profile-page extension (Unit 11.4).
+- **Smoke gates**:
+  - `pnpm validate-content` → 203 files unchanged.
+  - `pnpm typecheck` clean (post-`ratingChallenges` table addition; Drizzle-orm types infer correctly).
+  - `pnpm test` → 394/394 across 45 files unchanged (no test files touched; helpers + route tests land Unit 11.2).
+  - `pnpm db:generate --name rating_challenges` → `0002_rating_challenges.sql` written (1 table, 1 FK with cascade, 0 indexes).
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2).
+  - `pnpm build` (deferred to Unit 11.2; no consumer surface in this unit).
+- THINK artifact: omitted — schema decisions are contained in Unit 11.0's D-3 through D-7; no architectural surface beyond what 11.0 pinned. Mirrors Phase-9 Unit 9.3 precedent + Phase-10 Unit 10.1 precedent.
+- Next: Unit 11.2 (`lib/rating-challenges/` helpers + `POST /api/v1/rating-challenges` route + tests).
+
 #### Unit 11.0 — Phase 11 prep (THINK doc + 8-unit Rating-challenge-thread breakdown + procedural DB-trigger re-eval)
 
 - Phase 11 kickoff per §12 cardinal rule. Phase 10 closed at HEAD `0a55bfd` (Unit 10.5 acceptance gate; first NON-§13 phase; first zero-architectural-surface phase). **Phase 11 sign-off granted via "Continue" override** in the unit-rhythm rhythm (sixth invocation; precedents: Phase 5 → 6 in Unit 6.0; Phase 6 → 7 in Unit 7.0; Phase 7 → 8 in Unit 8.0; Phase 8 → 9 in Unit 9.0; Phase 9 → 10 in Unit 10.0). Docs-only unit.

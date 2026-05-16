@@ -110,3 +110,64 @@ export const watchlist = sqliteTable(
     pk: primaryKey({ columns: [table.userId, table.problemSlug] }),
   }),
 );
+
+/**
+ * Per-user rating challenges (Unit 11.1) — the project's **second
+ * write-path** (first was [`watchlist`](#watchlist) in Phase 9 Unit 9.6).
+ *
+ * Closes the §8.6 + §3.1 "ratings are revisable" architectural concern:
+ * any signed-in user can challenge any existing rating dimension by
+ * submitting a `dimension` / `proposedValue` / `rationale` triple.
+ * Phase 11 ships submission only; curator review pipeline (status
+ * transitions; rating-action YAML emission) is Phase 12+ or
+ * curator-track per Q57.
+ *
+ * Schema decisions per Unit 11.0 D-3:
+ * - **UUID PK** (matches `users.id` strategy via `crypto.randomUUID()`).
+ * - **userId FK** with `ON DELETE cascade` (matches `watchlist` precedent).
+ * - **problemSlug** plain text, no FK (matches Q56 lean +
+ *   `watchlist` precedent; orphan rows tolerated per ADR-0013 D-F).
+ * - **dimension** TEXT (no SQLite enum; app-level enum validation
+ *   against the 5 `RatingActionSchema.dimensions` keys: difficulty,
+ *   saturation, urgency, value, industry_call).
+ * - **proposedValue** TEXT (per-dimension format varies; app-level
+ *   interpretation — letter grade for difficulty, 0-100 / N/A for
+ *   saturation, 0-5 for stars-based).
+ * - **rationale** required TEXT (app-level validation: min 50 chars,
+ *   max 2000 chars; plain text, no formatting).
+ * - **status** TEXT default `"submitted"` — Phase 11 ships only this
+ *   value; future values (`under_review`, `accepted`, `rejected`,
+ *   `withdrawn`) land in Phase 12+ alongside curator-review columns
+ *   (`reviewedAt`, `reviewerId`, `reviewNotes`, `acceptedActionId`).
+ * - **createdAt** timestamp_ms default (matches `users.createdAt` +
+ *   `watchlist.createdAt` precedent).
+ * - **NO composite PK** (unlike `watchlist`): users may submit
+ *   multiple challenges per problem (one per dimension, or multiple
+ *   per dimension over time as their thinking evolves). Single UUID
+ *   PK is the right shape.
+ *
+ * Anti-patterns rejected per Unit 11.0 D-3 + D-6:
+ * - 5 typed columns (`proposedGrade`, `proposedSaturation`, etc.) —
+ *   sparse + brittle; only 1 populated per row.
+ * - JSON column for `proposedValue` — SQLite lacks JSONB; adds
+ *   parse/serialize overhead with no win over plain TEXT.
+ * - Speculative curator-review columns now — ADR-0005's
+ *   immutability-and-explicit-evolution ethos prefers landing them
+ *   when the surface lands.
+ */
+export const ratingChallenges = sqliteTable("ratingChallenge", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  problemSlug: text("problemSlug").notNull(),
+  dimension: text("dimension").notNull(),
+  proposedValue: text("proposedValue").notNull(),
+  rationale: text("rationale").notNull(),
+  status: text("status").notNull().default("submitted"),
+  createdAt: integer("createdAt", { mode: "timestamp_ms" })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
+});
