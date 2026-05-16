@@ -2095,6 +2095,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **Smoke gates**: docs-only; `validate-content` / `typecheck` / `test` / `build` / `audit-content` unchanged from Unit 7.8 snapshot (370/370 tests; 336 routes; 103 kB First Load JS).
 - THINK artifact: `docs/thinking/7.10-open-questions-hygiene.md`.
 
+#### Unit 7.9 — Phase-7 hygiene status pass (out-of-order: deferrals + in-flight units)
+
+- Eighth Phase-7 unit; docs-only. Out-of-order placement (lands after 7.10 instead of before per the §F order) because Unit 7.5 + Unit 7.3a are in-flight rather than retired — the hygiene pass surfaces them as Class A "in-flight units the primary session has not authored." Mirrors the Phase-5 (Unit 5.11) + Phase-6 (Unit 6.8) precedents.
+- **Class A — In-flight Phase-7 units (2)**: Unit 7.3a (bulk page migration + middleware — 22-file structural change deferred from Unit 7.3); Unit 7.5 (`/methodology/[locale]/v1.0.0` FR pilot — likely owned by parallel-curator session). Distinct from "deferred hygiene" because they're expected §F deliverables, just not landed yet.
+- **Class B — Phase-7-specific follow-ons (11)**: `<html lang={locale}>` axe-rule risk flagged in 7.7; `SITE` constant extraction (3 → ~5 call sites threshold) flagged in 7.8; `scripts/validate-content.ts` extension for `*.fr.yaml` globs (unlock = first `.fr` content); `app/robots.ts` (sister convention; needs User-Agent policy); per-entry `lastModified` / `changeFrequency` / `priority` on sitemap (observation-driven); locale alternates beyond `/about` (depends on 7.3a); `app/[locale]/page.tsx` (depends on 7.3a); `NEXT_LOCALE` cookie writes (depends on 7.3a middleware); `useTranslations` for LocaleToggle aria-label (depends on 7.3a moving SiteHeader under provider); locale-toggle query-param preservation (future need); centralized translation-CLI (Phase 8+).
+- **Class C — Carryover deferrals (10)**: unchanged from Unit 6.8. Orphan `components/domain-tile-grid/` (verified still orphan at HEAD; needs explicit curator authorization); `entries.json` backfill on 8 problems (still 2/10 have entries); `pnpm clean-drafts` script (no `drafts/` at HEAD); `<managingEditor>` on RSS feeds (coupled to Q2); Phase-2 ROR-ID + InstaDeep orphan; W3C feed validator pass (first preview deploy); `/digest` + `/problems/[slug]/talk` Playwright baselines; Phase-6 GraphQL real-API smoke / `NEXT_PUBLIC_GISCUS_REPO_ID` / discussions-aware feed validator (compound Q47).
+- **Phase-7 surface delta vs Phase-6 close**: +1 ADR (0011), +1 sitemap surface, +2 SSG pages (`/en/about` + `/fr/about`), +1 site-header control (LocaleToggle), +2 LHCI URLs, +1 Velite-collection-augmentation (5 collections; `lang` derive + `translation_source` enum), +2 helpers (`lib/i18n/locale-filename.ts` + `lib/sitemap/build-sitemap.ts`). Q closures: Q48 + Q50 + Q52 + Q53. Page count 333 → 336 (+3); test count 323 → 370 (+47); First Load JS shared chunk = **103 kB UNCHANGED** through every Phase-7 unit.
+- **Risk surface at HEAD**: `<html lang>` content-vs-attribute mismatch on `/fr/about` (axe may flag on first PR); no middleware (bare paths + `[locale]/` paths coexist as separate routes); locale-toggle hidden on bare paths by design (fail-closed).
+- **Boundary statement**: NOT the bulk migration, NOT the methodology FR pilot, NOT destructive cleanup, NOT the acceptance gate (Unit 7.11 is the phase-close gate).
+- **Smoke gates**: docs-only; unchanged from Unit 7.10 snapshot (370/370 tests; 336 routes; 103 kB First Load JS).
+- THINK artifact: `docs/thinking/7.9-phase-7-hygiene.md`.
+
 
 
 
