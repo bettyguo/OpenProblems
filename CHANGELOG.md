@@ -2470,6 +2470,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 15 — Community-adjacent surfaces (**sixth NON-§13 phase**: Q63 promotion — user-editable profile fields; surfaces ADR-0016; second ALTER migration)
 
+#### Unit 15.1 — ADR-0016: User-editable profile field model (`displayName` + `bio` plain-text; 16 ADRs total)
+
+- Second Phase-15 unit; first ADR-class architectural pin of Phase 15. Docs-only. Pins the user-editable-profile-fields contract before any code lands; mirrors Phase-12 Unit 12.1 + Phase-14 Unit 14.1's "ADR ahead of helpers" ordering.
+- **Closes Q63 deferred from Phase 14** (ADR-0015 D-C): "Phase 14 ships READ-ONLY public profile … Phase 15+ writes can extend the contract incrementally". Phase 15 honors the deferral path verbatim.
+- **Seven pinned D-clauses**:
+  - **D-A. Editable field set** — `users.displayName` (80 chars max; falls back to GitHub-derived `users.name` on null) + `users.bio` (280 chars max; plain text). EXCLUDED: `users.image` override (Phase 16+; **Q67 candidate**; needs **ADR-0017 candidate** for storage choice); `users.githubLogin` (URL key; immutable per ADR-0012 D-E); `users.email` (never surfaces per ADR-0015 D-A); `users.name` (GitHub-derived; not user-editable; `displayName` overrides on render). Length caps match GitHub / Bluesky / Twitter standards.
+  - **D-B. Validation + sanitization model** — length cap (client + server) + trim whitespace + empty string after trim = clear (NULL); React's default escape handles XSS (NO sanitization library); NO regex content filter (**Q68 candidate** Phase 16+ if abuse signals); NO uniqueness check on `displayName` (`githubLogin` remains unique URL key).
+  - **D-C. Edit surface route shape** — extend existing `/[locale]/profile` route with inline edit form below header card. NOT separate `/profile/edit` route. Preserves ADR-0015 D-F's "two surfaces per identity" pattern verbatim. NOT a new protected route; Phase-9 Class B item 12 middleware threshold (3+ protected page routes) stays uncrossed at 2.
+  - **D-D. Server-action vs API route** — server actions (mirrors Phase 10/11/12 precedent for signed-in own-state mutations). NOT REST endpoint; no third-party demand; CSRF + cookies handled for free.
+  - **D-E. Public consumption fallback chain** — extends Phase 14 chain to `displayName → name → githubLogin → translated fallback`. Applies to `/u/{handle}` page body (Phase 14), `/profile` display name (Phase 10), AuthControl signed-in pill (Phase 9). SiteHeader "Your profile" link UNCHANGED (uses `@login` URL key).
+  - **D-F. Bio display formatting** — plain text via `whitespace-pre-wrap`; 280-char cap; NO markdown / NO HTML / NO link-detection (**Q66 candidate** Phase 16+ if power-user demand). Bio placement on `/u/{handle}`: between header card and activity section. Omitted entirely when null (no placeholder).
+  - **D-G. Image override Phase-16+ deferral** — needs storage ADR (**ADR-0017 candidate**: Vercel Blob ~$0.02/GB / S3 / external URL allowlist). Image upload pipeline + cropping + EXIF stripping + content moderation each their own concern. Phase 15 ships text-only foundation; Phase 16+ extends.
+- **Rejected options** (one-sentence rationale each):
+  - **Option 2 — Full editable Phase 15 (image + markdown + audit log)**: triples scope; needs storage ADR + sanitization library + audit-log migration; Phase 16+ natural home.
+  - **Option 3 — Markdown bio in Phase 15**: new remark/rehype/sanitize dependency (~120 kB transitive); XSS audit surface; conservative plain-text default beats premature richness.
+  - **Option 4 — Separate `/profile/edit` route**: splits editing affordance from surrounding context (watchlist + challenges); lifts middleware threshold unnecessarily; ADR-0015 D-F "two surfaces per identity" already sufficient.
+- **1 new DB migration anticipated** (Unit 15.2): `0004_user_profile_fields.sql` — second ALTER migration in project history (first was Phase-12 `0003_rating_challenge_review` per ADR-0014 D-E); same additive nullable column pattern. Migration count 4 → 5. **§5.7 trigger unchanged** (no new tables; ALTER additive).
+- **First Load JS unchanged anticipated** (entirely server-rendered edit form; no client islands).
+- **Architectural relationships pinned**: inherits ADR-0015 D-A public-data invariant (no new public-data category — editable fields are user-controlled overrides of fields already public); extends ADR-0015 D-F "two surfaces per identity" pattern; inherits ADR-0014 D-E ALTER discipline at second exercise; reuses ADR-0012 D-E `users.githubLogin` joining (excluded from editable fields); reuses ADR-0011 i18n sibling-file convention; establishes user-controlled writes pattern that Phase 16+ identity-edit surfaces (image / opt-out / markdown) inherit.
+- **`docs/adr/README.md`** (edit): ADR-0016 row added; index paragraph extended; "next ADR will be numbered 0017".
+- Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2); typecheck / test / build untouched since no source files modified.
+- THINK artifact: `docs/thinking/15.1-adr-0016-user-editable-profile.md`. ADR: `docs/adr/0016-user-editable-profile-fields.md`.
+
 #### Unit 15.0 — Phase 15 prep (THINK doc + 9-unit Q63-promotion breakdown + DB-trigger re-eval)
 
 - Phase 15 kickoff per §12 cardinal rule. Phase 14 closed at HEAD `34290d7` (Unit 14.8 acceptance gate; fifth NON-§13 phase; four-phase honored-deferral lineage closed; first per-USER read-side public surface). **Phase 15 sign-off granted via "Continue" override** in the unit-rhythm rhythm (tenth invocation; precedents: Phase 5→6 / Phase 6→7 / Phase 7→8 / Phase 8→9 / Phase 9→10 / Phase 10→11 / Phase 11→12 / Phase 12→13 / Phase 13→14). Docs-only unit.
