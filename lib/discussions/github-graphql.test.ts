@@ -276,11 +276,21 @@ describe("tryGetDiscussionByPath", () => {
 });
 
 describe("TALK_PATHNAME_REGEX", () => {
-  it("matches well-formed talk-page pathnames and captures the slug", () => {
+  it("matches pre-migration bare talk-page pathnames and captures the slug (capture group 2)", () => {
     const m1 = "/problems/hallucination-reduction/talk".match(TALK_PATHNAME_REGEX);
-    expect(m1?.[1]).toBe("hallucination-reduction");
+    expect(m1?.[1]).toBeUndefined(); // no locale prefix
+    expect(m1?.[2]).toBe("hallucination-reduction");
     const m2 = "/problems/benchmark-integrity/talk".match(TALK_PATHNAME_REGEX);
-    expect(m2?.[1]).toBe("benchmark-integrity");
+    expect(m2?.[2]).toBe("benchmark-integrity");
+  });
+
+  it("matches post-migration locale-prefixed talk-page pathnames (Unit 8.1)", () => {
+    const mEn = "/en/problems/hallucination-reduction/talk".match(TALK_PATHNAME_REGEX);
+    expect(mEn?.[1]).toBe("en");
+    expect(mEn?.[2]).toBe("hallucination-reduction");
+    const mFr = "/fr/problems/benchmark-integrity/talk".match(TALK_PATHNAME_REGEX);
+    expect(mFr?.[1]).toBe("fr");
+    expect(mFr?.[2]).toBe("benchmark-integrity");
   });
 
   it("rejects non-talk paths and non-pathname titles", () => {
@@ -288,6 +298,11 @@ describe("TALK_PATHNAME_REGEX", () => {
     expect("/problems/x/talk/something".match(TALK_PATHNAME_REGEX)).toBeNull();
     expect("Some manual discussion title".match(TALK_PATHNAME_REGEX)).toBeNull();
     expect("/problems/X-with-caps/talk".match(TALK_PATHNAME_REGEX)).toBeNull();
+    // Locale must be a known one — `xx` is rejected; the path then doesn't
+    // match the bare alternative either (because `xx` isn't `problems`).
+    expect("/xx/problems/x/talk".match(TALK_PATHNAME_REGEX)).toBeNull();
+    // Locale prefix without an inner `problems/...` is still rejected.
+    expect("/en/talk".match(TALK_PATHNAME_REGEX)).toBeNull();
   });
 });
 

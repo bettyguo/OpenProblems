@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
 import { StatusPill } from "@/components/ui/status-pill";
+import { Link } from "@/lib/i18n/navigation";
 import { cn } from "@/lib/utils";
 import type { IndexedProblem } from "@/lib/content/load-problems-index";
 import {

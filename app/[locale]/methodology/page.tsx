@@ -1,8 +1,8 @@
-import Link from "next/link";
-import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
+import { notFound } from "next/navigation";
 import { methodology } from "#site/content";
 import { resolveLocalized } from "@/lib/i18n/load-localized";
+import { Link } from "@/lib/i18n/navigation";
 import { isLocale } from "@/lib/i18n/routing";
 import { MDXContent } from "@/lib/mdx/mdx-content";
 
@@ -58,7 +58,7 @@ export default async function LocaleMethodologyPage({ params }: LocaleMethodolog
         {distinctVersions.map((version, i) => (
           <Link
             key={version}
-            href={`/${locale}/methodology/v${version}`}
+            href={`/methodology/v${version}`}
             className="text-foreground hover:text-accent ml-1 text-xs underline-offset-2 hover:underline"
           >
             v{version}

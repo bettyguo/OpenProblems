@@ -199,7 +199,8 @@ export async function buildDigest(options: BuildDigestOptions): Promise<DigestPa
   const activity = await discussionsLoader(since);
   for (const a of activity) {
     const m = a.title.match(TALK_PATHNAME_REGEX);
-    const slug = m?.[1];
+    // Capture group 1 is optional locale; group 2 is the slug (Unit 8.1).
+    const slug = m?.[2];
     if (!slug || !domainProblemSlugs.has(slug)) continue;
     const activityMs = Date.parse(toIsoDate(a.updatedAt));
     if (Number.isNaN(activityMs)) continue;

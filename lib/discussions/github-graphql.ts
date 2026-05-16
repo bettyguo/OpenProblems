@@ -29,8 +29,13 @@ const RECENT_DISCUSSIONS_PAGE_SIZE = 50;
  * title; this regex extracts the problem slug from such a title. Manually-
  * authored discussions with non-pathname titles will not match (correct —
  * they're out of scope for the per-domain digest).
+ *
+ * Unit 8.1: optional `(en|fr)/` prefix accepts both pre-migration titles
+ * (e.g. `/problems/x/talk`) and post-migration titles (e.g. `/en/problems/
+ * x/talk` after middleware 308-redirects under `localePrefix: "always"`).
+ * Capture group 1 is the optional locale; capture group 2 is the slug.
  */
-export const TALK_PATHNAME_REGEX = /^\/problems\/([a-z0-9-]+)\/talk$/;
+export const TALK_PATHNAME_REGEX = /^\/(?:(en|fr)\/)?problems\/([a-z0-9-]+)\/talk$/;
 
 export type GraphqlClient = <T = unknown>(
   query: string,

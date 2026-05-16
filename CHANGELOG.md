@@ -2254,6 +2254,46 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2); typecheck / test / build untouched since no source files modified.
 - THINK artifact: `docs/thinking/8.0-phase-8-prep.md`.
 
+#### Unit 8.1 — Bulk page migration + middleware (`localePrefix: "always"`)
+
+- First code unit of Phase 8. Closes the open-ended deferral catalogued in Unit 7.9 Class A (the "bulk page migration + middleware" follow-on scope-cut from Unit 7.3 to a wiring proof). Highest collision risk in project history per Unit 8.0 prep; the primary session held the lock through this commit.
+- **New files**:
+  - `middleware.ts` — `createMiddleware` from `next-intl/middleware` with `localePrefix: "always"` per [ADR-0011 D-B](docs/adr/0011-i18n-strategy.md). Matcher excludes `/api`, `/_next`, `/_vercel`, and file-extension paths (so `/sitemap.xml`, `/robots.txt`, `/api/v1/*` bypass middleware). 51.8 kB bundle reported by Next.js (server-only; no impact on First Load JS).
+  - `lib/i18n/navigation.ts` — re-exports locale-aware `Link`, `useRouter`, `usePathname`, `redirect` from `createSharedPathnamesNavigation({ locales, localePrefix: "always" })` in next-intl@3. Single source of truth for the navigation-layer wrappers.
+- **Bulk page migration** — every bare `app/<route>/page.tsx` moved to `app/[locale]/<route>/page.tsx`:
+  - 22 bare-route files deleted: `app/{about,contributing,digest,domains,methodology,page,papers,problems,ratings,trending}` + the corresponding `[slug]` / `[version]` / `[domain]` / `[id]` subdirectories.
+  - 19 new `app/[locale]/<route>/page.tsx` files created (3 existing `[locale]/` shadows from Units 7.3 + 7.5 — `/about`, `/methodology`, `/methodology/[version]` — were kept and the bare originals deleted).
+  - Each migrated page: `params: Promise<{ locale: string; ... }>`, awaits params, validates via `isLocale()`, calls `setRequestLocale(locale)`. `generateStaticParams` (where present) extended via cartesian product with `locales` (`locales.flatMap((locale) => …)`).
+  - `app/[locale]/methodology/page.tsx` updated to use the i18n Link wrapper (was hardcoding `/${locale}/methodology/v${version}`).
+- **`<Link>` import migration** — every `import Link from "next/link"` in 7 component files + 1 search-palette `useRouter` switched to `import { Link } from "@/lib/i18n/navigation"`:
+  - `components/site-header/`, `components/recently-rated/`, `components/layout/RoutePlaceholder`, `components/domain-tile-grid/`, `components/papers-index/`, `components/problems-index/`, `components/search-palette/` (both `Link` and `useRouter`).
+  - **Kept on `next/link`** (intentional):
+    - `components/viz/MoversBoard/index.tsx` — pure presentational component rendered in vitest unit tests without router context; the next-intl Link wrapper depends on `next/navigation`'s pathname which is unavailable in those renders. Clicks 308-redirect via middleware (round-trip cost acceptable for a sparkline cell action).
+    - `components/locale-toggle/index.tsx` — uses explicit locale-prefix URL construction; the i18n wrapper would double-prefix.
+    - `app/not-found.tsx` — root 404 lives outside `[locale]/`; no NextIntlClientProvider context.
+- **`TALK_PATHNAME_REGEX` extension** in `lib/discussions/github-graphql.ts`: accepts optional `(en|fr)/` capture. New regex: `/^\/(?:(en|fr)\/)?problems\/([a-z0-9-]+)\/talk$/`. **Critical for Giscus backward-compat**: pre-migration discussions are titled `/problems/<slug>/talk`; post-migration discussions will be titled `/en/problems/<slug>/talk` (Giscus mapping reads the URL after middleware redirect). Both must match. Slug capture index shifts from `m[1]` to `m[2]`; `lib/digest/build-digest.ts` updated accordingly with an inline comment.
+- **Test updates** — `lib/discussions/github-graphql.test.ts`: existing 4 cases refactored into 3 cases covering (a) pre-migration bare paths (capture group 2 holds the slug; group 1 is `undefined`), (b) post-migration `/en/...` + `/fr/...` paths (group 1 = locale, group 2 = slug), (c) rejection of unknown locale (`/xx/problems/x/talk`) + locale-prefix-without-`problems` (`/en/talk`) + the previous rejection cases. Net: +1 case (3 vs 4 — but better coverage shape).
+- **`lighthouserc.json`** — 13 non-locale-aware URLs prefixed with `/en/`:
+  - Before: `/`, `/problems/...`, `/domains`, `/papers/...`, `/authors/...`, `/institutions/...`, `/trending`, `/ratings`, `/contributing`, `/digest` (10) + 3 problem sub-paths (`/ratings`, `/history`, `/talk`).
+  - After: all 13 carry `/en/` prefix; existing `/en/about` + `/fr/about` + `/en/methodology` + `/fr/methodology` (5) stay. URL count holds at **18** (no new URLs; the FR-side LHCI enrolment for the broader cohort is a Unit 8.5 / 8.6 follow-on).
+- **HTML shell migration DROPPED from scope (mid-flight decision)** — original plan was to move `<html>` / `<body>` / fonts / `ThemeProvider` / `SiteHeader` shell from `app/layout.tsx` into `app/[locale]/layout.tsx` to set `<html lang={locale}>` and put SiteHeader under `NextIntlClientProvider`. Scope dropped after a parallel-session signal indicated the existing `app/layout.tsx`-owns-`<html>` structure should be preserved. Unit 7.7's documented `html-has-lang` axe-rule risk **survives Unit 8.1** and now lives at Unit 8.4 (originally scoped to `useTranslations` for LocaleToggle aria-label; expanded to absorb the shell migration since both depend on SiteHeader moving under provider).
+- **NOT in this unit** (deferred per Unit 8.0 prep):
+  - `app/[locale]/page.tsx` content already migrated mechanically; FR translation of hero copy stays in Unit 8.2 scope.
+  - `useTranslations` for LocaleToggle aria-label + HTML shell migration — Unit 8.4 scope.
+  - `NEXT_LOCALE` cookie writes — Unit 8.3 scope.
+  - SITE + LOCALE_ALTERNATE_ROUTES constant extractions + locale alternates beyond `/about` + `/methodology` in sitemap — Unit 8.5 scope.
+  - FR `/contributing` content pilot — Unit 8.6 scope.
+  - `lib/sitemap/build-sitemap.ts` canonical strategy: bare canonical URLs stay; middleware 308 to `/en/<route>` is a transparent crawler convention. Alternates expansion to all routes is Unit 8.5.
+  - `lib/digest/rss.ts` + `app/api/v1/rss.xml/route.ts`: bare canonical URLs stay; same convention.
+- **Page count delta**: **341 → ~590** prerendered pages. Locale-doubling: every `/[locale]/<route>` × 2 locales. Authors (`126 × 2 = 252`), papers (`60 × 2`), problems detail × 4 sub-routes (`10 × 4 × 2 = 80`), domain pairs, etc. Build output shows the cartesian expansion; First Load JS shared chunk = **103 kB UNCHANGED** through every Phase-8 unit so far.
+- **Smoke gates**:
+  - `pnpm validate-content` → 203 files unchanged (no content delta).
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **384/384 across 44 files** (was 383; +1 net from the github-graphql regex test refactor).
+  - `pnpm build` → ~590 prerendered pages; middleware reported at 51.8 kB; First Load JS shared chunk = **103 kB UNCHANGED**.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2).
+- THINK artifact: `docs/thinking/8.1-bulk-page-migration.md`.
+
 
 
 

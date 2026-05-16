@@ -1,9 +1,8 @@
 "use client";
 
 import Fuse from "fuse.js";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useRouter } from "@/lib/i18n/navigation";
 import { cn } from "@/lib/utils";
 import type { SearchRecord } from "@/lib/search/build-index";
 

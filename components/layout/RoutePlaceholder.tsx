@@ -1,5 +1,5 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
+import { Link } from "@/lib/i18n/navigation";
 
 export interface Breadcrumb {
   label: string;

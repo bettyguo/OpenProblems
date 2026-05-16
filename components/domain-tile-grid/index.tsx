@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { problems, taxonomy } from "#site/content";
+import { Link } from "@/lib/i18n/navigation";
 import { cn } from "@/lib/utils";
 
 function countProblemsInDomain(domainId: string): number {

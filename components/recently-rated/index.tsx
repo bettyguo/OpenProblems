@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
 import { getIndexedProblems, type IndexedProblem } from "@/lib/content/load-problems-index";
+import { Link } from "@/lib/i18n/navigation";
 import { cn } from "@/lib/utils";
 
 interface Props {

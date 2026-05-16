@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { LocaleToggle } from "@/components/locale-toggle";
 import { SearchTrigger } from "@/components/search-trigger";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Link } from "@/lib/i18n/navigation";
 import { getSearchIndex } from "@/lib/search/build-index";
 
 export function SiteHeader() {
