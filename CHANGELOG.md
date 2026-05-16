@@ -2470,6 +2470,42 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 12 — Community-adjacent surfaces (**third NON-§13 phase**: Curator review pipeline — Q57 keystone)
 
+#### Unit 12.3 — `lib/rating-challenges/` review pipeline + `lib/auth/curator.ts` + `lib/rating-challenges/coi.ts` + tests
+
+- Fourth Phase-12 unit; second code unit. Lands the **backend layer** for the curator review pipeline pinned by ADR-0014. Three new modules: curator authz (env-var allowlist), COI evaluation (§8.6 Phase-12 simplification), and the state-machine helpers (`reviewChallenge` + `withdrawChallenge` + `getPendingChallenges` + `getChallengeById` + `attachAcceptedAction` + `getOpenChallengeCountByProblem`). All auth-agnostic + DB-agnostic at the helper level; callers (Unit 12.4 dashboard + API; Unit 12.5 withdraw UI) wire auth + curator-authz + COI before invoking. **+43 tests / +3 test files** (was 403/46; now 446/49). Mirrors Phase-9 Unit 9.6 + Phase-11 Unit 11.2 separation-of-concerns precedent.
+- **`lib/auth/curator.ts` (new)**: exports `isCurator(login: string | null | undefined): boolean` parsing `LOP_CURATOR_LOGINS` CSV env var per ADR-0014 D-B. Each call re-reads the env var (defense against stale parent-process snapshots; production env-var changes still require Vercel deploy restart). Case-sensitive matches `users.githubLogin` populated by Auth.js v5 `events.linkAccount` callback per ADR-0012 D-E. Edge cases handled: null/undefined/empty login → false; missing/empty env → false; trims whitespace per CSV token; ignores empty tokens between commas.
+- **`lib/auth/curator.test.ts` (new)**: **11 tests** exercising null/undefined/empty login, unset env, empty env, single-value allowlist, multi-value CSV, non-membership, whitespace trim, case sensitivity, empty-token tolerance. `beforeEach` + `afterEach` env-var save/restore for test isolation.
+- **`lib/rating-challenges/coi.ts` (new)**: exports `getCoIStatus(reviewerLogin, problemSlug, submitterLogin): { blocked, warning?, reason }` per ADR-0014 D-C Phase-12 simplification. Reads `problems` from `#site/content` synchronously. Three exit paths: (1) **HARD BLOCK** `reason: "self-review"` when reviewer = submitter (refuse server-side); (2) **SOFT WARN** `reason: "primary-curator"` when reviewer = problem's `editorial.primary_curator` (UI disclaimer; does NOT block); (3) `reason: null` no warning when reviewer is unrelated. Self-review takes precedence over primary-curator (more conservative). `submitterLogin: null` (Phase-9 retrofit edge — pre-`linkAccount`-callback users) treated as "no self-review block".
+- **`lib/rating-challenges/coi.test.ts` (new)**: **7 tests** covering self-review block + null-submitter edge + case-sensitivity + primary-curator soft-warn + unrelated curator + unknown slug (orphan-row tolerant) + priority ordering (self-review > primary-curator).
+- **`lib/rating-challenges/index.ts` (edit)**: extends Phase-11 module with **state machine + 7 new exports**. Existing pure-function helpers (`isValidDimension`, `validateProposedValue`, `validateRationale`, `submitChallenge`, `getUserChallenges`, `UserChallenge`) unchanged. New surface:
+  - **Constants**: `CHALLENGE_STATUSES` (5 values per ADR-0014 D-A), `TERMINAL_STATUSES` (accepted/rejected/withdrawn), `REVIEW_NOTES_MAX` (4000).
+  - **Types**: `ChallengeStatus`, `ReviewAction`, `ReviewChallengeInput`, `ReviewChallengeResult`.
+  - **Pure predicates**: `isAllowedReviewTransition(current, action)` + `isAllowedWithdrawal(current)` enforce ADR-0014 D-A transition table; `validateReviewNotes(notes, action)` requires non-empty notes for accept/reject (start_review tolerates empty); enforces 4000-char cap.
+  - **DB helpers**:
+    - `getChallengeById(id)` — single-row fetch; null on miss.
+    - `getPendingChallenges()` — curator dashboard query (`status ∈ {submitted, under_review}`; `ORDER BY createdAt ASC` fairness queue per ADR-0014 D-F; LIMIT 50).
+    - `reviewChallenge({ challengeId, reviewerId, action, notes })` — curator-side state transition. Re-reads challenge → enforces transition table → updates status / reviewedAt / reviewerId / reviewNotes atomically. Throws on missing row OR illegal transition.
+    - `withdrawChallenge(challengeId, submitterId)` — submitter-side withdrawal. Re-reads → enforces userId match (NOT your challenge throws) → enforces `status ∈ {submitted, under_review}` (cannot withdraw terminal). Sets `status = "withdrawn"` only; review columns stay NULL.
+    - `attachAcceptedAction(challengeId, acceptedActionId)` — manual emission step 5 per ADR-0014 D-D. Refuses if `status ≠ "accepted"` (attachment meaningful only after acceptance). Caller has verified the YAML file exists at `#site/content` before invoking.
+    - `getOpenChallengeCountByProblem(slug)` — public-visibility helper anticipating Phase-13+ Q58 counter surface; Phase 12 uses internally for curator dashboard per-problem grouping.
+- **`lib/rating-challenges/state-machine.test.ts` (new)**: **25 tests** exercising the pure-function predicates without DB. Coverage: `CHALLENGE_STATUSES` shape; `TERMINAL_STATUSES` shape; every legal `isAllowedReviewTransition` cell (submitted → start_review/accept/reject ✓; under_review → accept/reject ✓ + start_review ✗; terminal → all ✗); every legal `isAllowedWithdrawal` cell (submitted/under_review ✓; terminal ✗); `validateReviewNotes` for accept/reject required + start_review tolerant + 4000-char boundary.
+- **Validation contract pinned in tests**: terminal statuses are unconditionally blocked (matches ADR-0005 immutability spirit; no `accepted → re-opened`); under_review → start_review is forbidden (no re-entry); whitespace-only notes count as empty for accept/reject (`.trim().length === 0`); self-review COI block precedes primary-curator soft warn.
+- **NOT in this unit** (deferred):
+  - Curator dashboard route at `/[locale]/curator/challenges` + sub-routes — Unit 12.4.
+  - `POST /api/v1/rating-challenges/[id]/review` API endpoint — Unit 12.4.
+  - `messages.curator.*` namespace (EN + FR) — Unit 12.4.
+  - Withdraw UI on profile page + profile-page status-aware rendering — Unit 12.5.
+  - "Attach action YAML" UI surface — Unit 12.4 (couples to curator detail view).
+  - DB-helper integration tests (require `local.db` migration + Drizzle wiring; Phase-12 helpers are exercised at request time via the dashboard route in Unit 12.4 + via the existing API route mocking pattern in Unit 12.4's tests).
+- **Smoke gates**:
+  - `pnpm validate-content` → 203 files unchanged.
+  - `pnpm typecheck` clean (post-`ChallengeStatus` + `ReviewAction` types; `crypto.randomUUID()` $defaultFn unchanged; Drizzle `update().set({ status, reviewedAt, reviewerId, reviewNotes })` infers from schema correctly; `coi.ts` reads `problems[].editorial.primary_curator` from `#site/content` cleanly per Velite schema).
+  - `pnpm test` → **446/446 across 49 files** (+43 net tests / +3 net files: 11 isCurator + 7 COI + 25 state-machine).
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+  - `pnpm build` deferred to Unit 12.4 (no consumer surface in this unit; helpers are lib-internal).
+- THINK artifact: omitted — implementation contained in ADR-0014 D-A through D-D + Unit 12.0 D-3 through D-7 / D-15 (COI return shape). Mirrors Phase-9 Unit 9.6 + Phase-11 Unit 11.2 precedent (helper-scaffold unit without separate THINK doc when ADR + prep doc cover the surface).
+- Next: Unit 12.4 (curator dashboard route + review API + `messages.curator.*` EN + FR).
+
 #### Unit 12.2 — DB scaffold: `0003_rating_challenge_review` ALTER migration + schema edit
 
 - Third Phase-12 unit; first code unit. **First ALTER migration in project history** (Units 9.3 / 9.6 / 11.1 were all CREATE TABLE; this is the first ADD COLUMN). Validates ADR-0014 D-E ALTER discipline at the migration level. Cumulative migration count: 3 → **4** (drizzle-kit 0-indexed monotonic sequence: `0000_initial_auth` + `0001_watchlist` + `0002_rating_challenges` + **`0003_rating_challenge_review`**).
