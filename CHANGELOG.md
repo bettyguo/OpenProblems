@@ -2470,6 +2470,66 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 12 — Community-adjacent surfaces (**third NON-§13 phase**: Curator review pipeline — Q57 keystone)
 
+#### Unit 12.4 — Curator dashboard route + review API + `messages.curator.*` (EN + FR)
+
+- Fifth Phase-12 unit; third code unit. Lands the **curator-side UI surface** for the Phase-12 keystone thread. **Third + fourth dynamic API routes / fourth + fifth page routes net for Phase 12** — `/[locale]/curator/challenges` (list view; SSG-listed but `force-dynamic`) + `/[locale]/curator/challenges/[id]` (detail view; `force-dynamic`) + `POST /api/v1/rating-challenges/[id]/review`. **Second protected page route in the project** (after Phase-10 `/[locale]/profile`); middleware-based protection lift still gated on 3+ protected page routes per Phase-9 Class B item 12 + ADR-0014 D-F deferral. **+10 tests / +1 test file** (was 446/49; now **456/50**).
+- **`app/[locale]/curator/challenges/page.tsx` (new)** — list view per ADR-0014 D-F:
+  - `force-dynamic` (per-request render; reads `auth()` + curator-authz + `getPendingChallenges()` on every request).
+  - Page-local auth: `auth()` → redirect to `/api/auth/signin/github?callbackUrl=...` if no session → `getLoginById(session.user.id)` (the new shared helper) → `isCurator(login)` → redirect to `/${locale}` if non-curator.
+  - Renders `messages.curator.heading` + `queue_heading` with ICU plural interpolation (`{count, plural, =0 {...} one {...} other {...}}`) + dense list of pending challenges. Each list row: problem title (linked to `/curator/challenges/${id}`) + submitted-date + dimension label (reused from `messages.rating_challenge.dim_*`) + proposed-value + status pill.
+  - Empty state: bordered-dashed card with "No challenges pending review."
+- **`app/[locale]/curator/challenges/[id]/page.tsx` (new)** — detail view per ADR-0014 D-F:
+  - `force-dynamic`. Same auth + curator-authz pattern as list view.
+  - Reads `getChallengeById(id)` → `notFound()` on miss.
+  - Resolves submitter login via `getLoginById(challenge.userId)` + computes `getCoIStatus(reviewerLogin, problemSlug, submitterLogin)` per ADR-0014 D-C.
+  - Renders: navigation back to queue + problem title + submitter handle/date + dimension/proposedValue/status/reviewedAt details + FULL rationale (NOT truncated, per ADR-0014 D-F) + COI surface (red alert for `blocked`; amber status for soft warn) + `reviewNotes` preview when set.
+  - **Review form** (server-action `submitReview`; inline `"use server"`): textarea for notes + 3 conditional buttons (start_review / accept / reject) shown only when the current status allows the transition (`isAllowedReviewTransition`). All buttons disabled when COI blocks OR status is terminal. Server-action re-validates session + curator-authz + transition + COI + notes; redirect-with-search-param error reporting (`?review_error=<code>`) matches Phase-11 `RatingChallengeForm` pattern (zero client JS; preserves 103 kB First Load JS budget).
+  - **Attach action YAML form** (server-action `attachActionYaml`): visible ONLY when `status === "accepted"` AND `acceptedActionId` is null. Per ADR-0014 D-D manual emission step 5. Server-side validates filename matches `YYYY-MM-DD-<slug>.yaml` shape + references a known problem from `#site/content`. Successful attach surfaces "Attached: <filename>" on next render. Phase-13+ CLI helper (potential Q59) automates the YAML scaffolding step.
+- **`app/api/v1/rating-challenges/[id]/review/route.ts` (new)** — REST surface per ADR-0014 D-F (server-action + API split). 8 exit shapes:
+  - **401** `{ error: "unauthenticated" }` when `auth()` returns null.
+  - **403** `{ error: "forbidden" }` when caller is not in `LOP_CURATOR_LOGINS` allowlist (covers both "no githubLogin" + "githubLogin not in CSV" cases).
+  - **400** `{ error: "bad-request", field, message }` for invalid JSON body OR invalid action value (`field: "action"`) OR notes validation failure (`field: "notes"`).
+  - **404** `{ error: "not-found" }` when no challenge matches `id`.
+  - **409** `{ error: "illegal-transition", from, action }` when current `status` doesn't allow the action per ADR-0014 D-A.
+  - **409** `{ error: "coi-blocked", reason }` when `getCoIStatus(...).blocked === true` (currently only `reason: "self-review"` since primary-curator is soft-warn).
+  - **200** `{ id, status, reviewedAt }` on success. `reviewedAt` ISO-string when terminal action; null on `start_review`.
+- **`app/api/v1/rating-challenges/[id]/review/route.test.ts` (new)**: **10 tests** covering: 401 / 403 unauthorized / 403 null-login (Phase-9 retrofit edge) / 400 invalid-action / 400 empty-notes-on-accept / 404 / 409 illegal-transition / 409 coi-blocked / 200 start_review / 200 accept-with-reviewedAt. Mocks `@/lib/auth`, `@/lib/auth/login` (NEW shared helper), and partially mocks `@/lib/rating-challenges` (real `validateReviewNotes` + `isAllowedReviewTransition`; stubbed `getChallengeById` + `reviewChallenge`).
+- **`lib/auth/login.ts` (new)** — shared helper extracted from inline `getLoginById` in both the curator page and review route (eliminates duplication; enables clean test mocking). Exports `getLoginById(userId: string): Promise<string | null>` reading `users.githubLogin` from DB. Returns null on missing row OR unset `githubLogin` (Phase-9 retrofit edge — users who signed in before the `events.linkAccount` callback landed in Unit 9.6). Auth.js v5's default `User` session shape does NOT carry `githubLogin`; helpers MUST go through this lookup.
+- **`messages/en.json` + `messages/fr.json` (edits)** — new `messages.curator.*` namespace (**47 keys per locale**) + extended `messages.profile.challenges_status_*` (**+4 new keys per locale**) for the new statuses. New keys total: **+51 keys per locale; +102 keys total across EN + FR**.
+  - `curator.heading` / `description` / `queue_aria_label` / `queue_heading` (ICU plural) / `empty_message` / `back_to_queue` / `submitted_by` (ICU `{login}` interp) / `challenge_details_aria_label`.
+  - `curator.status_label` + `status_{submitted,under_review,accepted,rejected,withdrawn}` (5 status pill keys; also reused on the detail view's status dl row).
+  - `curator.reviewed_at` / `review_notes_label`.
+  - `curator.coi_blocked_heading` / `coi_warning_heading` — surfaces COI alert + amber-disclaimer headings.
+  - `curator.review_form_heading` / `notes_label` / `notes_placeholder` / `notes_hint`.
+  - `curator.action_{start_review,accept,reject}` (3 button labels).
+  - `curator.review_error_{forbidden,invalid_action,not_found,illegal_transition,coi_blocked,notes_accept,notes_reject,notes_start_review}` (8 error-message keys for `?review_error=...` search-param reporting).
+  - `curator.attach_action_*` (8 keys: aria_label / heading / description / filename_label / filename_hint / attached_label / submit + 4 attach_error_*).
+  - `profile.challenges_status_under_review` / `accepted` / `rejected` / `withdrawn` (4 new keys; existing `submitted` retained from Phase 11). Enables Unit 12.5's submitter-side status awareness on profile page.
+  - FR translations honor §3 brand register: "Contestations de notation" / "Curation : contestations de notation" / "Acceptée"/"Rejetée"/"Retirée" with grammatical agreement (feminine plural for "contestations"); "Conflit d'intérêts" / "Argumentaire" / "Notes d'examen".
+- **`app/[locale]/profile/page.tsx` — UNCHANGED**. The 4 new `profile.challenges_status_*` keys are added in this unit (not Unit 12.5) since the existing profile page already calls `t(\`challenges_status_${challenge.status}\`)`; missing keys would render the placeholder. Adding here means submitter-side status awareness "just works" on next deploy when a curator transitions a challenge.
+- **Validation contract pinned in tests**: 401 precedes 403 (auth gap > authz gap); 403 covers both "explicit non-curator login" + "null login from Phase-9 retrofit edge"; 404 precedes 409 (existence gap > state gap); 409 differentiates illegal-transition (state-machine) from coi-blocked (authorization-policy); 200 on `start_review` returns `reviewedAt: null` (consistent with `reviewedAt` NULL semantic for non-terminal); 200 on `accept` returns ISO-string `reviewedAt`.
+- **Build surface delta vs Phase-11 close**:
+  - **Routes**: +2 page routes (`/[locale]/curator/challenges` + `/[locale]/curator/challenges/[id]`) + 1 dynamic API route (`ƒ /api/v1/rating-challenges/[id]/review`). Page-route count: ~590 → ~592 (curator pages register both locale variants via i18n routing; counted as 4 prerendered paths).
+  - **Dynamic API routes**: 3 → **4** (`/api/auth/[...nextauth]` + `/api/v1/watchlist/[slug]` + `/api/v1/rating-challenges` + **`/api/v1/rating-challenges/[id]/review`**).
+  - **Tests**: 446 → **456** (+10 net from review API route tests).
+  - **Test files**: 49 → **50** (+1 net).
+  - **First Load JS shared chunk**: **103 kB UNCHANGED** (curator pages are server-rendered; review form is server-action driven; redirect-with-search-param error reporting matches Phase-11 zero-client-JS discipline).
+  - **Curator pages route bundle**: 1.91 kB / 108 kB First Load JS — same magnitude as `/profile` (Phase 10) + `/problems/[slug]` (every phase since Phase 1).
+  - **Middleware bundle**: 159 kB → **160 kB** (+1 kB; Drizzle schema's expanded `ratingChallenges` row type pulled through `@auth/drizzle-adapter` re-bundling). Well within ~16% of Vercel Edge's 1 MB limit; not a regression.
+  - **`messages/{en,fr}.json`**: +51 keys per locale; +102 keys total.
+- **NOT in this unit** (deferred):
+  - Withdraw-own-challenge UI on profile page + profile-page status-aware rendering for non-`submitted` statuses (form button + server-action) — Unit 12.5.
+  - Phase-12 hygiene status pass + OPEN_QUESTIONS hygiene + Phase 12 acceptance gate — Units 12.6 / 12.7 / 12.8.
+  - End-to-end OAuth + curator-authz smoke against deployed `local.db` — gated on Q54 + Q55 operational unblocks; architecturally complete here.
+- **Smoke gates**:
+  - `pnpm validate-content` → 203 files unchanged.
+  - `pnpm typecheck` clean (post-`getLoginById` shared helper extraction; `SearchParamsRecord` type for the detail page's searchParams prop; `notFound()` import on detail page; force-dynamic + `await searchParams ?? {}` pattern on detail page).
+  - `pnpm test` → **456/456 across 50 files** (+10 net tests / +1 net file).
+  - `pnpm build` → curator routes register cleanly; ~590 prerendered pages + 4 dynamic API routes; First Load JS shared chunk = **103 kB UNCHANGED**; middleware = 160 kB (+1 kB tolerance).
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- THINK artifact: omitted — implementation contained in ADR-0014 D-A through D-F + Unit 12.0 D-3 through D-8 / D-13 (route depth) / D-15 (COI shape) / D-16 (sort default) / D-17 (server-action + API split). Mirrors Phase-11 Unit 11.3 + 11.4 precedent.
+- Next: Unit 12.5 (withdraw-own-challenge UI + profile-page status-aware rendering).
+
 #### Unit 12.3 — `lib/rating-challenges/` review pipeline + `lib/auth/curator.ts` + `lib/rating-challenges/coi.ts` + tests
 
 - Fourth Phase-12 unit; second code unit. Lands the **backend layer** for the curator review pipeline pinned by ADR-0014. Three new modules: curator authz (env-var allowlist), COI evaluation (§8.6 Phase-12 simplification), and the state-machine helpers (`reviewChallenge` + `withdrawChallenge` + `getPendingChallenges` + `getChallengeById` + `attachAcceptedAction` + `getOpenChallengeCountByProblem`). All auth-agnostic + DB-agnostic at the helper level; callers (Unit 12.4 dashboard + API; Unit 12.5 withdraw UI) wire auth + curator-authz + COI before invoking. **+43 tests / +3 test files** (was 403/46; now 446/49). Mirrors Phase-9 Unit 9.6 + Phase-11 Unit 11.2 separation-of-concerns precedent.
