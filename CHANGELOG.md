@@ -2470,6 +2470,57 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 11 — Community-adjacent surfaces (**second NON-§13 phase**: Rating-challenge submission — honored-deferral pick)
 
+#### Unit 11.7 — Phase 11 acceptance gate (Rating-challenge submission write-path; second write-path in project)
+
+- Phase-11 closing unit. Mirrors Units 1.12 / 2.13 / 3.13 / 4.13 / 5.13 / 6.10 / 7.11 / 8.9 / 9.9 / 10.5. Verifies every Phase-11 deliverable is operational locally at HEAD, emits the cross-phase roll-up, and lists follow-ons that survive into Phase 12+.
+- **§13 ledger status**: still **CLOSED** (closed at Unit 9.9). Phase 11 is the **second NON-§13 phase**.
+- **Phase-11 deliverables — all ✓ (zero deferrals; zero scope drift vs Unit 11.0 prep's 8-unit breakdown)**:
+  - `ratingChallenges` Drizzle table + `0002_rating_challenges` migration (Unit 11.1).
+  - `lib/rating-challenges/` helpers — 5 named exports + `UserChallenge` type (Unit 11.2).
+  - `POST /api/v1/rating-challenges` route + 9 tests covering each exit shape per validation gate (Unit 11.2).
+  - Inline collapsible submission form on `/[locale]/problems/[slug]` via `<RatingChallengeForm>` server component + `submitAction` server-action (Unit 11.3).
+  - `messages.rating_challenge.*` namespace (22 keys per locale; FR uses "Contester cette notation" + "Argumentaire") (Unit 11.3).
+  - Profile page extension: "Your rating challenges" dense list with reused `rating_challenge.dim_*` keys via second `getTranslations` call (Unit 11.4).
+  - `messages.profile.*` extension (5 new keys per locale) (Unit 11.4).
+  - Phase-11 hygiene Class A/B/C catalog (4 + 12 + 19 items) (Unit 11.5).
+  - OPEN_QUESTIONS hygiene: Q57 + Q58 surfaced as `open` with detailed leans; zero net promotions; 13 ADRs unchanged in body (Unit 11.6).
+- **Phase-11 unit summary (8 commits, all shipped)**:
+  - 11.0 `bb6fc3f` Phase 11 prep (Rating-challenge submission; honored-deferral pick)
+  - 11.1 `4cf6016` DB scaffold: `ratingChallenges` table + `0002_rating_challenges` migration
+  - 11.2 `98502d3` `lib/rating-challenges/` helpers + `POST /api/v1/rating-challenges` route + tests
+  - 11.3 `23197ca` Submission form on problem detail page + `messages.rating_challenge.*`
+  - 11.4 `68d13ac` Profile page extension: "Your rating challenges" section
+  - 11.5 `da0b1a5` Phase-11 hygiene status pass (Class A/B/C catalog)
+  - 11.6 `b0f0af2` OPEN_QUESTIONS hygiene + ADR review (Q57 + Q58 surfaced)
+  - 11.7 _this_ Phase 11 acceptance gate
+- **State at HEAD (Unit 11.7)**:
+  - **Content (UNCHANGED through Phases 9 + 10 + 11)**: 10 problems / 5 domains / ~12 subdomains / 30 papers / 126 authors / 14 institutions / 20 rating actions / 4 issue templates / methodology v1 (EN + FR) / contributing v1.0 (EN) + v1.1 (EN + FR) / 2 `entries.json` files. **203 schema-validated content files + 36 raw MDX = 239 total raw content files**.
+  - **Routes**: ~590 prerendered pages + **3 dynamic API routes** (`ƒ /api/auth/[...nextauth]` + `ƒ /api/v1/watchlist/[slug]` + `ƒ /api/v1/rating-challenges`). Page-route count unchanged.
+  - **Tests**: **403/403 across 46 files** (was 394/45 at Phase-10 close; +9 tests / +1 file in Phase 11 — all Unit 11.2's API route tests).
+  - **First Load JS shared chunk**: **103 kB UNCHANGED** through every Phase-11 unit (and every phase since Phase 1).
+  - **Middleware bundle**: **159 kB UNCHANGED** since Phase 9.
+  - **ADRs**: **13 UNCHANGED** (Phase 11 added zero new ADRs; Phase 12+ may surface ADR-0014 for Q57 curator-review pipeline).
+  - **Dependencies**: **+0 net in Phase 11** (last addition was Phase 9's 5-package burst).
+  - **`lighthouserc.json`** enrols **19 URLs** (UNCHANGED).
+  - **OPEN_QUESTIONS state**: 19 resolved + 4 decided-as-lean + 30 open = **53 total entries** (was 51 at Phase-10 close; +2 from Q57 + Q58 surfacing).
+  - **DB schema tables**: **6** (`user`, `account`, `session`, `verificationToken`, `watchlist`, `ratingChallenge`). Phase 11 added `ratingChallenge`.
+  - **Migrations**: **3** cumulative (drizzle-kit 0-indexed monotonic sequence — `0000_initial_auth`, `0001_watchlist`, `0002_rating_challenges`).
+  - **Messages**: +22 keys per locale in `rating_challenge.*` namespace (Unit 11.3) + 5 new keys per locale in `profile.*` namespace (Unit 11.4) = +27 keys per locale; +54 keys total across EN + FR.
+- **Phase-11 follow-ons that survive the gate (non-blocking; per Unit 11.5 catalog)**: Q57 curator review pipeline (largest Phase-12+ unblock; will likely produce ADR-0014); Q58 challenge visibility (couples to Q57); form-state preservation on validation error (UX papercut; needs `useActionState` client island); per-dimension dynamic input format (couples to form-state preservation); withdraw-own-challenge UI; per-challenge detail page; orphan-row cleanup script for `ratingChallenge` + `watchlist`; Q54 + Q55 operational unblocks (carried from Phase 9); CI dummy `AUTH_SECRET`; `pnpm db:migrate` doc for new contributors (3 migrations now). Documented in detail in Unit 11.5's Class A/B catalog.
+- **Pre-existing follow-ons that survived Phase 11 (carryover; unchanged from Unit 10.5)**: orphan domain-tile-grid deletion; entries.json backfill; clean-drafts script; `<managingEditor>` on RSS; W3C feed validator passes; Q47 Discussions enablement; HTML shell migration + Unit 8.4 unblock (STILL ON HOLD); fallback-hint UI; chrome strings + FR backfill + StatusPill localization + nav labels; trailing-slash normalization; per-entry sitemap hints; public profile at `/[locale]/u/[handle]`; watchlist count on `/problems` index; multi-provider OAuth; first LHCI run; middleware-based auth-route protection (threshold still ≤ 1 protected page route).
+- **Phase 12+ entry conditions**: per §12, **explicit human sign-off required**. Candidate Phase-12+ threads (each overridable):
+  - **Curator review pipeline** (Q57) — strongest claim by sequential thread-closure precedent: Phase 11 introduced submission surface; Phase 12 closes review surface. ~8-10 unit phase; lands ADR-0014 + middleware-based protection (third protected route).
+  - **Subscriber-list (third-party email)** — Phase-5 D-4 punt; ~6 units; couples to Q57's email-notification follow-on.
+  - **Public profile page at `/[locale]/u/[handle]`** — Phase-10 Class B item 1; ~3-4 units.
+  - **Multi-provider OAuth expansion** — ~3-4 units; needs follow-on ADR.
+  - **HTML shell migration + Unit 8.4 unblock** — STILL ON HOLD per parallel-session signal.
+- **DB-migration trigger re-eval mandatory at Phase 12 kickoff** per Unit 11.0 D-2 cascade. Trigger (a) already fired in Phase 9; trigger (b) cold at ~1.656% of 5 MB (content unchanged).
+- **Architectural pattern validation (cross-phase milestone)**: Phase 11 confirmed the Phase-9-introduced write-path pattern generalizes. Both first-party write-paths (watchlist + rating-challenge) follow the same shape: auth-required + Drizzle helpers (`lib/<feature>/`) + REST API route (`app/api/v1/<feature>/[route].ts` with verb-specific 401/400/404/201 exits + Vitest tests via mocked auth + partial-mocked helpers) + server-action UI consumer (`components/<feature>-X/index.tsx` with `<form action={serverAction}>` pattern; redirect-with-search-param error reporting; zero client bundle delta) + i18n message namespace (`messages/{en,fr}.json` per-feature key set with FR translations honoring §3 brand register) + profile-page surface (`app/[locale]/profile/page.tsx` dense-list extension). Phase 12+ can confidently build on this pattern.
+- **Cross-phase milestone**: 8 commits (11.0-11.7) + 0 new ADRs + 0 new dependencies + 0 client-bundle regressions (103 kB First Load JS preserved end-to-end) + 0 test regressions + 9 new tests + +2 OPEN_QUESTIONS (Q57 + Q58 surfaced; zero net promotions) + 1 new DB table (`ratingChallenge`) + 1 new migration (`0002_rating_challenges`) + 54 new i18n keys across EN + FR + 1 new dynamic API route + 0 page route additions.
+- **Phase-11 over-vs-under against the 11.0 plan**: scoped 8 units; **shipped 8 units** with zero deferrals + zero scope drift. Per-unit landings matched the prep table exactly.
+- **Smoke gates (final cross-cut)**: `pnpm validate-content` → 203 unchanged; `pnpm typecheck` clean; `pnpm test` → 403/403 across 46 files; `pnpm build` → ~590 prerendered pages + 3 dynamic API routes; First Load JS shared chunk = 103 kB unchanged; middleware = 159 kB unchanged; `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- THINK artifact: `docs/thinking/11.7-phase-11-acceptance-gate.md`.
+
 #### Unit 11.6 — OPEN_QUESTIONS hygiene + ADR review (Phase 11 pre-close)
 
 - Seventh Phase-11 unit; docs-only. Mirrors Unit 5.12 / 6.9 / 7.10 / 8.8 / 9.8 / 10.4 OQ-hygiene precedents. Scans the ledger for Phase-11 promotions + surfaces the two anticipated Q-numbers (Q57 + Q58) flagged in Unit 11.0 + 11.5 hygiene + reviews the 13 ADRs at HEAD for stale status / supersede markers. Lands ahead of Unit 11.7 (acceptance gate).
