@@ -81,6 +81,25 @@
     "challenges_withdraw": "Withdraw",
     "challenges_withdraw_aria_label": "Withdraw this rating challenge"
   },
+  "public_challenges": {
+    "aria_label": "Public rating challenges for this problem",
+    "heading": "Rating challenges",
+    "count_open": "{count, plural, =0 {0 pending review} one {1 pending review} other {# pending review}}",
+    "count_accepted": "{count, plural, =0 {0 accepted} one {1 accepted} other {# accepted}}",
+    "view_all_link": "View all rating challenges →",
+    "page_heading": "Rating challenges",
+    "page_description": "Community-submitted challenges to this problem's current rating. Curators review each challenge; accepted challenges emit a new rating action.",
+    "empty_message": "No public rating challenges for this problem yet.",
+    "empty_cta": "Be the first to challenge this rating →",
+    "submitter_label": "by @{login}",
+    "submitter_unknown": "by (unknown)",
+    "rationale_label": "Rationale",
+    "action_attached_label": "Rating action:",
+    "status_submitted": "Submitted",
+    "status_under_review": "Under review",
+    "status_accepted": "Accepted",
+    "back_to_problem": "← Back to problem"
+  },
   "curator": {
     "heading": "Curator: rating challenges",
     "description": "Review community-submitted challenges to existing ratings. Accept to emit a new rating action; reject with notes.",

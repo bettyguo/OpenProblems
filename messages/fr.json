@@ -81,6 +81,25 @@
     "challenges_withdraw": "Retirer",
     "challenges_withdraw_aria_label": "Retirer cette contestation de notation"
   },
+  "public_challenges": {
+    "aria_label": "Contestations de notation publiques pour ce problème",
+    "heading": "Contestations de notation",
+    "count_open": "{count, plural, =0 {0 en attente d'examen} one {1 en attente d'examen} other {# en attente d'examen}}",
+    "count_accepted": "{count, plural, =0 {0 acceptée} one {1 acceptée} other {# acceptées}}",
+    "view_all_link": "Voir toutes les contestations →",
+    "page_heading": "Contestations de notation",
+    "page_description": "Contestations soumises par la communauté à propos de la notation actuelle de ce problème. Les curateurs examinent chaque contestation ; les contestations acceptées émettent une nouvelle action de notation.",
+    "empty_message": "Aucune contestation publique de notation pour ce problème pour l'instant.",
+    "empty_cta": "Soyez le premier à contester cette notation →",
+    "submitter_label": "par @{login}",
+    "submitter_unknown": "par (inconnu)",
+    "rationale_label": "Argumentaire",
+    "action_attached_label": "Action de notation :",
+    "status_submitted": "Soumise",
+    "status_under_review": "En cours d'examen",
+    "status_accepted": "Acceptée",
+    "back_to_problem": "← Retour au problème"
+  },
   "curator": {
     "heading": "Curation : contestations de notation",
     "description": "Examiner les contestations soumises par la communauté à propos des notations existantes. Acceptez pour émettre une nouvelle action de notation ; rejetez avec une note.",

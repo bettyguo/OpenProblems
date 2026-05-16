@@ -1,4 +1,4 @@
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { RatingChallengeForm } from "@/components/rating-challenge-form";
 import type { ChallengeError } from "@/components/rating-challenge-form";
@@ -10,6 +10,10 @@ import { allProblemSlugs, loadProblem } from "@/lib/content/load-problem";
 import { tryGetDiscussionByPath } from "@/lib/discussions/github-graphql";
 import { Link } from "@/lib/i18n/navigation";
 import { isLocale, locales } from "@/lib/i18n/routing";
+import {
+  getAcceptedChallengeCountByProblem,
+  getOpenChallengeCountByProblem,
+} from "@/lib/rating-challenges";
 import { dimensionsToRadar } from "@/lib/ratings/normalize";
 import { SITE } from "@/lib/site-url";
 
@@ -46,6 +50,13 @@ export default async function ProblemPage({ params, searchParams }: ProblemPageP
   const discussion = await tryGetDiscussionByPath(`/${locale}/problems/${slug}/talk`);
   const discussionCount =
     discussion && discussion.commentCount > 0 ? discussion.commentCount : undefined;
+
+  const [openChallengeCount, acceptedChallengeCount] = await Promise.all([
+    getOpenChallengeCountByProblem(slug),
+    getAcceptedChallengeCountByProblem(slug),
+  ]);
+  const totalPublicChallengeCount = openChallengeCount + acceptedChallengeCount;
+  const tPC = await getTranslations("public_challenges");
 
   return (
     <main className="mx-auto max-w-prose px-6 py-12">
@@ -294,6 +305,26 @@ export default async function ProblemPage({ params, searchParams }: ProblemPageP
         submitted={challengeSubmitted}
         {...(challengeError ? { error: challengeError } : {})}
       />
+
+      {/* 8b. Public rating-challenge counter (Unit 13.2) */}
+      {totalPublicChallengeCount > 0 && (
+        <section aria-label={tPC("aria_label")} className="mt-10">
+          <h2 className="font-serif text-xl font-semibold tracking-tight">{tPC("heading")}</h2>
+          <p className="text-muted-foreground mt-2 text-sm">
+            <span>{tPC("count_open", { count: openChallengeCount })}</span>
+            <span className="mx-2" aria-hidden>
+              ·
+            </span>
+            <span>{tPC("count_accepted", { count: acceptedChallengeCount })}</span>
+          </p>
+          <Link
+            href={`/problems/${slug}/challenges`}
+            className="text-accent mt-3 inline-block text-sm underline-offset-2 hover:underline"
+          >
+            {tPC("view_all_link")}
+          </Link>
+        </section>
+      )}
 
       {/* 9. Related problems */}
       {problem.related_problems && problem.related_problems.length > 0 && (

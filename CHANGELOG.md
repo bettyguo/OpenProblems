@@ -2470,6 +2470,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 13 — Community-adjacent surfaces (**fourth NON-§13 phase**: Q58 public visibility — honored-deferral pick)
 
+#### Unit 13.2 — Counter UI on problem detail page + `messages.public_challenges.*` (EN + FR)
+
+- Third Phase-13 unit; second code unit. Lands the **smallest public Q58 surface** per Unit 13.0 D-4: a counter section on `/[locale]/problems/[slug]` displaying open + accepted challenge counts with a "View all →" link to the per-problem listing route (which Unit 13.3 will ship). **First read-side public surface for USER-STATE content** — visible to unauthenticated visitors (no auth gate; counter renders regardless of session).
+- **`app/[locale]/problems/[slug]/page.tsx` (edit)**:
+  - Imports `getTranslations` from `next-intl/server` (alongside existing `setRequestLocale`).
+  - Imports `getAcceptedChallengeCountByProblem` + `getOpenChallengeCountByProblem` from `@/lib/rating-challenges` (the open counter helper shipped in Phase-12 Unit 12.3; the accepted counter helper shipped in Unit 13.1).
+  - Adds `Promise.all` parallel fetch for both counts (single DB round-trip rather than serialized — minimizes problem-detail-page latency overhead).
+  - Adds `const tPC = await getTranslations("public_challenges")` translator binding.
+  - Adds **section 8b** (new) after section 8a (Phase-11 `RatingChallengeForm`) + before section 9 (Related problems). Section renders **ONLY when at least one public challenge exists** (`totalPublicChallengeCount > 0`); empty case omits the section to preserve the clean 10-block §9 layout per Unit 13.0 D-4 framing.
+  - Counter shape: heading + paragraph showing open + accepted counts via ICU plurals (`{count_open}` · `{count_accepted}` separated by mid-dot) + "View all rating challenges →" link pointing to `/problems/[slug]/challenges` (the route Unit 13.3 will ship).
+- **`messages/en.json` + `messages/fr.json` (edits)** — new `messages.public_challenges.*` namespace (**16 keys per locale**; +32 keys total across EN + FR). Unit 13.2 adds the full namespace upfront so Unit 13.3's listing route consumes the same translator-binding without further i18n edits (mirrors Phase-11 Unit 11.3's full `rating_challenge.*` upfront-add pattern):
+  - **Counter-section keys** (consumed in Unit 13.2): `aria_label`, `heading`, `count_open` (ICU plural), `count_accepted` (ICU plural), `view_all_link`.
+  - **Listing-page keys** (consumed in Unit 13.3; pre-added for atomic-i18n discipline): `page_heading`, `page_description`, `empty_message`, `empty_cta`, `submitter_label` (ICU `{login}`), `submitter_unknown` (Phase-9 retrofit edge fallback), `rationale_label`, `action_attached_label`, `status_submitted`, `status_under_review`, `status_accepted`, `back_to_problem`.
+  - FR translations honor §3 brand register: "Contestations de notation" / "en attente d'examen" / "acceptées" (feminine plural for "contestations") / "Argumentaire" / "Action de notation".
+- **No auth surface** — the counter renders unauthenticated. This is the **first read-side public surface for USER-STATE content** in the project (Phase 9 + 10 + 11 + 12 surfaces all auth-gated). Establishes the pattern Phase 14+ public profile will inherit.
+- **Validation contract pinned in build smoke**: Counts are real DB reads on every request; SSR `force-dynamic` (problem detail page was already force-dynamic since Phase 9 watchlist + Phase 11 challenge form surfaces). Build registers ~20 prerendered locale × slug shells for the static path generation; runtime fetches the counts.
+- **NOT in this unit** (deferred):
+  - Per-problem listing route at `/[locale]/problems/[slug]/challenges` — Unit 13.3 (consumes the pre-added listing-page i18n keys).
+  - Submitter-login privacy note in `messages.rating_challenge.description` — Unit 13.3 (couples to the public-listing introduction).
+- **Smoke gates**:
+  - `pnpm validate-content` → 203 files unchanged.
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **467/467 across 51 files UNCHANGED** (no test files touched; counter UI is exercised via build smoke + manual dev-server walkthrough; the helpers themselves are covered by Unit 13.1's 11 tests).
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+  - `pnpm build` clean; new counter renders on problem detail page when DB has matching rows (verified architecturally; live exercise requires Q54 + Q55 ops gates). Route bundle UNCHANGED; counter is server-side; zero client-bundle delta. **First Load JS shared chunk = 103 kB UNCHANGED**.
+- THINK artifact: omitted — implementation contained in Unit 13.0 D-4 (counter UI placement) + D-7 (i18n shape).
+- Next: Unit 13.3 (per-problem listing route + submitter-login privacy note).
+
 #### Unit 13.1 — `lib/rating-challenges/` public-visibility helpers + tests
 
 - Second Phase-13 unit; first code unit. Lands the **backend layer** for Q58 closure. Pure-function visibility predicate + two new DB helpers (`getPublicChallengesByProblem` returning `PublicChallengeRow[]` joined to `users` for `submitterLogin`; `getAcceptedChallengeCountByProblem` for the counter UI). **+11 tests / +1 test file** (was 456/50; now **467/51**).
