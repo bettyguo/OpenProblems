@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, inArray } from "drizzle-orm";
 
 import { db } from "@/lib/db";
-import { ratingChallenges } from "@/lib/db/schema";
+import { ratingChallenges, users } from "@/lib/db/schema";
 
 /**
  * Rating-challenges helpers + per-dimension validation (Units 11.2 + 12.3).
@@ -350,9 +350,9 @@ export async function attachAcceptedAction(
 
 /**
  * Counts how many challenges currently sit in `submitted` or
- * `under_review` for the supplied problem. Used by Phase-13+ public-
+ * `under_review` for the supplied problem. Used by Phase-13 public-
  * visibility surfaces (Q58 lean) + the curator dashboard's per-problem
- * grouping; Phase 12 calls this only from the curator dashboard.
+ * grouping; Phase 12 called this only from the curator dashboard.
  */
 export async function getOpenChallengeCountByProblem(problemSlug: string): Promise<number> {
   const rows = await db
@@ -363,6 +363,117 @@ export async function getOpenChallengeCountByProblem(problemSlug: string): Promi
         eq(ratingChallenges.problemSlug, problemSlug),
         inArray(ratingChallenges.status, [...PENDING_STATUSES]),
       ),
+    );
+  return rows.length;
+}
+
+// ---------------------------------------------------------------------------
+// Phase-13 public visibility surface (Unit 13.1) — per ADR-0014 D-? +
+// Unit 11.6 Q58 lean + Unit 13.0 D-3 per-status visibility policy.
+// ---------------------------------------------------------------------------
+
+/**
+ * Subset of `ChallengeStatus` that is publicly visible per Unit 13.0
+ * D-3. `submitted` + `under_review` + `accepted` reach unauthenticated
+ * viewers on the counter + per-problem listing surfaces; `rejected` +
+ * `withdrawn` stay submitter-only (privacy preservation on editorial
+ * decisions + submitter change-of-mind).
+ */
+export const PUBLIC_CHALLENGE_STATUSES = ["submitted", "under_review", "accepted"] as const;
+export type PublicChallengeStatus = (typeof PUBLIC_CHALLENGE_STATUSES)[number];
+
+export function isPublicChallengeStatus(value: string): value is PublicChallengeStatus {
+  return (PUBLIC_CHALLENGE_STATUSES as readonly string[]).includes(value);
+}
+
+/**
+ * Public-facing per-challenge row. Joins `ratingChallenges` to `users`
+ * on `userId` to expose `submitterLogin` per ADR-0012 D-E semantics
+ * (GitHub-OAuth attribution is inherently public; surfaces match
+ * curator-of-record framing). `acceptedActionId` non-null only when
+ * `status === "accepted"`.
+ */
+export interface PublicChallengeRow {
+  id: string;
+  problemSlug: string;
+  submitterLogin: string | null; // null for Phase-9 retrofit edge
+  submittedAt: Date;
+  dimension: Dimension;
+  proposedValue: string;
+  rationale: string;
+  status: PublicChallengeStatus;
+  acceptedActionId: string | null;
+}
+
+/**
+ * Returns all publicly-visible challenges for the supplied problem,
+ * ordered `createdAt DESC` (newest first; matches profile-page +
+ * curator-dashboard list conventions) and limited to `CHALLENGES_LIMIT`
+ * (50). Filters to `status ∈ PUBLIC_CHALLENGE_STATUSES`; `rejected` +
+ * `withdrawn` are excluded server-side per Unit 13.0 D-3.
+ *
+ * LEFT JOIN to `users` so rows survive when the submitter's account was
+ * deleted (`userId` FK is cascade — the row itself would already be
+ * gone in that case; but the LEFT JOIN is conservative + idiomatic
+ * Drizzle for the "join exposes a column" shape).
+ */
+export async function getPublicChallengesByProblem(
+  problemSlug: string,
+): Promise<PublicChallengeRow[]> {
+  const rows = await db
+    .select({
+      id: ratingChallenges.id,
+      problemSlug: ratingChallenges.problemSlug,
+      submitterLogin: users.githubLogin,
+      submittedAt: ratingChallenges.createdAt,
+      dimension: ratingChallenges.dimension,
+      proposedValue: ratingChallenges.proposedValue,
+      rationale: ratingChallenges.rationale,
+      status: ratingChallenges.status,
+      acceptedActionId: ratingChallenges.acceptedActionId,
+    })
+    .from(ratingChallenges)
+    .leftJoin(users, eq(ratingChallenges.userId, users.id))
+    .where(
+      and(
+        eq(ratingChallenges.problemSlug, problemSlug),
+        inArray(ratingChallenges.status, [...PUBLIC_CHALLENGE_STATUSES]),
+      ),
+    )
+    .orderBy(desc(ratingChallenges.createdAt))
+    .limit(CHALLENGES_LIMIT);
+
+  return rows
+    .filter((row): row is typeof row & { status: PublicChallengeStatus } =>
+      isPublicChallengeStatus(row.status),
+    )
+    .map((row) => ({
+      id: row.id,
+      problemSlug: row.problemSlug,
+      submitterLogin: row.submitterLogin,
+      submittedAt: row.submittedAt,
+      dimension: row.dimension as Dimension,
+      proposedValue: row.proposedValue,
+      rationale: row.rationale,
+      status: row.status,
+      acceptedActionId: row.acceptedActionId,
+    }));
+}
+
+/**
+ * Counts how many accepted challenges exist for the supplied problem.
+ * Used by the counter UI on problem detail page to render "X accepted"
+ * alongside the open count from `getOpenChallengeCountByProblem`.
+ *
+ * Accepted is editorial-record-shaped (the challenge contributed to a
+ * new rating action via ADR-0014 D-D manual emission); fully public.
+ */
+export async function getAcceptedChallengeCountByProblem(problemSlug: string): Promise<number> {
+  const rows = await db
+    .select({ id: ratingChallenges.id })
+    .from(ratingChallenges)
+    .where(
+      and(eq(ratingChallenges.problemSlug, problemSlug), eq(ratingChallenges.status, "accepted")),
     );
   return rows.length;
 }

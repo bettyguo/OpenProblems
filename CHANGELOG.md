@@ -2470,6 +2470,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 13 — Community-adjacent surfaces (**fourth NON-§13 phase**: Q58 public visibility — honored-deferral pick)
 
+#### Unit 13.1 — `lib/rating-challenges/` public-visibility helpers + tests
+
+- Second Phase-13 unit; first code unit. Lands the **backend layer** for Q58 closure. Pure-function visibility predicate + two new DB helpers (`getPublicChallengesByProblem` returning `PublicChallengeRow[]` joined to `users` for `submitterLogin`; `getAcceptedChallengeCountByProblem` for the counter UI). **+11 tests / +1 test file** (was 456/50; now **467/51**).
+- **`lib/rating-challenges/index.ts` (edit)**: extends Phase-11+12 module with **public-visibility surface** per Unit 13.0 D-3 + D-6. New exports:
+  - **`PUBLIC_CHALLENGE_STATUSES`** const + **`PublicChallengeStatus`** type — 3 values per Unit 13.0 D-3 (`submitted`, `under_review`, `accepted`). Excludes `rejected` (preserves submitter privacy on editorial decisions) + `withdrawn` (preserves submitter privacy on change-of-mind).
+  - **`isPublicChallengeStatus(value)`** — type-narrowing predicate. Used both server-side (in the listing-page route to filter join results defensively) + as the testable invariant.
+  - **`PublicChallengeRow`** interface — public-facing per-challenge row shape. Joins `ratingChallenges` to `users` on `userId` to expose `submitterLogin` (nullable for Phase-9 retrofit edge where `events.linkAccount` didn't populate `githubLogin`).
+  - **`getPublicChallengesByProblem(problemSlug)`** — LEFT JOIN to `users`; filters `status ∈ PUBLIC_CHALLENGE_STATUSES`; orders `createdAt DESC` (newest first matching profile-page + curator-dashboard conventions); LIMIT 50 (mirrors `CHALLENGES_LIMIT`). Defensive `.filter(isPublicChallengeStatus)` narrows the Drizzle string return type to the public-subset literal type before mapping to typed return.
+  - **`getAcceptedChallengeCountByProblem(problemSlug)`** — `eq("accepted")` filter; returns count.
+- **`lib/db/schema` import (edit)**: adds `users` to the existing import (previously `ratingChallenges` only); the LEFT JOIN in `getPublicChallengesByProblem` references both.
+- **`lib/rating-challenges/public-visibility.test.ts` (new)**: **11 tests** organized in 3 describe blocks:
+  - **PUBLIC_CHALLENGE_STATUSES shape** (4 tests): exports exactly 3 statuses matching D-3; explicit "excludes rejected" + "excludes withdrawn" assertions documenting policy rationale; "includes accepted" rationale (editorial-record-shaped).
+  - **`isPublicChallengeStatus` predicate** (6 tests): true for each of 3 public statuses; false for each of 2 private terminals; false for unknown values + empty string (defensive).
+  - **Visibility partition vs state machine terminals** (1 invariant test): asserts every status is exactly one of "public" OR "private terminal" — no status is both public AND private; the two private terminals (`rejected`, `withdrawn`) are indeed in `TERMINAL_STATUSES`; `accepted` is the only status that's BOTH public AND terminal (editorial-record-shaped).
+- **No DB-helper integration tests** (deferred): like Phase-12 Unit 12.3, `getPublicChallengesByProblem` + `getAcceptedChallengeCountByProblem` exercise their DB-helper half at request time via the Phase-13 listing-page route + problem-detail-page counter. The Phase-13 route consumers will be exercised via build smoke + manual dev-server walkthrough (Phase 14+ may add proper integration tests once Q54 + Q55 ops gates resolve).
+- **Validation contract pinned in tests**: per-status visibility is a HARD partition (no overlap between public + private-terminal sets); `rejected` + `withdrawn` are EXCLUSIVELY private; `accepted` is the only public + terminal status (the editorial-record case).
+- **NOT in this unit** (deferred):
+  - Counter UI on problem detail page + `messages.public_challenges.*` — Unit 13.2.
+  - Per-problem listing route at `/[locale]/problems/[slug]/challenges` + submitter-login privacy note — Unit 13.3.
+- **Smoke gates**:
+  - `pnpm validate-content` → 203 files unchanged.
+  - `pnpm typecheck` clean (post-`PublicChallengeStatus` literal type + `PublicChallengeRow` shape + LEFT JOIN return-shape narrowing via `.filter(isPublicChallengeStatus)`).
+  - `pnpm test` → **467/467 across 51 files** (+11 net tests / +1 net file: 4 const-shape + 6 predicate + 1 partition invariant).
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+  - `pnpm build` deferred to Unit 13.2 (no consumer surface yet; helpers are lib-internal).
+- THINK artifact: omitted — implementation contained in Unit 13.0 D-3 (visibility policy) + D-6 (helper signatures). Mirrors Phase-12 Unit 12.3 + Phase-11 Unit 11.2 precedent.
+- Next: Unit 13.2 (counter UI on problem detail page + `messages.public_challenges.*`).
+
 #### Unit 13.0 — Phase 13 prep (THINK doc + 7-unit Q58-public-visibility breakdown + procedural DB-trigger re-eval)
 
 - Phase 13 kickoff per §12 cardinal rule. Phase 12 closed at HEAD `201825f` (Unit 12.8 acceptance gate; third NON-§13 phase; community-feedback loop closed; first new ADR since Phase 9; first ALTER migration; first authorization tier; first multi-state DB state machine). **Phase 13 sign-off granted via "Continue" override** in the unit-rhythm rhythm (eighth invocation; precedents: Phase 5 → 6 in Unit 6.0; Phase 6 → 7 in Unit 7.0; Phase 7 → 8 in Unit 8.0; Phase 8 → 9 in Unit 9.0; Phase 9 → 10 in Unit 10.0; Phase 10 → 11 in Unit 11.0; Phase 11 → 12 in Unit 12.0). Docs-only unit.
