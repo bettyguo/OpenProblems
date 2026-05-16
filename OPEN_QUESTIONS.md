@@ -351,18 +351,20 @@ Translating 30 papers + 10 problems + 5 domains + ~12 subdomains + 4 issue templ
 
 ## Q52. Translation provenance schema
 
-**Status:** decided-as-lean · **Surfaced:** Unit 7.0.
+**Status:** resolved 2026-05-16 (Unit 7.4) · **Surfaced:** Unit 7.0 · **Resolved:** Unit 7.4 (implementation) + Unit 7.1 (ADR pin).
 
 When a curator commits a `*.fr.yaml` or `*.fr.mdx`, should we record machine-translation vs human-translation provenance?
 
-**Lean**: yes — add a `translation_source: "human" | "machine-assisted"` frontmatter field, defaulting to `"human"`. Curators using `pnpm` LLM tooling (a future Phase-7+ unit could add a translation-CLI) flip to `"machine-assisted"`. Provides audit trail without forcing the curator chain into translation-only roles.
+**Decision** (per [ADR-0011](.\docs\adr\0011-i18n-strategy.md) D-G + Unit 7.4 implementation): yes — `translation_source: "human" | "machine-assisted"` frontmatter field; **required on translated files** (Velite post-transform `.refine` enforces); **absent on EN canonicals** (where it'd be tautological — the EN content IS the source). No default value — curators choose explicitly when authoring `.fr.{yaml,mdx}`.
 
-Defer the schema decision to Unit 7.5 (Velite collection extensions for sibling-file pattern).
+Realized in code at HEAD: `TRANSLATION_SOURCES = ["human", "machine-assisted"]` constant in `velite.config.ts` applied to 5 collections (methodology, contributing, problemPages, problems, papers); `TranslationSourceSchema = z.enum(["human", "machine-assisted"])` in `lib/schemas/problem.ts` mirrored into `lib/schemas/paper.ts` (per Q31 dual-schema contract). Future translation-CLI (Phase 7+ enhancement) would draft FR content with `translation_source: "machine-assisted"` per the ADR-0009 D-F precedent.
 
 ## Q53. Curator authorship attribution per-locale
 
-**Status:** decided-as-lean · **Surfaced:** Unit 7.0.
+**Status:** resolved 2026-05-16 (Unit 7.1) · **Surfaced:** Unit 7.0 · **Resolved:** Unit 7.1 (ADR pin).
 
 Should `editorial.primary_curator` (already on `problem.yaml`) be per-locale or stay global?
 
-**Lean**: **global**. The curator chain (who decided X) doesn't fragment by locale; translation provenance (Q52) is a separate concern from authorship. Translation provenance answers "how did this FR text come into being"; primary_curator answers "who is responsible for the editorial decision the text encodes". Defer to Unit 7.5.
+**Decision** (per [ADR-0011](.\docs\adr\0011-i18n-strategy.md) D-G): **global**. The curator chain (who decided X) doesn't fragment by locale; translation provenance ([Q52](#q52-translation-provenance-schema)) is a separate concern from authorship. Translation provenance answers "how did this rendered language come into being"; `primary_curator` answers "who is responsible for the editorial decision the text encodes". Two separate concerns.
+
+No schema change required: `lib/schemas/problem.ts` already declares `primary_curator: z.string().min(1)` (single string, not per-locale). Q52's `translation_source` field carries the translation-specific provenance independently. Promoted on ADR-pin alone (matching the Q50 precedent — runtime choice was resolved by ADR-0011 D-A in Unit 7.1 before bulk implementation).

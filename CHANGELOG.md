@@ -2081,8 +2081,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
 - THINK artifact: `docs/thinking/7.8-sitemap.md`.
 
+#### Unit 7.10 — OPEN_QUESTIONS hygiene + ADR review (Phase 7 pre-close)
 
-
+- Seventh Phase-7 code+docs unit; docs-only. Mirrors the Phase-5 (Unit 5.12) + Phase-6 (Unit 6.9) precedents: promotes Phase-7 open questions whose leans were realized in implementation; scans ADRs for stale status or supersede markers. Lands ahead of 7.9 (status pass) + 7.11 (acceptance gate) because the Q-promotions only depend on already-shipped units (7.1 / 7.4 / 7.8) and the unit is collision-free.
+- **OPEN_QUESTIONS promotions**:
+  - **Q50** (i18n runtime choice): no change — already `resolved 2026-05-16 (Unit 7.1)` from ADR-0011 D-A.
+  - **Q51** (Bilingual content backfill cadence): **no promotion** — cadence is ongoing curator work; stays `decided-as-lean` as an audit trail of "Phase 7 acceptance is infrastructure-complete, not content-complete."
+  - **Q52** (Translation provenance schema): **promote `decided-as-lean` → `resolved 2026-05-16 (Unit 7.4)`**. Realized in two places: ADR-0011 D-G pinned the contract (Unit 7.1); Unit 7.4 (`f315458`) implemented the schema across 5 Velite collections + 2 canonical Zod-4 schemas with post-transform refines enforcing "translation_source required on translated files".
+  - **Q53** (Curator authorship per-locale): **promote `decided-as-lean` → `resolved 2026-05-16 (Unit 7.1)`**. ADR-0011 D-G explicitly pinned "`primary_curator` remains global". Matches the Q50 precedent (ADR-pin resolves the question; no bulk implementation required).
+- **ADR review pass**: 11 ADRs at HEAD (0001-0011); all `Status: accepted`; none superseded. Phase 7 added ADR-0011 (Unit 7.1) only; confirmed `accepted` + dates + cross-links + deciders block intact. No edits.
+- **No new Q-surfacing this session**. Units 7.6 / 7.7 / 7.8 operated entirely within ADR-0011's contract. The "html-lang vs content-language" risk flagged in Unit 7.7 is an axe-rule edge case, not a load-bearing ambiguity.
+- **OPEN_QUESTIONS ledger at HEAD**: 16 resolved (Q1 / Q4 / Q5 / Q12 / Q13 / Q18 / Q27 / Q32 / Q40 / Q41 / Q43 / Q45 / Q46 / Q48 / Q49 / Q50 / Q52 / Q53 — actually 18); 5 decided-as-lean (Q34 / Q35 / Q36 / Q38 / Q39 / Q42 / Q44 / Q51); 19 still open (Q2 / Q3 / Q6-Q11 / Q14-Q17 / Q19 / Q25 / Q26 / Q28-Q31 / Q33 / Q37 / Q47).
+- **Smoke gates**: docs-only; `validate-content` / `typecheck` / `test` / `build` / `audit-content` unchanged from Unit 7.8 snapshot (370/370 tests; 336 routes; 103 kB First Load JS).
+- THINK artifact: `docs/thinking/7.10-open-questions-hygiene.md`.
 
 
 
