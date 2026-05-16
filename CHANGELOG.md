@@ -2501,6 +2501,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2); typecheck / test / build untouched since no source files modified.
 - THINK artifact: `docs/thinking/9.0-phase-9-prep.md`.
 
+#### Unit 9.1 — ADR-0012 (Auth provider: NextAuth.js v5 + GitHub OAuth)
+
+- First ADR of Phase 9. Pins the provider lean surfaced in Unit 9.0 D-3. Mirrors the ADR-0008 + ADR-0010 + ADR-0011 precedent — first ADR of a phase that introduces a new third-party runtime surface lands BEFORE the runtime install (Unit 9.4 pulls `next-auth@^5`). Docs-only.
+- **ADR-0012 D-A through D-E**:
+  - **D-A. Runtime = NextAuth.js v5 (Auth.js)**. `^5.x`; only auth library in `dependencies`; other libraries (Clerk SDK, Lucia, Iron Session) forbidden until follow-on ADR authorizes.
+  - **D-B. Identity provider = GitHub OAuth (initially the ONLY provider)**. Multi-provider expansion (Google, GitLab, email-link) **forbidden in Phase 9**; Phase 10+ Q-promotion path documented.
+  - **D-C. Session strategy = database-backed (Drizzle adapter)**. JWT-only sessions forbidden in Phase 9. Trade-off: extra DB read per `auth()` call (~5ms on Turso edge) vs revocability + auditability + simpler rotation.
+  - **D-D. Sign-in UX = redirect-to-provider**. No modal / popup; full-page redirect flow (`/api/auth/signin/github` → `https://github.com/login/oauth/authorize` → callback → DB persist → redirect home).
+  - **D-E. User identity model**. Drizzle `users` table schema with NextAuth-canonical columns (`id`, `name`, `email`, `image`, `emailVerified`, `createdAt`) PLUS `githubLogin` text-unique column that joins to file-system `editorial.primary_curator` (preserves ADR-0005 file-first curator-of-record; DB tracks sign-in identity, file-system tracks editorial accountability — two separate concerns).
+- **Considered options** (4 in total per the ADR's options table): NextAuth.js v5 + GitHub OAuth + Drizzle (chosen); Clerk SaaS; GitHub OAuth direct; no auth (defer Phase 9). Each option carries explicit Pros/Cons in the ADR per the README's "≥ 2 options with explicit Pros/Cons" rule.
+- **Consequences**:
+  - **Positive**: App Router-canonical surface; mature SDK; free; data ownership; §5.8 explicit recommendation honored; reversibility via `lib/auth/` thin wrapper; multi-provider expansion path; curator-community alignment.
+  - **Negative**: `next-auth@^5` still maturing; configuration is code-shaped, not dashboard-shaped; per-request DB read overhead; GitHub-only initial provider blocks non-GitHub users (Phase 10+ unblock); no SaaS-side analytics (must query our DB).
+- **OPEN_QUESTIONS impact**: **Q54** (GitHub OAuth app registration) stays open as operational gate downstream; ADR-0012 confirms GitHub OAuth as the provider but the OAuth app still needs registration. **Q55** (DB hosting tier) + **Q56** (watchlist table key shape) untouched (ADR-0013 + Unit 9.6 scopes).
+- **ADR index update**: `docs/adr/README.md` extends to 12 entries; closing-paragraph note appended ("ADR-0012 was authored in Unit 9.1 (pins NextAuth.js v5 + GitHub OAuth per §5.8; cross-references Q54 operational gate; accepted 2026-05-16)"); next ADR will be numbered 0013.
+- **No code touched**: this is an ADR-only docs unit. `next-auth` install + `lib/auth/` runtime arrive at Unit 9.4.
+- Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2); typecheck / test / build untouched since no source files modified.
+- THINK artifact: `docs/thinking/9.1-adr-0012-auth-provider.md`.
+
 
 
 
