@@ -330,3 +330,39 @@ When a Giscus comment is flagged in the embed, where does the curator chain pick
 **Decision** (pinned in [ADR-0010 D-F](./docs/adr/0010-discussions-backend.md)): **defer entirely to GitHub Discussions' native moderation**. No first-party moderation queue alongside. Revisit only if curator workload signals a real backlog OR if moderation needs to flow into rating-action evidence chains (out-of-scope for Phase 6 v1; would warrant a future ADR).
 
 ADR-0010 D-F language is the canonical statement; this entry is the OPEN_QUESTIONS-side cross-reference for searchers who reach this file first.
+
+## Q50. i18n runtime choice
+
+**Status:** decided-as-lean · **Surfaced:** Unit 7.0.
+
+Phase 7's first thread (per [7.0 prep doc](./docs/thinking/7.0-phase-7-prep.md) D-1) is bilingual rendering (FR primary, given the Montréal location signal in §13). Three viable runtimes: `next-intl` (App Router-canonical; mature; sub-path routing built-in); Paraglide.js (newer; TypeScript-first; smaller bundle); native Next.js i18n + custom translation system.
+
+**Lean** (subject to ADR-0011 in Unit 7.1): **`next-intl`** with **sub-path routing** (`/en/...`, `/fr/...`) and **JSON-per-locale message files** (`messages/en.json`, `messages/fr.json`). Reasoning: canonical recommendation for App Router; sub-path routing is crawler-friendly + bookmarkable; we don't need bundle-size heroics for a 2-locale project.
+
+ADR-0011 (Unit 7.1) will pin the realized contract.
+
+## Q51. Bilingual content backfill cadence
+
+**Status:** decided-as-lean · **Surfaced:** Unit 7.0.
+
+Translating 30 papers + 10 problems + 5 domains + ~12 subdomains + 4 issue templates is curator-editorial work. The infrastructure (i18n runtime + content storage + locale routing) lands in Phase 7; the actual translation backfill happens incrementally.
+
+**Lean**: **defer full content backfill to a curator-track that runs in parallel with future phases**. Phase 7 acceptance ships INFRASTRUCTURE complete (FR pilot on `/methodology` validates the pipeline end-to-end); CONTENT completion is a long-tail editorial workstream that doesn't block subsequent phases. New translations land via individual PRs over time.
+
+## Q52. Translation provenance schema
+
+**Status:** decided-as-lean · **Surfaced:** Unit 7.0.
+
+When a curator commits a `*.fr.yaml` or `*.fr.mdx`, should we record machine-translation vs human-translation provenance?
+
+**Lean**: yes — add a `translation_source: "human" | "machine-assisted"` frontmatter field, defaulting to `"human"`. Curators using `pnpm` LLM tooling (a future Phase-7+ unit could add a translation-CLI) flip to `"machine-assisted"`. Provides audit trail without forcing the curator chain into translation-only roles.
+
+Defer the schema decision to Unit 7.5 (Velite collection extensions for sibling-file pattern).
+
+## Q53. Curator authorship attribution per-locale
+
+**Status:** decided-as-lean · **Surfaced:** Unit 7.0.
+
+Should `editorial.primary_curator` (already on `problem.yaml`) be per-locale or stay global?
+
+**Lean**: **global**. The curator chain (who decided X) doesn't fragment by locale; translation provenance (Q52) is a separate concern from authorship. Translation provenance answers "how did this FR text come into being"; primary_curator answers "who is responsible for the editorial decision the text encodes". Defer to Unit 7.5.

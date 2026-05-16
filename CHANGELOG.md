@@ -1868,6 +1868,42 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **Cross-phase milestone**: this commit closes the **Discussions thread** of Phase 6 in its entirety. The 11-unit breakdown shipped end-to-end with one structural refactor (Unit 6.5's sync/async split documented at the time). 8 commits + 1 ADR + 4 OPEN_QUESTIONS items + 2 new dependencies + 0 client-bundle regressions + 0 test regressions.
 - THINK artifact: `docs/thinking/6.10-phase-6-acceptance-gate.md`.
 
+### Phase 7 — Community-adjacent surfaces (first thread: Bilingual rendering)
+
+#### Unit 7.0 — Phase 7 prep (THINK doc + 12-unit Bilingual-thread breakdown + DB-migration trigger re-eval)
+
+- Phase 7 kickoff per §12 cardinal rule. Phase 6 closed at HEAD `bb8f816` (Unit 6.10 Discussions-thread acceptance gate). **Phase 7 sign-off granted via "Continue" override** in the unit-rhythm rhythm (same precedent as Phase 5 → Phase 6 in Unit 6.0; §12 normally requires explicit sign-off — this unit flags the override transparently). Docs-only unit.
+- **§13 ledger progress**: Discussions thread CLOSED (Phase 6); **Bilingual thread STARTED (Phase 7)**; auth + subscriber-list + monetization threads remain available for future open-ended phases.
+- **D-1. First-thread recommendation = Bilingual rendering (FR primary)**. Rationale: lowest blast radius (no first-party auth; no DB-trigger flip; no Phase-4 "no user accounts" pact break); independent of every Phase-6 operational gate (Q47 / GITHUB_TOKEN / GISCUS_REPO_ID); matches the Montréal location signal explicitly mentioned in §13; symmetric to Phase 6's low-blast-radius first-thread choice; sequential thread-closure makes the §13 ledger easier to reason about; scope manageable (infrastructure + FR pilot in 12 units; content backfill is curator-track in parallel).
+- **Alternative threads** enumerated with deferral rationale (overridable if redirected): auth (DB-trigger flip MANDATORY on first write-path; 14+ unit phase; commits provider; breaks "no user accounts" pact); subscriber-list (still coupled to auth or third-party; Phase-8 follow-on candidate); monetization (still premature without auth + API maturity).
+- **12-unit breakdown** (7.0 – 7.11):
+  - 7.0 Phase 7 prep (this doc) — docs.
+  - 7.1 ADR-0011 — i18n strategy (`next-intl` + sub-path routing + sibling-file content storage + locale-toggle UI placement) — docs (ADR).
+  - 7.2 `lib/i18n/` runtime + `next.config.ts` locale list + `middleware.ts` locale detection — code.
+  - 7.3 App Router locale segment restructure — code.
+  - 7.4 `/methodology` FR pilot translation + bilingual render — code + content.
+  - 7.5 Velite collection extensions — sibling-file pattern (`*.fr.{mdx,yaml}`) + translation-source schema — code.
+  - 7.6 `components/locale-toggle/` site-header UI — code.
+  - 7.7 `lighthouserc.json` enrolment for FR pilot URL — code.
+  - 7.8 `app/sitemap.ts` + Q48 sitemap-half closure (Phase-6 carryover absorbed) — code.
+  - 7.9 Phase-7 hygiene status pass — docs.
+  - 7.10 OPEN_QUESTIONS hygiene + ADR review — docs.
+  - 7.11 Phase 7 acceptance gate — gate.
+- **D-2. DB-migration trigger re-eval** (MANDATORY at Phase 7 kickoff per Units 4.12 / 5.10 / 6.0). Measured at HEAD `bb8f816`: `tar -czf .velite/ = 75,128 bytes (~73.4 KB) = ~1.433% of 5 MB threshold` (was 1.434% at Phase 6 kickoff; -0.001 pp delta is Velite MDX-compile jitter — Phase 6 added no new collections). Auth trigger negative under Bilingual-first. **Decision**: DB migration deferred to Phase 8+ OR Phase 7.X mid-phase if redirected to auth. Same conclusion as Units 4.12 / 5.10 / 6.0. **NEW WEIGHT** under Bilingual: FR content backfill is the primary content-scale driver in Phase 7+; if all problem.yaml + paper.yaml + MDX backfill into FR, file count ~doubles (203 → ~400), still under the `> 600` trigger. Watch as backfill progresses.
+- **Decisions resolved in this unit**: D-1 (first-thread = Bilingual + rationale + alternatives table), D-2 (DB trigger 1.433% — deferred), D-3 (`next-intl` + sub-path routing lean), D-4 (sibling-file content storage lean), D-5 (`/methodology` as FR pilot target), D-6 (site-header locale-toggle UI position).
+- **Decisions deferred** (D-7 through D-12): `next-intl` version pin (Unit 7.2); translation lookup format (JSON-per-locale; Unit 7.2); locale fallback chain (`fr` falls back to `en`; Unit 7.2); Velite glob extension (`*.fr.{yaml,mdx}`; Unit 7.5); URL slug strategy (English-canonical; Unit 7.3); SEO `<link rel="alternate" hreflang="...">` (Unit 7.4).
+- **Newly surfaced open questions** (Q50-Q53):
+  - **Q50** (i18n runtime choice) — decided-as-lean (`next-intl` + sub-path + JSON-per-locale; pinned in ADR-0011 at Unit 7.1).
+  - **Q51** (bilingual content backfill cadence) — decided-as-lean (infrastructure ships in Phase 7; content backfill is curator-track in parallel).
+  - **Q52** (translation provenance schema) — decided-as-lean (`translation_source: "human" | "machine-assisted"` frontmatter; default "human"; Unit 7.5).
+  - **Q53** (curator authorship attribution per-locale) — decided-as-lean (stays global; translation provenance is separate from authorship; Unit 7.5).
+- **Forward-looking DB-migration re-eval triggers** (carried from Unit 6.0): content scale 3× / `> 600` files / `> 1 MB` gzipped; first Phase-7+ write-path lands (auth flips) — stays cold throughout Phase 7; Phase 8 kickoff (mandatory); rating-action volume reaches 200; drafts-dir > 100 stale.
+- **Order rationale**: 7.1 first (ADR gates code); 7.2 → 7.3 sequential (runtime → route restructure); 7.4 / 7.5 concurrent; 7.6 parallel-able; 7.7 / 7.8 late (LHCI + sitemap after pilot route stabilizes); 7.9 / 7.10 hygiene; 7.11 closes.
+- **Parallel-curator awareness**: docs-only, no collision risk. Note for subsequent units: **Unit 7.3** (route restructure) touches every route file → highest collision risk; a parallel session overlapping with 7.3 would need to yield.
+- Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2); typecheck / test / build untouched since no source files modified.
+- THINK artifact: `docs/thinking/7.0-phase-7-prep.md`.
+
+
 
 
 
