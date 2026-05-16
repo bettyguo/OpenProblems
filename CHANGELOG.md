@@ -1357,3 +1357,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - THINK artifact: `docs/thinking/5.4-pdf-text.md`.
 - Smoke gates: `pnpm typecheck` (clean), `pnpm test` (**243/243 across 33 files**, was 235/32; +8 pdf-text tests), `pnpm validate-content` (203 files unchanged), `pnpm build` (clean compile, 313 pages, First Load JS 103 kB unchanged).
 
+#### Unit 5.5 — `scripts/extract-leaderboard.ts` (LLM-extracting leaderboard entries from a paper PDF)
+
+- Second LLM-using Phase-5 script. Consumes Unit 5.4's PDF text + Unit 5.3's `lib/curate/anthropic.ts` wrapper; targets `content/problems/<slug>/entries.json` (create-or-append). Drafts go to `drafts/<unit>-<ts>-<arxiv>-<problem>.diff` + audit sidecar. Never writes `content/` directly.
+- **3 new files**:
+  - `lib/curate/entry-draft.ts` — pure helpers: `buildSystemPrompt(benchmarks, paperId)`, `buildUserPrompt(pdfText)`, `parseEntryArrayResponse(text)` (strips ` ```json ` fences; validates row shape — `benchmark_id` string, `score` numeric, `date` `YYYY-MM-DD`), `mergeEntries(existing, proposed, paperId)` (appends with **`verified: false` forced** + `paper_id` injected), `renderEntriesJson` (2-space indent + trailing newline), `buildEntriesDiff(target, existingBody, mergedBody)` (new-file path reuses `buildUnifiedDiff` from 5.3; modify-existing path uses `diff@9::createPatch`).
+  - `lib/curate/entry-draft.test.ts` (+19 tests) — schema content, fence-stripping, empty array, optional `protocol_notes`, all parse-error paths (invalid JSON, non-array, missing benchmark_id, malformed date, non-numeric score), merge with verified-false forcing, render formatting, diff new-vs-modify paths.
+  - `scripts/extract-leaderboard.ts` — CLI entry. Positional `<arxiv-id>` + required `--problem <slug>` + standard `--model` / `--dry-run` / `--verbose` / `--no-cache` / `--out` / `--help`. Aborts if `content/papers/<id>.yaml` not found (helpful "ingest the paper first" message). Loads benchmarks from `content/problems/<slug>/problem.yaml` via `yaml` parser.
+- **New `package.json` script**: `"extract-leaderboard": "tsx scripts/extract-leaderboard.ts"`.
+- **Default model = Opus 4.7** per ADR-0008 D-B (multi-table PDF parsing benefits from frontier capability). `--model` overrides.
+- **`verified: false` always**: per Q43 / Unit 4.9 design, the curator flips on review. The merge layer enforces this — even if the LLM erroneously included `verified: true` in its JSON output (it's not asked to), the script drops it.
+- **Cost shape**: typical academic PDF ~30-50k tokens input → ~$0.50-0.75 per call with Opus 4.7. Prompt caching on the system block (benchmark list + schema) helps on multi-paper runs over the same problem; the user block (the actual PDF) is uncached.
+- **Audit sidecar shape** (per ADR-0008 D-E): includes `existing_entries`, `proposed_entries`, `merged_entries` counts alongside the standard token / cost / hash fields.
+- **New devDep**: `diff@9.0.0` (modify-existing unified-patch generation). Mature, widely-used library (~10 KB). `@types/diff` from DefinitelyTyped was installed initially but removed in the same commit — `diff@9` ships its own types via its export map; `@types/diff@8` is deprecated upstream for that reason.
+- **CLI smoke verified**: `pnpm extract-leaderboard --help` works.
+- **Bundle**: First Load JS shared chunk **103 kB UNCHANGED**. `scripts/`-runtime; no app surface.
+- **Route count: 313 prerendered pages UNCHANGED.**
+- **Parallel-curator state**: HEAD = `da50dbf` post-Unit-5.4. No collision.
+- THINK artifact: `docs/thinking/5.5-extract-leaderboard-cli.md`.
+- Smoke gates: `pnpm typecheck` (clean), `pnpm test` (**262/262 across 34 files**, was 243/33; +19 entry-draft tests), `pnpm validate-content` (203 files unchanged), `pnpm build` (clean compile, 313 pages, First Load JS 103 kB unchanged), `pnpm extract-leaderboard --help` (works).
+
