@@ -295,13 +295,13 @@ Next.js 15 App Router supports both `[slug]/route.ts` (plain dynamic) and `[slug
 
 ## Q46. Discussions backend (Giscus embed vs first-party GraphQL)
 
-**Status:** decided-as-lean · **Surfaced:** Unit 6.0.
+**Status:** decided · **Surfaced:** Unit 6.0 · **Resolved:** Unit 6.1.
 
-Phase 6's first thread (per [6.0 prep doc](./docs/thinking/6.0-phase-6-prep.md) D-1) is GitHub Discussions integration. Two backends are viable for the comment UI: Giscus embed (iframe widget; community-maintained) or a first-party GraphQL build (server-rendered thread from the GitHub GraphQL API).
+Phase 6's first thread (per [6.0 prep doc](./docs/thinking/6.0-phase-6-prep.md) D-1) is GitHub Discussions integration. Two backends were viable for the comment UI: Giscus embed (iframe widget; community-maintained) or a first-party GraphQL build (server-rendered thread from the GitHub GraphQL API).
 
-**Lean** (subject to ADR-0010 in Unit 6.1): **Giscus for the embed + first-party GraphQL for the read-side metadata** (counts, last-activity-at, surfaced on problem cards + digest). Giscus handles the auth-via-GitHub UX without us building it; GraphQL gives us programmatic access for the metadata side. Decoupling means metadata is build-time-cheap; comment rendering stays on GitHub's infra.
+**Decision** (pinned in [ADR-0010](./docs/adr/0010-discussions-backend.md)): **Giscus embed for the comment UI + first-party GraphQL for the read-side metadata** (counts, last-activity-at, surfaced on problem cards + digest). Giscus handles the auth-via-GitHub UX without us building it; the GraphQL split gives us programmatic access for the metadata side. The two concerns are pinned independently so provider swaps on either side are one-file changes.
 
-ADR-0010 (Unit 6.1) will pin the realized contract.
+Six concrete contracts (ADR-0010 D-A through D-F): embed = Giscus; read-side = first-party GraphQL via `lib/discussions/github-graphql.ts`; per-problem mapping = pathname-based with lazy creation; token = `GITHUB_TOKEN` env with `public_repo` scope minimum; cache = `.github-cache/<query-hash>.json` (gitignored); moderation = defer to GitHub Discussions native.
 
 ## Q47. GitHub repository discussions enablement
 

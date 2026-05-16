@@ -1625,4 +1625,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - THINK artifact: `docs/thinking/6.0-phase-6-prep.md`.
 - Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings unchanged (Q32 baseline since Phase 2); typecheck / test / build untouched since no source files modified.
 
+#### Unit 6.1 — ADR-0010: Discussions backend (Giscus embed + first-party GraphQL read-side)
+
+- First code-gating ADR of Phase 6. Pins the backend that Units 6.2 → 6.6 consume. Authored + accepted same-day (mirrors the ADR-0008 + ADR-0009 same-day pattern from Phase 5).
+- **Six concrete contracts** (D-A through D-F):
+  - **D-A Embed backend = Giscus** (`@giscus/react` wrapper; iframe widget delegates auth-via-GitHub; lazy-loaded so the SSG shell + Lighthouse score don't depend on iframe load).
+  - **D-B Read-side metadata = first-party GitHub GraphQL** (`lib/discussions/github-graphql.ts` — Unit 6.2 deliverable; build-time only; SSG pages capture metadata at `pnpm build` time).
+  - **D-C Per-problem mapping = pathname-based** (Giscus `mapping: "pathname"`; lazy discussion creation on first comment; problems with no comments have no discussion).
+  - **D-D Token + scope** = `GITHUB_TOKEN` env, `public_repo` minimum scope, never write (Giscus iframe handles writes via GitHub's own OAuth inside the iframe; we never see or store the visitor's token). Mirrors ADR-0008 D-C env-token discipline.
+  - **D-E Caching** = `.github-cache/<query-hash>.json` (gitignored; per-build TTL; mirrors `.arxiv-cache/` + `.pdf-cache/` per ADR-0009 D-E precedent).
+  - **D-F Moderation routing** = defer entirely to GitHub Discussions native; no first-party moderation queue in Phase 6 (codifies Q49 lean).
+- **Six considered options + rejection rationale** for each: Option 1 chosen (Giscus + GraphQL split); Option 2 (Giscus-only — drops activity-badge surface required by Unit 6.0 D-5); Option 3 (first-party GraphQL build — breaks "no user accounts" pact + cascades into auth thread + 5-8 extra units); Option 4 (Utterances — Issues-based, not Discussions; fails §13); Option 5 (Disqus — third-party + ads + privacy posture incompatible with editorial-integrity framing); Option 6 (no comments — equivalent to redirecting Phase 6 away from Discussions thread, which contradicts the accepted Unit 6.0 D-1).
+- **Contracts preserved**:
+  - **ADR-0004 (file-first; no DB)** still holds — Giscus stores comments on GitHub; first-party GraphQL is build-time read-only; no first-party storage.
+  - **Phase-4 `/contributing` "site stores no user accounts" pact** still holds — auth delegated to Giscus iframe; we never see the visitor's OAuth token.
+  - **§5.5 perf budget** — iframe is below-the-fold + lazy-loaded; doesn't impact First Load JS shared chunk (103 kB). `@giscus/react` adds ~3-5 kB to the talk-page route chunk only.
+  - **§14.2 testing** — talk-page Playwright smoke must NOT depend on iframe contents (cross-origin; flaky). Shell-render + landmark a11y is the assertion; iframe loads async out-of-test.
+- **OPEN_QUESTIONS updates**:
+  - **Q46** (Discussions backend) → resolved (was decided-as-lean since Unit 6.0). ADR-0010 codifies the lean as a firm contract.
+  - **Q47** (GitHub repo discussions enablement) remains open — out-of-band owner action; must enable Discussions in `bettyguo/OpenProblems` settings before Unit 6.2's GraphQL queries return non-empty. Tracked as a Phase-6 operational gate.
+  - **Q48** (talk-page indexing posture) unchanged — decided-as-lean; route-layout concern; Unit 6.7 area.
+  - **Q49** (moderation routing) — codified in D-F; status promoted from decided-as-lean to formalised-in-ADR.
+- **Operational prereq surfaced**: GitHub Discussions must be enabled in the repository settings (Q47). The ADR explicitly notes this as a Consequence (negative) so Unit 6.2 doesn't ship into a discussions-disabled repo and quietly return empty results.
+- **Reversibility**: each side swaps in one file — embed via `components/discussions/GiscusEmbed.tsx`, read-side via `lib/discussions/github-graphql.ts`. A future ADR-0011 (or higher) could swap either independently.
+- **ADR README.md index** updated with the 0010 row + tail-paragraph entry (closes Q46 + codifies Q49 lean; next ADR will be 0011).
+- THINK artifact: `docs/thinking/6.1-adr-0010-discussions-backend.md`.
+- Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings unchanged (Q32 baseline); typecheck / test / build untouched since no source files modified.
+
+
 
