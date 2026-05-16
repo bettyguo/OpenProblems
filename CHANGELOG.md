@@ -1563,3 +1563,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - THINK artifact: `docs/thinking/5.13-phase-5-acceptance-gate.md`.
 - Smoke gates green: `pnpm typecheck` (clean), `pnpm test` (284/284 across 36 files), `pnpm validate-content` (203 files), `pnpm audit-content` (0 errors / 6 warnings), `pnpm build` (clean compile in 3.3s; 322 prerendered pages; First Load JS shared chunk 103 kB), `pnpm ingest-arxiv --help` ✓, `pnpm extract-leaderboard --help` ✓.
 
+#### Unit 5.13a — Session-handoff doc commit
+
+- Post-acceptance-gate hygiene unit (mirrors Phase-3 `Unit 3.13a` precedent for follow-on-class work that still belongs to the phase that produced it).
+- Committed two previously-untracked session-handoff docs sitting at HEAD `20dd465`:
+  - `docs/SESSION_HANDOFF_phase3_close.md` — pending across Phase-3 / Phase-4 / Phase-5 closes; an earlier parallel session staged a `.gitignore` change to suppress it but the change was abandoned (verified via `git diff HEAD -- .gitignore` clean against HEAD).
+  - `docs/SESSION_HANDOFF_phase5_close.md` — created during Unit 5.13 acceptance-gate close.
+- Both are durable cross-session pickup artifacts per `reference_parallel_curator.md` (parallel-curator workflow) — committing makes them tracked rather than session-local, and removes the lint-staged auto-staging hazard documented in the Phase-5 handoff's "known wrinkles" (prettier had been pulling these into unrelated commits when their extension matched its glob).
+- Decision rationale: commit-rather-than-gitignore. The two-option framing from the Phase-5 handoff ("Either commit-the-handoff-doc-or-the-gitignore-fix is a one-line Phase-6 hygiene candidate") resolves to **commit** because the docs encode portable resume state used by parallel curators; gitignoring would hide that state from new sessions cloning the repo.
+- **Scope discipline**: NOT a Phase-6 thread pull. Phase 6 entry remains gated on explicit human sign-off per §12 cardinal rule + the Phase-5 handoff's documented exception ("Exception: the phase boundary (Phase 5 → Phase 6) DOES need explicit human sign-off"). This unit clears a hygiene item that was Phase-5-internal.
+- **Parallel-curator state**: HEAD = `20dd465` (Unit 5.13 acceptance gate). Working tree carried only these two untracked files at session start; no collisions.
+- Pure docs. No code change, no test change.
+- Smoke gates: `pnpm audit-content` (0 errors / 6 warnings — unchanged Q32-symmetry set); typecheck / test / build untouched since no source files modified.
+
