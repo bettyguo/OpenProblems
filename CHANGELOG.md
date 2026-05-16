@@ -2470,6 +2470,39 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 15 — Community-adjacent surfaces (**sixth NON-§13 phase**: Q63 promotion — user-editable profile fields; surfaces ADR-0016; second ALTER migration)
 
+#### Unit 15.8 — Phase 15 acceptance gate (Q63 closure; 16 ADRs; 5 migrations; second ALTER discipline crystallized)
+
+- Ninth and final Phase-15 unit; docs-only. Closes Phase 15 (**sixth NON-§13 phase**; Q63 user-editable profile fields promotion). Mirrors Phase-12 Unit 12.8 + Phase-13 Unit 13.6 + Phase-14 Unit 14.8 acceptance-gate patterns: ledger of deliverables; smoke-gate results; surviving follow-ons; Phase-16+ entry conditions.
+- **9 units shipped** (15.0 prep → 15.8 gate; this unit). **0 deferrals**; **0 scope drift**; matches Phase-12 + Phase-13 + Phase-14 well-scoped-phase pattern.
+- **Q63 closure summary**: Q63 was a Phase-14-anticipated candidate flagged in Unit 14.6 hygiene + Unit 14.8 acceptance gate. Promoted + resolved in Unit 15.7 simultaneously (Phase-12 Q57 + Phase-13 Q58 pattern). Closes the four-phase honored-deferral lineage: Phase-10 Class B item 2 (carried) + Phase-14 Class B item 1 (ADR-0015 D-C deferral) + Phase-14 Unit 14.8 acceptance-gate "Q63 candidate" flag.
+- **Final smoke gates** (all green at HEAD pre-this-unit `0620cba`):
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **497/497 across 52 vitest files**. +17 tests from Phase 14 close (480/52); all in `lib/users/index.test.ts` from Unit 15.3.
+  - `pnpm build` → ~593 prerendered pages + **7 dynamic page+API routes** unchanged. **First Load JS shared chunk = 103 kB UNCHANGED** end-to-end through every Phase 9-15 unit. **Middleware bundle = 160 kB UNCHANGED** since Phase 12. `/profile` = 108 kB; `/u/{handle}` = 108 kB.
+  - `pnpm audit-content` → **0 errors / 6 warnings** (Q32 baseline since Phase 2; unchanged through every Phase 3-15 unit).
+- **Four architectural firsts shipped in Phase 15**:
+  1. **First user-controlled writes surface for `users` table** (Phase-9 established auth-side writes via `events.linkAccount`; Phase 15 adds user-controlled writes as distinct concern; pattern establishes inheritance shape for Phase-16+ identity-edit surfaces).
+  2. **Second ALTER migration in project history** (first was Phase-12 `0003_rating_challenge_review` with FK edge case requiring manual SQL correction; Phase 15's `0004_user_profile_fields` shipped clean — drizzle-kit's nullable text ALTER emission is reliable; **ADR-0014 D-E discipline crystallized at second exercise**).
+  3. **First sibling-helper-in-`lib/auth/`** (`getUserMetadataById` alongside `getLoginById` — preserves backward compat for 6 existing callers + tests while extending capability for SiteHeader).
+  4. **First bi-state search-param banner pattern** (`?saved=1` success / `?error=<encoded>` validation failure; extends Phase-11's `?challenge=submitted` single-state convention).
+- **Delta summary** (Phase 14 → Phase 15):
+  | Metric | Phase 14 close | Phase 15 close | Δ |
+  |---|---|---|---|
+  | ADRs | 15 | **16** | +1 (ADR-0016) |
+  | Migrations | 4 | **5** | +1 (`0004_user_profile_fields`; **second ALTER**) |
+  | `users` columns | 7 | **9** | +2 (`displayName`, `bio`) |
+  | Tests | 480 / 52 files | **497 / 52 files** | +17 / 0 |
+  | First Load JS (shared) | 103 kB | **103 kB** | 0 |
+  | Middleware bundle | 160 kB | **160 kB** | 0 |
+  | `/profile` bundle | 108 kB | 108 kB | 0 |
+  | `/u/{handle}` bundle | 108 kB | 108 kB | 0 |
+  | OPEN_QUESTIONS resolved | 21 | **22** | +1 (Q63) |
+  | OPEN_QUESTIONS total | 53 | **54** | +1 |
+  | i18n keys per locale | 100 | **113** | +13 |
+- **Phase 16 sign-off pending** per §12 cardinal rule. **10 candidate Phase-16+ threads** flagged (in rough decreasing strength): Q67 image override (~4-5 units; **ADR-0017 candidate** for storage choice — Vercel Blob / S3 / URL allowlist; strongest honored-deferral pick); Q66 markdown bio (~3 units); Q64 privacy opt-out (~3 units); Q65 per-curator activity feed (~4-5 units); Q59 CLI emit-challenge-action (~2-3 units; carried 4 phases); multi-provider OAuth (~3-4 units; **ADR-0018 candidate**); subscriber-list email (~6 units; Phase-5 D-4 punt; carried 10+ phases); Q68 content moderation; HTML shell migration STILL ON HOLD; monetization Phase 17+.
+- Smoke gates (this unit): `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline); typecheck / test / build untouched.
+- THINK artifact: `docs/thinking/15.8-phase-15-acceptance-gate.md`.
+
 #### Unit 15.7 — OPEN_QUESTIONS hygiene + ADR review (Q63 promoted + resolved; **16 ADRs total**; 22 resolved / 4 decided-as-lean / 28 open / **54 total**)
 
 - Eighth Phase-15 unit; docs-only. Mirrors Phase-13 Unit 13.5 + Phase-14 Unit 14.7 hygiene patterns. Promotes Q63 (user-editable profile fields) from Phase-14 "flagged but not promoted" candidate to `resolved` ledger entry. Same "added + resolved in same unit" shape as Phase-12 Q57 + Phase-13 Q58 promotions.
