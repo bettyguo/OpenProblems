@@ -1435,3 +1435,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - THINK artifact: `docs/thinking/5.8-digest-rss-endpoint.md`.
 - Smoke gates: `pnpm typecheck` (clean), `pnpm test` (**284/284 across 36 files**, was 271/35; +13 RSS endpoint tests), `pnpm validate-content` (203 files unchanged), `pnpm build` (clean compile in 3.5s; 318 prerendered pages; First Load JS 103 kB).
 
+#### Unit 5.9 — `/digest` HTML hub
+
+- Compensation surface for Unit 5.8's route-path deviation (URL no longer has the `.xml` discoverability nudge). Surfaces all per-domain RSS feeds via:
+  - **`<link rel="alternate" type="application/rss+xml">`** tags in `<head>` (one per domain) for RSS-reader auto-discovery — declared via Next.js `metadata.alternates.types`.
+  - **Per-domain HTML preview cards**: title, item count (or "no activity"), 3-item preview, link to the full RSS feed, footer with `window` / `cutoff` / `built` timestamps.
+  - **Top-of-page summary line**: total items across all feeds this week.
+- **1 new file**: `app/digest/page.tsx` — server component, async (awaits `Promise.all(taxonomy.domains.map(buildDigest))`).
+- **Page layout**:
+  - Header: title + description + `<N> domains · <M> items this week` summary.
+  - Per-domain section: domain title (linking to `/domains/<id>`) + item count + RSS-feed link + 3-item preview + "View N more in the RSS feed →" footer + per-build footer (`window: 7d · cutoff: <date> · built: <ts>`).
+  - Empty-state per domain: renders `channelDescription` ("No activity in the last 7 days for problems in the <domain> domain.") in italic muted text.
+- **Wall-clock `now`** for the digest builder — page rebuilds on every deploy; subscribers see the most-recent build's snapshot.
+- **No client interactivity.** Pure SSR.
+- **Default window = 7 days** per Unit 5.7 D-12. Trade-off documented: with Phase-3's forward-dated simulated rating actions (2026-09 / 2026-12), the page may show "no activity" for all domains on a 2026-05-15 build. That's honest — RSS subscribers expect wall-clock cadence.
+- **`metadata.alternates.types`** declares one `<link rel="alternate">` per domain at module load. Static metadata; no `generateMetadata` needed (taxonomy is build-time-stable).
+- **Lighthouseci enrolment for `/digest`**: deferred to Unit 5.13 acceptance gate (bundling lighthouseci changes with the page itself splits the gate work; Q39 mobile-viewport a11y for any new page is the gate's responsibility).
+- **Bundle**: `/digest` route 199 B / 106 kB. First Load JS shared chunk **103 kB UNCHANGED** (server-only page).
+- **Route count: 318 → 319 prerendered pages** (`/digest` is `○ Static`).
+- **Parallel-curator state**: HEAD = `3a08fac` post-Unit-5.8. No collision.
+- THINK artifact: `docs/thinking/5.9-digest-hub.md`.
+- Smoke gates: `pnpm typecheck` (clean), `pnpm test` (284/284 unchanged), `pnpm build` (clean compile in 3.3s; **319 prerendered pages**; `/digest` static at 199 B; First Load JS 103 kB unchanged).
+
