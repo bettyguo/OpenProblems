@@ -14,6 +14,7 @@
         "http://localhost:3000/en/trending",
         "http://localhost:3000/en/ratings",
         "http://localhost:3000/en/contributing",
+        "http://localhost:3000/fr/contributing",
         "http://localhost:3000/en/digest",
         "http://localhost:3000/en/problems/hallucination-reduction/talk",
         "http://localhost:3000/en/about",

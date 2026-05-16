@@ -2377,6 +2377,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
 - THINK artifact: `docs/thinking/8.5-site-url-and-locale-alternates.md`.
 
+#### Unit 8.6 — `/contributing` FR pilot (second sibling-file consumer)
+
+- Sixth code unit of Phase 8. Realizes Unit 8.0 prep D-4. Second end-to-end consumer of the sibling-file plumbing from Unit 7.4 + the `resolveLocalized` resolver from Unit 7.5 — mirrors the methodology FR pilot.
+- **Parallel-curator coordination**: this unit was executed concurrently across two sessions. The primary session prepared the route refactor + lighthouserc edit; the parallel session shipped the FR translation file + an identical route refactor + the same lighthouserc edit. Working-tree state at commit was the parallel session's content (per the rhythm-memory contract "uncommitted working-tree changes belong to the parallel session"); the two refactors produced byte-identical contributing route content (only formatting/import-order differences).
+- **New content** — `content/contributing/v1.1.fr.mdx`: full FR translation of `v1.1.mdx` (~115 lines of FR prose):
+  - 7 sections preserved 1:1: Qui peut contribuer / Les quatre types de contribution / Standards éditoriaux (with §3.1-3.6 including Divulgation des conflits d'intérêts) / Attentes de revue de PR / Versionnement / Questions, ambiguïté, lacunes / Curation assistée par LLM (with §7.1-7.4).
+  - Frontmatter: `version: "1.1.0"`, `supersedes: "1.0.0"`, `translation_source: "machine-assisted"` (ADR-0011 D-G honest provenance — LLM-drafted, curator-reviewable). Date mirrors EN (2026-05-16).
+  - GitHub link targets preserved as English-canonical per ADR-0011 D-E (MASTER_PROMPT.md, content/problems/, content/papers/, ADR-0005/0006/0008/0009 URLs). Issue-template URLs (`new-problem`, `new-paper`, `leaderboard-entry`, `rating-challenge`) similarly preserved.
+  - French CS terminology: "Curateur" for curator (consistent with Unit 7.5 methodology FR), "Action de notation" for rating action, "Classement" for leaderboard. "Pull request"/"issue"/"commit" kept as anglicisms.
+- **Route refactors**:
+  - `app/[locale]/contributing/page.tsx` — replaces unconditional `lang === "en"` filter with `resolveLocalized(contributing, locale, (m) => m.version === latestVersion)`. Mirrors `app/[locale]/methodology/page.tsx`'s shape. Latest version derived from EN canonicals (FR siblings mirror versioning); FR variant resolved via the version predicate.
+  - `app/[locale]/contributing/[version]/page.tsx` — replaces `find((m) => m.version === requested)` against EN-only with `resolveLocalized`. `generateStaticParams` extended to `locales × distinct EN versions` = 4 entries (`{en,fr} × {1.0.0, 1.1.0}`). Mirrors `app/[locale]/methodology/[version]/page.tsx`.
+- **`lighthouserc.json`** — enrols `/fr/contributing` alongside existing `/en/contributing` (18 → **19** URLs). Mirrors Unit 7.7 + 7.5a pattern (enrol both locale variants of FR-pilot routes).
+- **Fallback behavior**:
+  - `/fr/contributing` (default landing): resolves latest version (v1.1.0); FR sibling exists; renders FR content.
+  - `/fr/contributing/v1.1.0`: FR sibling exists; renders FR.
+  - `/fr/contributing/v1.0.0`: no FR sibling (no `v1.0.fr.mdx`); `resolveLocalized` falls back to EN per ADR-0011 D-D. `didFallback = true` but no hint UI today (Class B follow-on; same deferral as Unit 7.5).
+- **NOT in this unit** (deferred):
+  - `content/contributing/v1.0.fr.mdx` (older version FR translation) — curator-track follow-on per Q51. v1.0 is a historical reference; users hitting the latest `/fr/contributing` already get FR via the v1.1 translation.
+  - Fallback-hint UI for `didFallback === true` cases — Class B follow-on, survived Phase 7, continues into Phase 9+ candidate work.
+  - `messages.contributing.*` namespace for breadcrumb / "Other versions:" chrome strings — hardcoded EN today; component-side string extraction is out of Phase-8 scope.
+- **Smoke gates**:
+  - `pnpm validate-content` → 203 files unchanged (MDX flows through Velite refine, not validate-content).
+  - `pnpm typecheck` clean.
+  - `pnpm test` → 388/388 across 44 files unchanged (no test files touched).
+  - `pnpm build` → `/[locale]/contributing/[version]` expands from 2 to 4 entries (was `{en,fr} × {1.0.0}`; now `{en,fr} × {1.0.0, 1.1.0}`). Compile 8.6s. First Load JS shared chunk = **103 kB UNCHANGED**.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- THINK artifact: `docs/thinking/8.6-contributing-fr-pilot.md`.
+
 
 
 

@@ -1,9 +1,10 @@
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { contributing } from "#site/content";
-import { MDXContent } from "@/lib/mdx/mdx-content";
+import { resolveLocalized } from "@/lib/i18n/load-localized";
 import { Link } from "@/lib/i18n/navigation";
 import { isLocale } from "@/lib/i18n/routing";
+import { MDXContent } from "@/lib/mdx/mdx-content";
 
 function parseVersion(v: string): [number, number, number] {
   const m = v.match(/^(\d+)(?:\.(\d+))?(?:\.(\d+))?$/);
@@ -27,9 +28,20 @@ export default async function ContributingPage({ params }: ContributingPageProps
   if (!isLocale(locale)) notFound();
   setRequestLocale(locale);
 
-  const enContributing = contributing.filter((m) => m.lang === "en");
-  const latest = [...enContributing].sort((a, b) => compareVersions(b.version, a.version))[0];
-  if (!latest) notFound();
+  // Latest version is determined from EN canonicals (Unit 7.5 pattern); the
+  // FR sibling (if any) mirrors versioning via `translation_source`.
+  const latestVersion = [...contributing]
+    .filter((m) => m.lang === "en")
+    .sort((a, b) => compareVersions(b.version, a.version))[0]?.version;
+  if (!latestVersion) notFound();
+
+  const resolved = resolveLocalized(contributing, locale, (m) => m.version === latestVersion);
+  if (!resolved) notFound();
+  const latest = resolved.record;
+
+  const distinctVersions = [
+    ...new Set(contributing.filter((m) => m.lang === "en").map((m) => m.version)),
+  ].sort((a, b) => compareVersions(b, a));
 
   return (
     <main className="mx-auto max-w-prose px-6 py-16">
@@ -44,19 +56,16 @@ export default async function ContributingPage({ params }: ContributingPageProps
       <p className="text-muted-foreground mt-3 text-base">{latest.summary}</p>
       <nav aria-label="Contributing versions" className="border-border mt-6 border-t pt-4">
         <span className="text-muted-foreground text-xs">Other versions: </span>
-        {enContributing
-          .slice()
-          .sort((a, b) => compareVersions(b.version, a.version))
-          .map((m, i) => (
-            <Link
-              key={m.version}
-              href={`/contributing/v${m.version}`}
-              className="text-foreground hover:text-accent ml-1 text-xs underline-offset-2 hover:underline"
-            >
-              v{m.version}
-              {i < enContributing.length - 1 ? "," : ""}
-            </Link>
-          ))}
+        {distinctVersions.map((version, i) => (
+          <Link
+            key={version}
+            href={`/contributing/v${version}`}
+            className="text-foreground hover:text-accent ml-1 text-xs underline-offset-2 hover:underline"
+          >
+            v{version}
+            {i < distinctVersions.length - 1 ? "," : ""}
+          </Link>
+        ))}
       </nav>
       <article className="prose prose-neutral dark:prose-invert mt-10 max-w-none">
         <MDXContent code={latest.body} />

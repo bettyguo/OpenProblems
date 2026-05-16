@@ -1,0 +1,126 @@
+---
+version: "1.1.0"
+supersedes: "1.0.0"
+title: Contribuer à LLM OpenProblems
+summary: Flux éditorial pour proposer de nouveaux problèmes, articles, entrées de classement et contestations de notation. Les quatre modèles d'issue GitHub plus les attentes de revue de PR. La v1.1 ajoute le parcours de curation assistée par LLM (côté curateur) et la divulgation des conflits d'intérêts.
+date: 2026-05-16
+translation_source: machine-assisted
+---
+
+LLM OpenProblems est une encyclopédie notée et organisée par taxonomie des problèmes ouverts en recherche en LLM et en IA. Le travail éditorial — rédiger les YAML de problèmes, ingérer des articles, enregistrer des entrées de classement, émettre des actions de notation — est réalisé par des curateurs dans des PR contre ce dépôt. Les contributeurs externes proposent des changements via des issues GitHub ; les curateurs revoient, rédigent le YAML et expédient la PR.
+
+Cette page est le point d'entrée pour les contributeurs externes. Le document constitutionnel est [`MASTER_PROMPT.md`](https://github.com/bettyguo/OpenProblems/blob/main/MASTER_PROMPT.md) ; lisez-le si vous voulez la vision complète de la façon dont l'encyclopédie raisonne. La [page méthodologie](/methodology) détaille le fonctionnement des notations.
+
+## 1. Qui peut contribuer
+
+- **N'importe qui ayant un compte GitHub** peut ouvrir une issue à l'aide des quatre modèles ci-dessous. Aucune authentification de première partie n'est requise — le site ne stocke aucun compte utilisateur.
+- **Les curateurs** sont le petit groupe avec accès en fusion ; ils rédigent le YAML sur les propositions entrantes et revoient mutuellement leurs PR.
+- **Le curateur-de-référence** pour chaque action éditoriale est enregistré explicitement : le champ `curator` de chaque action de notation, le champ `editorial.primary_curator` de chaque problème, l'historique des relecteurs de chaque PR.
+
+Si vous souhaitez soumettre une PR avec un YAML complet vous-même au lieu de déposer une issue, vous êtes le bienvenu — basez-le sur un fichier existant dans [`content/problems/`](https://github.com/bettyguo/OpenProblems/tree/main/content/problems) ou [`content/papers/`](https://github.com/bettyguo/OpenProblems/tree/main/content/papers) et suivez les standards éditoriaux du §3.
+
+## 2. Les quatre types de contribution
+
+| Type | Quand l'utiliser | Modèle |
+|------|------------------|--------|
+| **Nouveau problème** | Un problème de recherche a sa place dans l'encyclopédie mais ne s'y trouve pas encore. | [`new-problem`](https://github.com/bettyguo/OpenProblems/issues/new?template=new-problem.yml) |
+| **Nouvel article** | Un article contribue matériellement à un problème existant. | [`new-paper`](https://github.com/bettyguo/OpenProblems/issues/new?template=new-paper.yml) |
+| **Entrée de classement** | Un score spécifique sur un benchmark spécifique pour un article déjà ingéré. | [`leaderboard-entry`](https://github.com/bettyguo/OpenProblems/issues/new?template=leaderboard-entry.yml) |
+| **Contestation de notation** | Vous estimez qu'une dimension de notation actuelle devrait évoluer (ou qu'un problème devrait rejoindre la liste de surveillance). | [`rating-challenge`](https://github.com/bettyguo/OpenProblems/issues/new?template=rating-challenge.yml) |
+
+Chaque modèle recueille suffisamment de signal pour qu'un curateur rédige le YAML correspondant. Vous n'avez pas besoin de soumettre un schéma complet — le curateur gère la sélection des champs, l'assignation des étiquettes et la vérification.
+
+## 3. Standards éditoriaux
+
+### 3.1 Règle de la source primaire
+
+Conformément à `MASTER_PROMPT.md` §15.6, chaque affirmation éditoriale doit remonter à une source primaire : l'article arXiv lui-même, la page d'annonce du laboratoire, le README des auteurs du benchmark, la fiche de modèle. La couverture secondaire — billets de blog, fils X, articles de récapitulation — n'est pas admissible, même si exacte. Les modèles d'issue incluent un champ « Evidence URL » ou « Source URL(s) » exactement pour cette raison ; remplissez-le.
+
+### 3.2 Conventions ROR / ORCID
+
+- **Les institutions** portent un identifiant [ROR](https://ror.org) lorsqu'il en existe un. Si une organisation (par exemple un groupe de recherche au sein d'une plus grande entité corporative) ne dispose pas de son propre enregistrement ROR, omettez le champ — ne substituez pas l'identifiant de la société-mère.
+- **Les auteurs** portent un iD [ORCID](https://orcid.org) lorsqu'il est publié. Le remplissage côté curateur est la norme ; les contributeurs n'ont pas besoin de les rechercher eux-mêmes.
+
+### 3.3 Immuabilité des actions de notation
+
+Conformément à [ADR-0005](https://github.com/bettyguo/OpenProblems/blob/main/docs/adr/0005-rating-action-immutability.md), les fichiers YAML d'actions de notation déjà commités ne peuvent être édités, supprimés ou renommés. Un crochet pre-commit applique cette règle. Le parcours de résolution d'un litige pour une notation contestée consiste toujours à rédiger une **nouvelle** action de notation YAML capturant le nouvel état — jamais à modifier une action existante. C'est pourquoi le modèle `[Rating challenge]` demande des **preuves**, pas une ébauche.
+
+### 3.4 Versionnement de la méthodologie
+
+Une notation produite sous la méthodologie v1.0 n'est jamais re-notée silencieusement par la v1.1 (§8.1). Chaque action de notation enregistre la `methodology_version` sous laquelle elle a été émise. Les nouvelles versions de la méthodologie atterrissent comme de nouveaux ADR (voir [ADR-0006](https://github.com/bettyguo/OpenProblems/blob/main/docs/adr/0006-saturation-na-encoding.md) pour l'encodage saturation-N/A de la v1.1).
+
+### 3.5 Pas de fabrication
+
+Conformément à §15.6, **ne fabriquez pas** : n'inventez pas d'identifiants ROR, n'estimez pas de scores lorsque l'article ne les rapporte pas, ne remplissez pas de valeurs de confiance sans justification. Laisser un champ vide est toujours préférable à le remplir d'un bruit plausible. En cas de doute, faites-le remonter dans le champ « Additional context » de l'issue.
+
+### 3.6 Divulgation des conflits d'intérêts
+
+Conformément à [ADR-0008](https://github.com/bettyguo/OpenProblems/blob/main/docs/adr/0008-llm-provider-anthropic.md) D-F, l'encyclopédie utilise Anthropic Claude pour rédiger les suggestions des curateurs (voir §7 pour le flux). Certains articles indexés sont rédigés par Anthropic ; d'autres par des laboratoires en concurrence directe avec Anthropic. La divulgation est donc énoncée clairement :
+
+> Cette encyclopédie utilise Anthropic Claude pour rédiger les suggestions des curateurs, y compris pour des articles d'Anthropic eux-mêmes. Les curateurs sont tenus d'appliquer une rigueur égale quelle que soit la paternité.
+
+En pratique, cela signifie : chaque signal de notation, entrée de classement ou YAML d'article rédigé par un LLM passe par la même étape de revue par un curateur (§4) et la même vérification de source primaire (§3.1). Le flux de diff ([ADR-0009](https://github.com/bettyguo/OpenProblems/blob/main/docs/adr/0009-human-review-diff.md)) empêche la fusion automatique — il n'existe aucun parcours par lequel une ligne rédigée par un LLM atterrit dans `content/` sans qu'un curateur humain exécute `git apply` après revue.
+
+Si un contributeur estime qu'une décision de notation a été influencée par la paternité plutôt que par les preuves, le parcours de litige est le modèle `[Rating challenge]` (§2) avec les preuves que l'action originale a négligées. L'assignation du curateur-de-référence est enregistrée sur chaque action de notation, de sorte que les chaînes de revue sont entièrement traçables.
+
+## 4. Attentes de revue de PR
+
+Lorsqu'un curateur ouvre une PR adressant une issue :
+
+1. **La CI doit être verte.** `pnpm validate-content`, `pnpm test`, `pnpm typecheck`, `pnpm build`, la suite e2e Playwright et Lighthouse CI (a11y / perf / SEO / best-practices ≥ 95) s'exécutent sur chaque PR. Une CI rouge bloque la fusion quel que soit le nombre d'approbateurs.
+2. **Un curateur + un relecteur.** Le curateur-de-référence rédige ; un second curateur revoit. L'auto-revue ne suffit pas.
+3. **Mise à jour des bases de référence visuelles à la fusion.** Les nouveaux parcours / visualisations portent des captures d'écran Playwright `chromium-win32` et `chromium-linux` ; les bases de référence se rafraîchissent à la première PR qui introduit le parcours.
+4. **Entrée CHANGELOG obligatoire.** Chaque commit atterrit avec une entrée par-unité dans `CHANGELOG.md` décrivant la décision éditoriale + l'état des portails de fumée. Les titres de PR suivent `chore(phase-N): unit N.X — <une-ligne>`.
+
+La revue de PR est également la surface de vérification du `verified: boolean` sur les entrées de classement — les soumetteurs ne s'auto-attestent pas ; le curateur-relecteur vérifie que l'URL source pointe vers le score revendiqué sous le protocole revendiqué. Ceci est aussi appliqué mécaniquement pour les entrées rédigées par un LLM (§7) — la couche de fusion dans `lib/curate/entry-draft.ts` force `verified: false` quelle que soit la proposition du LLM ; le curateur le bascule après vérification manuelle.
+
+## 5. Versionnement de cette page
+
+Ceci est la v1.1 du flux de contribution. Bornes :
+
+- **v1.x** — changements additifs (nouveaux types de contribution, nouvel outillage, nouveaux standards superposés à ceux existants).
+- **v2.0** — changement de forme du flux (par exemple, soumissions authentifiées conformément à `MASTER_PROMPT.md` §5.8, actuellement différé conformément à `MASTER_PROMPT.md` §12 et à l'évaluation du déclencheur de migration DB de l'Unit 4.12).
+
+Chaque version est son propre fichier MDX (`content/contributing/v{N}.mdx`), et la surface de page renvoie aux versions précédentes pour audit. Ceci reflète le versionnement de `/methodology`.
+
+**Journal des changements v1.1** (par rapport à la v1.0) : ajout du §3.6 sur la divulgation des conflits d'intérêts (conformément à ADR-0008 D-F) ; ajout du §7 documentant le parcours d'ingestion assistée par LLM côté curateur (livrables de la Phase 5 — Unités 5.3 / 5.5 / 5.7-5.9 ; ADR-0008 + ADR-0009). Aucun changement aux §1, §2, §3.1-3.5, §4, §6 par rapport à la v1.0 ; l'instantané v1.0 reste consultable à `/contributing/v1.0.0`.
+
+## 6. Questions, ambiguïté, lacunes
+
+Si quelque chose ne correspond à aucun des quatre modèles, ou si vous avez identifié une lacune dans l'encyclopédie qu'aucun d'entre eux n'aborde — ouvrez une issue GitHub régulière (pas via un modèle) et étiquetez-la `meta`. Les curateurs trient celles-ci en l'un des suivants : un fil de discussion ponctuel, un nouvel ADR, ou un nouveau modèle d'issue dans une future version de la page contributing.
+
+## 7. Curation assistée par LLM (Phase 5+)
+
+La Phase 5 du projet a livré deux CLI côté curateur qui rédigent du contenu éditorial avec [Anthropic Claude](https://github.com/bettyguo/OpenProblems/blob/main/docs/adr/0008-llm-provider-anthropic.md). **Les contributeurs externes n'ont pas besoin de les exécuter** — ce sont des outils que les curateurs peuvent utiliser pour accélérer leur propre travail de rédaction après le dépôt d'une issue. Les documenter ici garde le flux auditable pour tout le monde.
+
+### 7.1 Les deux CLI
+
+| Commande | Ce qu'elle rédige | Modèle par défaut |
+|----------|--------------------|-------------------|
+| `pnpm ingest-arxiv <arxiv-id>` | Un nouveau `content/papers/<id>.yaml` à partir des métadonnées arXiv + résumé. | Sonnet 4.6 |
+| `pnpm extract-leaderboard <arxiv-id> --problem <slug>` | De nouvelles lignes pour `content/problems/<slug>/entries.json` à partir des tableaux PDF de l'article. | Opus 4.7 |
+
+Les deux acceptent `--dry-run` (affiche l'invite rendue + l'estimation de tokens sans effectuer l'appel API) et `--verbose` (affiche le coût USD estimé avant chaque appel). Les deux requièrent `ANTHROPIC_API_KEY` dans l'environnement pour les appels non-dry-run ; une variable d'environnement optionnelle `LLM_OPENPROBLEMS_DAILY_BUDGET_USD` plafonne la dépense quotidienne par machine (par défaut : aucun plafond ; la ligne de coût `--verbose` + la discipline `--dry-run` sont les garde-fous principaux).
+
+### 7.2 Le contrat de non-fusion-automatique
+
+Conformément à [ADR-0009](https://github.com/bettyguo/OpenProblems/blob/main/docs/adr/0009-human-review-diff.md), les CLI **n'écrivent jamais dans `content/`**. Elles écrivent un diff unifié et un fichier d'audit JSON annexe dans un répertoire `drafts/` ignoré par git :
+
+```
+drafts/<unit>-<isoTimestamp>-<slug>.diff
+drafts/<unit>-<isoTimestamp>-<slug>.diff.meta.json
+```
+
+Le fichier `.diff` est compatible avec `git apply` — le curateur le revoit, l'édite optionnellement (pour corriger des fautes de slug, normaliser des espaces ou rogner des champs hallucinés), et exécute `git apply drafts/<file>.diff` pour matérialiser le changement dans `content/`. À partir de là, le changement est une PR normale.
+
+L'annexe `.meta.json` porte les données d'audit par appel — modèle, comptes de tokens entrée/sortie, coût USD estimé, hachages SHA-256 de l'invite rendue + de la complétion, l'ID de requête Anthropic, et l'horodatage. Cela rend l'audit ponctuel et la reproduction exacte de l'invite traçables des mois plus tard.
+
+### 7.3 Ce que cela signifie pour les contributeurs externes
+
+- **Vous n'avez pas besoin d'une `ANTHROPIC_API_KEY`** pour déposer une issue ou une PR. Les quatre modèles du §2 sont le seul point d'entrée dont la plupart des contributeurs ont besoin.
+- **Les ébauches montrées dans les PR peuvent être assistées par LLM.** Si un curateur a utilisé les CLI, la description de la PR le mentionnera et liera les données d'audit `.meta.json` pertinentes. Le changement passe quand même par la revue de PR complète (§4) — y compris la vérification de source primaire (§3.1) et l'application de `verified: false` sur les entrées de classement — avant la fusion.
+- **Le modèle `[Rating challenge]`** (§2) est le bon parcours si vous estimez qu'une action rédigée par un LLM a négligé des preuves. La chaîne des curateurs pour l'action originale est enregistrée ; les relecteurs la retraceront.
+
+### 7.4 Portée future
+
+La Phase 6 pourrait ajouter de l'outillage supplémentaire côté curateur (par exemple, une CLI de contestation de notation), et le pipeline de bulletin (`/digest` + flux RSS par domaine à `/api/v1/digest/<domain>`) résume l'activité de notation chaque semaine. Ces surfaces suivent la même discipline de non-fusion-automatique + annexe-d'audit qu'établit l'ADR-0009 ; les mises à jour de cette page (v1.x) les documenteront lorsqu'elles seront livrées.

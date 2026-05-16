@@ -1,8 +1,9 @@
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { contributing } from "#site/content";
-import { MDXContent } from "@/lib/mdx/mdx-content";
+import { resolveLocalized } from "@/lib/i18n/load-localized";
 import { isLocale, locales } from "@/lib/i18n/routing";
+import { MDXContent } from "@/lib/mdx/mdx-content";
 
 interface ContributingVersionPageProps {
   params: Promise<{ locale: string; version: string }>;
@@ -14,8 +15,9 @@ export default async function ContributingVersionPage({ params }: ContributingVe
   setRequestLocale(locale);
 
   const requested = version.startsWith("v") ? version.slice(1) : version;
-  const doc = contributing.filter((m) => m.lang === "en").find((m) => m.version === requested);
-  if (!doc) notFound();
+  const resolved = resolveLocalized(contributing, locale, (m) => m.version === requested);
+  if (!resolved) notFound();
+  const doc = resolved.record;
 
   return (
     <main className="mx-auto max-w-prose px-6 py-16">
@@ -38,7 +40,12 @@ export default async function ContributingVersionPage({ params }: ContributingVe
 }
 
 export function generateStaticParams() {
+  // Cartesian product: every locale × every distinct EN version. FR siblings
+  // mirror versioning; iterating EN gives the full version set.
+  const distinctVersions = [
+    ...new Set(contributing.filter((m) => m.lang === "en").map((m) => m.version)),
+  ];
   return locales.flatMap((locale) =>
-    contributing.filter((m) => m.lang === "en").map((m) => ({ locale, version: `v${m.version}` })),
+    distinctVersions.map((version) => ({ locale, version: `v${version}` })),
   );
 }
