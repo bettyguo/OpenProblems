@@ -1838,6 +1838,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings; typecheck / test / build untouched (docs-only).
 - THINK artifact: `docs/thinking/6.9-open-questions-adr-review.md`.
 
+#### Unit 6.10 — Phase 6 acceptance gate (Discussions thread)
+
+- **★ Phase-6 closing unit**. Mirrors Unit 1.12 / 2.13 / 3.13 / 4.13 / 5.13. Verifies every §13 Phase-6+ thread-deliverable that this phase pulled (the **Discussions** thread per Unit 6.0 D-1) is operational locally at HEAD. The other §13 threads (auth, bilingual, subscriber list, monetization) remain available for future open-ended phases.
+- **§13 Discussions thread — local pass status (all ✓)**:
+  - GitHub Discussions read-side metadata client (`lib/discussions/github-graphql.ts`) — Unit 6.2.
+  - `/problems/[slug]/talk` SSG route shell (10 pages) — Unit 6.3.
+  - Giscus iframe embed wrapper — Unit 6.4.
+  - Activity badge on problem cards + Discuss-link count upgrade — Unit 6.5.
+  - Discussion threads in per-domain RSS digest — Unit 6.6.
+  - `/talk` LHCI enrolment — Unit 6.7.
+- **§14 universal cross-phase contract**: Lighthouse enrolment (`/problems/<slug>/talk`) ✓; W3C validator for digest endpoints deferred (Q27-class follow-on, gated on Q47 + first deploy); visual-regression baselines deferred (no Playwright spec changes); no auto-merge (Discussions are community-authored via Giscus iframe, never LLM-drafted); file-first / no DB held (build-time `.github-cache/` sidecar; no first-party identity storage); First Load JS shared chunk = 103 kB held throughout.
+- **State at HEAD `23b3ee3`** (pre-this-commit; this unit is docs-only):
+  - 10 problems / 5 domains / ~12 subdomains / 30 papers / 126 authors / 14 institutions / 20 rating actions / 4 issue templates / 1 methodology MDX / **2 contributing MDX** (v1.0 + v1.1) / 2 entries.json files. **Content unchanged this phase** — Phase 6 added code + scripts + docs.
+  - New Phase-6 surfaces: 10 talk-page SSG routes; 1 GitHub GraphQL read-side client; 1 Giscus iframe wrapper; activity badge + count upgrade on problem cards and detail page; `kind: "discussion"` items in the per-domain RSS digests.
+  - **333 prerendered pages** (322 at Phase-5 close + 1 from Unit 5.13b `/contributing/v1.1.0` + 10 from Unit 6.3 talk pages = 333 ✓).
+  - **First Load JS shared chunk = 103 kB UNCHANGED** through every Phase-6 unit. `/problems/[slug]/talk` route-specific chunk = 108 kB First Load (103 + 2 kB Giscus wrapper, per ADR-0010 D-A bundle isolation).
+  - **323/323 vitest tests across 38 files** (was 284/36 at Phase-5 close; **+39 tests this phase**: `github-graphql` 26 + `GiscusEmbed` 7 + `build-digest` discussion-flow +6).
+  - `pnpm validate-content` → 203 files green. `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2). `pnpm typecheck` clean. `pnpm build` clean compile.
+  - 5 visualizations live (unchanged from Phase 4).
+  - **10 ADRs** (added ADR-0010 in Phase 6); 0001-0009 unchanged.
+  - 2 new Phase-6 dependencies: `@octokit/graphql@^9.0.3`, `@giscus/react@^3.1.0`.
+  - `lighthouserc.json` enrols **14 URLs** (was 13 at Phase-5 close; +1 for `/problems/hallucination-reduction/talk` in Unit 6.7).
+  - OPEN_QUESTIONS: 4 new Phase-6 (Q46-Q49). Q46 + Q49 closed (both via ADR-0010); Q47 open operational; Q48 partially-resolved.
+- **Phase-6 unit summary (11 units, 6.0 – 6.10)**: 6.0 prep (`ada448b`) → 6.1 ADR-0010 (`300cde3`) → 6.2 GraphQL client (`93230a1`) → 6.3 talk-page route (`f0dbff1`) → 6.4 Giscus embed (`f9a465e`) → 6.5 card badge + detail link (`d7f17f7`) → 6.6 digest extension (`0ac77e0`) → 6.7 LHCI enrolment (`d2c635e`) → 6.8 hygiene status (`e1be7e1`) → 6.9 OPEN_QUESTIONS + ADR review (`23b3ee3`) → 6.10 _this_.
+- **Phase-6 follow-ons that survive the gate** (non-blocking): Q47 operational unblock sequence (repo-settings → giscus.app → env → CI token); W3C feed validator pass with discussion items (compound gate); `/problems/<slug>/talk` Playwright visual baselines; real-API integration smoke for Unit 6.2's GraphQL client; first LHCI run for the new URL; `app/sitemap.ts` + Q48 sitemap-half closure (Phase 7+).
+- **Pre-existing follow-ons** (carryover from prior phases): orphan `components/domain-tile-grid/` deletion (curator authorization); `entries.json` backfill on 8 problems (editorial + API); `<managingEditor>` on RSS (Q2 DNS); W3C validator passes for Phase-3 + Phase-5 RSS (first deploy); `pnpm clean-drafts` script (operational signal); Phase-2 ROR-ID + InstaDeep orphan.
+- **Phase 7 entry conditions**: per §12 cardinal rule, **explicit human sign-off required**. §13 Phase 6+ scope is open-ended; remaining threads = auth (DB-trigger flip MANDATORY on first write-path unit per Units 4.12 / 5.10 / 6.0 D-2) / bilingual (FR primary, pure content-side) / subscriber list (Phase-5 D-4 punt completion) / monetization. DB-migration trigger re-eval mandatory at Phase 7 kickoff; currently 1.434% of 5 MB.
+- **Cross-phase milestone**: this commit closes the **Discussions thread** of Phase 6 in its entirety. The 11-unit breakdown shipped end-to-end with one structural refactor (Unit 6.5's sync/async split documented at the time). 8 commits + 1 ADR + 4 OPEN_QUESTIONS items + 2 new dependencies + 0 client-bundle regressions + 0 test regressions.
+- THINK artifact: `docs/thinking/6.10-phase-6-acceptance-gate.md`.
+
+
 
 
 
