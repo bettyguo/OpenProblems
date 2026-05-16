@@ -2470,6 +2470,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 14 — Community-adjacent surfaces (**fifth NON-§13 phase**: Public profile page at `/[locale]/u/[handle]` — honored-deferral pick; surfaces ADR-0015)
 
+#### Unit 14.2 — `lib/users/` module + `getPublicChallengesByUser` extension + tests
+
+- Third Phase-14 unit; **first code-shipping unit**. Mirrors Phase-13 Unit 13.1 + Phase-12 Unit 12.3 "helper + tests" cadence. Introduces a new `lib/users/` module + extends `lib/rating-challenges/` with one per-user analogue helper. No new DB tables / columns / migrations / env vars / dependencies.
+- **`lib/users/index.ts` (new — 3 helpers + 2 interfaces)**:
+  - `PublicProfile` interface — `userId` + `githubLogin` (canonical case) + `name | null` + `image | null` + `createdAt`. Per ADR-0015 D-A: NO email field.
+  - `ProfileActivity` interface — 3 publicly-visible counts: `watchedCount` + `pendingChallengeCount` (`submitted ∪ under_review`) + `acceptedChallengeCount`. Per ADR-0015 D-A + Phase-13 Unit 13.0 D-3: NO `rejected` / `withdrawn` counts (submitter-only; visible only on signed-in own `/profile`).
+  - `getPublicProfileByHandle(handle)` — single SELECT against `users` via `sql\`LOWER(${users.githubLogin}) = LOWER(${normalized})\`` for case-insensitive matching per ADR-0015 D-B. Returns `null` on no-match OR when matched row has `githubLogin === null` (Phase-9 retrofit edge from Unit 9.6 deferred `events.linkAccount`). Defensive short-circuit on empty/whitespace handle (saves DB hit on malformed URLs).
+  - `getProfileActivity(userId)` — 3 parallel COUNT queries via `Promise.all` (one watchlist + two ratingChallenges by status partition). Defensive 0-default on missing row shapes.
+  - `getCuratorOfRecordSlugs(handle)` — pure-function scan of Velite-built `problems` from `#site/content`; **case-sensitive** comparison against `editorial.primary_curator` per ADR-0015 D-E. Returns problem slugs (empty array on no-match). O(n_problems) cost; cheap at current 10 problems. Caller must pass canonical case from `users.githubLogin`, NOT raw URL `[handle]` segment.
+- **`lib/rating-challenges/index.ts` (edit — 1 helper added)**: `getPublicChallengesByUser(userId)` extension per ADR-0015 D-A. Mirrors `getPublicChallengesByProblem` shape verbatim (`PublicChallengeRow[]`; same WHERE clause sans `problemSlug` filter; same sort `createdAt DESC` + LIMIT 50; same status filter to `PUBLIC_CHALLENGE_STATUSES`; same LEFT JOIN to `users` for uniform row shape).
+- **`lib/users/index.test.ts` (new — 13 tests)**:
+  - `getPublicProfileByHandle` (5 tests): exact-case match / case-insensitive match preserving canonical case (ADR-0015 D-B realization) / no-match returns null / NULL `githubLogin` returns null (Phase-9 retrofit edge) / empty/whitespace handles short-circuit.
+  - `getProfileActivity` (3 tests): parallel COUNT aggregation correctness / never exposes rejected/withdrawn (ADR-0015 D-A defensive shape assertion) / 0-default on missing rows.
+  - `getCuratorOfRecordSlugs` (5 tests): case-sensitive match (lowercase curator → 2 problems) / alternate-case curator returns different set (D-E case-sensitivity demo) / no-match → empty array / empty/whitespace handles / single-match.
+- **Mocking approach**: partial-mock `@/lib/db` (chainable `db.select()` stub seeded per-test) + full-mock `#site/content` (4 fake problems with 3 curator handles including a `bettyguo`/`BettyGuo` case-variant pair for D-E demo). Mirrors Phase-12 Unit 12.4 + Phase-13 Unit 13.1 partial-mock patterns.
+- **No new test file for `getPublicChallengesByUser`**: helper mirrors `getPublicChallengesByProblem` exactly; existing Phase-13 `public-visibility.test.ts` covers per-status filter logic via const + predicate tests; helper exercised at request time by Unit 14.4 sub-route. Adding redundant DB-mocked test would duplicate coverage without adding signal.
+- **Helpers are auth-agnostic**: callers check session if needed (e.g., for "Edit your profile" CTA that renders only when `session.user.id === profile.userId`). Mirrors Phase-9 `lib/watchlist/` + Phase-12 `lib/rating-challenges/` separation conventions.
+- **Smoke gates**:
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **480/480 across 52 vitest files** (+13 net tests / +1 file vs Phase-13 close 467/51).
+  - `pnpm build` → ~593 prerendered pages + 5 dynamic page+API routes unchanged. First Load JS shared chunk = **103 kB UNCHANGED**. Middleware bundle = **160 kB UNCHANGED**. New helpers are server-only; zero client-bundle delta.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2).
+- **Not in this unit** (deferred to Units 14.3 – 14.5): the actual `/[locale]/u/[handle]` shell route (Unit 14.3); `/[locale]/u/[handle]/challenges` sub-route (Unit 14.4); SiteHeader "Your profile" link (Unit 14.5); `messages.public_profile.*` namespace (Unit 14.3).
+- THINK artifact: `docs/thinking/14.2-lib-users-helpers.md`.
+
 #### Unit 14.1 — ADR-0015: Per-user privacy model + public profile contract (15 ADRs total)
 
 - Second Phase-14 unit; first new ADR since Phase 12 (ADR-0014, Unit 12.1). Docs-only. Pins the per-user privacy contract for `/[locale]/u/[handle]` before any code lands; mirrors Phase-12 Unit 12.1's "ADR ahead of helpers" ordering.

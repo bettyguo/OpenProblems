@@ -477,3 +477,62 @@ export async function getAcceptedChallengeCountByProblem(problemSlug: string): P
     );
   return rows.length;
 }
+
+/**
+ * Per-user analogue of {@link getPublicChallengesByProblem} (Unit 14.2)
+ * per [ADR-0015](../../docs/adr/0015-per-user-privacy-model.md) D-A.
+ * Returns all publicly-visible challenges (`status ∈
+ * PUBLIC_CHALLENGE_STATUSES`) submitted by the supplied user, ordered
+ * `createdAt DESC` (newest first) and limited to `CHALLENGES_LIMIT`
+ * (50; mirrors `getPublicChallengesByProblem`).
+ *
+ * Used by the Phase-14 per-user challenges sub-route at
+ * `/[locale]/u/[handle]/challenges` (Q58 lean #3 closure deferred from
+ * Phase 13).
+ *
+ * LEFT JOIN to `users` so the returned shape matches
+ * `PublicChallengeRow` exactly — `submitterLogin` will equal the
+ * handle being viewed in every row but the uniform shape keeps row-
+ * rendering UI components reusable across per-problem + per-user
+ * listings.
+ */
+export async function getPublicChallengesByUser(userId: string): Promise<PublicChallengeRow[]> {
+  const rows = await db
+    .select({
+      id: ratingChallenges.id,
+      problemSlug: ratingChallenges.problemSlug,
+      submitterLogin: users.githubLogin,
+      submittedAt: ratingChallenges.createdAt,
+      dimension: ratingChallenges.dimension,
+      proposedValue: ratingChallenges.proposedValue,
+      rationale: ratingChallenges.rationale,
+      status: ratingChallenges.status,
+      acceptedActionId: ratingChallenges.acceptedActionId,
+    })
+    .from(ratingChallenges)
+    .leftJoin(users, eq(ratingChallenges.userId, users.id))
+    .where(
+      and(
+        eq(ratingChallenges.userId, userId),
+        inArray(ratingChallenges.status, [...PUBLIC_CHALLENGE_STATUSES]),
+      ),
+    )
+    .orderBy(desc(ratingChallenges.createdAt))
+    .limit(CHALLENGES_LIMIT);
+
+  return rows
+    .filter((row): row is typeof row & { status: PublicChallengeStatus } =>
+      isPublicChallengeStatus(row.status),
+    )
+    .map((row) => ({
+      id: row.id,
+      problemSlug: row.problemSlug,
+      submitterLogin: row.submitterLogin,
+      submittedAt: row.submittedAt,
+      dimension: row.dimension as Dimension,
+      proposedValue: row.proposedValue,
+      rationale: row.rationale,
+      status: row.status,
+      acceptedActionId: row.acceptedActionId,
+    }));
+}
