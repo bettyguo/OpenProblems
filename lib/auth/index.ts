@@ -1,4 +1,5 @@
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
+import { eq } from "drizzle-orm";
 import NextAuth from "next-auth";
 import GitHub from "next-auth/providers/github";
 
@@ -20,10 +21,12 @@ import { accounts, sessions, users, verificationTokens } from "@/lib/db/schema";
  * Per ADR-0012 D-C: DB-backed sessions via the Drizzle adapter (no JWT
  * sessions); revocable + auditable.
  *
- * The `events.createUser` callback populates `githubLogin` on first sign-in
- * from the GitHub OAuth profile's `login` field (per ADR-0012 D-E). Joins
- * file-system `editorial.primary_curator` to DB user identity via a stable
- * GitHub handle.
+ * The `events.linkAccount` callback (Unit 9.6) populates `githubLogin` on
+ * first sign-in from the GitHub OAuth profile's `login` field (per
+ * ADR-0012 D-E). Joins file-system `editorial.primary_curator` to DB user
+ * identity via a stable GitHub handle. `linkAccount` is the right hook
+ * because `createUser` doesn't expose `profile`; we need `profile.login`
+ * which only `linkAccount({ user, account, profile })` provides.
  *
  * Operational gate: Q54 (`GITHUB_CLIENT_ID` + `GITHUB_CLIENT_SECRET` env
  * vars; OAuth app registration under the project's GitHub org). When env
@@ -45,4 +48,18 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   providers: [GitHub],
   session: { strategy: "database" },
   trustHost: true,
+  events: {
+    async linkAccount({ user, account, profile }) {
+      if (account.provider !== "github") return;
+      // Auth.js v5 types `profile` as `User | AdapterUser` which loses the
+      // provider-specific shape; GitHub's profile carries `login` (the
+      // `@handle` we need to join file-system `editorial.primary_curator`
+      // per ADR-0012 D-E). Narrow via a structural unknown cast.
+      const providerProfile = profile as Record<string, unknown>;
+      const rawLogin = providerProfile.login;
+      const login = typeof rawLogin === "string" ? rawLogin : null;
+      if (!login || !user.id) return;
+      await db.update(users).set({ githubLogin: login }).where(eq(users.id, user.id));
+    },
+  },
 });

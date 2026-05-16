@@ -2,6 +2,7 @@ import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { RatingRadar } from "@/components/viz/RatingRadar";
 import { StatusPill } from "@/components/ui/status-pill";
+import { WatchlistToggle } from "@/components/watchlist-toggle";
 import { MDXContent } from "@/lib/mdx/mdx-content";
 import { allProblemSlugs, loadProblem } from "@/lib/content/load-problem";
 import { tryGetDiscussionByPath } from "@/lib/discussions/github-graphql";
@@ -63,7 +64,10 @@ export default async function ProblemPage({ params }: ProblemPageProps) {
         <h1 className="font-serif text-3xl font-semibold tracking-tight sm:text-4xl">
           {problem.title}
         </h1>
-        <StatusPill status={problem.status} className="mt-2 shrink-0" />
+        <div className="mt-2 flex shrink-0 items-center gap-2">
+          <StatusPill status={problem.status} />
+          <WatchlistToggle slug={slug} />
+        </div>
       </div>
       <p className="text-muted-foreground mt-2 text-xs">
         Last curated{" "}

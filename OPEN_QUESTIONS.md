@@ -399,10 +399,22 @@ Per [ADR-0013](./docs/adr/0013-db-choice.md) (TBD; lean Unit 9.2): Turso/libSQL 
 
 ## Q56. Watchlist table key shape
 
-**Status:** decided-as-lean · **Surfaced:** Unit 9.0 · **Resolves:** in Unit 9.6 schema implementation.
+**Status:** resolved 2026-05-16 (Unit 9.6): **`problemSlug` plain text column with no FK; composite primary key on `(userId, problemSlug)`; FK only on `userId` → `user.id` with `ON DELETE cascade`** · **Surfaced:** Unit 9.0 · **Resolved:** Unit 9.6.
 
 For the Unit 9.6 watchlist write-path: does `problem_slug` reference `content/problems/<slug>/problem.yaml` (file-system) or a `problems` Drizzle table (DB)?
 
-**Lean**: keep `problem_slug` as a plain `text` column with no FK constraint; `content/problems/` stays the source of truth for problem metadata; the DB table is the source of truth for **user-specific state only** (watchlist memberships, future user preferences, rating-challenge drafts). File-first / no-DB-for-content (ADR-0004) preserved — Phase 9 adds a USER-STATE DB layer; it does NOT migrate content into the DB.
+**Decision** (mirrors Unit 9.0 lean verbatim — landed without redirection at code time): keep `problemSlug` as a plain `text` column with no FK constraint; `content/problems/` stays the source of truth for problem metadata; the DB table is the source of truth for **user-specific state only** (watchlist memberships, future user preferences, rating-challenge drafts). File-first / no-DB-for-content ([ADR-0004](docs/adr/0004-file-first-no-db.md)) preserved — Phase 9 added a USER-STATE DB layer per [ADR-0013](docs/adr/0013-db-choice.md) D-F; it does NOT migrate content into the DB.
 
-Realized at code time in Unit 9.6: `CREATE TABLE watchlist (user_id TEXT NOT NULL, problem_slug TEXT NOT NULL, created_at INTEGER NOT NULL, PRIMARY KEY (user_id, problem_slug), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)`. No FK on `problem_slug` (file-system reference); orphan entries (problem_slug pointing at a deleted problem.yaml) handled via a periodic cleanup script (deferred follow-on; orphan tolerated until script lands).
+Realized in Unit 9.6's `lib/db/migrations/0001_watchlist.sql`:
+
+```sql
+CREATE TABLE `watchlist` (
+    `userId` text NOT NULL,
+    `problemSlug` text NOT NULL,
+    `createdAt` integer DEFAULT (unixepoch() * 1000) NOT NULL,
+    PRIMARY KEY(`userId`, `problemSlug`),
+    FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
+);
+```
+
+No FK on `problemSlug` (file-system reference); orphan entries (problemSlug pointing at a deleted `content/problems/<slug>/problem.yaml`) handled via a periodic cleanup script (deferred follow-on per ADR-0013 D-F; orphan tolerated until script lands).

@@ -78,3 +78,35 @@ export const verificationTokens = sqliteTable(
     }),
   }),
 );
+
+/**
+ * Per-user watchlist of problem slugs (Unit 9.6). Resolves
+ * [Q56](../../OPEN_QUESTIONS.md#q56-watchlist-table-key-shape) lean:
+ * composite primary key on `(userId, problemSlug)`; FK on `userId`
+ * with `ON DELETE cascade`; **no FK on `problemSlug`** — the column is
+ * plain text referencing the file-system slug at
+ * `content/problems/<slug>/problem.yaml`. Preserves ADR-0004 file-first
+ * for content; orphan rows (slug pointing at a deleted problem.yaml)
+ * tolerated until a cleanup script lands (deferred follow-on per
+ * [ADR-0013](../../docs/adr/0013-db-choice.md) D-F).
+ *
+ * §5.7 trigger (a) — "we need write paths (submissions)" — FIRES on
+ * this table's first INSERT. Deferred 5 phases running (Units 4.12 /
+ * 5.10 / 6.0 / 7.0 / 8.0 D-2); Phase-4 "no user accounts" pact broken
+ * here per the announced consequence.
+ */
+export const watchlist = sqliteTable(
+  "watchlist",
+  {
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    problemSlug: text("problemSlug").notNull(),
+    createdAt: integer("createdAt", { mode: "timestamp_ms" })
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.userId, table.problemSlug] }),
+  }),
+);

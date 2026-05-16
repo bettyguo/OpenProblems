@@ -30,6 +30,12 @@
     "sign_out": "Se déconnecter",
     "signed_in_fallback": "Connecté"
   },
+  "watchlist": {
+    "watch": "Suivre",
+    "watching": "Suivi",
+    "sign_in_prompt": "Se connecter pour suivre",
+    "aria_label": "Ajouter ou retirer ce problème de votre liste de suivi"
+  },
   "home": {
     "hero_heading": "Problèmes ouverts notés en recherche en LLM et IA.",
     "hero_description": "Une encyclopédie organisée par taxonomie des problèmes ouverts, notés sur cinq dimensions révisables — Difficulté, Saturation, Urgence, Valeur, Demande de l'industrie — avec un journal d'actions de notation immuable derrière chaque score.",
