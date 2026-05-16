@@ -1474,3 +1474,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Pure docs. THINK artifact: `docs/thinking/5.10-db-migration-trigger-eval.md`.
 - Smoke gates: `pnpm validate-content` (203 files unchanged), `pnpm typecheck` (clean — no TS touched), `pnpm test` (284/284 unchanged).
 
+#### Unit 5.11 — Phase-5 hygiene status pass
+
+- Status-pass unit, not a substantive cleanup. Phase-5 plan named two hygiene items; both are deferred forward with explicit framing for the next curator session.
+- **Orphan `components/domain-tile-grid/`**: re-verified unimported at HEAD `4ef69c2` (no matches in `app/` or `lib/` for `domain-tile-grid` or `DomainTileGrid`). Deletion **deferred to Phase 6**: the harness's destructive-action classifier blocks unauthorized deletion of pre-existing tracked files (verified at Unit 4.4 — the attempt was correctly blocked + reverted from HEAD). Path forward: a curator session can ask explicitly ("delete the orphan tile-grid") or land a small "cleanup" PR.
+- **`entries.json` backfill** on the 8 problems still without curator-authored entries: **deferred to a future content-driven unit** (5.x follow-on or Phase 6). Unit 5.5's `extract-leaderboard` CLI is the toolchain for backfilling — runs Opus 4.7 against a paper PDF, produces a curator-review diff in `drafts/`, curator applies after review. Real-LLM backfill requires `ANTHROPIC_API_KEY` (cost) + source-finding judgement; out of scope for a status-pass unit.
+- **New forward-looking signals carried** for Phase 6:
+  - `pnpm clean-drafts` script — operational hygiene if `drafts/` accumulates > 100 stale files in a curator's working tree.
+  - `/contributing` v1.x bump — document the LLM-assisted ingest path (Units 5.3 / 5.5 / ADR-0009) and ADR-0008 D-F conflict-of-interest disclosure.
+  - `<managingEditor>` on digest feeds (Q44) — gated on Q33 + Q2 DNS; carry forward.
+- **Rejected**: asking for explicit deletion authorization mid-loop (would break the "Continue" rhythm); skipping Unit 5.11 entirely (5.0 plan named it as discrete); running `pnpm extract-leaderboard --dry-run` for the backfill (`--dry-run` produces a placeholder diff — pseudo-content is worse than no content).
+- **Parallel-curator state**: HEAD = `4ef69c2` post-Unit-5.10. No collision.
+- Pure docs. THINK artifact: `docs/thinking/5.11-phase-5-hygiene.md`.
+- Smoke gates: `pnpm validate-content` (203 files unchanged), `pnpm typecheck` (clean), `pnpm test` (284/284 unchanged).
+
