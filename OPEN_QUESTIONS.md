@@ -421,7 +421,7 @@ No FK on `problemSlug` (file-system reference); orphan entries (problemSlug poin
 
 ## Q57. Rating-challenge curator review pipeline shape
 
-**Status:** open · **Surfaced:** Unit 11.0 prep + Unit 11.5 hygiene (Class A item 1) · **Blocks:** Phase 12+ curator-review thread.
+**Status:** resolved 2026-05-16 (Unit 12.1): pinned in [ADR-0014](./docs/adr/0014-curator-review-pipeline.md) — state machine (`submitted → under_review → accepted | rejected | withdrawn` + fast lanes) + env-var allowlist authz (`LOP_CURATOR_LOGINS`) + simplified COI (curator ≠ submitter hard block; curator ≠ `primary_curator` soft warn; full §8.6 24-mo collaborator check deferred to Phase 13+) + manual rating-action YAML emission (UI surfaces "Attach action YAML" form post-acceptance; preserves curator-of-record semantics; CLI / web-side automation deferred Phase 13+/14+) + page-local auth + ALTER migration discipline (`0003_rating_challenge_review` is the project's first ALTER migration). · **Surfaced:** Unit 11.0 prep + Unit 11.5 hygiene (Class A item 1) · **Resolved:** Unit 12.1 (ADR-0014 acceptance).
 
 [Unit 11.0 D-3 + D-4](./docs/thinking/11.0-phase-11-prep.md) deferred the curator-review pipeline to Phase 12+ explicitly. Phase 11 ships rating-challenge **submission only**: any signed-in user can `POST /api/v1/rating-challenges` (or use the inline form on `/[locale]/problems/[slug]`), and Phase-11 Unit 11.4's profile-page extension lists the user's own submissions. No curator-facing surface exists for triage / status transitions / acceptance.
 

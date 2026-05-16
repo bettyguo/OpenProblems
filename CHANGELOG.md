@@ -2470,6 +2470,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 12 — Community-adjacent surfaces (**third NON-§13 phase**: Curator review pipeline — Q57 keystone)
 
+#### Unit 12.7 — OPEN_QUESTIONS hygiene + ADR review (Phase 12 pre-close)
+
+- Eighth Phase-12 unit; docs-only. Mirrors Unit 5.12 / 6.9 / 7.10 / 8.8 / 9.8 / 10.4 / 11.6 OQ-hygiene precedents. Scans the open-questions ledger for Phase-12 promotions + reviews the 14 ADRs at HEAD for stale status / supersede markers / prose-shift reconciliations. Lands ahead of Unit 12.8 (acceptance gate).
+- **OPEN_QUESTIONS scan**: Phase 12 promotes **1 question** (Q57) + surfaces **0 new questions**.
+  - **Q57 promoted** `open` → `resolved 2026-05-16 (Unit 12.1)`. ADR-0014 pins the architectural surface (state machine D-A; env-var authz D-B; simplified COI D-C; manual YAML emission D-D; ALTER discipline D-E; route shape + auth tier D-F). Unit 11.6's Q57 lean became D-A through D-F verbatim — no surprises at implementation time. The OPEN_QUESTIONS body sentence cites ADR-0014's pin language inline.
+  - **Q58 stays open** per ADR-0014's explicit scope cap (Phase-13+ thread; couples to Phase-10 Class B item 1 — public profile route). Unit 11.6 Q58 lean (counter / per-problem listing / public-profile-of-challenges; status-gated visibility leaning toward `accepted` + `submitted` public, `rejected` + `withdrawn` submitter-only) remains the current lean.
+  - **No new Q-numbers surfaced**. Two Phase-12-internal candidates flagged in Unit 12.0 prep + Unit 12.6 hygiene risk-surface (NOT promoted unless usage demands): **Q59 candidate** (rating-action YAML emission automation; lean = CLI helper Phase 13+); **Q60 candidate** (curator authorization evolution beyond env-var; lean = defer to Phase 13+/14+ alongside Q7).
+  - **Q54 + Q55 stay open** as operational gates (carried since Phase 9). Phase-12 surfaces inherit; Phase 12 adds no new operational gates to Class A (the new `LOP_CURATOR_LOGINS` env var is Phase-12-internal NOT promoted to operational Class A).
+- **Ledger state at HEAD** (Status-field-tally; mechanically auditable):
+  - **20 resolved**: Q1, Q4, Q5, Q12, Q13, Q18, Q27, Q32, Q40, Q41, Q43, Q45, Q46, Q48, Q49, Q50, Q52, Q53, Q56, **Q57**.
+  - **4 decided-as-lean**: Q38, Q42, Q44, Q51.
+  - **29 open**: Q2, Q3, Q6, Q7, Q8, Q9, Q10, Q11, Q14, Q15, Q16, Q17, Q19, Q25, Q26, Q28, Q29, Q30, Q31, Q33, Q34, Q35, Q36, Q37, Q39, Q47, Q54, Q55, Q58.
+  - **Total: 53 entries** (was 53 at Phase-11 close). **Phase-12 delta**: +1 resolved (Q57); +0 decided-as-lean; -1 open (Q57 left); net **0 size change**.
+- **ADR review**: **14 ADRs at HEAD** (0001 – 0014). Phase 12 added **1 new ADR** (0014 in Unit 12.1). All 13 prior ADRs unchanged in body; status remains `accepted` across the set.
+  - **ADR-0004 reaffirmed** by ADR-0014 D-D (manual YAML emission preserves file-first; rating-action YAMLs land in `content/problems/<slug>/ratings/` via out-of-band PR, not via API-side commit).
+  - **ADR-0005 reaffirmed** by ADR-0014 D-A's terminal-status-non-reversible policy (`accepted`/`rejected`/`withdrawn` terminal; re-challenge = new row not reopen) + D-E's ALTER discipline (`0003_rating_challenge_review` ALTERs `ratingChallenge` ADDITIVELY; never edits applied migrations).
+  - **ADR-0011 D-A through D-G** exercised by Phase-12's `messages.curator.*` (47 keys per locale; Unit 12.4) + `messages.profile.*` extensions (8 per locale across Units 12.4+12.5). FR translations honor §3 brand register.
+  - **ADR-0012 D-A through D-E** exercised by curator dashboard + review API + profile-page withdraw form. D-D redirect-to-provider preserved in both dashboard auth-check redirects + review-API 401. D-E `users.githubLogin` joining consumed by `getLoginById` + `isCurator` curator-authz tier + `getCoIStatus` self-review COI.
+  - **ADR-0013 D-A through D-F** exercised by first ALTER migration. D-B (migration immutability) **extended by ADR-0014 D-E** to cover ALTER migrations. D-F (USER-STATE only) honored — 4 new columns are REVIEW-STATE which is USER-STATE-adjacent on same row.
+  - **ADR-0014 D-A through D-F** all realized in Units 12.2-12.5 implementation.
+- **No prose-shift reconciliations** this unit (unlike Unit 9.8's two ADR edits). ADR-0014 authored fresh in Unit 12.1; all implementation matched the ADR verbatim. Zero ADR edits.
+- **No new ADRs surfaced**. Phase-12 surface fully covered by ADR-0014 + the existing 13-ADR set. Phase-13+ ADR-promotion candidates flagged (not anticipated at Phase-12 acceptance): **ADR-0015 candidate** (subscriber-list email provider; per Phase-5 D-4 + ADR-0014 D-D email-notifications cross-ref); **ADR-0016 candidate** (multi-provider OAuth; lifts ADR-0012 D-B); **ADR-0017 candidate** (full §8.6 24-mo COI + `curatorRoles` DB table; couples to Q7).
+- Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2); typecheck / test / build untouched since no source files modified beyond OPEN_QUESTIONS.md + new THINK doc.
+- THINK artifact: `docs/thinking/12.7-open-questions-hygiene.md`.
+
 #### Unit 12.6 — Phase-12 hygiene status pass (Class A / B / C catalog)
 
 - Seventh Phase-12 unit; docs-only. Mirrors Phase-5 (Unit 5.11) / Phase-6 (Unit 6.8) / Phase-7 (Unit 7.9) / Phase-8 (Unit 8.7) / Phase-9 (Unit 9.7) / Phase-10 (Unit 10.3) / Phase-11 (Unit 11.5) hygiene precedents. Catalogs **Class A** in-flight Phase-12 items (4 carried; 0 newly surfaced — `LOP_CURATOR_LOGINS` is Phase-12-internal not Class A operational), **Class B** Phase-12-specific follow-ons (14), and **Class C** carryovers (19; unchanged from Unit 11.5). Lands ahead of Unit 12.7 (OPEN_QUESTIONS hygiene) and Unit 12.8 (acceptance gate).
