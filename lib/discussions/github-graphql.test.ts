@@ -7,7 +7,9 @@ import {
   getDiscussionByPath,
   getRecentDiscussionActivity,
   queryGitHub,
+  TALK_PATHNAME_REGEX,
   tryGetDiscussionByPath,
+  tryGetRecentDiscussionActivity,
   type GraphqlClient,
 } from "@/lib/discussions/github-graphql";
 
@@ -270,6 +272,69 @@ describe("tryGetDiscussionByPath", () => {
       clientFactory: () => client,
     });
     expect(got).toBeNull();
+  });
+});
+
+describe("TALK_PATHNAME_REGEX", () => {
+  it("matches well-formed talk-page pathnames and captures the slug", () => {
+    const m1 = "/problems/hallucination-reduction/talk".match(TALK_PATHNAME_REGEX);
+    expect(m1?.[1]).toBe("hallucination-reduction");
+    const m2 = "/problems/benchmark-integrity/talk".match(TALK_PATHNAME_REGEX);
+    expect(m2?.[1]).toBe("benchmark-integrity");
+  });
+
+  it("rejects non-talk paths and non-pathname titles", () => {
+    expect("/problems/x/leaderboard".match(TALK_PATHNAME_REGEX)).toBeNull();
+    expect("/problems/x/talk/something".match(TALK_PATHNAME_REGEX)).toBeNull();
+    expect("Some manual discussion title".match(TALK_PATHNAME_REGEX)).toBeNull();
+    expect("/problems/X-with-caps/talk".match(TALK_PATHNAME_REGEX)).toBeNull();
+  });
+});
+
+describe("tryGetRecentDiscussionActivity", () => {
+  it("returns the underlying array on success (identity passthrough)", async () => {
+    const client: GraphqlClient = async () =>
+      ({
+        repository: {
+          discussions: {
+            nodes: [
+              {
+                id: "D_x",
+                url: "https://x/x",
+                title: "/problems/x/talk",
+                updatedAt: "2026-05-16T10:00:00Z",
+                comments: { totalCount: 2, nodes: [{ createdAt: "2026-05-16T09:00:00Z" }] },
+              },
+            ],
+          },
+        },
+      }) as never;
+
+    const got = await tryGetRecentDiscussionActivity(new Date("2026-05-10T00:00:00Z"), {
+      cacheDir: tmpDir,
+      clientFactory: () => client,
+    });
+    expect(got).toHaveLength(1);
+    expect(got[0]?.title).toBe("/problems/x/talk");
+  });
+
+  it("returns [] when GITHUB_TOKEN is unset (no clientFactory, no cache)", async () => {
+    delete process.env["GITHUB_TOKEN"];
+    const got = await tryGetRecentDiscussionActivity(new Date("2026-05-10T00:00:00Z"), {
+      cacheDir: tmpDir,
+    });
+    expect(got).toEqual([]);
+  });
+
+  it("returns [] when the client throws for any other reason", async () => {
+    const client: GraphqlClient = async () => {
+      throw new Error("simulated network failure");
+    };
+    const got = await tryGetRecentDiscussionActivity(new Date("2026-05-10T00:00:00Z"), {
+      cacheDir: tmpDir,
+      clientFactory: () => client,
+    });
+    expect(got).toEqual([]);
   });
 });
 

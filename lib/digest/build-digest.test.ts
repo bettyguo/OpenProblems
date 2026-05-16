@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildDigest } from "@/lib/digest/build-digest";
-import { taxonomy } from "#site/content";
+import { problems, taxonomy } from "#site/content";
+import type { RecentActivityItem } from "@/lib/discussions/github-graphql";
 
 // Anchor "now" to a date that includes the simulated Phase-3 q3/q4 rating
 // actions (2026-09-01 / 2026-12-15). A 365-day window around 2026-12-31 will
@@ -106,8 +107,104 @@ describe("buildDigest", () => {
         now: NOW_LATE_2026,
       });
       for (const item of payload.items) {
-        expect(["rating-action", "leaderboard-entry"]).toContain(item.kind);
+        expect(["rating-action", "leaderboard-entry", "discussion"]).toContain(item.kind);
       }
     }
+  });
+});
+
+describe("buildDigest — discussion-thread items (Unit 6.6)", () => {
+  // Pick a real domain + a real problem that belongs to it, so the
+  // domain-scoped filter sees the slug as in-scope.
+  const someProblem = problems[0]!;
+  const someDomain = someProblem.domain;
+
+  function fixtureActivity(overrides: Partial<RecentActivityItem> = {}): RecentActivityItem {
+    return {
+      discussionId: "D_test1",
+      url: `https://github.com/bettyguo/OpenProblems/discussions/1`,
+      title: `/problems/${someProblem.slug}/talk`,
+      commentCount: 4,
+      updatedAt: "2026-05-15T10:00:00Z",
+      latestCommentAt: "2026-05-15T09:00:00Z",
+      ...overrides,
+    };
+  }
+
+  it("includes a discussion item when the loader returns a matching activity", async () => {
+    const payload = await buildDigest({
+      domain: someDomain,
+      windowDays: 365,
+      now: NOW_LATE_2026,
+      discussionsLoader: async () => [fixtureActivity()],
+    });
+    const discussionItems = payload.items.filter((i) => i.kind === "discussion");
+    expect(discussionItems).toHaveLength(1);
+    expect(discussionItems[0]?.problemSlug).toBe(someProblem.slug);
+    expect(discussionItems[0]?.link).toBe(`/problems/${someProblem.slug}/talk`);
+    expect(discussionItems[0]?.guid).toBe("discussion:D_test1");
+    expect(discussionItems[0]?.title).toContain(someProblem.title);
+    expect(discussionItems[0]?.title).toContain("4 comments");
+  });
+
+  it("filters out discussion items whose problem belongs to a different domain", async () => {
+    // Find a problem in a domain DIFFERENT from someDomain.
+    const otherProblem = problems.find((p) => p.domain !== someDomain);
+    if (!otherProblem) return; // skip if test fixtures only have one domain (won't happen)
+    const payload = await buildDigest({
+      domain: someDomain,
+      windowDays: 365,
+      now: NOW_LATE_2026,
+      discussionsLoader: async () => [
+        fixtureActivity({
+          discussionId: "D_otherdomain",
+          title: `/problems/${otherProblem.slug}/talk`,
+        }),
+      ],
+    });
+    const discussionItems = payload.items.filter((i) => i.kind === "discussion");
+    expect(discussionItems).toHaveLength(0);
+  });
+
+  it("filters out activity items whose title doesn't match the talk-pathname regex", async () => {
+    const payload = await buildDigest({
+      domain: someDomain,
+      windowDays: 365,
+      now: NOW_LATE_2026,
+      discussionsLoader: async () => [fixtureActivity({ title: "Manual non-problem discussion" })],
+    });
+    const discussionItems = payload.items.filter((i) => i.kind === "discussion");
+    expect(discussionItems).toHaveLength(0);
+  });
+
+  it("filters out activity items outside the time window", async () => {
+    const ancientPayload = await buildDigest({
+      domain: someDomain,
+      windowDays: 7,
+      now: new Date("2026-05-20T00:00:00Z"),
+      discussionsLoader: async () => [fixtureActivity({ updatedAt: "2020-01-01T00:00:00Z" })],
+    });
+    const discussionItems = ancientPayload.items.filter((i) => i.kind === "discussion");
+    expect(discussionItems).toHaveLength(0);
+  });
+
+  it("channel description mentions discussion threads when present", async () => {
+    const payload = await buildDigest({
+      domain: someDomain,
+      windowDays: 365,
+      now: NOW_LATE_2026,
+      discussionsLoader: async () => [fixtureActivity()],
+    });
+    expect(payload.channelDescription).toContain("discussion threads");
+  });
+
+  it("default loader (no injection) does not crash and yields no discussion items without env", async () => {
+    const payload = await buildDigest({
+      domain: someDomain,
+      windowDays: 365,
+      now: NOW_LATE_2026,
+    });
+    const discussionItems = payload.items.filter((i) => i.kind === "discussion");
+    expect(discussionItems).toHaveLength(0);
   });
 });

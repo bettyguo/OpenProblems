@@ -1,6 +1,11 @@
 import { problems, taxonomy } from "#site/content";
 import { allRatingActions, diffRatingAction, type RatingAction } from "@/lib/content/load-ratings";
 import { loadEntriesForProblem } from "@/lib/content/load-entries";
+import {
+  TALK_PATHNAME_REGEX,
+  tryGetRecentDiscussionActivity,
+  type RecentActivityItem,
+} from "@/lib/discussions/github-graphql";
 import type { LeaderboardEntry } from "@/lib/schemas/entry";
 
 /**
@@ -23,7 +28,7 @@ import type { LeaderboardEntry } from "@/lib/schemas/entry";
 const DEFAULT_WINDOW_DAYS = 7;
 
 export interface DigestItem {
-  kind: "rating-action" | "leaderboard-entry";
+  kind: "rating-action" | "leaderboard-entry" | "discussion";
   title: string;
   link: string;
   date: string;
@@ -48,6 +53,13 @@ export interface BuildDigestOptions {
   domain: string;
   windowDays?: number;
   now?: Date;
+  /**
+   * Override the Discussion-thread activity fetcher (Unit 6.6). Default is
+   * `tryGetRecentDiscussionActivity` which gracefully returns `[]` when
+   * `GITHUB_TOKEN` is unset or the GraphQL query fails — so builds proceed
+   * without discussions. Tests inject fixtures here.
+   */
+  discussionsLoader?: (since: Date) => Promise<RecentActivityItem[]>;
 }
 
 function toIsoDate(d: unknown): string {
@@ -81,6 +93,25 @@ function ratingActionToItem(
     description: `Rating action by ${action.curator} on ${date}: ${headline}${watchlistNote}.`,
     guid: action.id,
     problemSlug: action.problem_slug,
+    problemTitle,
+  };
+}
+
+function discussionToItem(
+  activity: RecentActivityItem,
+  problemSlug: string,
+  problemTitle: string,
+): DigestItem {
+  const date = toIsoDate(activity.updatedAt);
+  const commentNoun = activity.commentCount === 1 ? "comment" : "comments";
+  return {
+    kind: "discussion",
+    title: `${problemTitle} — discussion thread (${activity.commentCount} ${commentNoun})`,
+    link: `/problems/${problemSlug}/talk`,
+    date,
+    description: `Discussion thread for ${problemTitle}: ${activity.commentCount} ${commentNoun}; last activity ${date}.`,
+    guid: `discussion:${activity.discussionId}`,
+    problemSlug,
     problemTitle,
   };
 }
@@ -159,13 +190,31 @@ export async function buildDigest(options: BuildDigestOptions): Promise<DigestPa
     }
   }
 
+  // Discussion-thread activity (Unit 6.6). One repo-global fetch; filter by
+  // title-regex match against this domain's problem slugs + window. The default
+  // loader is the env-safe wrapper, so missing GITHUB_TOKEN simply yields zero
+  // discussion items rather than crashing the build.
+  const discussionsLoader = options.discussionsLoader ?? tryGetRecentDiscussionActivity;
+  const since = new Date(cutoffMs);
+  const activity = await discussionsLoader(since);
+  for (const a of activity) {
+    const m = a.title.match(TALK_PATHNAME_REGEX);
+    const slug = m?.[1];
+    if (!slug || !domainProblemSlugs.has(slug)) continue;
+    const activityMs = Date.parse(toIsoDate(a.updatedAt));
+    if (Number.isNaN(activityMs)) continue;
+    if (activityMs < cutoffMs || activityMs > nowMs) continue;
+    items.push(discussionToItem(a, slug, domainProblemTitleBySlug.get(slug) ?? slug));
+  }
+
   items.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
 
   const channelTitle = `LLM OpenProblems — ${domainNode.title} digest`;
+  const hasDiscussion = items.some((i) => i.kind === "discussion");
   const channelDescription =
     items.length === 0
       ? `No activity in the last ${windowDays} days for problems in the ${domainNode.title} domain.`
-      : `${items.length} item${items.length === 1 ? "" : "s"} in the last ${windowDays} days for problems in the ${domainNode.title} domain (rating actions + new leaderboard entries).`;
+      : `${items.length} item${items.length === 1 ? "" : "s"} in the last ${windowDays} days for problems in the ${domainNode.title} domain (rating actions + new leaderboard entries${hasDiscussion ? " + discussion threads" : ""}).`;
 
   return {
     domain: domainSlug,

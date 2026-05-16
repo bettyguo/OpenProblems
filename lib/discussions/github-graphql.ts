@@ -23,6 +23,15 @@ const DEFAULT_REPO_OWNER = "bettyguo";
 const DEFAULT_REPO_NAME = "OpenProblems";
 const RECENT_DISCUSSIONS_PAGE_SIZE = 50;
 
+/**
+ * Regex matching the Giscus pathname-mapping convention (ADR-0010 D-C) for
+ * problem talk pages. Auto-created discussions have the pathname as their
+ * title; this regex extracts the problem slug from such a title. Manually-
+ * authored discussions with non-pathname titles will not match (correct —
+ * they're out of scope for the per-domain digest).
+ */
+export const TALK_PATHNAME_REGEX = /^\/problems\/([a-z0-9-]+)\/talk$/;
+
 export type GraphqlClient = <T = unknown>(
   query: string,
   variables?: Record<string, unknown>,
@@ -218,6 +227,23 @@ interface RecentDiscussionsResponse {
       }>;
     };
   };
+}
+
+/**
+ * Env-safe wrapper around `getRecentDiscussionActivity`. Catches errors
+ * (missing `GITHUB_TOKEN`, network failures, GraphQL errors) and returns
+ * an empty array. Same shape as `tryGetDiscussionByPath` — lets build-time
+ * SSG callers proceed gracefully when the operational env is missing.
+ */
+export async function tryGetRecentDiscussionActivity(
+  since: Date,
+  options: GraphqlClientOptions = {},
+): Promise<RecentActivityItem[]> {
+  try {
+    return await getRecentDiscussionActivity(since, options);
+  } catch {
+    return [];
+  }
 }
 
 export async function getRecentDiscussionActivity(

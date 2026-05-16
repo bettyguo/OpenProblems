@@ -1765,6 +1765,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
 - THINK artifact: `docs/thinking/6.5-problem-card-activity-badge.md`.
 
+#### Unit 6.6 — `lib/digest/build-digest.ts` extension (Discussion threads in per-domain RSS)
+
+- Fifth code unit of Phase 6. Closes Unit 6.0 D-5's second commitment: "extend Phase-5 Unit 5.7 to include new discussion threads in the weekly RSS roll-up." Discussion items now appear alongside rating actions + leaderboard entries in the 5 per-domain RSS feeds (`/api/v1/digest/<slug>`).
+- **New exports** in `lib/discussions/github-graphql.ts`:
+  - `TALK_PATHNAME_REGEX` (`/^\/problems\/([a-z0-9-]+)\/talk$/`) — captures the problem slug from the Giscus pathname-mapping title convention (ADR-0010 D-C). Exported so any future digest-side or page-side parser uses the same convention.
+  - `tryGetRecentDiscussionActivity(since, options)` — env-safe wrapper mirroring `tryGetDiscussionByPath` (Unit 6.5). Returns `[]` on missing `GITHUB_TOKEN`, network failures, or GraphQL errors.
+- **`lib/digest/build-digest.ts`** extensions:
+  - `DigestItem["kind"]` discriminator extended from `"rating-action" | "leaderboard-entry"` to also include `"discussion"`.
+  - New `discussionToItem(activity, problemSlug, problemTitle)` mapping function. Item shape: `title = "<problemTitle> — discussion thread (N comments)"`, `link = "/problems/<slug>/talk"`, `date = updatedAt` (date-only), `description = "Discussion thread for <problemTitle>: N comments; last activity DATE."`, `guid = "discussion:<discussionId>"` (stable per GitHub's GraphQL contract; RSS readers de-duplicate cleanly).
+  - `BuildDigestOptions.discussionsLoader?: (since: Date) => Promise<RecentActivityItem[]>` — overridable for tests. Default is `tryGetRecentDiscussionActivity`; mirrors the Phase-5 `clientFactory` / `fetchImpl` injection precedent.
+  - One repo-global fetch per `buildDigest` call (not per-problem fan-out). Filter pipeline: `TALK_PATHNAME_REGEX` match → slug-in-domain check → window-filter on `updatedAt`. Repo-global fetch wastes a tiny bit of parsing for other domains' activity but saves N-1 GraphQL calls per per-domain digest build.
+  - `channelDescription` updated to mention "+ discussion threads" when at least one discussion item is present in the items list. Empty-channel description unchanged.
+- **No RSS / route changes** — `lib/digest/rss.ts` + `app/api/v1/digest/[domain]/route.ts` consume the `DigestItem` shape without caring about the `kind` discriminator value. Discussion items render through the existing rendering path automatically.
+- **Build-time env behaviour**: same graceful fallback as Units 6.5. With `GITHUB_TOKEN` unset + cache cold, the one repo-global fetch returns `[]`; digest contains zero discussion items; RSS valid; build succeeds. With `GITHUB_TOKEN` set + Q47 unresolved, GraphQL returns empty repository discussions; same observable behaviour. With `GITHUB_TOKEN` set + Q47 resolved + ≥ 1 discussion with comments matching a problem talk pathname: discussion items surface in the RSS.
+- **11 new vitest tests**:
+  - `lib/discussions/github-graphql.test.ts` (+5): `TALK_PATHNAME_REGEX` match cases (2), `tryGetRecentDiscussionActivity` identity passthrough / env-unset / generic-error (3).
+  - `lib/digest/build-digest.test.ts` (+6): matching-activity inclusion (problem slug + link + guid + count in title); cross-domain activity filtered out; non-pathname title filtered out; out-of-window activity filtered out; channel description mentions "discussion threads" when present; default loader (no injection) yields no items without env.
+- **Q47 (operational)** unchanged. **Q44** (digest `<managingEditor>`) still gated on Q2 (DNS / project email). **Q49** (moderation routing) still leaning to GitHub-native per ADR-0010 D-F.
+- **No client-bundle impact**: server-side only.
+- Smoke gates:
+  - `pnpm validate-content` → 203 unchanged.
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **323/323 across 38 files** (was 312/38; +11 new).
+  - `pnpm build` → 333 routes unchanged. First Load JS shared chunk = 103 kB UNCHANGED.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- THINK artifact: `docs/thinking/6.6-digest-discussions-extension.md`.
+
+
 
 
 
