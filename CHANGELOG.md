@@ -2470,6 +2470,59 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 13 — Community-adjacent surfaces (**fourth NON-§13 phase**: Q58 public visibility — honored-deferral pick)
 
+#### Unit 13.6 — Phase 13 acceptance gate (Q58 public visibility surface; community-feedback loop fully closed)
+
+- Phase-13 closing unit. Mirrors Units 1.12 / 2.13 / 3.13 / 4.13 / 5.13 / 6.10 / 7.11 / 8.9 / 9.9 / 10.5 / 11.7 / 12.8. Verifies every Phase-13 deliverable is operational locally at HEAD, emits the cross-phase roll-up, and lists follow-ons that survive into Phase 14+.
+- **§13 ledger status**: still **CLOSED** (closed at Unit 9.9). Phase 13 is the **fourth NON-§13 phase**. Closes the Phase-11-surfaced **Q58 public visibility architectural question** and **finishes the community-feedback loop end-to-end** (Phase 11 submission + Phase 12 review + Phase 13 public read-side).
+- **Phase-13 deliverables — all ✓ (zero deferrals; zero scope drift vs Unit 13.0 prep's 7-unit breakdown)**:
+  - Phase 13 prep THINK doc + 7-unit breakdown + procedural DB-trigger re-eval (Unit 13.0).
+  - `lib/rating-challenges/` public-visibility helpers (`PUBLIC_CHALLENGE_STATUSES` const + `PublicChallengeStatus` type + `isPublicChallengeStatus` predicate + `PublicChallengeRow` interface + `getPublicChallengesByProblem` LEFT-JOIN helper + `getAcceptedChallengeCountByProblem`) + **11 tests** (Unit 13.1).
+  - Counter UI on problem detail page (section 8b — open + accepted counts via ICU plurals; "View all →" link) + `messages.public_challenges.*` namespace (16 keys per locale; pre-added upfront for atomic discipline) (Unit 13.2).
+  - Per-problem listing route at `/[locale]/problems/[slug]/challenges` (`force-dynamic`; no auth gate; per-status visibility server-side filtered; dense list with submitter login + date + dimension + proposed value + color-coded status pill + 200-char rationale + acceptedActionId reference) + submitter-login privacy note in `messages.rating_challenge.description` (EN + FR) (Unit 13.3).
+  - Phase-13 hygiene Class A/B/C catalog (4 + 8 + 19 items) (Unit 13.4).
+  - OPEN_QUESTIONS hygiene: Q58 promoted to resolved; Q61 + Q62 candidates flagged; 14 ADRs UNCHANGED in body (Unit 13.5).
+- **Phase-13 unit summary (7 commits, all shipped)**:
+  - 13.0 `68e631d` Phase 13 prep (Q58 public visibility; honored-deferral pick)
+  - 13.1 `ff48a24` Public-visibility helpers + tests
+  - 13.2 `320e327` Counter UI on problem detail page + messages.public_challenges.*
+  - 13.3 `212111b` Per-problem listing route + privacy note
+  - 13.4 `f4e07e9` Phase-13 hygiene status pass (Class A/B/C catalog)
+  - 13.5 `60dac5f` OPEN_QUESTIONS hygiene + ADR review
+  - 13.6 _this_ Phase 13 acceptance gate
+- **State at HEAD (Unit 13.6)**:
+  - **Content (UNCHANGED through Phases 9 + 10 + 11 + 12 + 13)**: 10 problems / 5 domains / ~12 subdomains / 30 papers / 126 authors / 14 institutions / 20 rating actions / 4 issue templates / methodology v1 (EN + FR) / contributing v1.0 (EN) + v1.1 (EN + FR) / 2 `entries.json` files. **203 schema-validated + 36 raw MDX = 239 total raw content files**.
+  - **Routes**: ~593 prerendered pages + **5 dynamic page+API routes** (4 dynamic API: auth / watchlist / rating-challenges POST / rating-challenges review POST; 1 new dynamic page: `ƒ /[locale]/problems/[slug]/challenges`). Page-route count UP by ~1 (new public listing route both locale variants registered as ƒ Dynamic without prerendered shells).
+  - **Tests**: **467/467 across 51 files** (was 456/50 at Phase-12 close; +11 tests / +1 file in Phase 13 from Unit 13.1 pure-function tests).
+  - **First Load JS shared chunk**: **103 kB UNCHANGED** through every Phase-13 unit (and every phase since Phase 1).
+  - **Middleware bundle**: **160 kB UNCHANGED** (Phase 13 added no new middleware surface).
+  - **ADRs**: **14 UNCHANGED** (Phase 13 added zero new ADRs; Q58 lean documented across Unit 11.6 + Unit 12.0 D-10 + Unit 13.0 D-3 absorbed directly into implementation).
+  - **Dependencies**: **+0 net in Phase 13** (Phase-9/10/11/12 stack stable).
+  - **`lighthouserc.json`** enrols **19 URLs** UNCHANGED.
+  - **OPEN_QUESTIONS state**: 21 resolved + 4 decided-as-lean + 28 open = **53 total entries** (was 53 at Phase-12 close; +1 promotion Q58 → resolved; net 0 size change).
+  - **DB schema tables**: **6 UNCHANGED**. **Columns UNCHANGED** (Phase 13 read-only).
+  - **Migrations**: **4 UNCHANGED**.
+  - **Env contract**: **UNCHANGED** (no new env vars).
+  - **Messages**: +16 keys per locale in `public_challenges.*` namespace (Unit 13.2) + 1 edit per locale in `rating_challenge.description` (Unit 13.3 privacy note) = **+17 keys per locale; +34 across EN + FR**.
+- **Phase-13 follow-ons that survive the gate (non-blocking; per Unit 13.4 catalog)**: **public profile page at `/[locale]/u/[handle]`** (largest Phase-14+ honored-deferral pick; Q58 lean #3 + Phase-10 Class B item 1 + Phase-12 Class B item 12 convergence; surfaces **ADR-0015 candidate** per-user privacy model); Q61 submitter anonymity option (Phase 14+); Q62 rejection-rationale public visibility (Phase 14+); Q59 CLI emit-challenge-action helper (Phase 14+ from Phase-12 Class B item 1); per-problem listing URL search-param sort; per-challenge public detail page; per-problem listing pagination; linked acceptedActionId reference (couples to future rating-action route); subscriber-list email (Phase-5 D-4 punt + Phase-12 Class B item 7 + **ADR-0015 candidate alternative path**); Q54 + Q55 operational unblocks (carried from Phase 9); CI dummy `AUTH_SECRET`; `pnpm db:migrate` doc for new contributors (4 migrations).
+- **Pre-existing follow-ons that survived Phase 13 (carryover; unchanged from Unit 12.8)**: HTML shell migration STILL ON HOLD; W3C feed validator; `<managingEditor>` on RSS; clean-drafts; ROR-ID + InstaDeep orphan; chrome strings + FR backfill + StatusPill localization + nav labels (Q51 horizon); trailing-slash normalization; per-entry sitemap hints; watchlist count on `/problems` index; multi-provider OAuth (**ADR-0016 candidate**); github-graphql real-API smoke (Q47).
+- **Phase 14+ entry conditions**: per §12, **explicit human sign-off required**. Candidate Phase-14+ threads (each overridable):
+  - **Public profile page at `/[locale]/u/[handle]`** (~4-5 units). Largest remaining honored-deferral pick; surfaces **ADR-0015 (per-user privacy model)**.
+  - **Subscriber-list email** (~6 units). Phase-5 D-4 punt closure; opens `lib/email/` infrastructure; **ADR-0015 candidate alternative path** — whichever thread Phase 14 picks claims ADR-0015.
+  - **CLI `pnpm emit-challenge-action <id>`** (~2-3 units; **Q59 promotion** if usage demands). Smallest scope; closes Phase-12 D-D manual emission friction.
+  - **Multi-provider OAuth expansion** (~3-4 units; **ADR-0016 candidate**). Lifts ADR-0012 D-B's single-provider restriction.
+  - **Full §8.6 24-mo collaborator COI check** (~3-5 units; **ADR-0017 candidate** alongside `curatorRoles` DB table).
+  - **HTML shell migration + Unit 8.4 unblock** — STILL ON HOLD.
+- **DB-migration trigger re-eval mandatory at Phase 14 kickoff** per Unit 13.0 D-2 cascade. Trigger (a) already fired in Phase 9; trigger (b) cold (~1.656% of 5 MB; content unchanged).
+- **Architectural patterns validated by Phase 13 (cross-phase milestone)**:
+  1. **First read-side public surface for USER-STATE content** — Phase 9–12 surfaces were all auth-gated; Phase 13's counter section + listing route render unauthenticated. Establishes the pattern Phase 14+ public profile route will inherit.
+  2. **First status-gated visibility policy** (`PUBLIC_CHALLENGE_STATUSES` per Unit 13.0 D-3). Per-status partition between public + submitter-only enforces editorial-decision privacy (`rejected`) + submitter change-of-mind privacy (`withdrawn`) while preserving editorial-record transparency (`accepted`).
+  3. **Atomic-i18n pre-add discipline** — Unit 13.2 pre-added all listing-page keys upfront so Unit 13.3 consumed them without further messages edits. Mirrors Phase-11 Unit 11.3 + Phase-12 Unit 12.4 patterns; useful future-pattern for multi-unit features spanning UI surfaces.
+- **Community-feedback loop CLOSED end-to-end**. Phase 11 (submission half) + Phase 12 (review half) + Phase 13 (public read-side) together complete the architectural surface MASTER_PROMPT.md envisioned for community-feedback. **The §3.1 "ratings are revisable" + §8.6 COI mandates are now operational at the code layer AND visible to unauthenticated visitors per the per-status visibility policy.**
+- **Cross-phase milestone**: 7 commits (13.0-13.6) + 0 new ADRs + 0 new dependencies + 0 client-bundle regressions (103 kB First Load JS preserved end-to-end) + 0 test regressions + 11 new tests + +1 OPEN_QUESTIONS promotion (Q58 resolved) + 1 new dynamic page route + 0 new DB columns / migrations / env vars + 34 new i18n keys across EN + FR + 1 new counter section on existing problem detail page + privacy-note edit on Phase-11 submission form description.
+- **Phase-13 over-vs-under against the 13.0 plan**: scoped 7 units; **shipped 7 units** with zero deferrals + zero scope drift. ADR-class promotion explicitly avoided (Q58 lean documented across Unit 11.6 + Unit 12.0 D-10 + Unit 13.0 D-3 was sufficient to absorb implementation without ADR-0015 surfacing).
+- **Smoke gates (final cross-cut)**: `pnpm validate-content` → 203 unchanged; `pnpm typecheck` clean; `pnpm test` → 467/467 across 51 files; `pnpm build` → ~593 prerendered pages + 5 dynamic page+API routes; First Load JS shared chunk = 103 kB unchanged; middleware = 160 kB unchanged; `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- THINK artifact: `docs/thinking/13.6-phase-13-acceptance-gate.md`.
+
 #### Unit 13.5 — OPEN_QUESTIONS hygiene + ADR review (Phase 13 pre-close)
 
 - Sixth Phase-13 unit; docs-only. Mirrors Unit 5.12/6.9/7.10/8.8/9.8/10.4/11.6/12.7 OQ-hygiene precedents. Scans the open-questions ledger for Phase-13 promotions + reviews the 14 ADRs at HEAD. Lands ahead of Unit 13.6 (acceptance gate).
