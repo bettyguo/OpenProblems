@@ -2470,6 +2470,42 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 15 — Community-adjacent surfaces (**sixth NON-§13 phase**: Q63 promotion — user-editable profile fields; surfaces ADR-0016; second ALTER migration)
 
+#### Unit 15.7 — OPEN_QUESTIONS hygiene + ADR review (Q63 promoted + resolved; **16 ADRs total**; 22 resolved / 4 decided-as-lean / 28 open / **54 total**)
+
+- Eighth Phase-15 unit; docs-only. Mirrors Phase-13 Unit 13.5 + Phase-14 Unit 14.7 hygiene patterns. Promotes Q63 (user-editable profile fields) from Phase-14 "flagged but not promoted" candidate to `resolved` ledger entry. Same "added + resolved in same unit" shape as Phase-12 Q57 + Phase-13 Q58 promotions.
+- **`OPEN_QUESTIONS.md` (edit)**: appends new `## Q63. User-editable profile fields (displayName + bio)` section after Q58 (file's last entry at Phase 14 close). Status field cites resolved 2026-05-16 (Unit 15.1); body cross-references ADR-0016 + Units 15.2 (migration) + 15.3 (helpers) + 15.4 (edit form) + 15.5 (public consumption) as realizations. Surfaced field cites Phase-14 anticipation (Unit 14.0 D-? + Unit 14.6 hygiene Class B item 1 + Unit 14.8 acceptance gate); Resolved field cites Unit 15.1 ADR-0016 acceptance.
+- **Q63 entry body**: explains what Q63 closes architecturally (first user-controlled writes surface for `users` table — distinct from Phase-9 auth-side writes; second ALTER migration in project history validating ADR-0014 D-E discipline at clean-emission second exercise; public-data invariant preserved per ADR-0015 D-A — editable fields are user-controlled overrides of fields ALREADY public elsewhere); flags Phase-16+ follow-on candidates derived from ADR-0016 deferrals — **Q66 candidate** (markdown bio; D-F deferral); **Q67 candidate** (image override; D-G deferral; needs **ADR-0017** for storage choice); **Q68 candidate** (content moderation; D-B deferral).
+- **OPEN_QUESTIONS tally delta** (Unit 9.8 mechanical `**Status:**`-field count):
+
+| Class | Phase 14 close | Phase 15 close | Δ |
+|---|---|---|---|
+| resolved | 21 | **22** | +1 (Q63) |
+| decided-as-lean | 4 | **4** | 0 |
+| open | 28 | **28** | 0 |
+| **TOTAL** | **53** | **54** | **+1** |
+
+  Q63 is the +1 (newly added AND resolved in same unit — Phase-12 Q57 + Phase-13 Q58 pattern).
+
+- **NOT promoted this unit** (Phase-16+ candidates stay flagged):
+  - **Q59 candidate** (CLI `pnpm emit-challenge-action <id>`) — Phase-12+13+14 carryover; smallest scope.
+  - **Q60 candidate** (curator authz evolution beyond env-var allowlist) — couples to Phase-15+ editorial-board (Q7).
+  - **Q61 candidate** (submitter anonymity option) — Phase-13 carryover; needs schema + ADR.
+  - **Q62 candidate** (rejection-rationale public visibility) — Phase-13 carryover; policy decision opposite of Unit 13.0 D-3 lean.
+  - **Q64 candidate** (per-user privacy opt-out; ADR-0015 D-D) — Phase-14 carryover; ~3 units.
+  - **Q65 candidate** (per-curator activity feed; ADR-0015 D-E) — Phase-14 carryover; ~4-5 units.
+  - **Q66 candidate** (markdown rendering in bio; ADR-0016 D-F) — Phase-15 newly flagged.
+  - **Q67 candidate** (image override / avatar upload; ADR-0016 D-G; needs **ADR-0017**) — Phase-15 newly flagged.
+  - **Q68 candidate** (content moderation on bio text; ADR-0016 D-B) — Phase-15 newly flagged.
+- **ADR review** (16 total):
+  - **0001-0015 unchanged** from Phase 14 close (all `accepted`; no superseding).
+  - **0016 (this phase) accepted in Unit 15.1**: User-editable profile fields. Carried unchanged through Units 15.2 – 15.6.
+  - **No deprecations; no supersessions; no new ADRs in Unit 15.7**.
+- **Phase-16+ ADR slot reservations**:
+  - **ADR-0017 candidate**: image-storage choice (Vercel Blob ~$0.02/GB vs S3 / R2 vs external URL allowlist). Anticipated alongside Q67 promotion.
+  - **ADR-0018+ candidates**: multi-provider OAuth (Phase-9 Class B item 8 carryover; previously ADR-0016 candidate — slot claimed by Phase 15); full §8.6 24-mo COI (ADR-0014 D-C deferral); markdown-bio sanitization (couples to Q66); etc.
+- Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2); typecheck / test / build untouched.
+- THINK artifact: `docs/thinking/15.7-open-questions-hygiene.md`.
+
 #### Unit 15.6 — Phase-15 hygiene status pass (0 Class A / 16 Class B / Class C carryover; ADR-0017 candidate flagged)
 
 - Seventh Phase-15 unit; docs-only. Mirrors Phase-13 Unit 13.4 + Phase-14 Unit 14.6 hygiene catalog patterns. Catalogs what's in-flight after Phase 15's 5 code units (15.1 – 15.5) and what survives as follow-ons or carryovers heading into the acceptance gate.
