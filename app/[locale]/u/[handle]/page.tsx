@@ -56,7 +56,10 @@ export default async function PublicProfilePage({ params }: PublicProfilePagePro
   const curatedSlugs = getCuratorOfRecordSlugs(profile.githubLogin);
 
   const isOwnProfile = session?.user?.id === profile.userId;
-  const displayName = profile.name ?? profile.githubLogin ?? t("display_name_fallback");
+  // ADR-0016 D-E fallback chain: displayName → name → githubLogin → translated fallback.
+  // Email never surfaces on public profile per ADR-0015 D-A invariant.
+  const displayName =
+    profile.displayName ?? profile.name ?? profile.githubLogin ?? t("display_name_fallback");
   const joinedDate = profile.createdAt.toISOString().slice(0, 10);
   const totalActivity =
     activity.watchedCount + activity.pendingChallengeCount + activity.acceptedChallengeCount;
@@ -110,6 +113,12 @@ export default async function PublicProfilePage({ params }: PublicProfilePagePro
           </Link>
         )}
       </header>
+
+      {profile.bio && (
+        <section className="mt-8" aria-label={t("bio_aria_label")}>
+          <p className="text-foreground/90 text-sm whitespace-pre-wrap">{profile.bio}</p>
+        </section>
+      )}
 
       <section className="mt-12">
         <h2 className="font-serif text-xl font-semibold tracking-tight">{t("activity_heading")}</h2>

@@ -116,6 +116,7 @@
   },
   "public_profile": {
     "aria_label": "Public profile of @{login}",
+    "bio_aria_label": "Bio",
     "not_found_title": "User not found",
     "not_found_message": "No user with that handle exists on LLM OpenProblems.",
     "display_name_fallback": "Anonymous user",

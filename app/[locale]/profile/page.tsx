@@ -146,8 +146,17 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
     redirect(`/${locale}/profile`);
   };
 
+  // ADR-0016 D-E fallback chain for the signed-in own surface. Extends
+  // Phase-10's original `name → githubLogin → email` chain with the
+  // user-controlled `displayName` override at the top. Email surfaces
+  // only here (own pill) — ADR-0015 D-A invariant preserved on public
+  // surfaces.
   const displayName =
-    session.user.name ?? githubLogin ?? session.user.email ?? t("display_name_fallback");
+    userRow?.displayName ??
+    session.user.name ??
+    githubLogin ??
+    session.user.email ??
+    t("display_name_fallback");
 
   return (
     <main className="mx-auto max-w-prose px-6 py-12">

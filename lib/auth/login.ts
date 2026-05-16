@@ -28,3 +28,26 @@ export async function getLoginById(userId: string): Promise<string | null> {
     .limit(1);
   return row?.githubLogin ?? null;
 }
+
+/**
+ * Phase-15 sibling of {@link getLoginById} — returns BOTH `githubLogin`
+ * (URL key) AND `displayName` (user-controlled override per
+ * [ADR-0016](../../docs/adr/0016-user-editable-profile-fields.md) D-A)
+ * in a single query. Used by `SiteHeader` to populate AuthControl's
+ * signed-in pill fallback chain (`displayName ?? name ?? email ??
+ * fallback` per ADR-0016 D-E) without an extra round-trip.
+ *
+ * Returns `null` when the user row is missing (Phase-9 retrofit edge);
+ * a present row may have either field `null` independently.
+ */
+export async function getUserMetadataById(
+  userId: string,
+): Promise<{ githubLogin: string | null; displayName: string | null } | null> {
+  const [row] = await db
+    .select({ githubLogin: users.githubLogin, displayName: users.displayName })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+  if (!row) return null;
+  return { githubLogin: row.githubLogin, displayName: row.displayName };
+}

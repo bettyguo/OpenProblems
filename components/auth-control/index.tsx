@@ -6,6 +6,14 @@ import { cn } from "@/lib/utils";
 
 interface AuthControlProps {
   session: Session | null;
+  /**
+   * User-controlled display-name override per
+   * [ADR-0016](../../docs/adr/0016-user-editable-profile-fields.md) D-E.
+   * Takes precedence over `session.user.name` (GitHub-derived) on the
+   * signed-in pill. Null when the user has not set one (or on Phase-9
+   * retrofit edge). Caller (SiteHeader) fetches via `getUserMetadataById`.
+   */
+  displayName?: string | null;
   className?: string;
 }
 
@@ -17,7 +25,13 @@ interface AuthControlProps {
  *
  * Renders a tiny 9-tall button that mirrors `ThemeToggle` + `LocaleToggle`
  * sizing. Signed-out state: outlined "Sign in" link. Signed-in state:
- * subtle pill showing the GitHub login + a "Sign out" submit button.
+ * subtle pill showing the display name + a "Sign out" submit button.
+ *
+ * Display-name fallback chain per ADR-0016 D-E (extends Phase-10's
+ * original `name → email` chain):
+ * `displayName → session.user.name → session.user.email → translated fallback`.
+ * Email surfaces only in the user's own pill (not public; ADR-0015 D-A
+ * invariant preserved — email never reaches `/u/{handle}`).
  *
  * Per [Q54], the GitHub OAuth app may be unregistered in dev / CI; in
  * that case the sign-in flow surfaces an Auth.js configuration error
@@ -25,7 +39,7 @@ interface AuthControlProps {
  * passes `session = null` here, so the signed-out branch always renders
  * (degraded but functional).
  */
-export async function AuthControl({ session, className }: AuthControlProps) {
+export async function AuthControl({ session, displayName, className }: AuthControlProps) {
   const t = await getTranslations("auth");
 
   if (session?.user) {
@@ -41,7 +55,7 @@ export async function AuthControl({ session, className }: AuthControlProps) {
           aria-hidden
           className="text-muted-foreground bg-muted hidden rounded-full px-2 py-0.5 font-mono text-xs sm:inline"
         >
-          {session.user.name ?? session.user.email ?? t("signed_in_fallback")}
+          {displayName ?? session.user.name ?? session.user.email ?? t("signed_in_fallback")}
         </span>
         <button
           type="submit"

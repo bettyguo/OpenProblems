@@ -2470,6 +2470,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 15 — Community-adjacent surfaces (**sixth NON-§13 phase**: Q63 promotion — user-editable profile fields; surfaces ADR-0016; second ALTER migration)
 
+#### Unit 15.5 — Public consumption: `displayName` fallback chain + bio section (3 surfaces + new helper; all Phase-15 surface delivery complete)
+
+- Sixth Phase-15 unit; fourth code unit. Realizes ADR-0016 D-E (public consumption fallback chain) + D-F (bio display formatting) across the three identity surfaces Phase 14 + Phase 10 established. **All Phase-15 surface delivery complete after this unit**; Units 15.6 – 15.8 are hygiene + acceptance.
+- **`lib/auth/login.ts` (extend)**: new `getUserMetadataById(userId)` helper sibling to existing `getLoginById`. Returns `{ githubLogin: string | null; displayName: string | null } | null` in one query. Used by SiteHeader to avoid an extra round-trip when needing both columns. Existing `getLoginById` callers (6 production files + tests) untouched.
+- **`components/site-header/index.tsx` (edit)**: replaces `safeLogin` with `safeUserMetadata`; passes resolved `displayName` to AuthControl via new prop. `getUserMetadataById` call replaces the existing `getLoginById` call (same query cost; +1 column).
+- **`components/auth-control/index.tsx` (edit)**: accepts new optional `displayName?: string | null` prop; signed-in pill fallback chain updated to `displayName → session.user.name → session.user.email → translated fallback` per ADR-0016 D-E. Email surfaces only on the user's own pill (not public; ADR-0015 D-A invariant preserved).
+- **`app/[locale]/u/[handle]/page.tsx` (edit)**: public profile fallback chain updated to `profile.displayName → profile.name → profile.githubLogin → translated fallback` per ADR-0016 D-E + ADR-0015 D-A (no email on public surface). Bio section added between header card and activity section; rendered ONLY when `profile.bio` is non-null per D-17 lean (empty profiles render no placeholder — clutter avoidance). Plain text via `whitespace-pre-wrap` for newline preservation per ADR-0016 D-F (NO markdown).
+- **`app/[locale]/profile/page.tsx` (edit)**: own surface header card fallback chain updated to `userRow.displayName → session.user.name → githubLogin → session.user.email → translated fallback`. Email permitted in this chain (own surface; user sees own email; ADR-0015 D-A invariant only governs PUBLIC surfaces).
+- **`messages/{en,fr}.json` (edit)**: adds 1 new key per locale (`public_profile.bio_aria_label`; **2 keys net**; atomic pre-add). Bio `<section>` aria-label allows screen-reader landmark navigation.
+- **Two-tier email-fallback semantics**:
+  - `/u/{handle}` public: NO email (ADR-0015 D-A invariant).
+  - `/profile` own: YES email (user sees own).
+  - AuthControl pill: YES email (user sees own pill).
+- **`whitespace-pre-wrap` over `<pre>`**: preserves newlines + wraps long lines (no horizontal scroll). `<pre>` would force monospace; inappropriate for prose. Matches Phase-12's curator `reviewNotes` rendering pattern.
+- **No new tests**: fallback chain changes are pure UI render logic; helpers don't change behavior. Unit 15.3 already covered `PublicProfile` shape extension at the data path. `getUserMetadataById` is a thin Drizzle wrapper parallel to `getLoginById` (which has no direct test).
+- **Smoke gates**:
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **497/497 across 52 vitest files unchanged**.
+  - `pnpm build` → ~593 prerendered + 7 dynamic page+API routes unchanged. **`/[locale]/u/[handle]` bundle = 108 kB UNCHANGED** (was 108 kB at Phase 14 close). **`/[locale]/profile` bundle = 108 kB UNCHANGED** through every Phase 10-15 unit. First Load JS shared chunk = **103 kB UNCHANGED**. Middleware = **160 kB UNCHANGED**.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- **All 5 code-realizable ADR-0016 D-clauses now shipped**: D-A field set (Units 15.2 + 15.3); D-B validation (Units 15.3 + 15.4); D-C edit surface route (15.4); D-D server-action (15.4); D-E fallback chain (15.5); D-F bio formatting (15.5). D-G image override Phase-16+ deferral is text-only.
+- THINK artifact: `docs/thinking/15.5-public-consumption-fallback-chain.md`.
+
 #### Unit 15.4 — `/[locale]/profile` edit form + `messages.profile_edit.*` namespace (24 keys net; atomic pre-add)
 
 - Fifth Phase-15 unit; third code unit. Realizes ADR-0016 D-C (edit surface route shape — extend existing `/profile`; NOT separate `/profile/edit`) + D-D (server-action driven; NOT REST endpoint) at the UI layer. First write-form UI consumer of Unit 15.3's `updateProfile` helper.
