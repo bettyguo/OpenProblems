@@ -231,9 +231,9 @@ When the user re-weights via the Recompose control, do leaderboards on `/`, `/do
 
 ## Q38. Filter-chip URL persistence on DomainMap
 
-**Status:** decided-as-lean · **Surfaced:** Unit 4.0 THINK · **Blocks:** Units 4.3 + 4.4 (DomainMap consumers).
+**Status:** decided-as-lean · **Surfaced:** Unit 4.0 THINK · **Refined:** Unit 5.12.
 
-Filter-chip selection on the `/domains` and `/` DomainMap surfaces — persist to URL search params (`?d=domain-a,domain-b`) for deep-link sharing, or keep ephemeral? Lean: **URL search params**, mirroring Unit 3.10's Recompose pattern. Confirmed in Unit 4.0 D-6. Override path: revert to ephemeral if hydration-mismatch issues surface during Unit 4.3 / 4.4 build-out.
+The original lean (URL search params `?d=domain-a,domain-b`) applies to the **full multi-select-dimming chip pattern** from Unit 4.0 D-6 interaction #4 — NOT the simpler "chip-as-navigation-link" shape Unit 4.4 actually shipped on `/`. Phase 4 deferred the full pattern (multi-select + dim non-matching nodes + URL-state) to Phase 6+ as a brushable-filter enhancement; the URL-persistence lean is still the working call **when** that pattern lands.
 
 ## Q39. DomainMap node accessibility on small viewports
 
@@ -261,18 +261,34 @@ Every script accepts a `--model` CLI flag that overrides the default. Per the `c
 
 ## Q42. Cost-cap default policy
 
-**Status:** open · **Surfaced:** Unit 5.0 THINK · **Blocks:** Unit 5.1 (ADR-0008).
+**Status:** decided-as-lean · **Surfaced:** Unit 5.0 THINK · **Refined:** Unit 5.12 (post-Phase-5 close).
 
-Phase-5 CLIs need a cost-governance posture. Setting a default daily-cap means fresh installs fail on first run; not setting one means curators discover cost surprises only after the bill. Lean: **no default cap**, but `--verbose` shows estimated-cost-before-call so the curator sees the cost line and can abort. Re-evaluate after the first 100 ingest runs reveal the actual per-call distribution. Tracked in ADR-0008.
+Phase-5 CLIs need a cost-governance posture. ADR-0008 D-C ([Unit 5.1](./docs/adr/0008-llm-provider-anthropic.md)) documented the **"no default cap"** working position: fresh installs that don't set `LLM_OPENPROBLEMS_DAILY_BUDGET_USD` get unbounded spend, but `--verbose` prints estimated-cost-before-call so the curator sees the cost line and can abort before the API call fires. Defense-in-depth: `--dry-run` lets curators iterate prompts without API cost.
+
+Phase 5 shipped 2 LLM CLIs (Units 5.3 + 5.5) without user-facing cost issues from missing defaults. **Re-evaluate after 100 real ingest runs** reveal the actual per-call distribution. The promotion to `decided` happens organically when (a) 100 runs land OR (b) a curator hits a surprise bill that motivates a default-cap PR.
 
 ## Q43. PDF text-extraction cache
 
-**Status:** decided-as-lean · **Surfaced:** Unit 5.0 THINK · **Blocks:** Unit 5.4 (`lib/curate/pdf-text.ts`).
+**Status:** decided · **Surfaced:** Unit 5.0 THINK · **Resolved:** Unit 5.4 (`lib/curate/pdf-text.ts`).
 
-PDF re-fetches are expensive (~MB-per-paper network + parse cost). Should `pdf-text.ts` cache extracted text to `.pdf-cache/<arxiv-id>.txt`? Lean: **yes** — mirrors the `.arxiv-cache/` strategy from Unit 5.2. Cuts dev-loop iteration time in half. `--no-cache` CLI flag bypasses. `.pdf-cache/` lands in `.gitignore` in Unit 5.4.
+PDF re-fetches are expensive (~MB-per-paper network + parse cost). The lean (cache extracted text to disk) shipped in [Unit 5.4](./docs/thinking/5.4-pdf-text.md): `.pdf-cache/<arxiv-id>.json` (gitignored), text + `numPages` + `sourceUrl` + `fetchedAt`. `--no-cache` CLI flag bypasses. Module-singleton rate limiter (capacity 2, refill 1 token / 2000 ms) is separate from the arXiv-Atom-API bucket per Unit 5.4's note (different subdomains, different limits). One refinement vs. the original lean: cache the **JSON wrapper**, not bare `.txt` — lets us store `fetchedAt` + `sourceUrl` alongside the text.
 
 ## Q44. Digest RSS `<managingEditor>`
 
-**Status:** open · **Surfaced:** Unit 5.0 THINK · **Blocks:** Unit 5.8 (`/api/v1/digest/[domain].xml/route.ts`); chained to Q33 + Q2 (DNS).
+**Status:** decided-as-lean · **Surfaced:** Unit 5.0 THINK · **Refined:** Unit 5.12 (post-Unit-5.8 ship).
 
-The per-domain RSS digest feeds (Unit 5.8) need a channel-level `<managingEditor>` for W3C validation. This is the same shape as Q33 (which deferred to Q2 — DNS / email resolution). Lean: defer until Q2 lands so the email is real. Until then, ship the digest feeds without `<managingEditor>` (W3C validator emits a warning, not an error) or with the `noreply@<domain>` fallback Q33 contemplated.
+[Unit 5.8](./docs/thinking/5.8-digest-rss-endpoint.md) shipped the per-domain digest feeds **without** `<managingEditor>` per the lean. W3C feed validator emits a warning, not an error, when the field is missing — acceptable for Phase 5. Promotion to `decided` is gated on **Q33** (per-feed creator framing) **+ Q2** (DNS / email resolution): when a project email lands, both `/api/v1/rss.xml` and `/api/v1/digest/<domain>` get `<managingEditor>` in a single update PR.
+
+## Q45. Route-path convention for dotted-suffix dynamic segments
+
+**Status:** decided · **Surfaced:** Unit 5.8 (post-deviation observation) · **Resolved:** Unit 5.12.
+
+Next.js 15 App Router supports both `[slug]/route.ts` (plain dynamic) and `[slug].xml/route.ts` (dynamic-plus-literal-suffix) folder conventions. Unit 5.0 planned the per-domain digest endpoint as `[domain].xml/route.ts` — the dotted-suffix shape — for URL-side discoverability (subscribers see `.xml` in the URL → "this is an XML feed"). [Unit 5.8](./docs/thinking/5.8-digest-rss-endpoint.md) deviated to plain `[domain]/route.ts`.
+
+**Reasons** (from the Unit 5.8 deviation note):
+
+- **Windows path quoting** + git's handling of `.` in directory names is inconsistent across Bash, PowerShell, and git-bash workflows. NTFS supports the path; the toolchain around it is the friction.
+- **Test fixtures + CI path handling** complications were marginal but real.
+- **Discoverability compensation**: `content-type: application/rss+xml` header + Unit 5.9's `/digest` hub `<link rel="alternate">` tags cover the auto-discovery use case.
+
+**Decision**: future dynamic API routes use the plain `[<param>]/route.ts` convention. Concatenated dotted-suffix routes are forbidden by routing-style convention (no ADR — this is a code-style choice, not a load-bearing architectural decision). Override path: a future deliverable that genuinely requires `.xml` in the URL can re-evaluate (rare).

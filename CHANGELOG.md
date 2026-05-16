@@ -1488,3 +1488,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Pure docs. THINK artifact: `docs/thinking/5.11-phase-5-hygiene.md`.
 - Smoke gates: `pnpm validate-content` (203 files unchanged), `pnpm typecheck` (clean), `pnpm test` (284/284 unchanged).
 
+#### Unit 5.12 — OPEN_QUESTIONS hygiene + ADR review
+
+- Status-refresh pass on the open-questions ledger. Phase 5 surfaced 4 new questions (Q41–Q44); some shipped, some deferred. This unit normalizes their `Status:` fields to match Phase-5 reality and surfaces one new question (Q45) discovered during Unit 5.8.
+- **Status transitions**:
+  | # | Title                                      | Before          | After                    | Resolved-in   |
+  | - | ------------------------------------------ | --------------- | ------------------------ | ------------- |
+  | Q38 | Filter-chip URL persistence on DomainMap | decided-as-lean | decided-as-lean (refined; the lean applies to the multi-select-dimming pattern Phase 4 deferred to Phase 6+) | Unit 4.4 deferral framing |
+  | Q42 | Cost-cap default policy                  | open            | decided-as-lean         | ADR-0008 D-C (Unit 5.1) |
+  | Q43 | PDF text-extraction cache                | decided-as-lean | **decided**             | Unit 5.4      |
+  | Q44 | Digest RSS `<managingEditor>`            | open            | decided-as-lean         | Unit 5.8 (gated on Q2 + Q33 for promotion to `decided`) |
+  | Q45 | Route-path convention (`.xml`-suffix)    | _new_           | **decided**             | Unit 5.8 deviation note |
+- **Q41 already closed in Unit 5.1** (LLM model choice → ADR-0008 D-B). No change.
+- **Q45 framing**: Next.js 15 App Router supports both `[slug]/route.ts` (plain dynamic) and `[slug].xml/route.ts` (dynamic-plus-literal-suffix) folder conventions. Unit 5.0 planned `[domain].xml/`; Unit 5.8 deviated to plain `[domain]/` because the dotted-suffix shape was fragile on Windows/git tooling. Future dynamic API routes use the plain convention; concatenated dotted-suffix routes are forbidden by routing-style convention (no ADR — this is code-style, not architectural). Override path: a future deliverable that genuinely requires `.xml` in the URL can re-evaluate.
+- **ADR review**: ADR-0001 through ADR-0009 all `accepted`. No Phase-5-triggered supersessions or status changes. Per the ADR README rule, only `Status:` fields are editable after acceptance, and only for lifecycle transitions (e.g., `accepted` → `superseded by ADR-NNNN`).
+- **Parallel-curator state**: HEAD = `f964ef4` post-Unit-5.11. No collision.
+- Pure docs. THINK artifact: `docs/thinking/5.12-open-questions-hygiene.md`.
+- Smoke gates: `pnpm validate-content` (203 files unchanged), `pnpm typecheck` (clean), `pnpm test` (284/284 unchanged).
+
