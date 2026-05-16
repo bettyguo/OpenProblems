@@ -2470,6 +2470,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 10 — Community-adjacent surfaces (**first NON-§13 phase**: Profile page + Phase-9 UI polish)
 
+#### Unit 10.3 — Phase-10 hygiene status pass (Class A / B / C catalog)
+
+- Third Phase-10 unit; docs-only. Mirrors the Phase-5 (Unit 5.11), Phase-6 (Unit 6.8), Phase-7 (Unit 7.9), Phase-8 (Unit 8.7), and Phase-9 (Unit 9.7) hygiene passes. Catalogs **Class A in-flight Phase-10 items** (2), **Class B Phase-10-specific follow-ons that survive the phase** (8), and **Class C carryovers from prior phases** (14 — mostly Phase-9 Class A + B + carryovers from earlier).
+- **Class A — 2 in-flight items**: (1) **Profile-page Playwright smoke test** — deferred from Unit 10.2; would cover signed-out → 3xx redirect path + signed-in render + empty state. Test gap acceptable in isolation since `auth()` is exercised end-to-end by SiteHeader's `safeAuth()`, `getWatchedSlugs` is a thin Drizzle wrapper proven by type system, and `<WatchlistToggle>` reuse is covered by Unit 9.6 tests. (2) **LHCI enrolment for `/en/profile` + `/fr/profile`** — defer until first observed LHCI run motivates; `dynamic = "force-dynamic"` requires either (a) test signed-out 3xx path or (b) inject CI mock session — both gated on Q54-class operational decisions.
+- **Class B — 8 Phase-10-specific follow-ons**: (1) Public profile rendering at `/[locale]/u/[handle]` (Unit 10.0 D-3 alternative; Phase 11+). (2) User-editable fields (display-name override, bio, locale preference, notifications). (3) Per-user statistics surface (rating actions authored; paper contributions; comment activity). (4) **Auth-aware middleware-based route protection** — Phase-9 Class B item 12 **PARTIALLY RESOLVED in Phase 10** (server-component-level protection landed via `auth()` + `redirect()` in profile page); middleware-based variant stays deferred until 2+ protected routes exist. (5) Profile-page styling polish (mobile layout audit; dark-mode avatar border; sign-out confirmation modal; visual-regression baselines). (6) Per-user discussion-activity surface (couples to Phase-6 Discussions GraphQL filtered by `discussion.author.login === user.githubLogin`). (7) Profile photo upload (needs blob storage; Phase 12+). (8) Redundant `isWatched()` query inside reused `<WatchlistToggle>` on profile (Unit 10.0 D-7 accepted tradeoff; optimization landing pad: `initialWatched?: boolean` prop).
+- **Class C — 14 carryovers**:
+  - **From Phase 9 Class A (still in-flight operational)**: Q54 GitHub OAuth app registration; Q55 Turso production DB provisioning; CI dummy `AUTH_SECRET` for build smoke (Phase 10 joins this exposure since `auth()` is now called inside `/[locale]/profile/page.tsx` route handler); `pnpm db:migrate` doc for new contributors.
+  - **From Phase 9 Class B (still deferred)**: rating-challenge submission write-path; email notifications on watched-problem rating actions; watchlist count on `/problems` index; bulk-import / bulk-clear watchlist UI; orphan-row cleanup script (ADR-0013 D-F intentional); rate-limiting on watchlist POST/DELETE; multi-provider OAuth expansion (ADR-0012 D-B forbidden); `createUser` vs `linkAccount` docs; first LHCI run validating Phase-9 surfaces; OAuth callback URL stability (Q2 DNS coupling).
+  - **From Phase 8 + earlier**: **HTML shell migration STILL ON HOLD** per parallel-session preservation signal (Phase-10 Unit 10.2 surfaced the chronic `useLocale` deprecation warnings during build — same as prior phases); fallback-hint UI for `didFallback`; `messages.*` chrome strings + FR backfill + StatusPill localization + nav labels via `useTranslations` (Q51 curator-track + Unit 8.4 unblock); trailing-slash normalization; per-entry sitemap hints; orphan `components/domain-tile-grid/` deletion; `entries.json` backfill; `pnpm clean-drafts`; `<managingEditor>` on RSS; Phase-2 ROR-ID + InstaDeep orphan; W3C feed validator; Playwright visual baselines; real-API discussions smoke; `NEXT_PUBLIC_GISCUS_REPO_ID` enablement (Q47).
+- **Phase-10 surface delta vs Phase-9 close**:
+  - **Routes**: +2 route entries (`/en/profile` + `/fr/profile`); page-route count nominally +1 (`[locale]/profile` shape).
+  - **Tests**: 394 → **394 UNCHANGED**. No test files added in Phase 10 (10.1 helper test + 10.2 Playwright deferred).
+  - **First Load JS shared chunk**: **103 kB UNCHANGED**. Server-rendered profile + reused server components from Phase 9.
+  - **Middleware bundle**: **159 kB UNCHANGED**. Route protection landed at page layer, not middleware.
+  - **ADRs**: 13 → **13 UNCHANGED**. No new ADRs in Phase 10.
+  - **Dependencies**: **+0 net**.
+  - **DB schema**: 5 tables UNCHANGED. **Migrations**: 2 UNCHANGED.
+  - **`messages.*` keys**: +6 EN + 6 FR (`profile.*` namespace).
+  - **OPEN_QUESTIONS state**: 19 + 4 + 28 = **51 total UNCHANGED**. Phase 10 surfaced no new Q-numbers.
+- **Phase-9 Class B item 12 partial resolution note**: profile-page protection lands at the page layer (server-component `auth()` + `redirect()`); middleware-based variant remains a future lift when 2+ protected routes exist.
+- **Parallel-curator activity log**: no parallel-session activity observed in Phase 10. Lower activity than Phase 9's high-water mark; consistent with the smaller scope.
+- **Risk surface at HEAD `6ea7a4f`**: same as Phase 9 close plus profile-page-specific notes (build summary lists `/en/profile` + `/fr/profile` under SSG ● but `dynamic = "force-dynamic"` overrides at runtime; GitHub avatar URLs are external — accepted per Unit 10.0 D-10).
+- **Boundary statement**: NOT the Playwright smoke for profile page, NOT the LHCI enrolment for profile URLs, NOT the public profile page, NOT the middleware-based protection lift, NOT the rating-challenge submission write-path. This unit is the catalog, not the resolution.
+- Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2); typecheck / test / build untouched since no source files modified.
+- THINK artifact: `docs/thinking/10.3-phase-10-hygiene.md`.
+
 #### Unit 10.2 — Profile page (`/[locale]/profile` route — **first protected route**)
 
 - Second code unit of Phase 10 and the watershed unit of the phase. Lands [`app/[locale]/profile/page.tsx`](app/[locale]/profile/page.tsx) — the **first protected route** in the project. Exercises Phase-9 Class B item 12 ("auth-aware route protection") at a single-route scale before any middleware-based lift.
