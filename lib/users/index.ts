@@ -46,6 +46,22 @@ export interface PublicProfile {
   name: string | null;
   image: string | null;
   createdAt: Date;
+  /**
+   * User-controlled display name override (Phase-15 per
+   * [ADR-0016](../../docs/adr/0016-user-editable-profile-fields.md) D-A).
+   * Overrides `name` on render via the D-E fallback chain
+   * `displayName → name → githubLogin → translated fallback`.
+   * Null when user has never set it; null after explicit clear (empty
+   * string after trim collapses to NULL per Unit 15.3 `updateProfile`).
+   */
+  displayName: string | null;
+  /**
+   * User-controlled plain-text bio (Phase-15 per ADR-0016 D-A + D-F).
+   * Max 280 chars; whitespace-pre-wrap rendering; NO markdown / NO HTML
+   * / NO link-detection (Q66 candidate Phase 16+). Null when user has
+   * never set it OR after explicit clear.
+   */
+  bio: string | null;
 }
 
 export interface ProfileActivity {
@@ -80,6 +96,8 @@ export async function getPublicProfileByHandle(handle: string): Promise<PublicPr
       name: users.name,
       image: users.image,
       createdAt: users.createdAt,
+      displayName: users.displayName,
+      bio: users.bio,
     })
     .from(users)
     .where(sql`LOWER(${users.githubLogin}) = LOWER(${normalized})`)
@@ -93,6 +111,8 @@ export async function getPublicProfileByHandle(handle: string): Promise<PublicPr
     name: row.name,
     image: row.image,
     createdAt: row.createdAt,
+    displayName: row.displayName,
+    bio: row.bio,
   };
 }
 
@@ -160,4 +180,91 @@ export function getCuratorOfRecordSlugs(handle: string): readonly string[] {
   const trimmed = handle.trim();
   if (!trimmed) return [];
   return problems.filter((p) => p.editorial.primary_curator === trimmed).map((p) => p.slug);
+}
+
+// ---------------------------------------------------------------------------
+// Phase-15 user-editable profile fields (Unit 15.3) — per ADR-0016 D-A + D-B.
+// ---------------------------------------------------------------------------
+
+/**
+ * Max length for `users.displayName` per ADR-0016 D-A. Matches GitHub +
+ * Bluesky display-name limits.
+ */
+export const MAX_DISPLAY_NAME_CHARS = 80;
+
+/**
+ * Max length for `users.bio` per ADR-0016 D-A. Matches Twitter / X /
+ * Bluesky short-form bio limits.
+ */
+export const MAX_BIO_CHARS = 280;
+
+/**
+ * Returns null when the supplied display name is valid (or empty —
+ * empty means "clear the field" per D-B), otherwise a human-readable
+ * error string. Mirrors Phase-11 `validateProposedValue` shape.
+ */
+export function validateDisplayName(value: string): string | null {
+  if (value.length > MAX_DISPLAY_NAME_CHARS) {
+    return `Display name must be at most ${MAX_DISPLAY_NAME_CHARS} characters.`;
+  }
+  return null;
+}
+
+/**
+ * Returns null when the supplied bio is valid (or empty — empty means
+ * "clear the field" per D-B), otherwise a human-readable error string.
+ * Plain text only per D-F; no markdown / HTML / link-detection.
+ */
+export function validateBio(value: string): string | null {
+  if (value.length > MAX_BIO_CHARS) {
+    return `Bio must be at most ${MAX_BIO_CHARS} characters.`;
+  }
+  return null;
+}
+
+export interface UpdateProfileInput {
+  displayName?: string;
+  bio?: string;
+}
+
+/**
+ * Atomically update a user's editable profile fields per ADR-0016 D-A
+ * + D-B. Per-field semantics:
+ *
+ *   - **Undefined**: field unchanged (not in UPDATE SET clause).
+ *   - **Empty string after trim**: clear the field (store NULL).
+ *   - **Valid trimmed string**: stored as-is (within length cap).
+ *
+ * Returns the validation error string for the first field that fails,
+ * or `null` on success. The DB UPDATE happens only after BOTH fields
+ * validate; partial writes on validation failure are avoided.
+ *
+ * Caller (server action on `/profile`) has already verified the
+ * session. Helpers know nothing about auth — pass `userId` directly.
+ */
+export async function updateProfile(
+  userId: string,
+  input: UpdateProfileInput,
+): Promise<string | null> {
+  const set: Partial<{ displayName: string | null; bio: string | null }> = {};
+
+  if (input.displayName !== undefined) {
+    const trimmed = input.displayName.trim();
+    const error = validateDisplayName(trimmed);
+    if (error) return error;
+    set.displayName = trimmed.length === 0 ? null : trimmed;
+  }
+
+  if (input.bio !== undefined) {
+    const trimmed = input.bio.trim();
+    const error = validateBio(trimmed);
+    if (error) return error;
+    set.bio = trimmed.length === 0 ? null : trimmed;
+  }
+
+  // No-op when no fields supplied — caller may invoke with empty input.
+  if (Object.keys(set).length === 0) return null;
+
+  await db.update(users).set(set).where(eq(users.id, userId));
+  return null;
 }

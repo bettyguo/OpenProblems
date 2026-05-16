@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("@/lib/db", () => ({
   db: {
     select: vi.fn(),
+    update: vi.fn(),
   },
 }));
 
@@ -16,8 +17,16 @@ vi.mock("#site/content", () => ({
 }));
 
 const { db } = await import("@/lib/db");
-const { getCuratorOfRecordSlugs, getProfileActivity, getPublicProfileByHandle } =
-  await import("./index");
+const {
+  getCuratorOfRecordSlugs,
+  getProfileActivity,
+  getPublicProfileByHandle,
+  MAX_BIO_CHARS,
+  MAX_DISPLAY_NAME_CHARS,
+  updateProfile,
+  validateBio,
+  validateDisplayName,
+} = await import("./index");
 
 /**
  * Builds a chainable Drizzle query stub for `getPublicProfileByHandle`.
@@ -55,6 +64,8 @@ describe("getPublicProfileByHandle", () => {
       name: "Betty G.",
       image: "https://github.com/avatar.png",
       createdAt: new Date("2026-05-14"),
+      displayName: null,
+      bio: null,
     };
     vi.mocked(db.select).mockReturnValueOnce(profileQuery([fakeRow]) as never);
 
@@ -69,6 +80,8 @@ describe("getPublicProfileByHandle", () => {
       name: null,
       image: null,
       createdAt: new Date("2026-05-14"),
+      displayName: null,
+      bio: null,
     };
     vi.mocked(db.select).mockReturnValueOnce(profileQuery([fakeRow]) as never);
 
@@ -89,6 +102,8 @@ describe("getPublicProfileByHandle", () => {
       name: "Pre-Unit-9.6 user",
       image: null,
       createdAt: new Date("2026-05-14"),
+      displayName: null,
+      bio: null,
     };
     vi.mocked(db.select).mockReturnValueOnce(profileQuery([fakeRow]) as never);
 
@@ -172,5 +187,147 @@ describe("getCuratorOfRecordSlugs", () => {
 
   it("matches a single-curator-of-record problem", () => {
     expect(getCuratorOfRecordSlugs("jikun")).toEqual(["gamma"]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-15 user-editable profile fields (Unit 15.3) — per ADR-0016 D-A + D-B.
+// ---------------------------------------------------------------------------
+
+describe("validateDisplayName", () => {
+  it("accepts the empty string (treated as clear-the-field by updateProfile)", () => {
+    expect(validateDisplayName("")).toBeNull();
+  });
+
+  it("accepts a normal display name", () => {
+    expect(validateDisplayName("Betty G.")).toBeNull();
+  });
+
+  it("accepts exactly MAX_DISPLAY_NAME_CHARS chars", () => {
+    expect(validateDisplayName("a".repeat(MAX_DISPLAY_NAME_CHARS))).toBeNull();
+  });
+
+  it("rejects MAX_DISPLAY_NAME_CHARS + 1 chars", () => {
+    expect(validateDisplayName("a".repeat(MAX_DISPLAY_NAME_CHARS + 1))).toMatch(
+      /at most 80 characters/,
+    );
+  });
+});
+
+describe("validateBio", () => {
+  it("accepts the empty string", () => {
+    expect(validateBio("")).toBeNull();
+  });
+
+  it("accepts a normal bio with newlines", () => {
+    expect(validateBio("PhD student\nWorking on interpretability + alignment.")).toBeNull();
+  });
+
+  it("accepts exactly MAX_BIO_CHARS chars", () => {
+    expect(validateBio("x".repeat(MAX_BIO_CHARS))).toBeNull();
+  });
+
+  it("rejects MAX_BIO_CHARS + 1 chars", () => {
+    expect(validateBio("x".repeat(MAX_BIO_CHARS + 1))).toMatch(/at most 280 characters/);
+  });
+});
+
+describe("updateProfile", () => {
+  beforeEach(() => {
+    vi.mocked(db.update).mockReset();
+  });
+
+  function setupUpdateStub() {
+    const set = vi.fn().mockReturnThis();
+    const where = vi.fn().mockResolvedValue(undefined);
+    vi.mocked(db.update).mockReturnValueOnce({ set, where } as never);
+    return { set, where };
+  }
+
+  it("returns null + writes both fields when both supplied (ADR-0016 D-A)", async () => {
+    const { set, where } = setupUpdateStub();
+    const err = await updateProfile("user-1", { displayName: "Betty G.", bio: "I'm a PhD." });
+    expect(err).toBeNull();
+    expect(set).toHaveBeenCalledWith({ displayName: "Betty G.", bio: "I'm a PhD." });
+    expect(where).toHaveBeenCalled();
+  });
+
+  it("trims whitespace before storing (ADR-0016 D-B)", async () => {
+    const { set } = setupUpdateStub();
+    await updateProfile("user-1", { displayName: "  Betty G.  ", bio: "  hi  " });
+    expect(set).toHaveBeenCalledWith({ displayName: "Betty G.", bio: "hi" });
+  });
+
+  it("stores NULL when trimmed value is empty string (ADR-0016 D-B clear-field semantics)", async () => {
+    const { set } = setupUpdateStub();
+    await updateProfile("user-1", { displayName: "   ", bio: "" });
+    expect(set).toHaveBeenCalledWith({ displayName: null, bio: null });
+  });
+
+  it("updates only the supplied field when the other is undefined", async () => {
+    const { set } = setupUpdateStub();
+    await updateProfile("user-1", { displayName: "Betty G." });
+    expect(set).toHaveBeenCalledWith({ displayName: "Betty G." });
+  });
+
+  it("returns validation error + skips UPDATE when displayName too long", async () => {
+    // No setupUpdateStub() — the helper should bail before calling db.update.
+    const err = await updateProfile("user-1", {
+      displayName: "a".repeat(MAX_DISPLAY_NAME_CHARS + 1),
+    });
+    expect(err).toMatch(/at most 80 characters/);
+    expect(vi.mocked(db.update)).not.toHaveBeenCalled();
+  });
+
+  it("returns validation error + skips UPDATE when bio too long", async () => {
+    const err = await updateProfile("user-1", { bio: "x".repeat(MAX_BIO_CHARS + 1) });
+    expect(err).toMatch(/at most 280 characters/);
+    expect(vi.mocked(db.update)).not.toHaveBeenCalled();
+  });
+
+  it("is a no-op when no fields are supplied (returns null without DB hit)", async () => {
+    const err = await updateProfile("user-1", {});
+    expect(err).toBeNull();
+    expect(vi.mocked(db.update)).not.toHaveBeenCalled();
+  });
+});
+
+describe("PublicProfile shape extension (Unit 15.3)", () => {
+  beforeEach(() => {
+    vi.mocked(db.select).mockReset();
+  });
+
+  it("includes displayName + bio fields in the returned profile (ADR-0016 D-A)", async () => {
+    const fakeRow = {
+      userId: "u-1",
+      githubLogin: "BettyGuo",
+      name: "Betty G.",
+      image: null,
+      createdAt: new Date("2026-05-14"),
+      displayName: "Betty",
+      bio: "I'm a PhD.",
+    };
+    vi.mocked(db.select).mockReturnValueOnce(profileQuery([fakeRow]) as never);
+
+    const profile = await getPublicProfileByHandle("BettyGuo");
+    expect(profile?.displayName).toBe("Betty");
+    expect(profile?.bio).toBe("I'm a PhD.");
+  });
+
+  it("preserves null fields for users who haven't edited (defensive)", async () => {
+    const fakeRow = {
+      userId: "u-1",
+      githubLogin: "BettyGuo",
+      name: "Betty G.",
+      image: null,
+      createdAt: new Date("2026-05-14"),
+      displayName: null,
+      bio: null,
+    };
+    vi.mocked(db.select).mockReturnValueOnce(profileQuery([fakeRow]) as never);
+
+    const profile = await getPublicProfileByHandle("BettyGuo");
+    expect(profile?.displayName).toBeNull();
+    expect(profile?.bio).toBeNull();
   });
 });

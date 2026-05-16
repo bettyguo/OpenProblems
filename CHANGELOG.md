@@ -2470,6 +2470,40 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 15 — Community-adjacent surfaces (**sixth NON-§13 phase**: Q63 promotion — user-editable profile fields; surfaces ADR-0016; second ALTER migration)
 
+#### Unit 15.3 — `lib/users/` extension: edit helpers + validation + tests (497 tests across 52 files; +17 from Phase 14)
+
+- Fourth Phase-15 unit; second code unit. Realizes ADR-0016 D-A field set + D-B validation/sanitization contract at the helper layer. Anticipated dependency for Unit 15.4 (edit form) + Unit 15.5 (public consumption).
+- **`lib/users/index.ts` (edit)**: 5 new exports + 1 interface extension:
+  - `MAX_DISPLAY_NAME_CHARS = 80` (matches GitHub + Bluesky standards per ADR-0016 D-A).
+  - `MAX_BIO_CHARS = 280` (matches Twitter / X / Bluesky bio limits).
+  - `validateDisplayName(value: string): string | null` — returns null on valid (including empty — treated as clear-the-field per D-B); error string when over MAX. Mirrors Phase-11 `validateProposedValue` shape.
+  - `validateBio(value: string): string | null` — same shape; 280-char cap.
+  - `UpdateProfileInput` interface (`{ displayName?: string; bio?: string }`).
+  - `updateProfile(userId, input)` — async; validates both fields BEFORE the UPDATE SET clause is built (partial-write-on-validation-failure avoided); trims whitespace; empty-string-after-trim collapses to NULL; no-op when input is `{}`; returns null on success or error string on first failing field.
+  - `PublicProfile` interface extended with `displayName: string | null` + `bio: string | null` fields.
+  - `getPublicProfileByHandle` SELECT clause extended to read the two new columns.
+- **`lib/users/index.test.ts` (edit)**: **+17 new tests** (file total: 30; was 13 at Phase-14 close):
+  - **`validateDisplayName`** (4 tests): accepts empty, accepts normal, accepts exactly MAX, rejects MAX+1.
+  - **`validateBio`** (4 tests): accepts empty, accepts with newlines, accepts exactly MAX, rejects MAX+1.
+  - **`updateProfile`** (7 tests): returns null + writes both fields when both supplied; trims whitespace; stores NULL when trimmed empty; updates only the supplied field; returns validation error + skips UPDATE when displayName too long; returns validation error + skips UPDATE when bio too long; is no-op when no fields supplied.
+  - **`PublicProfile` shape extension** (2 tests): returns displayName + bio from `getPublicProfileByHandle`; preserves null for unedited users.
+  - **Mock update**: `db.update` added to the mock alongside existing `db.select`.
+  - Existing Phase-14 tests (13) updated for the new shape: fake row builders now include `displayName: null` + `bio: null` defaults.
+- **Why no `getOwnEditableProfile(userId)` helper**: considered + rejected. Edit form (Unit 15.4) already has `userId` from `auth()` + can pre-populate textareas from `getPublicProfileByHandle` via `displayName ?? ""` defaults. No new helper needed.
+- **Why no `applyProfileEdit` server-action wrapper**: server actions live inline in `app/[locale]/profile/page.tsx` per Phase 10/11/12 precedent. Wrapping `updateProfile` in another layer adds indirection without benefit.
+- **Backward-compat for existing callers**: Phase-14's `getPublicProfileByHandle` consumers read fields via property access; adding two new `string | null` fields won't break consumers that don't read them.
+- **Smoke gates**:
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **497/497 across 52 vitest files** (was 480/52 at Phase 14 close; +17 / +0 in Phase 15 so far).
+  - `pnpm build` → ~593 prerendered + 7 dynamic page+API routes unchanged. First Load JS shared chunk = **103 kB UNCHANGED**. Middleware = **160 kB UNCHANGED**.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- **Not in this unit** (Units 15.4 – 15.5 follow):
+  - `/[locale]/profile` edit form + server-action wiring + `messages.profile_edit.*` namespace (~12 keys per locale; pre-add all upfront per Phase-14 atomic-i18n discipline).
+  - `/[locale]/u/[handle]` page body fallback chain + bio section.
+  - `/profile` page body fallback chain for own display name.
+  - AuthControl pill fallback chain (signed-in badge).
+- THINK artifact: `docs/thinking/15.3-lib-users-edit-helpers.md`.
+
 #### Unit 15.2 — DB migration `0004_user_profile_fields` + schema edit (`users.displayName` + `users.bio`; second ALTER migration)
 
 - Third Phase-15 unit; **first code unit**. Realizes ADR-0016 D-A schema component. **Second ALTER migration in project history** (first was Phase-12 `0003_rating_challenge_review` per ADR-0014 D-E). Migration count **4 → 5**.
