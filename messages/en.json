@@ -24,5 +24,22 @@
   "about": {
     "title": "About",
     "description": "Project description, governance, and contact. Phase 1."
+  },
+  "home": {
+    "hero_heading": "Rated open problems in LLM & AI research.",
+    "hero_description": "A taxonomy-organized encyclopedia of open problems, scored on five revisable dimensions — Difficulty, Saturation, Urgency, Value, Industry Call — with an immutable rating-action log behind every score.",
+    "cta_browse_problems": "Browse problems",
+    "cta_read_methodology": "Read the methodology",
+    "recently_rated_heading": "Recently rated",
+    "recently_rated_all_link": "All rating actions →",
+    "by_domain_heading": "By domain",
+    "by_domain_all_link": "All domains →",
+    "by_domain_nav_aria": "Browse by domain",
+    "domain_map_aria": "Map of LLM research domains",
+    "domain_map_switch_aria": "Domain map teaser and tabular fallback",
+    "domain_map_table_label": "View domains as table",
+    "methodology_heading": "Methodology",
+    "methodology_description": "Every rating traces back to a published, versioned methodology. Five dimensions, one advisory composite, and a strict rating-action log — modeled on how credit rating agencies publish sovereign opinions, adapted for AI research questions.",
+    "methodology_cta": "Read methodology v1 →"
   }
 }

@@ -24,5 +24,22 @@
   "about": {
     "title": "À propos",
     "description": "Description du projet, gouvernance et contact. Phase 1."
+  },
+  "home": {
+    "hero_heading": "Problèmes ouverts notés en recherche en LLM et IA.",
+    "hero_description": "Une encyclopédie organisée par taxonomie des problèmes ouverts, notés sur cinq dimensions révisables — Difficulté, Saturation, Urgence, Valeur, Demande de l'industrie — avec un journal d'actions de notation immuable derrière chaque score.",
+    "cta_browse_problems": "Parcourir les problèmes",
+    "cta_read_methodology": "Lire la méthodologie",
+    "recently_rated_heading": "Notés récemment",
+    "recently_rated_all_link": "Toutes les actions de notation →",
+    "by_domain_heading": "Par domaine",
+    "by_domain_all_link": "Tous les domaines →",
+    "by_domain_nav_aria": "Parcourir par domaine",
+    "domain_map_aria": "Carte des domaines de recherche en LLM",
+    "domain_map_switch_aria": "Aperçu de la carte des domaines avec repli tabulaire",
+    "domain_map_table_label": "Voir les domaines sous forme de tableau",
+    "methodology_heading": "Méthodologie",
+    "methodology_description": "Chaque note remonte à une méthodologie publiée et versionnée. Cinq dimensions, un composite consultatif, et un journal d'actions de notation strict — modelé sur la façon dont les agences de notation de crédit publient leurs opinions souveraines, adapté aux questions de recherche en IA.",
+    "methodology_cta": "Lire la méthodologie v1 →"
   }
 }

@@ -2294,6 +2294,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2).
 - THINK artifact: `docs/thinking/8.1-bulk-page-migration.md`.
 
+#### Unit 8.2 — `app/[locale]/page.tsx` FR hero translation + `messages.home.*` keys
+
+- Second code unit of Phase 8. Realizes D-8 + D-11 from Unit 8.0 prep. Closes one of the Class B follow-ons from Unit 7.9: locale-aware home page with FR-translated hero copy. Builds on Unit 8.1's bulk migration (the home route is at `app/[locale]/page.tsx` post-`31ea2d5`).
+- **Edits**:
+  - `messages/en.json` — new `home.*` namespace with 15 keys: `hero_heading`, `hero_description`, `cta_browse_problems`, `cta_read_methodology`, `recently_rated_heading`, `recently_rated_all_link`, `by_domain_heading`, `by_domain_all_link`, `by_domain_nav_aria`, `domain_map_aria`, `domain_map_switch_aria`, `domain_map_table_label`, `methodology_heading`, `methodology_description`, `methodology_cta`.
+  - `messages/fr.json` — FR translations for every `home.*` key. Hero h1: "Problèmes ouverts notés en recherche en LLM et IA." Hero p preserves the em-dash parenthetical and renders the five dimensions in French ("Difficulté, Saturation, Urgence, Valeur, Demande de l'industrie" — matches the methodology FR translation choices from Unit 7.5).
+  - `app/[locale]/page.tsx` — replaces 15 hardcoded EN strings with `getTranslations("home")` lookups. Aria-labels threaded as props to `<nav>`, `ChartTableSwitch`, and `DomainMap`. Arrow glyph (→) preserved in both locales (typographic, not lexical).
+- **Translation provenance**: `messages/fr.json` is an i18n catalog (lib-side), not a content file. ADR-0011 D-G scopes `translation_source` frontmatter to `*.<locale>.{yaml,mdx}` content files only; no provenance field needed on `messages/*.json`. The FR translations are curator-authored (short UI strings; not LLM-drafted prose).
+- **NOT in this unit** (deferred):
+  - `components/recently-rated/` internal strings ("No rating actions yet — see /contributing.") — component-side; multiple call sites; deferred to a component-specific i18n pass.
+  - `StatusPill` localization (open / partially-solved / converging / solved / retired) — component-side enum mapping; deferred.
+  - Site-header nav labels — already in `messages.nav.*`; folds into Unit 8.4 alongside LocaleToggle aria-label + HTML shell migration.
+- **Smoke gates**:
+  - `pnpm validate-content` → 203 files unchanged (no content delta).
+  - `pnpm typecheck` clean.
+  - `pnpm test` → 384/384 across 44 files unchanged (no test files touched).
+  - `pnpm build` → ~590 prerendered pages unchanged. Compile 3.6s. First Load JS shared chunk = **103 kB UNCHANGED**.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- THINK artifact: `docs/thinking/8.2-home-page-fr-translation.md`.
+
 
 
 

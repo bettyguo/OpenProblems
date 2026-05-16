@@ -1,4 +1,4 @@
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { taxonomy } from "#site/content";
 import { RecentlyRated } from "@/components/recently-rated";
@@ -18,6 +18,7 @@ export default async function HomePage({ params }: HomePageProps) {
   if (!isLocale(locale)) notFound();
   setRequestLocale(locale);
 
+  const t = await getTranslations("home");
   const { nodes, links } = buildDomainMap();
 
   return (
@@ -27,25 +28,21 @@ export default async function HomePage({ params }: HomePageProps) {
           id="hero-heading"
           className="text-foreground font-serif text-4xl font-semibold tracking-tight sm:text-5xl"
         >
-          Rated open problems in LLM &amp; AI research.
+          {t("hero_heading")}
         </h1>
-        <p className="text-muted-foreground mt-4 text-base sm:text-lg">
-          A taxonomy-organized encyclopedia of open problems, scored on five revisable dimensions —
-          Difficulty, Saturation, Urgency, Value, Industry Call — with an immutable rating-action
-          log behind every score.
-        </p>
+        <p className="text-muted-foreground mt-4 text-base sm:text-lg">{t("hero_description")}</p>
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <Link
             href="/problems"
             className="bg-foreground text-background hover:bg-accent inline-flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors"
           >
-            Browse problems
+            {t("cta_browse_problems")}
           </Link>
           <Link
             href="/methodology"
             className="border-border hover:border-accent/60 hover:text-accent inline-flex items-center rounded-md border px-4 py-2 text-sm font-medium transition-colors"
           >
-            Read the methodology
+            {t("cta_read_methodology")}
           </Link>
         </div>
       </section>
@@ -59,13 +56,13 @@ export default async function HomePage({ params }: HomePageProps) {
             id="recently-rated-heading"
             className="font-serif text-2xl font-semibold tracking-tight"
           >
-            Recently rated
+            {t("recently_rated_heading")}
           </h2>
           <Link
             href="/ratings"
             className="text-muted-foreground hover:text-accent font-mono text-xs underline-offset-2 hover:underline"
           >
-            All rating actions →
+            {t("recently_rated_all_link")}
           </Link>
         </div>
         <RecentlyRated />
@@ -74,16 +71,16 @@ export default async function HomePage({ params }: HomePageProps) {
       <section aria-labelledby="by-domain-heading" className="border-border mt-16 border-t pt-8">
         <div className="mb-4 flex items-baseline justify-between gap-4">
           <h2 id="by-domain-heading" className="font-serif text-2xl font-semibold tracking-tight">
-            By domain
+            {t("by_domain_heading")}
           </h2>
           <Link
             href="/domains"
             className="text-muted-foreground hover:text-accent font-mono text-xs underline-offset-2 hover:underline"
           >
-            All domains →
+            {t("by_domain_all_link")}
           </Link>
         </div>
-        <nav aria-label="Browse by domain" className="mb-4 flex flex-wrap gap-2">
+        <nav aria-label={t("by_domain_nav_aria")} className="mb-4 flex flex-wrap gap-2">
           {taxonomy.domains.map((d) => (
             <Link
               key={d.id}
@@ -95,28 +92,26 @@ export default async function HomePage({ params }: HomePageProps) {
           ))}
         </nav>
         <ChartTableSwitch
-          ariaLabel="Domain map teaser and tabular fallback"
-          chart={<DomainMap nodes={nodes} links={links} ariaLabel="Map of LLM research domains" />}
+          ariaLabel={t("domain_map_switch_aria")}
+          chart={<DomainMap nodes={nodes} links={links} ariaLabel={t("domain_map_aria")} />}
           table={<DomainMapTable nodes={nodes} />}
-          label="View domains as table"
+          label={t("domain_map_table_label")}
         />
       </section>
 
       <section aria-labelledby="methodology-heading" className="border-border mt-16 border-t pt-8">
         <h2 id="methodology-heading" className="font-serif text-2xl font-semibold tracking-tight">
-          Methodology
+          {t("methodology_heading")}
         </h2>
         <p className="text-muted-foreground mt-3 max-w-prose text-sm">
-          Every rating traces back to a published, versioned methodology. Five dimensions, one
-          advisory composite, and a strict rating-action log — modeled on how credit rating agencies
-          publish sovereign opinions, adapted for AI research questions.
+          {t("methodology_description")}
         </p>
         <div className="mt-4">
           <Link
             href="/methodology"
             className="text-foreground hover:text-accent text-sm underline underline-offset-2"
           >
-            Read methodology v1 →
+            {t("methodology_cta")}
           </Link>
         </div>
       </section>
