@@ -418,3 +418,39 @@ CREATE TABLE `watchlist` (
 ```
 
 No FK on `problemSlug` (file-system reference); orphan entries (problemSlug pointing at a deleted `content/problems/<slug>/problem.yaml`) handled via a periodic cleanup script (deferred follow-on per ADR-0013 D-F; orphan tolerated until script lands).
+
+## Q57. Rating-challenge curator review pipeline shape
+
+**Status:** open · **Surfaced:** Unit 11.0 prep + Unit 11.5 hygiene (Class A item 1) · **Blocks:** Phase 12+ curator-review thread.
+
+[Unit 11.0 D-3 + D-4](./docs/thinking/11.0-phase-11-prep.md) deferred the curator-review pipeline to Phase 12+ explicitly. Phase 11 ships rating-challenge **submission only**: any signed-in user can `POST /api/v1/rating-challenges` (or use the inline form on `/[locale]/problems/[slug]`), and Phase-11 Unit 11.4's profile-page extension lists the user's own submissions. No curator-facing surface exists for triage / status transitions / acceptance.
+
+What the curator review pipeline needs to decide (Phase 12+ architectural questions):
+
+- **Status transitions**: `submitted → under_review → accepted | rejected | withdrawn`. Today `ratingChallenges.status` defaults to `"submitted"` per Unit 11.1; Phase 11 never writes any other value. Phase 12+ migration (likely `0003_rating_challenge_review`) adds the curator-review columns deferred per Unit 11.0 D-3: `reviewedAt`, `reviewerId` (FK to `users` with cascade-or-set-null), `reviewNotes`, plus the policy decision around `acceptedActionId` (pointer to the rating-action YAML file emitted on acceptance OR a free-text path; see below).
+- **Acceptance → rating-action YAML**: when a curator accepts a challenge, a new rating-action YAML lands in `content/problems/<slug>/ratings/<date>-<slug>.yaml`. This is editorial content, not USER-STATE, so the WRITE happens in the file-system (likely a CLI helper invoked by the curator, similar to Phase-5's `extract-leaderboard.ts` shape), NOT directly from the API route. The DB `ratingChallenges.acceptedActionId` would then point at the emitted YAML filename. Preserves ADR-0004 file-first for content.
+- **COI policy enforcement** per §8.6: "A curator must not rate a problem where they (or their direct collaborators within the last 24 months) hold a current leaderboard top-5 entry." Application to challenges: should the SAME curator who would normally rate a problem be allowed to review a challenge to THAT rating? Two viable shapes — (a) inherit the same COI rule (curator cannot review a challenge for a problem where COI applies); (b) relax for challenges since review is meta-rating rather than rating itself. Lean: inherit; conservatism over expediency.
+- **Curator-admin route shape**: `/[locale]/curator/challenges`? `/admin/...`? Auth-aware route protection escalates from "page-local server-component check" (Phase 10 + 11 pattern) to "middleware-based" (Phase-9 Class B item 12 follow-on) when 3+ protected routes exist. The curator dashboard would likely be the third protected route.
+- **Notification surface**: should the submitter be emailed when their challenge is reviewed? Couples to Phase-5 D-4 subscriber-list thread.
+
+**Lean** (subject to a future ADR; possibly ADR-0014): inherit COI policy verbatim; introduce `0003_rating_challenge_review` migration with the 4 columns; ship a curator-admin route at `/[locale]/curator/challenges` (middleware-protected); defer email notifications to a separate Phase 13+ scope alongside `lib/email/`. None blocking Phase 11; all gated on explicit Phase 12+ kickoff sign-off per §12.
+
+## Q58. Rating-challenge visibility to non-author users
+
+**Status:** open · **Surfaced:** Unit 11.0 D-? (anticipated) + Unit 11.5 hygiene (Class A item 2) · **Blocks:** Phase 12+ public-visibility scope.
+
+Today Phase 11's only consumer of `getUserChallenges` is the submitter's own profile page (`/[locale]/profile`). A user cannot see anyone else's challenges; the problem detail page does not display a count or list of active challenges.
+
+Three viable visibility shapes for Phase 12+:
+
+1. **Counter on problem detail page** (smallest surface): `<p>3 active rating challenges →</p>` linking to a per-problem challenges view. Requires a helper like `getChallengeCountByProblem(slug)`. Easy to implement; no rationale-text exposure.
+2. **Per-problem challenge listing** (medium surface): `/[locale]/problems/[slug]/challenges` route showing all active challenges with truncated rationale previews. Reveals the editorial debate publicly; risks doxxing the submitter (who chose to be visible via GitHub login).
+3. **Public profile of all of a user's submitted challenges** (couples to Phase-10 Class B item 1): `/[locale]/u/[handle]/challenges` route. Submitter-scoped; requires the public-profile route to land first.
+
+Policy questions inseparable from the shape choice:
+
+- Should rejected challenges be visible publicly? (Privacy concern; reveals editorial decisions.) Lean: NO — only `submitted` and `accepted` statuses are public; `rejected` / `withdrawn` stay submitter-only.
+- Should the submitter's GitHub login be displayed publicly? (Today `users.githubLogin` is the join key to file-system curator-of-record; the column is `unique` but not `public`.) Lean: YES if status is `accepted` (the accepted challenge becomes part of the editorial record); NO if status is `submitted` (the challenge is in-flight; submitter identity should not gate the rating-action attribution).
+- Should the rationale text be displayed publicly? Lean: YES (the rationale is the substantive content; concealing it defeats the public-feedback mechanism).
+
+**Lean** (subject to a future ADR alongside Q57): start with #1 (counter on problem detail page) as the smallest surface; expand to #2 (per-problem listing) when usage volume justifies it; defer #3 (public profile of challenges) until the public profile thread lands. Aligns with Phase 11's "submission-only MVP" framing and Phase 12+'s expected curator-review-pipeline keystone.

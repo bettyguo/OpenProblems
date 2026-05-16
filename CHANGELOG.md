@@ -2470,6 +2470,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 11 — Community-adjacent surfaces (**second NON-§13 phase**: Rating-challenge submission — honored-deferral pick)
 
+#### Unit 11.6 — OPEN_QUESTIONS hygiene + ADR review (Phase 11 pre-close)
+
+- Seventh Phase-11 unit; docs-only. Mirrors Unit 5.12 / 6.9 / 7.10 / 8.8 / 9.8 / 10.4 OQ-hygiene precedents. Scans the ledger for Phase-11 promotions + surfaces the two anticipated Q-numbers (Q57 + Q58) flagged in Unit 11.0 + 11.5 hygiene + reviews the 13 ADRs at HEAD for stale status / supersede markers. Lands ahead of Unit 11.7 (acceptance gate).
+- **OPEN_QUESTIONS scan**: Phase 11 surfaces **2 new questions** (both `open`; both architectural-not-operational; neither blocking Phase 11 acceptance):
+  - **Q57** (Curator review pipeline shape) — Phase 12+ architectural; status transitions `submitted → under_review → accepted | rejected | withdrawn`; curator-review columns migration (`0003_rating_challenge_review` proposed); acceptance → file-system rating-action YAML emission (preserves ADR-0004 + ADR-0005); COI policy enforcement (§8.6); curator-admin route shape (likely first surface justifying middleware-based protection per Phase-9 Class B item 12). Lean documented: inherit §8.6 COI verbatim; introduce review columns migration; ship `/[locale]/curator/challenges`; defer email notifications.
+  - **Q58** (Challenge visibility to non-author users) — Phase 12+ policy decision; three viable surface shapes (counter on problem detail; per-problem listing; public-profile-of-challenges); per-status visibility rules (lean: only `submitted` + `accepted` public; `rejected` + `withdrawn` submitter-only). Lean documented: start with counter (smallest surface); expand to listing when volume justifies; defer public-profile until that route lands.
+- **Net promotions**: **zero**. Phase-11 scope explicitly deferred curator-review + public-visibility to Phase 12+; no Q-number moves from open → resolved this phase. Q54 + Q55 stay open operational (carried since Phase 9); Q47 stays open (Discussions operational; carried since Phase 6); Q51 stays decided-as-lean (bilingual content backfill cadence).
+- **Ledger state at HEAD** (Status-field-tally; mechanically auditable):
+  - **19 resolved**: Q1, Q4, Q5, Q12, Q13, Q18, Q27, Q32, Q40, Q41, Q43, Q45, Q46, Q48, Q49, Q50, Q52, Q53, Q56.
+  - **4 decided-as-lean**: Q38, Q42, Q44, Q51.
+  - **30 open**: Q2, Q3, Q6, Q7, Q8, Q9, Q10, Q11, Q14, Q15, Q16, Q17, Q19, Q25, Q26, Q28, Q29, Q30, Q31, Q33, Q34, Q35, Q36, Q37, Q39, Q47, Q54, Q55, **Q57**, **Q58**.
+  - **Total: 53** entries. Phase-11 delta vs Phase-10 close: +0 resolved, +0 decided-as-lean, +2 open (Q57 + Q58).
+- **ADR review**: 13 ADRs at HEAD (0001 – 0013). **Phase 11 added zero new ADRs**. All 13 ADRs unchanged in body; status remains `accepted` across the set.
+  - **ADR-0004 reaffirmed** by Phase 11's USER-STATE-only DB additions + Q57's lean preserving file-first for accepted-challenge rating-action YAMLs.
+  - **ADR-0005 extended by-analogy** in Phase 11's Q57 lean: accepting a challenge emits a NEW rating-action file (immutability invariant preserved); the DB tracks `acceptedActionId` pointing at the new file.
+  - **ADR-0006 honored** by Unit 11.2's `validateProposedValue("saturation", "N/A")` returning null (success); covered by Unit 11.2's test.
+  - **ADR-0011 D-A through D-G** exercised: `messages.rating_challenge.*` (Unit 11.3 — 22 keys per locale) + `messages.profile.*` extension (Unit 11.4 — 5 new keys per locale). No supersede triggers.
+  - **ADR-0012 D-A through D-E** exercised: `RatingChallengeForm` signed-out branch links to `/api/auth/signin/github?callbackUrl=...` per D-D (full-page redirect); `events.linkAccount` callback's `users.githubLogin` consumed by Unit 11.4's profile-page list. All hold.
+  - **ADR-0013 D-A through D-F** exercised: new `ratingChallenge` table per D-F (USER-STATE only); `problemSlug` plain text with no FK; UUID PK via `$defaultFn`; migration `0002_rating_challenges` extends D-E's monotonic 0-indexed sequence. All hold.
+- **No prose-shift reconciliations** this unit (unlike Unit 9.8's two ADR edits); no architectural shifts; no ADR edits.
+- **No new ADRs surfaced**. Phase 11's surface is fully covered by ADR-0012 + ADR-0013 + the existing constitution. Phase 12+ may surface an ADR-0014 pinning Q57's curator-review pipeline lean.
+- Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2); typecheck / test / build untouched since no source files modified.
+- THINK artifact: `docs/thinking/11.6-open-questions-hygiene.md`.
+
 #### Unit 11.5 — Phase-11 hygiene status pass (Class A / B / C catalog)
 
 - Sixth Phase-11 unit; docs-only. Mirrors Phase-5 (Unit 5.11) / Phase-6 (Unit 6.8) / Phase-7 (Unit 7.9) / Phase-8 (Unit 8.7) / Phase-9 (Unit 9.7) / Phase-10 (Unit 10.3) hygiene precedents. Catalogs **Class A** in-flight Phase-11 items (4 carried; 0 newly surfaced — Phase 11 introduced no new operational gates), **Class B** Phase-11-specific follow-ons (12), and **Class C** carryovers (19; mostly unchanged from Unit 10.3 + a few Phase-9/10 follow-ons absorbed). Lands ahead of Unit 11.6 (OPEN_QUESTIONS hygiene) and Unit 11.7 (acceptance gate).
