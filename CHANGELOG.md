@@ -2470,6 +2470,62 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 14 — Community-adjacent surfaces (**fifth NON-§13 phase**: Public profile page at `/[locale]/u/[handle]` — honored-deferral pick; surfaces ADR-0015)
 
+#### Unit 14.8 — Phase 14 acceptance gate (public profile route; first per-USER read-side public surface; four-phase honored-deferral lineage closed)
+
+- Phase-14 closing unit. Mirrors Units 1.12 / 2.13 / 3.13 / 4.13 / 5.13 / 6.10 / 7.11 / 8.9 / 9.9 / 10.5 / 11.7 / 12.8 / 13.6. Verifies every Phase-14 deliverable is operational locally at HEAD, emits the cross-phase roll-up, and lists follow-ons that survive into Phase 15+.
+- **§13 ledger status**: still **CLOSED** (closed at Unit 9.9). Phase 14 is the **fifth NON-§13 phase**. **Closes the four-phase honored-deferral lineage** for the public profile route (Phase-10 Class B item 1 + Phase-12 Class B item 12 + Phase-13 Class B item 1 + Q58 lean #3 deferral) + **adds the first per-USER read-side public surface** to the project.
+- **Phase-14 deliverables — all ✓ (zero deferrals; zero scope drift vs Unit 14.0 prep's 9-unit breakdown)**:
+  - Phase 14 prep THINK doc + 9-unit breakdown + procedural DB-trigger re-eval (Unit 14.0; ninth "Continue" override invocation).
+  - ADR-0015 per-user privacy model + public profile contract (Unit 14.1; 6 D-clauses: D-A field partition + D-B case-insensitive lookup / case-preserved URL + D-C user-editable Phase-15+ deferral + D-D privacy opt-out Phase-15+ + D-E curator-of-record case-sensitive + D-F SiteHeader integration).
+  - `lib/users/` module + `getPublicChallengesByUser` extension + **13 tests** (Unit 14.2).
+  - Public profile shell page at `/[locale]/u/[handle]` (force-dynamic; no auth gate; handle resolution + 404 + curator-of-record badge + activity counts + "Edit your profile" CTA) + `messages.public_profile.*` namespace (16 keys per locale; pre-added upfront for atomic discipline) (Unit 14.3).
+  - Per-user challenges sub-route at `/[locale]/u/[handle]/challenges` (Q58 lean #3 closure) + Phase-13 per-problem listing `@login`-to-Link upgrade (closes Phase-13 Unit 13.3 D-13 dangling-link-target wart) (Unit 14.4).
+  - SiteHeader "Your profile" link (signed-in only; avatar 16×16 + `@login` truncated 12 chars; ZERO new i18n keys — atomic-i18n pre-add discipline payoff) + `safeLogin()` defensive wrapper (Unit 14.5).
+  - Phase-14 hygiene Class A/B/C catalog (4 + 11 + 19 items) (Unit 14.6).
+  - OPEN_QUESTIONS hygiene: 53 entries UNCHANGED; Q63 + Q64 + Q65 candidates flagged but NOT promoted; 15 ADRs all `accepted`; ADR-0015 D-A through D-F all unit-level exercised (Unit 14.7).
+- **§14 universal cross-phase contract status**:
+  - **First Load JS shared chunk = 103 kB UNCHANGED** through every Phase-14 unit. All Phase-14 surfaces server-rendered; zero client-bundle delta end-to-end.
+  - **Middleware bundle = 160 kB UNCHANGED** since Phase 12 close (Phase 12 was last middleware-affecting change at +1 kB; Phases 13 + 14 added zero middleware changes).
+  - **`lighthouserc.json` URL count = 19 UNCHANGED**. New `/u/[handle]` + sub-route could be enrolled in Phase 15+ once Q54+Q55 unblock + real signed-in user accounts exist.
+  - **File-first / no DB for content** (ADR-0004): REAFFIRMED. Phase 14 ships read-only per-user surface; zero new tables / columns / migrations.
+  - **No auto-merge** (ADR-0009): Phase 14 added no LLM-translated content.
+- **State at HEAD `c01962d` + this acceptance-gate commit**:
+  - Content: 10 problems / 5 domains / ~12 subdomains / 30 papers / 126 authors / 14 institutions / 20 rating actions / 4 issue templates / methodology v1 (EN + FR) / contributing v1.0 (EN) + v1.1 (EN + FR) / 2 `entries.json` files. **203 schema-validated content files + 36 raw MDX = 239 raw content files UNCHANGED** from Phase-8 close.
+  - **1 new ADR** (ADR-0015) → 15 ADRs total (Phase 12 added 1 ADR-0014; Phase 13 added 0).
+  - **+0 net dependencies** (Phase-9 through Phase-13 stack stable).
+  - **New code layers** (Phase-14 net-new): `lib/users/` module + `app/[locale]/u/[handle]/` route tree.
+  - **DB schema tables (6 UNCHANGED)**: `user`, `account`, `session`, `verificationToken`, `watchlist`, `ratingChallenge`. All USER-STATE per ADR-0013 D-F.
+  - **Migrations (4 UNCHANGED)**: `0000_initial_auth`, `0001_watchlist`, `0002_rating_challenges`, `0003_rating_challenge_review`.
+  - **Env contract UNCHANGED**.
+  - **Routes**: ~593 prerendered pages UNCHANGED + **7 dynamic page+API routes** (was 5 at Phase-13 close; +2: `ƒ /[locale]/u/[handle]` + `ƒ /[locale]/u/[handle]/challenges`).
+  - **Tests**: 467/467 across 51 files → **480/480 across 52 files** (+13 tests / +1 file; all from Unit 14.2's `lib/users/index.test.ts`).
+  - **OPEN_QUESTIONS state** (per Unit 9.8 mechanical `Status:`-field tally): 21 resolved + 4 decided-as-lean + 28 open = **53 total entries UNCHANGED** from Phase-13 close. Phase-14 surfaced 3 new candidates (Q63 + Q64 + Q65) but did NOT promote them to the ledger.
+  - **i18n delta**: +16 `public_profile.*` keys per locale; +32 total across EN + FR; ALL pre-added Unit 14.3.
+- **Phase-14 follow-ons that survive the gate** (non-blocking; from Unit 14.6):
+  - **Class A (4 — in-flight operational; carried)**: Q54 GitHub OAuth app registration; Q55 Turso production DB provisioning; CI dummy `AUTH_SECRET`; `pnpm db:migrate` doc for new contributors (4 migrations).
+  - **Class B (11 — Phase-14-specific follow-ons)**: Q63 candidate (user-editable fields per ADR-0015 D-C); Q64 candidate (privacy opt-out per D-D); Q65 candidate (per-curator activity feed per D-E expansion); curator-of-record case-insensitive matching enhancement; per-user URL sort + pagination; per-row edit/withdraw on own-profile sub-route; custom 404 page; `/about/privacy` explainer; first LHCI run on new routes; mobile-nav "Your profile" variant; SiteHeader avatar-dropdown consolidation.
+  - **Class C (19 — carryovers from prior phases)**: see Unit 14.6. Includes **HTML shell migration + Unit 8.4 unblock STILL ON HOLD per parallel-session preservation signal**; Phase-6 Q47 Discussions operational gate; Phase-8 chrome strings + FR backfill + StatusPill localization + nav labels; sitemap hints; trailing-slash normalization; multi-provider OAuth (**ADR-0016 candidate**); CLI emit-challenge-action (Q59 candidate); orphan-row cleanup; rate-limiting on review API.
+- **Phase-14 firsts** (project-wide): first per-USER read-side public surface (Phase 13 was per-PROBLEM read-side); first new ADR since Phase 12 / ADR-0014; first new `lib/` module since Phase 9 (`lib/users/`); first new top-level route tree since Phase 9 (`app/[locale]/u/[handle]/`); first canonical-public-identity surface (`/u/{login}` vs Phase-10's edit-mode `/profile`); first four-phase honored-deferral lineage closure.
+- **Phase-14 over-vs-under against the 14.0 plan**: **9 units shipped + 0 deferred** (matches Unit 14.0 prep's 9-unit breakdown exactly). No scope drift. ADR-0015 D-A through D-F all unit-level exercised across Units 14.2 – 14.5.
+- **Parallel-curator activity log**: primary session shipped all Phase-14 units (14.0 – 14.8) sequentially without collisions. ADR-0015 + Unit 14.0 prep gave each unit tight enough scope; atomic-i18n pre-add discipline (Unit 14.3 pre-adding all 16 keys upfront) prevented messages.json collisions on Units 14.4 + 14.5.
+- **Phase 15+ entry conditions**: per §12 cardinal rule, **explicit human sign-off required**. **§13 ledger CLOSED**; no remaining §13 Phase-6+ deliverable. Phase 15+ thread options:
+  - **User-editable profile fields (Q63 promotion)** — ADR-0015 D-C deferral; ~4-5 units; surfaces image-upload-pipeline ADR if image override in scope.
+  - **Per-user privacy opt-out (Q64 promotion)** — ADR-0015 D-D deferral; ~3 units.
+  - **Per-curator activity feed (Q65 promotion)** — ADR-0015 D-E expansion; ~4-5 units.
+  - **Subscriber-list email** — Phase-5 D-4 punt completion; ~6 units; **ADR-0016 candidate**.
+  - **CLI `pnpm emit-challenge-action <id>`** — Phase-12 + Phase-13 carryover; ~2-3 units; Q59 candidate.
+  - **Multi-provider OAuth expansion** — ADR-0012 D-B forbidden in Phase 9; ~3-4 units; **ADR-0016 candidate** (alternative path; ADR-0016 slot claimed by whichever Phase-15+ thread surfaces first).
+  - **Full §8.6 24-mo collaborator COI check** — ADR-0014 D-C deferral; ~3-5 units; **ADR-0017 candidate** + `curatorRoles` DB table.
+  - **Q61 anonymity / Q62 rejection-visibility** — Phase-13 carryover candidates.
+  - **HTML shell migration + Unit 8.4 unblock** — STILL ON HOLD per parallel-session preservation signal.
+  - **Monetization** — premature without observed user traffic; Phase 16+ candidate.
+- **DB-migration trigger re-eval at Phase 15 kickoff**: procedural-only formality (trigger (a) FIRED Unit 9.6; trigger (b) cold ~1.656% of 5 MB; content count unchanged).
+- **Four-phase honored-deferral lineage closed**. Public profile route was first flagged Phase 10 (signed-in own surface shipped; public surface deferred); re-flagged at Phase 12 close; re-flagged at Phase 13 close; Q58 lean #3 explicitly carved off for Phase 14. Phase 14 closes the thread.
+- **Public attribution chain end-to-end clickable**: per-problem listing `@login` → `/u/{login}` → `/u/{login}/challenges` → `/problems/{slug}` (back loop). Community-feedback publication loop complete.
+- **Three architectural patterns validated by Phase 14**: (1) first per-USER read-side public surface (sets pattern for Phase-15+ per-curator activity feed; per-user contribution timeline; per-user editable profile); (2) `/u/{login}` PUBLIC canonical vs `/profile` EDIT mode split (extensible by Q63 promotion); (3) atomic-i18n pre-add discipline payoff (Unit 14.3 pre-added all 16 keys; Units 14.4 + 14.5 consumed subset with ZERO further messages edits — mitigates parallel-session collision on shared messages files).
+- Smoke gates: `pnpm validate-content` → 203 unchanged; `pnpm typecheck` clean; `pnpm test` → 480/480 across 52 files unchanged; `pnpm build` → ~593 prerendered pages + 7 dynamic page+API routes unchanged; First Load JS = 103 kB unchanged; middleware = 160 kB unchanged; `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- THINK artifact: `docs/thinking/14.8-phase-14-acceptance-gate.md`.
+
 #### Unit 14.7 — OPEN_QUESTIONS hygiene + ADR review (Phase 14 pre-close)
 
 - Eighth Phase-14 unit; docs-only. Mirrors Unit 5.12 / 6.9 / 7.10 / 8.8 / 9.8 / 10.4 / 11.6 / 12.7 / 13.5 OQ-hygiene precedents. Scans the OPEN_QUESTIONS ledger for Phase-14 promotions + reviews the 15 ADRs at HEAD.
