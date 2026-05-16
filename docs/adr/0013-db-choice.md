@@ -137,12 +137,12 @@ Tier upgrade triggers (deferred per [Q55](../../OPEN_QUESTIONS.md#q55-db-hosting
 
 ### D-E. Migration cadence
 
-Phase-9 migrations:
+Phase-9 migrations (drizzle-kit 0-indexed monotonic sequence — **Unit 9.8 reconciliation**: original ADR-0013 prose used 1-indexed names; actual landed filenames are 0-indexed per drizzle-kit's convention; corrected inline):
 
-1. **`0001_initial_auth`** (Unit 9.3): creates `users`, `accounts`, `sessions`, `verification_tokens` (NextAuth.js v5 canonical schema) + `githubLogin` column on `users`.
-2. **`0002_watchlist`** (Unit 9.6): creates `watchlist` table per [Q56](../../OPEN_QUESTIONS.md#q56-watchlist-table-key-shape) lean (`user_id` + `problem_slug` composite primary key; no FK on `problem_slug`).
+1. **`0000_initial_auth`** (Unit 9.3): creates `user`, `account`, `session`, `verificationToken` (NextAuth.js v5 canonical schema) + `githubLogin` text-unique column on `user`.
+2. **`0001_watchlist`** (Unit 9.6): creates `watchlist` table per [Q56](../../OPEN_QUESTIONS.md#q56-watchlist-table-key-shape) (`userId` + `problemSlug` composite primary key; FK only on `userId` with `ON DELETE cascade`; no FK on `problemSlug`).
 
-Future migrations (Phase 10+) follow the same numbering. Migration filenames are immutable per D-B; corrections land as NEW migrations that explicitly undo (or refine) earlier ones.
+Future migrations (Phase 10+) follow the same 0-indexed monotonic ordering (`0002_...`, `0003_...`, etc.). Migration filenames are immutable per D-B; corrections land as NEW migrations that explicitly undo (or refine) earlier ones (mirrors ADR-0005's rating-action-immutability ethos applied to schema evolution).
 
 ### D-F. No write-paths against content tables
 

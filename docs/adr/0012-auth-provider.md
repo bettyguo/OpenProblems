@@ -105,7 +105,7 @@ The decision pins five concrete contracts:
 
 ### D-A. Runtime = NextAuth.js v5 (Auth.js)
 
-[`next-auth@^5`](https://authjs.dev) is the only auth runtime dependency in `package.json` (`dependencies`, not `devDependencies` — runtime import). Other auth libraries (Clerk SDK, Lucia, Iron Session, etc.) are **forbidden** from landing in `dependencies` or `devDependencies` until a follow-on ADR explicitly authorises multi-runtime work. Pin via `^5.x`.
+[`next-auth@^5`](https://authjs.dev) is the only auth runtime dependency in `package.json` (`dependencies`, not `devDependencies` — runtime import). Other auth libraries (Clerk SDK, Lucia, Iron Session, etc.) are **forbidden** from landing in `dependencies` or `devDependencies` until a follow-on ADR explicitly authorises multi-runtime work. Pin via `^5.x` once v5 is GA. **Pin convention during the v5 beta tag** (Unit 9.4 clarification, Unit 9.8 reconciliation): exact-version (no caret), per the beta-tag convention — Unit 9.4 landed `5.0.0-beta.31` pinned exactly. The pin switches to `^5.x` after v5 GA without further ADR amendment (the architectural intent — Auth.js v5 — is the load-bearing piece).
 
 The `Auth.js` brand is the v5 rebrand of NextAuth.js; the package name remains `next-auth` for backward compatibility. We use the new `auth()` server helper + the new route-handler signature (`app/api/auth/[...nextauth]/route.ts` re-exports `handlers.GET` + `handlers.POST`).
 
