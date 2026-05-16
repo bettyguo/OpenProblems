@@ -2540,6 +2540,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2); typecheck / test / build untouched since no source files modified.
 - THINK artifact: omitted — ADR-0013 is its own architectural artifact; the ADR's "Context" + "Decision Drivers" sections subsume what a separate THINK doc would say. Mirrors the ADR-0010 / ADR-0011 precedent (THINK doc was a brief wrapper; redundant when the ADR is detailed).
 
+#### Unit 9.3 — DB scaffold: Drizzle + libsql + initial migration
+
+- Third code unit of Phase 9 (first that touches `node_modules`). Lands the database layer pinned by ADR-0013: `drizzle-orm` + `@libsql/client` runtime + `drizzle-kit` dev dep; schema with the NextAuth.js v5 canonical tables (`users`, `accounts`, `sessions`, `verification_tokens`) plus the `githubLogin` column from ADR-0012 D-E; first migration; local-dev `local.db` setup via env-fallback.
+- **Dependencies installed**: `drizzle-orm@0.45.2` + `@libsql/client@0.17.3` (`dependencies`); `drizzle-kit@0.31.10` (`devDependencies`). All pure JS modulo `drizzle-kit`'s esbuild postinstall (which already runs in pnpm-workspace allowBuilds list).
+- **New files**:
+  - `lib/db/schema.ts`: TypeScript-first schema. Four NextAuth canonical tables (`user`, `account`, `session`, `verificationToken`) + per-project `githubLogin` text-unique column on `user` (per ADR-0012 D-E; joins to file-system `editorial.primary_curator`) + `createdAt` timestamp default via `unixepoch() * 1000`. Type cast `$type<AdapterAccountType>()` on `account.type` **deferred to Unit 9.4** (when `next-auth/adapters` installs) — runtime is a plain `text` column either way.
+  - `lib/db/index.ts`: Drizzle client export. `createClient` from `@libsql/client` with env-fallback: `TURSO_DATABASE_URL` (production / preview) → `libsql://<db>.turso.io`; otherwise `file:./local.db` (local dev). `authToken` only passed when set (libsql `file:` URLs don't need a token).
+  - `drizzle.config.ts`: Drizzle-Kit config at project root. `dialect: "turso"` (new convention in `drizzle-kit@0.31.x`; **supersedes the deprecated `dialect: "sqlite"` + `driver: "turso"` pair** — first attempt with the older pair returned a Zod union error from drizzle-kit's config validator). `dbCredentials` from env-fallback.
+  - `lib/db/migrations/0000_initial_auth.sql`: generated SQL migration. 4 tables, 1 FK on `account.userId` (`ON DELETE cascade`), 1 FK on `session.userId` (`ON DELETE cascade`), 2 unique indexes (`user.email` + `user.githubLogin`). **Note**: drizzle-kit names migrations 0-indexed (`0000_...`); [ADR-0013 D-E](docs/adr/0013-db-choice.md) prose said `0001_initial_auth` — off-by-one corrected. Future migrations follow drizzle-kit's monotonic increment.
+  - `.env.example`: committed contract for all project env vars across phases. Documents `ANTHROPIC_API_KEY` + `LLM_OPENPROBLEMS_DAILY_BUDGET_USD` (Phase 5); `GITHUB_TOKEN` + `NEXT_PUBLIC_GISCUS_REPO_ID` (Phase 6, Q47); `NEXT_PUBLIC_SITE_URL` (Phase 8); `GITHUB_CLIENT_ID` + `GITHUB_CLIENT_SECRET` + `AUTH_SECRET` (Phase 9, Q54); `TURSO_DATABASE_URL` + `TURSO_AUTH_TOKEN` (Phase 9, Q55). Each entry includes a comment explaining purpose + when required.
+- **Edits** — `package.json`:
+  - +3 scripts: `db:generate` (`drizzle-kit generate`), `db:migrate` (`drizzle-kit migrate`), `db:studio` (`drizzle-kit studio` — ad-hoc DB inspection UI).
+- **Edits** — `.gitignore`:
+  - +4 patterns: `local.db`, `local.db-*` (SQLite WAL / shm sidecar files), `.env.local`, `.env.*.local`. Section labeled "Phase-9 local-dev SQLite DB (Unit 9.3 / ADR-0013 D-C)".
+- **NOT in this unit** (deferred per Unit 9.0 prep):
+  - `next-auth@^5` install — Unit 9.4. The `AdapterAccountType` narrowing on `account.type` lands then.
+  - `lib/auth/index.ts` — Unit 9.4.
+  - Watchlist table + `0001_watchlist` migration — Unit 9.6 per ADR-0013 D-E (corrected: drizzle-kit will name it `0001_watchlist` since this unit's migration is `0000_...`; ADR-0013 D-E mentioned `0002_watchlist` — also off-by-one; future migration cadence follows drizzle-kit's monotonic ordering).
+  - Local DB seeding (running `pnpm db:migrate` against `local.db`) — deferred to first-developer-setup; documented as a manual one-time step. CI does not seed (the DB doesn't yet have a consumer — Unit 9.4's auth wrapper will).
+  - Production Turso provisioning — Q55 operational gate; lands with first Vercel deploy that needs auth.
+- **§5.7 DB-trigger flip note**: this unit lays the DB foundation but **does not write to it**. Trigger (a) — "we need write paths (submissions)" — fires at Unit 9.6's watchlist write-path. Phase-4 / 5 / 6 / 7 / 8 D-2 re-evals all logged "flips on first auth write-path"; Unit 9.6 is that unit.
+- **Smoke gates**:
+  - `pnpm validate-content` → 203 files unchanged.
+  - `pnpm typecheck` clean.
+  - `pnpm test` → 388/388 across 44 files unchanged (no test files touched; DB client has no test surface yet — Unit 9.4 introduces).
+  - `pnpm db:generate --name initial_auth` → `0000_initial_auth.sql` written (4 tables, 2 FKs, 2 unique indexes).
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+  - `pnpm build` → ~590 prerendered pages unchanged. First Load JS shared chunk = **103 kB UNCHANGED** (DB client is server-only; not bundled into page chunks).
+- THINK artifact: `docs/thinking/9.3-db-scaffold.md`.
+
 
 
 

@@ -86,3 +86,9 @@ drafts/
 
 # --- Session handoff scratch docs (parallel-curator workflow; per-session artifacts) ---
 docs/SESSION_HANDOFF_*.md
+
+# --- Phase-9 local-dev SQLite DB (Unit 9.3 / ADR-0013 D-C) ---
+local.db
+local.db-*
+.env.local
+.env.*.local
