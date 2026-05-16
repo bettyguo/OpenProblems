@@ -2470,6 +2470,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 11 — Community-adjacent surfaces (**second NON-§13 phase**: Rating-challenge submission — honored-deferral pick)
 
+#### Unit 11.2 — `lib/rating-challenges/` helpers + `POST /api/v1/rating-challenges` route + tests
+
+- Second code unit of Phase 11. Lands the rating-challenge submission backend layer on top of Unit 11.1's `ratingChallenges` table. Mirrors the Phase-9 Unit 9.6 watchlist pattern: thin Drizzle helpers (auth-agnostic) + REST API route (handles auth + validation + delegates to helpers) + Vitest tests (mocks `@/lib/auth` + partially mocks `@/lib/rating-challenges` to keep validation helpers real while stubbing `submitChallenge`).
+- **`lib/rating-challenges/index.ts` (new)**: 5 named exports.
+  - **`DIMENSIONS`** const + **`Dimension`** type — 5 values matching `RatingActionSchema.dimensions` keys (`difficulty`, `saturation`, `urgency`, `value`, `industry_call`).
+  - **`RATIONALE_MIN = 50`**, **`RATIONALE_MAX = 2000`** — Unit 11.0 D-7 leans. Public so the inline form (Unit 11.3) can render character-count hints.
+  - **`isValidDimension(value)`** — type-narrowing predicate.
+  - **`validateProposedValue(dimension, value)`** — per-dimension format check per Unit 11.0 D-6. Returns `null` on success, human-readable error string on failure (surfaces as the 400's `message` field). Per-dimension rules: difficulty letter ∈ {S,A,B,C,D,E}; saturation 0-100 OR "N/A" (per ADR-0006); stars-based integer 0-5.
+  - **`validateRationale(rationale)`** — length check against `RATIONALE_MIN` / `RATIONALE_MAX`.
+  - **`submitChallenge(input)`** — Drizzle INSERT with RETURNING; returns the generated UUID.
+  - **`getUserChallenges(userId)`** — Drizzle SELECT * ORDER BY createdAt DESC LIMIT 50 (mirrors `lib/watchlist/`'s `getWatchedSlugs` pattern; Phase-11 Unit 11.4 will consume this on profile page).
+  - **`UserChallenge`** type — Drizzle's `$inferSelect` shape; exported for typed consumers.
+- **`app/api/v1/rating-challenges/route.ts` (new)**: collection POST endpoint. Per Unit 11.0 D-13 exit shapes:
+  - **401** `{ error: "unauthenticated" }` when `auth()` returns null (no session).
+  - **400** `{ error: "bad-request", field, message }` for any validation failure. Field-specific so the inline submission form (Unit 11.3) can surface the message next to the offending input. Fields: `body` (invalid JSON); `problemSlug` (unknown problem); `dimension` (not in `DIMENSIONS`); `proposedValue` (per-dimension format violation); `rationale` (length out of range).
+  - **201 Created** `{ id, slug, dimension, status: "submitted" }` on success.
+  - Validation order: auth → JSON parse → problemSlug-in-content → dimension enum → proposedValue per-dimension → rationale length. Each gate returns early on failure (no cascading errors).
+- **`app/api/v1/rating-challenges/route.test.ts` (new)**: **9 tests** covering each exit shape per validation gate. Mocks `@/lib/auth` (`vi.mock` with `vi.fn()` factory) + partially mocks `@/lib/rating-challenges` via `vi.mock` + `importOriginal` to keep the real `isValidDimension` / `validateProposedValue` / `validateRationale` while stubbing `submitChallenge` (the only DB side effect). Mocked-value casts via `as never` per the Phase-9 watchlist precedent (Auth.js v5's polymorphic `auth` return type).
+- **Validation contract pinned in tests**: invalid difficulty grade ("Z") → 400 proposedValue; saturation out of [0,100] → 400 proposedValue; stars > 5 → 400 proposedValue; rationale < 50 chars → 400 rationale; saturation = "N/A" → 201 (per ADR-0006 honored).
+- **NOT in this unit** (deferred): submission form UI (Unit 11.3 — inline collapsible on problem detail page); profile-page list extension (Unit 11.4); rate-limiting (Unit 11.0 D-10 — per-user surface; auth-gated; Phase 12+); curator review pipeline + status transitions (Phase 12+ or curator-track; surfaces as Q57).
+- **Smoke gates**:
+  - `pnpm validate-content` → 203 files unchanged.
+  - `pnpm typecheck` clean (no `as any`; only `as never` on the polymorphic-`auth` mock returns).
+  - `pnpm test` → **403/403 across 46 files** (+9 net tests on the new route; +1 net file).
+  - `pnpm build` → ~590 prerendered pages + **+1 new dynamic API route** (`ƒ /api/v1/rating-challenges`, Dynamic ƒ). First Load JS shared chunk = **103 kB UNCHANGED**. Middleware bundle = **159 kB UNCHANGED**.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- THINK artifact: omitted — implementation is contained in Unit 11.0's D-3 through D-13; no architectural surface beyond what 11.0 + 11.1 pinned.
+- Next: Unit 11.3 (inline collapsible submission form on `/[locale]/problems/[slug]` + `messages.rating_challenge.*` EN + FR).
+
 #### Unit 11.1 — DB scaffold: `ratingChallenges` table + `0002_rating_challenges` migration
 
 - First code unit of Phase 11. Lands the second project-owned DB table (`watchlist` was first in Unit 9.6). Schema decisions per Unit 11.0 D-3 + D-4 + D-5 + D-6 + D-7. **Second migration in Phase 11's surface** (third migration project-wide; drizzle-kit's monotonic 0-indexed sequence: `0000_initial_auth` (Unit 9.3) + `0001_watchlist` (Unit 9.6) + **`0002_rating_challenges`** (this unit)).
