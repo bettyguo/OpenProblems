@@ -1396,3 +1396,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Pure docs unit — no app, schema, content, or test code touched.
 - Smoke gates: `pnpm typecheck` (clean), `pnpm test` (262/262 unchanged), `pnpm validate-content` (203 files unchanged).
 
+#### Unit 5.7 — `lib/digest/build-digest.ts` (per-domain weekly summary builder)
+
+- First Phase-5 digest-pipeline unit. Pure-function (no LLM call) composer for §13's "Email\RSS digest: per-domain weekly summary" deliverable.
+- **`buildDigest({ domain, windowDays?, now? })`** returns a typed `DigestPayload` with `items`, `domainTitle`, `windowDays`, `generatedAt`, `cutoffDate`, `channelTitle`, `channelDescription`. Consumed by Unit 5.8's RSS endpoint + Unit 5.9's `/digest` hub.
+- **Two item kinds** (`kind: "rating-action" | "leaderboard-entry"`):
+  - **Rating actions** — pulled via `allRatingActions()`, filtered by `problem.domain === options.domain` + `action.date >= cutoff`. Title format `"<problem> — <primary delta>"` via `diffRatingAction`. Link `/problems/<slug>/ratings#<action-id>`. guid = the Velite-injected stable action id.
+  - **Leaderboard entries** — fanned out per-problem via `loadEntriesForProblem(slug)`, filtered by `entry.date >= cutoff`. Title format `"<problem> — <benchmark_id> <score>"`. Link `/problems/<slug>`. guid = `entry:<problemSlug>/<paper_id>/<benchmark_id>/<date>` (composite, since `entries.json` rows aren't uniquely id'd).
+- **Window anchor = `now` parameter** (defaults to `new Date()`). **Distinct from MoversBoard's "most-recent-action-date" anchor** (Unit 3.0 D-8) — RSS readers expect wall-clock cadence, so the digest cadence anchors to the harness clock. Trade-off: with Phase-3's forward-dated simulated rating histories (2026-09, 2026-12), the default 7-day window may be empty on a 2026-05-15 curator run; tests inject a `now` that catches the q3/q4 revisions. Empty windows produce valid empty payloads with descriptive `channelDescription`.
+- **Default `windowDays = 7`** per Unit 5.0 D-12.
+- **Async signature** — `loadEntriesForProblem` reads `entries.json` from disk; `buildDigest` fans out per-problem-in-domain.
+- **Papers NOT a digest source for v1** — papers track `year` only, no ingest date. Future enhancement: have Unit 5.3's ingest CLI record `ingested_at` in the drafted YAML; revisit then.
+- **Sort** — items newest-first.
+- **Domain-not-found**: throws (`Error("Domain not found: ...")`). Consumers handle 404.
+- **9 new tests** in `build-digest.test.ts` covering: domain-not-found throw, default-window channel metadata, custom-window cutoff, newest-first sort, empty-window descriptive copy, per-domain item isolation, `generatedAt` = injected `now`, `cutoffDate` arithmetic (`now - windowDays`), `kind` discriminator coverage.
+- **Bundle**: First Load JS shared chunk **103 kB UNCHANGED**. `lib/digest/*` is server-only; no app surface in this unit (Unit 5.8's route + Unit 5.9's hub consume it).
+- **Route count: 313 prerendered pages UNCHANGED.**
+- **Parallel-curator state**: HEAD = `655abdc` post-Unit-5.6. No collision.
+- THINK artifact: `docs/thinking/5.7-build-digest.md`.
+- Smoke gates: `pnpm typecheck` (clean), `pnpm test` (**271/271 across 35 files**, was 262/34; +9 build-digest tests), `pnpm validate-content` (203 files unchanged).
+
