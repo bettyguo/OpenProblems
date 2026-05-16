@@ -83,3 +83,6 @@ drafts/
 
 # --- Phase-6 Discussions read-side cache (Unit 6.2 / ADR-0010 D-E) ---
 .github-cache/
+
+# --- Session handoff scratch docs (parallel-curator workflow; per-session artifacts) ---
+docs/SESSION_HANDOFF_*.md
