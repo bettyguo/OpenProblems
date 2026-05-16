@@ -1416,3 +1416,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - THINK artifact: `docs/thinking/5.7-build-digest.md`.
 - Smoke gates: `pnpm typecheck` (clean), `pnpm test` (**271/271 across 35 files**, was 262/34; +9 build-digest tests), `pnpm validate-content` (203 files unchanged).
 
+#### Unit 5.8 — `app/api/v1/digest/[domain]/route.ts` (per-domain RSS endpoint)
+
+- Wraps Unit 5.7's `buildDigest` in an RSS 2.0 endpoint, one feed per taxonomy domain. SSG via `generateStaticParams()` — every domain prerenders at build time.
+- **Route-path deviation from Unit 5.0**: planned shape was `[domain].xml/route.ts` (URL ending `.xml`); realized as `[domain]/route.ts` (no `.xml` suffix). Rationale: Next.js 15 App Router's dynamic-with-dot-suffix folder convention is fragile on Windows / git path handling. The contract (one RSS feed per domain) is unchanged — content-type header still types the response as `application/rss+xml`; RSS readers don't care about URL suffix. Discoverability compensation lands in Unit 5.9's `/digest` hub via `<link rel="alternate">` tags.
+- **2 new files**:
+  - `lib/digest/rss.ts` — `renderDigestRss(payload)` + `xmlEscape` + `toRfc822` + `SITE`. Lives here (not in the route file) because **Next.js App Router route files restrict exports to a fixed set** (`GET` / `POST` / `dynamic` / `generateStaticParams` / etc.); arbitrary helper exports trigger a build-time type error. Route imports from this lib; tests import from here too.
+  - `app/api/v1/digest/[domain]/route.ts` — thin orchestrator. `generateStaticParams()` enumerates `taxonomy.domains[].id`. `GET` 404s on unknown domain (via `notFound()`), otherwise calls `buildDigest({ domain })` + `renderDigestRss(payload)`. Sets `content-type: application/rss+xml; charset=utf-8` + `cache-control: public, max-age=300, s-maxage=300`.
+- **RSS rendering** mirrors Unit 3.5's `/api/v1/rss.xml` shape: 5-entity XML escape, `Date.toUTCString()` for RFC-822 dates, `<atom:link rel="self">` with the canonical URL, channel `<title>` + `<link>` + `<description>` + `<language>en</language>` + `<lastBuildDate>`, per-item `<title>` + `<link>` + `<guid isPermaLink="false">` + `<pubDate>` + `<description>`.
+- **Per Q44 lean**: no `<managingEditor>` (gated on Q33 + Q2 DNS).
+- **No `<dc:creator>` at item level**: digest items combine rating-actions (which have a curator) + leaderboard entries (which don't have a per-row author); simpler to omit. Channel framing carries editorial source.
+- **W3C feed-validator pass** is a Unit 5.13 acceptance-gate follow-on, mirroring the Phase-3 deferred validation pattern (Q27-class).
+- **Test refactor mid-unit**: initial route.ts attempt exported `__testing` for vitest; Next.js's strict-export check rejected this at build time. Fixed by moving helpers to `lib/digest/rss.ts` and importing from there. Tests pass directly via the lib import; the GET handler is tested through its public surface.
+- **+13 tests** in `route.test.ts` covering: RSS envelope validity, atom:link self-ref correctness, channel metadata, item count, XML entity escaping (`&` / `<` / `>` / `"` / `'`), SITE URL prefix, `guid isPermaLink=false`, RFC-822 date format, empty-channel valid feed, the 5-entity `xmlEscape`, `toRfc822` Thursday-checksum, GET 200 + content-type, cache-control header.
+- **Route count: +5 prerendered pages** (1 per taxonomy domain). Build output shows `● /api/v1/digest/[domain]` with the 5 enumerated paths. Total prerendered pages 313 → 318.
+- **Bundle**: First Load JS shared chunk **103 kB UNCHANGED** (server-only route; no client bundle).
+- **Parallel-curator state**: HEAD = `6c33ed9` post-Unit-5.7. No collision.
+- THINK artifact: `docs/thinking/5.8-digest-rss-endpoint.md`.
+- Smoke gates: `pnpm typecheck` (clean), `pnpm test` (**284/284 across 36 files**, was 271/35; +13 RSS endpoint tests), `pnpm validate-content` (203 files unchanged), `pnpm build` (clean compile in 3.5s; 318 prerendered pages; First Load JS 103 kB).
+
