@@ -151,9 +151,29 @@ export const watchlist = sqliteTable(
  *   sparse + brittle; only 1 populated per row.
  * - JSON column for `proposedValue` — SQLite lacks JSONB; adds
  *   parse/serialize overhead with no win over plain TEXT.
- * - Speculative curator-review columns now — ADR-0005's
- *   immutability-and-explicit-evolution ethos prefers landing them
- *   when the surface lands.
+ *
+ * **Phase 12 review columns** (Unit 12.2; migration `0003_rating_challenge_review`):
+ * - `reviewedAt` integer timestamp_ms nullable — when curator landed
+ *   accept/reject decision. NULL means `status ∈ {submitted,
+ *   under_review, withdrawn}`.
+ * - `reviewerId` text FK to `user.id` with `ON DELETE SET NULL`
+ *   (NOT cascade — differs intentionally from `userId`'s cascade;
+ *   deleting the reviewer preserves the decision history with
+ *   orphan pointer, deleting the submitter cascades the row).
+ * - `reviewNotes` text nullable — free-text curator commentary on
+ *   accept/reject (app-level max 4000 chars).
+ * - `acceptedActionId` text nullable — filename pointer to the
+ *   emitted rating-action YAML at
+ *   `content/problems/<slug>/ratings/<filename>`. NULL when
+ *   status ≠ "accepted"; NON-NULL after curator attaches via
+ *   out-of-band YAML commit + UI form (per ADR-0014 D-D manual
+ *   emission). Preserves ADR-0004 file-first + curator-of-record
+ *   semantics (Vercel runtime filesystem is read-only).
+ *
+ * Status state machine per ADR-0014 D-A — 5 values:
+ * `submitted → under_review → accepted | rejected | withdrawn` plus
+ * fast lanes `submitted → accepted/rejected` and `submitted/under_review → withdrawn`.
+ * All three terminal statuses are immutable (mirrors ADR-0005).
  */
 export const ratingChallenges = sqliteTable("ratingChallenge", {
   id: text("id")
@@ -170,4 +190,8 @@ export const ratingChallenges = sqliteTable("ratingChallenge", {
   createdAt: integer("createdAt", { mode: "timestamp_ms" })
     .notNull()
     .default(sql`(unixepoch() * 1000)`),
+  reviewedAt: integer("reviewedAt", { mode: "timestamp_ms" }),
+  reviewerId: text("reviewerId").references(() => users.id, { onDelete: "set null" }),
+  reviewNotes: text("reviewNotes"),
+  acceptedActionId: text("acceptedActionId"),
 });

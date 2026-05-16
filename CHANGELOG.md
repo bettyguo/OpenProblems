@@ -2470,6 +2470,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 12 — Community-adjacent surfaces (**third NON-§13 phase**: Curator review pipeline — Q57 keystone)
 
+#### Unit 12.2 — DB scaffold: `0003_rating_challenge_review` ALTER migration + schema edit
+
+- Third Phase-12 unit; first code unit. **First ALTER migration in project history** (Units 9.3 / 9.6 / 11.1 were all CREATE TABLE; this is the first ADD COLUMN). Validates ADR-0014 D-E ALTER discipline at the migration level. Cumulative migration count: 3 → **4** (drizzle-kit 0-indexed monotonic sequence: `0000_initial_auth` + `0001_watchlist` + `0002_rating_challenges` + **`0003_rating_challenge_review`**).
+- **`lib/db/schema.ts` (edit)**: extends `ratingChallenges` table with 4 new nullable columns per ADR-0014 D-A + D-E:
+  - **`reviewedAt`** `integer("reviewedAt", { mode: "timestamp_ms" })` nullable — when curator landed accept/reject decision. NULL means `status ∈ {submitted, under_review, withdrawn}`; NON-NULL means terminal `accepted`/`rejected`.
+  - **`reviewerId`** `text("reviewerId").references(() => users.id, { onDelete: "set null" })` — FK with **`ON DELETE SET NULL`** (differs intentionally from `userId`'s cascade — deleting the SUBMITTER cascades the row; deleting the REVIEWER preserves the audit-trail row with orphan pointer).
+  - **`reviewNotes`** `text("reviewNotes")` nullable — free-text curator commentary (app-level max 4000 chars; enforced by `lib/rating-challenges/` helpers in Unit 12.3).
+  - **`acceptedActionId`** `text("acceptedActionId")` nullable — filename pointer to rating-action YAML at `content/problems/<slug>/ratings/<filename>` per ADR-0014 D-D manual emission. NULL when status ≠ "accepted"; NON-NULL after curator attaches via out-of-band YAML commit + UI form.
+- **`lib/db/migrations/0003_rating_challenge_review.sql` (new)**: generated via `pnpm db:generate --name rating_challenge_review`. **4 `ALTER TABLE ratingChallenge ADD COLUMN` statements**. Forward-compat: existing Phase-11 rows get NULL in all four columns; no data migration needed.
+- **In-place SQL correction** (anticipated by ADR-0014 D-E "drizzle-kit's `ALTER TABLE` generation has edge cases for SQLite (FK with `ON DELETE SET NULL` isn't always emitted cleanly). Mitigation: manual SQL inspection of the generated migration; correct in-place before commit."): drizzle-kit's libSQL adapter emitted `REFERENCES user(id)` without the action clause on the ALTER form (the snapshot at `meta/0003_snapshot.json` correctly records `"onDelete": "set null"`, but the SQL emitter omits the clause for ALTER TABLE ADD COLUMN — SQLite's known surface quirk). Manual edit added `ON UPDATE no action ON DELETE set null` to the `reviewerId` ALTER statement, matching the 0002's CREATE-TABLE FK clause syntax. The edit happens **pre-commit; the migration has not been applied to any deployed DB**; ADR-0013 D-B immutability rule (applied migrations are immutable) is preserved.
+- **`lib/db/migrations/meta/0003_snapshot.json` (new)**: drizzle-kit snapshot. Correctly records both FKs on `ratingChallenge`: `userId` → `user.id` with cascade (from 0002, unchanged) + `reviewerId` → `user.id` with set null (Phase 12 addition). 6 tables / 12 columns on `ratingChallenge` / 2 FKs / 0 indexes.
+- **`lib/db/migrations/meta/_journal.json` (edit)**: appends entry for migration 0003 (drizzle-kit auto-managed).
+- **Schema-evolution discipline crystallized**: future ALTER migrations follow this pattern — schema edit in `lib/db/schema.ts`; `pnpm db:generate --name <kebab-case>`; manual inspection of generated SQL for SQLite edge cases (FK action clauses; CHECK constraints if any); correct in-place pre-commit; snapshot + journal land atomically. Future column REMOVALS need a copy-table-and-drop dance (out-of-scope Phase 12).
+- **State machine wiring** (per ADR-0014 D-A; codified in `lib/db/schema.ts` docstring): 5 status values (`submitted`, `under_review`, `accepted`, `rejected`, `withdrawn`); 7 legal transitions; terminal states irreversible. App-layer enforcement lands in Unit 12.3's `reviewChallenge` + `withdrawChallenge` helpers (not in this unit's schema).
+- **NOT in this unit** (deferred):
+  - `lib/rating-challenges/` helper extensions (`reviewChallenge` + `withdrawChallenge`) — Unit 12.3.
+  - `lib/auth/curator.ts` (`isCurator`) — Unit 12.3.
+  - `lib/rating-challenges/coi.ts` (`getCoIStatus`) — Unit 12.3.
+  - Curator dashboard UI + review API + `messages.curator.*` — Unit 12.4.
+  - Withdraw UI + profile-page status awareness — Unit 12.5.
+- **Smoke gates**:
+  - `pnpm validate-content` → 203 files unchanged.
+  - `pnpm typecheck` clean (post-schema-edit; Drizzle-orm infers types correctly for the 4 new nullable columns).
+  - `pnpm test` → 403/403 across 46 files unchanged (no test files touched; helpers + route tests land Unit 12.3 + 12.4).
+  - `pnpm db:generate --name rating_challenge_review` → `0003_rating_challenge_review.sql` written (4 ALTER statements; in-place corrected for FK action clause); snapshot + journal updated atomically.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+  - `pnpm build` (deferred to Unit 12.3 or 12.4; no consumer surface in this unit; schema-only edits don't change route output).
+- THINK artifact: omitted — schema decisions are contained in ADR-0014 D-A through D-E + Unit 12.0 D-3 through D-4; no architectural surface beyond what 12.1 + 12.0 pinned. Mirrors Phase-11 Unit 11.1 precedent (schema-scaffold unit without separate THINK doc when ADR is detailed enough).
+- Next: Unit 12.3 (`lib/rating-challenges/` extension with review helpers + `lib/auth/curator.ts` + `lib/rating-challenges/coi.ts` + tests).
+
 #### Unit 12.1 — ADR-0014: Curator review pipeline (state machine + env-var authz + manual YAML emission)
 
 - Second Phase-12 unit; docs-only. Lands ADR-0014 pinning the architectural surface of the Phase-12 keystone thread (curator review pipeline; closes Q57 anticipated in Unit 12.7). **First new ADR since Phase 9** (Phases 10 + 11 added zero ADRs). Mirrors Phase-9 precedent (ADR-0012 in Unit 9.1 + ADR-0013 in Unit 9.2 — both pinned BEFORE any code lands per §15.1 architectural-decision-first discipline).
