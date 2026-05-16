@@ -2041,8 +2041,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
 - THINK artifact: `docs/thinking/7.6-locale-toggle.md`.
 
+#### Unit 7.7 — `lighthouserc.json` enrolment for the `[locale]/about` pilot URLs
 
-
+- Fifth code unit of Phase 7. Per [Unit 7.0 §F](docs/thinking/7.0-phase-7-prep.md), this enrols the FR pilot URLs in the CI Lighthouse cohort. The "FR pilot" took its final shape in Unit 7.3 as `/en/about` + `/fr/about` (not `/methodology` as originally planned — 7.3 deviated). Adds both locale variants so the canonical perf/a11y/seo ≥ 0.95 gates run against the bilingual surfaces on the first PR with this commit.
+- **`lighthouserc.json`** — appended two URLs to `ci.collect.url`: `http://localhost:3000/en/about` and `http://localhost:3000/fr/about`. URL count: 14 → **16**. No threshold change; inherits canonical project gates (perf ≥ 0.95 error, a11y ≥ 0.95 error, seo ≥ 0.95 error, best-practices ≥ 0.95 warn).
+- **CI cost**: 2 URLs × 3 runs (`numberOfRuns: 3`) = +6 LHCI runs per PR. Roughly +1 CI-minute.
+- **Documented risk** (CHANGELOG flag, not pre-fixed): `app/layout.tsx` sets `<html lang="en">` statically; `/fr/about` renders FR content (`title = "À propos"` / `description = "Description du projet, gouvernance et contact. Phase 1."` from `messages/fr.json`, per Unit 7.3). axe's `html-has-lang` rule may flag the content-vs-attribute mismatch on the first PR, potentially pushing FR a11y below 0.95. Fix is a one-line `<html lang={locale}>` in `app/[locale]/layout.tsx` — out of scope for this config-only unit; obvious follow-on if CI flags it (or absorbed into Unit 7.3a when SiteHeader moves under [locale]).
+- **NOT in this unit** (deferred): no `/en/` or `/fr/` locale-root URLs (those 404 at HEAD — no `app/[locale]/page.tsx`); no methodology FR pilot URL (Unit 7.5 owns the methodology pilot); no per-locale threshold override (no data yet justifying it); no mobile preset.
+- **Smoke gates**:
+  - `lighthouserc.json` valid JSON (`require('./lighthouserc.json').ci.collect.url.length === 16`).
+  - No code touched; `validate-content` / `typecheck` / `test` / `build` / `audit-content` unaffected from Unit 7.6's snapshot.
+- THINK artifact: `docs/thinking/7.7-lhci-locale-pilot.md`.
 
 
 
