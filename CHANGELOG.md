@@ -2520,6 +2520,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2); typecheck / test / build untouched since no source files modified.
 - THINK artifact: `docs/thinking/9.1-adr-0012-auth-provider.md`.
 
+#### Unit 9.2 — ADR-0013 (Database: Turso/libSQL + Drizzle ORM)
+
+- Second ADR of Phase 9. Pins the DB lean surfaced in Unit 9.0 D-4. Mirrors the ADR-0008/0010/0011/0012 precedent — first ADR of a phase that introduces a new third-party runtime surface lands BEFORE the runtime install. Pairs with [ADR-0012](docs/adr/0012-auth-provider.md): ADR-0012 D-C pinned "Drizzle adapter for sessions"; this ADR specifies the DB engine the adapter sits on. Docs-only.
+- **ADR-0013 D-A through D-F**:
+  - **D-A. DB engine = libSQL (Turso) / SQLite-compatible**. `@libsql/client@^0.x` is the only DB driver in `dependencies`; other drivers (`pg`, `mysql2`, `better-sqlite3`) **forbidden** until follow-on ADR. Connection: `libsql://<db>.turso.io` (prod) OR `file:./local.db` (local dev); `TURSO_DATABASE_URL` + `TURSO_AUTH_TOKEN` env vars.
+  - **D-B. ORM = Drizzle (`drizzle-orm@^0.x`)** per §5.7. Drizzle-Kit handles migrations via `pnpm db:generate` + `pnpm db:migrate`. Schema in `lib/db/schema.ts`; migrations in `lib/db/migrations/`. **Migration discipline**: every schema change ships as a NEW migration file (never edit applied migrations) — mirrors ADR-0005's rating-action-immutability ethos.
+  - **D-C. Local-dev DB = file-system SQLite at `local.db`**. `.gitignore`d. New contributors run `pnpm db:migrate` on first setup.
+  - **D-D. Production DB = single Turso database (single-tenant)**. One DB per environment. Branching deferred to Phase 10+. Free tier covers project horizon (8 GB storage / 1B row reads / 500 databases). Tier upgrade triggers deferred per Q55.
+  - **D-E. Migration cadence**: Phase-9 migrations = `0001_initial_auth` (Unit 9.3 — NextAuth canonical schema + `githubLogin`) + `0002_watchlist` (Unit 9.6 — Q56 lean: composite primary key on `(user_id, problem_slug)`; no FK on `problem_slug`).
+  - **D-F. No write-paths against content tables**. DB stores USER-STATE only (sessions, users, watchlist, future rating-challenge drafts, future preferences). Content stays file-first per ADR-0004. Cross-references between DB rows and content files use string keys (no FK on `problem_slug`); orphan rows tolerated until cleanup script lands.
+- **Considered options** (4): Turso/libSQL + Drizzle (chosen); Neon Postgres + Drizzle; Vercel Postgres (managed Neon); defer DB to Phase 10. Each option carries explicit Pros/Cons per README convention.
+- **Consequences**:
+  - **Positive**: file-first / no-DB-for-content preserved (USER-STATE only); edge-native latency (< 10ms reads); SQLite local-dev ergonomics (single file; no Docker); §5.7 explicit recommendation honored; free tier amply covers horizon; Drizzle type-safety; migration cadence matches ADR-0005 immutability ethos; reversibility (engine-swap is a one-adapter-edit refactor).
+  - **Negative**: SQLite feature subset (no JSONB / GIN / ARRAY — Phase-10+ features may need a Postgres migration); vendor coupling to Turso (mitigated: libSQL open-source); Drizzle is younger than alternatives; no automatic preview-deploy DB branching in Phase 9; `local.db` not committed (new contributors run `pnpm db:migrate` on first setup).
+- **OPEN_QUESTIONS impact**: **Q55** (DB hosting tier for production) confirmed as operational — Turso free tier indefinitely; tier upgrade trigger deferred to Phase 10+ Q-promotion. **Q56** (watchlist table key shape) confirmed as decided-as-lean — `problem_slug` plain text column with no FK; preserves ADR-0004; resolves at Unit 9.6 schema implementation.
+- **ADR index update**: `docs/adr/README.md` extends to 13 entries; closing-paragraph note appended ("ADR-0013 was authored in Unit 9.2 (pins Turso/libSQL + Drizzle per §5.7; cross-references Q55 + Q56; accepted 2026-05-16)"); next ADR will be numbered 0014.
+- **No code touched**: this is an ADR-only docs unit. `@libsql/client` + `drizzle-orm` + `drizzle-kit` install + `lib/db/` scaffold + first migration arrive at Unit 9.3.
+- Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2); typecheck / test / build untouched since no source files modified.
+- THINK artifact: omitted — ADR-0013 is its own architectural artifact; the ADR's "Context" + "Decision Drivers" sections subsume what a separate THINK doc would say. Mirrors the ADR-0010 / ADR-0011 precedent (THINK doc was a brief wrapper; redundant when the ADR is detailed).
+
 
 
 
