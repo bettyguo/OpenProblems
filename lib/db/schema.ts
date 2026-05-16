@@ -31,6 +31,16 @@ export const users = sqliteTable("user", {
   createdAt: integer("createdAt", { mode: "timestamp_ms" })
     .notNull()
     .default(sql`(unixepoch() * 1000)`),
+  // Phase-15 user-editable profile fields per [ADR-0016](../../docs/adr/0016-user-editable-profile-fields.md)
+  // D-A. Both nullable; app-level length cap (80 / 280 chars) enforced via
+  // `validateDisplayName` + `validateBio` in `lib/users/`. Migration
+  // `0004_user_profile_fields` is the **second ALTER migration** in project
+  // history (first was `0003_rating_challenge_review` per ADR-0014 D-E).
+  // `displayName` overrides `name` on render via the fallback chain
+  // `displayName → name → githubLogin → translated fallback` (ADR-0016 D-E);
+  // `bio` renders as plain text via `whitespace-pre-wrap` (ADR-0016 D-F).
+  displayName: text("displayName"),
+  bio: text("bio"),
 });
 
 export const accounts = sqliteTable(

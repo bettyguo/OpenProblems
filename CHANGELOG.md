@@ -2470,6 +2470,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 15 — Community-adjacent surfaces (**sixth NON-§13 phase**: Q63 promotion — user-editable profile fields; surfaces ADR-0016; second ALTER migration)
 
+#### Unit 15.2 — DB migration `0004_user_profile_fields` + schema edit (`users.displayName` + `users.bio`; second ALTER migration)
+
+- Third Phase-15 unit; **first code unit**. Realizes ADR-0016 D-A schema component. **Second ALTER migration in project history** (first was Phase-12 `0003_rating_challenge_review` per ADR-0014 D-E). Migration count **4 → 5**.
+- **`lib/db/schema.ts` (edit)**: adds two nullable text columns to `users` table:
+  - `displayName: text("displayName")` — nullable; app-level 80-char cap enforced via Unit 15.3's `validateDisplayName`. Overrides `name` on render via ADR-0016 D-E fallback chain.
+  - `bio: text("bio")` — nullable; app-level 280-char cap enforced via Unit 15.3's `validateBio`. Renders plain text via `whitespace-pre-wrap` per ADR-0016 D-F (no markdown).
+- **`lib/db/migrations/0004_user_profile_fields.sql` (new)**: generated via `pnpm db:generate --name user_profile_fields`. Output is clean ALTER ADD COLUMN x 2; no FK; no `ON DELETE` clause; **no manual SQL inspection / correction needed** (unlike Phase-12 Unit 12.2's `reviewerId` FK edge case which required in-place SQL correction). drizzle-kit's nullable text ALTER emission is clean; **Phase-12 D-E pattern validates at second exercise without surprise**.
+  ```sql
+  ALTER TABLE `user` ADD `displayName` text;--> statement-breakpoint
+  ALTER TABLE `user` ADD `bio` text;
+  ```
+- **`lib/db/migrations/meta/0004_snapshot.json` (new)** + **`_journal.json` (edit)**: atomic drizzle-kit write paired with the SQL file.
+- **Forward-compat**: existing `users` rows from Phase 9 onward get NULL values in the two new columns; application reads NULL as "not set; render fallback chain" without special handling. **No data migration needed.**
+- **Backward-incompat surface**: SQLite ALTER TABLE supports ADD COLUMN natively for nullable columns; does NOT support `DROP COLUMN` cleanly. Phase 15 makes no column removals.
+- **Migration immutability discipline** (per ADR-0013 D-B): NEVER edit `0000` – `0003` to add the displayName + bio columns. Phase 15's column adds land as ADDITIVE deltas in `0004_user_profile_fields` (the project's 5th migration; second ALTER).
+- **Why both columns in same migration** (atomic delivery rationale): (a) Unit 15.3 helpers need both columns to populate `PublicProfile` interface — landing together avoids "Unit 15.3 references column that doesn't exist yet" sequencing; (b) drizzle-kit groups multiple ALTER ADD COLUMN cleanly into one migration; user-facing migration history stays terse.
+- **Smoke gates**:
+  - `pnpm db:generate --name user_profile_fields` → 1 SQL file + 1 snapshot + 1 journal entry written.
+  - `pnpm typecheck` clean (new columns flow through `users.$inferSelect` automatically).
+  - `pnpm test` → 480/480 across 52 vitest files unchanged (no test files touched).
+  - `pnpm build` → ~593 prerendered + 7 dynamic page+API routes unchanged. First Load JS shared chunk = **103 kB UNCHANGED**. Middleware bundle = **160 kB UNCHANGED**.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- **Not in this unit** (Units 15.3 – 15.5 follow):
+  - `lib/users/index.ts` extensions (`validateDisplayName` + `validateBio` + `updateProfile`).
+  - `PublicProfile` interface extension to include the new fields.
+  - Tests for the new helpers.
+  - Edit form on `/profile` + `messages.profile_edit.*`.
+  - Public profile consumption updates (fallback chain + bio section).
+- THINK artifact: `docs/thinking/15.2-db-migration-user-profile-fields.md`.
+
 #### Unit 15.1 — ADR-0016: User-editable profile field model (`displayName` + `bio` plain-text; 16 ADRs total)
 
 - Second Phase-15 unit; first ADR-class architectural pin of Phase 15. Docs-only. Pins the user-editable-profile-fields contract before any code lands; mirrors Phase-12 Unit 12.1 + Phase-14 Unit 14.1's "ADR ahead of helpers" ordering.
