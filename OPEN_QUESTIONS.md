@@ -333,13 +333,13 @@ ADR-0010 D-F language is the canonical statement; this entry is the OPEN_QUESTIO
 
 ## Q50. i18n runtime choice
 
-**Status:** decided-as-lean · **Surfaced:** Unit 7.0.
+**Status:** decided · **Surfaced:** Unit 7.0 · **Resolved:** Unit 7.1.
 
 Phase 7's first thread (per [7.0 prep doc](./docs/thinking/7.0-phase-7-prep.md) D-1) is bilingual rendering (FR primary, given the Montréal location signal in §13). Three viable runtimes: `next-intl` (App Router-canonical; mature; sub-path routing built-in); Paraglide.js (newer; TypeScript-first; smaller bundle); native Next.js i18n + custom translation system.
 
-**Lean** (subject to ADR-0011 in Unit 7.1): **`next-intl`** with **sub-path routing** (`/en/...`, `/fr/...`) and **JSON-per-locale message files** (`messages/en.json`, `messages/fr.json`). Reasoning: canonical recommendation for App Router; sub-path routing is crawler-friendly + bookmarkable; we don't need bundle-size heroics for a 2-locale project.
+**Decision** (per [ADR-0011](./docs/adr/0011-i18n-strategy.md) D-A / D-B): **`next-intl`** as the runtime + **sub-path routing** (`/en/...`, `/fr/...`) + **JSON-per-locale message files** (`messages/en.json`, `messages/fr.json`). Default locale = `en`; bare URLs 308-redirect to the defaulted locale.
 
-ADR-0011 (Unit 7.1) will pin the realized contract.
+ADR-0011 also pins the surrounding decisions: D-C content-storage shape = sibling files (`*.fr.{yaml,mdx}`); D-D fallback chain = `fr → en` with a switch hint; D-E English-canonical slugs; D-F site-header locale-toggle UI; D-G `translation_source` provenance frontmatter on translated files.
 
 ## Q51. Bilingual content backfill cadence
 

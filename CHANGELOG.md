@@ -1903,6 +1903,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2); typecheck / test / build untouched since no source files modified.
 - THINK artifact: `docs/thinking/7.0-phase-7-prep.md`.
 
+#### Unit 7.1 — ADR-0011 (i18n strategy: next-intl + sub-path routing + sibling-file content storage)
+
+- First ADR of Phase 7. Pins the leans surfaced in Unit 7.0 D-3 / D-4 / D-5 / D-6 into a firm decision before any code lands. Mirrors the ADR-0008 (LLM provider) precedent — first ADR of a phase that introduces a new third-party runtime surface lands BEFORE the runtime install (Unit 7.2). Docs-only.
+- **ADR-0011 D-A through D-G**:
+  - **D-A. Runtime = `next-intl`**. Pinned via `^3.x` in `dependencies`; `messages/<locale>.json` translation lookup format; ICU MessageFormat for plurals/interpolation. Other i18n runtimes forbidden until a follow-on ADR authorizes.
+  - **D-B. URL routing = sub-path** (`/en/...`, `/fr/...`). Default locale = `en`; bare URLs 308-redirect to the defaulted locale. SSG-compatible; crawler-friendly; bookmarkable.
+  - **D-C. Content-storage shape = sibling files**. EN files take no infix (preserves git history); translated files carry `.<locale>` infix before the extension (e.g. `problem.fr.yaml`, `background.fr.mdx`). Velite glob extension lands in Unit 7.5.
+  - **D-D. Locale fallback chain = `fr → en` with switch hint**. Untranslated pages render the EN canonical content with a "this page is not yet translated" header hint. No partial-translation rendering. Hard-404 rejected (would break the Q51 "infrastructure ships in Phase 7; backfill is curator-track" decision).
+  - **D-E. Slug strategy = English-canonical**. URL slugs do NOT translate. `/fr/problems/hallucination-reduction` is the correct French URL. Titles + body translate; slugs are stable technical identifiers. Per-locale slug aliases deferred to a future ADR.
+  - **D-F. Locale-toggle UI = site-header**. Next to `ThemeToggle` in `components/site-header/`; `"use client"`; pre-hydration placeholder; click cycles through locales. Persists via URL (no cookie needed for state; cookie used only for first-visit Accept-Language hint).
+  - **D-G. Translation provenance = `translation_source` frontmatter** on translated files. Values: `"human"` (default; curator-authored) or `"machine-assisted"` (curator-reviewed LLM draft). Required on `*.<locale>.{yaml,mdx}`; absent on EN-canonical files. Schema lands in Unit 7.5. `editorial.primary_curator` stays global per Q53 (translation provenance ≠ authorship attribution).
+- **Considered options** (7 in total per the ADR's options table): next-intl + sub-path + sibling (chosen); Paraglide.js + sub-path + sibling; native Next.js i18n + custom lookup; no-i18n / defer to Phase 8+; next-intl + cookie-based routing; next-intl + sub-tree mirror; next-intl + `lang:` frontmatter discriminator. Each option carries explicit Pros/Cons in the ADR per the README's "≥ 2 options with explicit Pros/Cons" rule.
+- **Consequences**:
+  - **Positive**: App Router-canonical surface; mature SDK; SSG-compatible routing; sibling-file storage preserves curator workflow; reversibility via `lib/i18n/` thin wrapper.
+  - **Negative**: `next-intl` adds ~30 KB to client bundle on i18n-aware pages (mitigated by 103 kB First Load JS budget headroom); every URL gets a locale prefix (no language-neutral canonical URL; 308 redirect from bare URLs); English-canonical slugs create a French-speaker friction surface (slugs in English; titles in French); sibling-file pattern is curator-side slightly awkward when one problem has many MDX surfaces.
+- **OPEN_QUESTIONS status changes**:
+  - **Q50** (i18n runtime choice): decided-as-lean → **decided** (closed by ADR-0011 D-A + D-B).
+  - **Q51 / Q52 / Q53**: stay decided-as-lean (the ADR codifies their working positions at the ADR level; per-unit implementation details land in Units 7.2 / 7.5).
+- **ADR index update**: `docs/adr/README.md` extends to 11 entries; closing-paragraph note appended ("ADR-0011 was authored in Unit 7.1 (closes OPEN_QUESTIONS Q50 + codifies Q51-Q53 leans; accepted 2026-05-16)"); next ADR will be numbered 0012.
+- **No code touched**: this is an ADR-only docs unit. `next-intl` install + lib/i18n runtime arrive at Unit 7.2.
+- Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2); typecheck / test / build untouched since no source files modified.
+- THINK artifact: `docs/thinking/7.1-adr-0011-i18n-strategy.md`.
+
+
 
 
 
