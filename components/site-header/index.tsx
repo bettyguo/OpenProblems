@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LocaleToggle } from "@/components/locale-toggle";
 import { SearchTrigger } from "@/components/search-trigger";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { getSearchIndex } from "@/lib/search/build-index";
@@ -45,6 +46,7 @@ export function SiteHeader() {
         </nav>
         <div className="ml-auto flex items-center gap-2">
           <SearchTrigger index={index} />
+          <LocaleToggle />
           <ThemeToggle />
         </div>
       </div>

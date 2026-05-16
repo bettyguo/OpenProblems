@@ -2010,8 +2010,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
 - THINK artifact: `docs/thinking/7.4-velite-sibling-file.md`.
 
+#### Unit 7.6 — `components/locale-toggle/` site-header UI
 
-
+- Fourth code unit of Phase 7. Renumbered out-of-sequence: lands ahead of 7.5 (methodology FR pilot) because Unit 7.4 was authored by a parallel-curator session (commit `f315458`); locale-toggle scope is fully disjoint from the routing layer + content loaders that 7.5 would touch, so it's the lowest-collision next step. Implements [ADR-0011 D-F](docs/adr/0011-i18n-strategy.md) — site-header placement, click cycles to next locale, aria-label describes next action.
+- **New component** — `components/locale-toggle/index.tsx`:
+  - `"use client"` directive.
+  - Exports `computeToggle(pathname)` pure helper → `{ currentLocale, targetLocale, targetHref } | null`; the React component is a thin wrapper that calls `usePathname()` from `next/navigation` and renders the result.
+  - Returns `null` on bare paths (no `/[locale]/` prefix). Renders a `<Link>` to the equivalent route under the next locale on `/en/...` and `/fr/...` paths.
+  - Visual styling mirrors `ThemeToggle` (`size-9` square, border, hover, focus-visible ring); displays the current locale as a 2-letter code (`EN`/`FR`); aria-label in the *target* language ("Passer au français" / "Switch to English").
+- **New tests** — `components/locale-toggle/index.test.tsx`: **11 cases** — 7 covering the pure `computeToggle` helper (bare paths return `null`; unknown first segment returns `null`; EN ↔ FR cycling; multi-segment paths preserved; root path edge cases for `/en` and `/fr/`); 4 covering the `<LocaleToggle />` component via `vi.mock("next/navigation")` + `renderToStaticMarkup` (bare path → empty; `/en/about` → link to `/fr/about` with EN label + Passer aria-label; `/fr/about` → link to `/en/about` with FR label; className prop forwards).
+- **`components/site-header/index.tsx`** (1-line edit): import `LocaleToggle`; insert between `<SearchTrigger />` and `<ThemeToggle />` in the right-aligned controls cluster.
+- **Pathname-based locale detection (not `useLocale()`)**. SiteHeader renders in `app/layout.tsx` — ABOVE the `NextIntlClientProvider` that `app/[locale]/layout.tsx` installs — so next-intl client hooks would throw if called inside SiteHeader. `usePathname()` works regardless of provider context (it reads URL state, not provider state). This deviates from a literal reading of ADR-0011 D-F ("Stable placeholder pre-hydration") but the deviation is *equivalent*: `usePathname()` is SSR-stable, so the component renders the same content SSR and post-hydration — no layout shift, no placeholder needed.
+- **Bare-path behavior — toggle hides**. During the intermediate state (every route except `/en/about` + `/fr/about` is bare), the toggle only renders on those 2 pilot routes. Fail-closed pattern: clicking on a non-pilot route would offer a navigation target that 404s today (e.g., `/fr/problems` doesn't exist yet). Once Unit 7.3a's middleware + bulk page migration land, every route has a `/[locale]/` shadow and the toggle becomes universally visible.
+- **NOT in this unit** (deferred):
+  - No `NEXT_LOCALE` cookie write (depends on middleware — Unit 7.3a).
+  - No `useTranslations` for the toggle's aria-label (depends on SiteHeader moving under the provider — Unit 7.3a).
+  - No query-param / fragment preservation across locale switch (`usePathname()` strips them; Phase-7 routes currently don't use query params).
+  - No third-locale icon work — the cycle logic uses `locales.indexOf + 1 mod length`, so adding a locale to `lib/i18n/routing.ts` extends the cycle automatically.
+- **Tradeoffs flagged**:
+  - Hardcoded aria-label strings (one pair: `"Passer au français"` / `"Switch to English"`) instead of `useTranslations` — necessary because of the provider-scope mismatch; reconsider when 7.3a moves SiteHeader under [locale].
+  - Text label (`EN`/`FR`) instead of a lucide-react icon — most informative for a 2-letter code; `Globe` would be too generic; `Languages` doesn't disambiguate.
+  - Cycle order is alphabetical (`en → fr`) matching the `locales` array — curator chooses the array order; no opinion in this unit.
+- **Page count delta**: 335 → **335 UNCHANGED** (no new routes).
+- **Bundle impact**: First Load JS shared chunk = **103 kB UNCHANGED**. LocaleToggle is a tiny client component (usePathname + Link + 2 string-record lookups); falls below the 1 kB reporting threshold for per-route chunk impact.
+- **Smoke gates**:
+  - `pnpm validate-content` → 203 files unchanged.
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **357/357 across 41 files** (was 346/40; +11 from `locale-toggle/index.test.tsx` new file).
+  - `pnpm build` → **335 prerendered pages UNCHANGED**. First Load JS shared chunk = **103 kB UNCHANGED**.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- THINK artifact: `docs/thinking/7.6-locale-toggle.md`.
 
 
 
