@@ -38,7 +38,7 @@
   },
   "rating_challenge": {
     "heading": "Contester cette notation",
-    "description": "Vous êtes en désaccord avec une des dimensions ? Soumettez votre argumentaire ; l'équipe éditoriale examinera votre contestation.",
+    "description": "Vous êtes en désaccord avec une des dimensions ? Soumettez votre argumentaire ; l'équipe éditoriale examinera votre contestation. Votre identifiant GitHub sera affiché publiquement à côté de votre contestation si elle atteint un statut non rejeté.",
     "sign_in_prompt": "Se connecter avec GitHub pour contester une notation →",
     "open_form": "Ouvrir le formulaire de soumission",
     "submitted_banner": "Votre contestation a été soumise. L'équipe éditoriale l'examinera.",

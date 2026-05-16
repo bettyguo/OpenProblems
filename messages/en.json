@@ -38,7 +38,7 @@
   },
   "rating_challenge": {
     "heading": "Challenge this rating",
-    "description": "Disagree with one of the dimensions? Submit a rationale and the curator team will review your challenge.",
+    "description": "Disagree with one of the dimensions? Submit a rationale and the curator team will review your challenge. Your GitHub handle will be displayed publicly alongside your challenge if it reaches a non-rejected status.",
     "sign_in_prompt": "Sign in with GitHub to submit a rating challenge →",
     "open_form": "Open submission form",
     "submitted_banner": "Your challenge was submitted. The curator team will review it.",

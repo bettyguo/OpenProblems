@@ -2470,6 +2470,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 13 — Community-adjacent surfaces (**fourth NON-§13 phase**: Q58 public visibility — honored-deferral pick)
 
+#### Unit 13.3 — Per-problem listing route + submitter-login privacy note (EN + FR)
+
+- Fourth Phase-13 unit; third code unit. Lands the **largest Q58 surface**: `/[locale]/problems/[slug]/challenges` — public listing of community-submitted rating challenges with per-status visibility enforced server-side via `getPublicChallengesByProblem` (Phase-13 Unit 13.1 helper). **First read-side public PAGE ROUTE for USER-STATE content** in the project (Phase-12 + Unit 13.2 counter were section-level surfaces; this is a full page).
+- **`app/[locale]/problems/[slug]/challenges/page.tsx` (new)**:
+  - `force-dynamic` (DB reads on every request; mirrors Phase-12 curator dashboard SSR strategy per Unit 13.0 D-10).
+  - **No auth gate** — visible to unauthenticated visitors. Per-status visibility is the policy boundary: `getPublicChallengesByProblem` server-side filters to `submitted` + `under_review` + `accepted` per Unit 13.0 D-3 + PUBLIC_CHALLENGE_STATUSES const from Unit 13.1; `rejected` + `withdrawn` never reach this surface.
+  - Layout per Unit 13.0 D-5: back-to-problem nav link → page heading (`{problem.title}`) → page description → empty state OR dense list. Renders `notFound()` if the slug isn't in `#site/content/problems`.
+  - **Per-row shape**: submitter `@githubLogin` (via `tPC("submitter_label", { login })` ICU; falls back to `tPC("submitter_unknown")` for Phase-9 retrofit edge where `submitterLogin === null`) + submitted-date `<time dateTime={ISO-YYYY-MM-DD}>` + dimension label (reused from `rating_challenge.dim_*`) + proposed value in mono + **color-coded status pill** (emerald accepted / amber under_review / muted submitted; matches Phase-12 profile-page palette per Unit 13.0 D-12) + rationale preview (200-char truncation; mirrors Unit 11.4 + 12.5 precedent per Unit 13.0 D-14) + `acceptedActionId` reference line (visible when `status === "accepted"` AND `acceptedActionId` non-null; matches Phase-12 Unit 12.5 profile-page pattern).
+  - **Empty state**: bordered-dashed card "No public rating challenges for this problem yet" + CTA linking to `/problems/{slug}#rating-challenge` (anchor to the Phase-11 submission form section).
+- **`messages.rating_challenge.description` (EN + FR edit)**: appends a **submitter-login privacy note** per Unit 13.0 D-8:
+  - EN: "...Your GitHub handle will be displayed publicly alongside your challenge if it reaches a non-rejected status."
+  - FR: "...Votre identifiant GitHub sera affiché publiquement à côté de votre contestation si elle atteint un statut non rejeté."
+  - Justification: submitters need explicit awareness that their `@githubLogin` becomes public when their challenge reaches `submitted` / `under_review` / `accepted` status (per PUBLIC_CHALLENGE_STATUSES). Rejected + withdrawn stay submitter-only — the wording "if it reaches a non-rejected status" surfaces both the privacy semantics + the editorial-decision-privacy guarantee.
+- **`messages.public_challenges.*` (consumed; no new keys this unit)**: all 16 keys per locale were pre-added in Unit 13.2 (atomic-i18n discipline). Unit 13.3 consumes the listing-page subset: `page_heading`, `page_description`, `empty_message`, `empty_cta`, `submitter_label` (ICU `{login}`), `submitter_unknown`, `rationale_label`, `action_attached_label`, `status_submitted` / `status_under_review` / `status_accepted`, `back_to_problem`.
+- **Page route registered**: `ƒ /[locale]/problems/[slug]/challenges` (Dynamic — no `generateStaticParams` since the listing depends on DB state that varies per request). 1.91 kB route bundle / 108 kB First Load JS (matches `/profile` + `/curator/challenges/[id]` + other server-rendered Phase-9+ pages).
+- **NOT in this unit** (deferred):
+  - Public profile route at `/[locale]/u/[handle]` (Q58 lean #3 + Phase-10 Class B item 1 + Phase-12 Class B item 12) — Phase 14+ alongside per-user privacy model ADR.
+  - Per-problem listing URL search-param sort (Phase 14+ when usage justifies).
+  - Detail-per-challenge route at `/[locale]/problems/[slug]/challenges/[id]` (full rationale; not truncated) — Phase 14+ from Phase-11 Class B item 6.
+- **Smoke gates**:
+  - `pnpm validate-content` → 203 files unchanged.
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **467/467 across 51 files UNCHANGED** (no test files touched; route is exercised via build smoke + manual dev-server walkthrough; helpers themselves covered by Unit 13.1's 11 tests).
+  - `pnpm build` clean; new route **`ƒ /[locale]/problems/[slug]/challenges`** registered (Dynamic). ~592 prerendered pages + 5 dynamic API routes + 1 new dynamic page route = **~592 pages + 5 dynamic page+API routes total** unchanged otherwise. **First Load JS shared chunk = 103 kB UNCHANGED**. Middleware bundle = 160 kB UNCHANGED.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- THINK artifact: omitted — implementation contained in Unit 13.0 D-3 (visibility policy) + D-5 (route layout) + D-8 (privacy note) + D-12/D-13/D-14/D-15/D-16 (status pill / submitter link / truncation / sort / empty CTA decisions all resolved per pre-prep leans).
+- Next: Unit 13.4 (Phase-13 hygiene status pass).
+
 #### Unit 13.2 — Counter UI on problem detail page + `messages.public_challenges.*` (EN + FR)
 
 - Third Phase-13 unit; second code unit. Lands the **smallest public Q58 surface** per Unit 13.0 D-4: a counter section on `/[locale]/problems/[slug]` displaying open + accepted challenge counts with a "View all →" link to the per-problem listing route (which Unit 13.3 will ship). **First read-side public surface for USER-STATE content** — visible to unauthenticated visitors (no auth gate; counter renders regardless of session).
