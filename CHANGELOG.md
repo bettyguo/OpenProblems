@@ -1792,6 +1792,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
 - THINK artifact: `docs/thinking/6.6-digest-discussions-extension.md`.
 
+#### Unit 6.7 — `lighthouserc.json` enrolment for `/problems/[slug]/talk`
+
+- Sixth code unit of Phase 6. Tiny config-only unit: added `http://localhost:3000/problems/hallucination-reduction/talk` to the LHCI URL cohort so the talk-page route gets the canonical a11y / perf / SEO / best-practices ≥ 95 gate on every PR. Mirrors the Phase-5 Unit 5.13 precedent (added `/digest` as the 13th URL).
+- **URL count**: 13 → **14**. Same problem (`hallucination-reduction`) as the rest of the cohort's per-problem URLs (`/problems/<slug>` + `/ratings` + `/history`) to keep LHCI traces directly comparable when surfaced.
+- **One representative URL per route-template** is the project convention. The 10 talk pages share the same template + prop shape; auditing one is sufficient.
+- **What's actually scored**: the SSG shell (breadcrumb + `<h1>Discussion</h1>` + section landmark + `<noscript>` fallback + back-link). The Giscus iframe loads lazily AFTER Lighthouse's primary-metric collection window (per ADR-0010 D-A bundle isolation), so the iframe contents are NOT scored — cross-origin + post-mount.
+- **Bundle context**: talk page's First Load JS = 108 kB (vs. 103 kB shared chunk; +2 kB delta is the Giscus wrapper from Unit 6.4); page is mostly text + one heading + no images. Expect perf ≥ 95 on the desktop preset.
+- Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline); typecheck / test / build untouched since no source files modified. **Real LHCI run deferred** — runs on the first PR containing this commit (Q27-class CI-on-deploy pattern).
+- THINK artifact: `docs/thinking/6.7-lighthouse-talk-enrolment.md`.
+
+
 
 
 

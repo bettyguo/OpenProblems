@@ -14,7 +14,8 @@
         "http://localhost:3000/trending",
         "http://localhost:3000/ratings",
         "http://localhost:3000/contributing",
-        "http://localhost:3000/digest"
+        "http://localhost:3000/digest",
+        "http://localhost:3000/problems/hallucination-reduction/talk"
       ],
       "startServerCommand": "pnpm start",
       "startServerReadyPattern": "Ready",
