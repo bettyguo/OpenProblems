@@ -2570,6 +2570,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - `pnpm build` → ~590 prerendered pages unchanged. First Load JS shared chunk = **103 kB UNCHANGED** (DB client is server-only; not bundled into page chunks).
 - THINK artifact: `docs/thinking/9.3-db-scaffold.md`.
 
+#### Unit 9.4 — NextAuth.js v5 install + `lib/auth/` wrapper
+
+- Fourth code unit of Phase 9. Lands the auth runtime pinned by ADR-0012. Installs the libraries, wraps `NextAuth({...})` with the Drizzle adapter from Unit 9.3, exports the canonical `{ auth, handlers, signIn, signOut }` quad, registers the `/api/auth/[...nextauth]` route handler, and restores the `AdapterAccountType` narrowing on `accounts.type` that Unit 9.3 deferred.
+- **Dependencies installed**:
+  - `next-auth@5.0.0-beta.31` — current v5 release line; v5 stable not yet GA. Pinned exact-version (no caret) per the beta tag convention.
+  - `@auth/drizzle-adapter@1.11.2` — Auth.js v5's Drizzle adapter; routes Auth.js's `users`/`accounts`/`sessions`/`verificationTokens` reads through Drizzle.
+- **New files**:
+  - `lib/auth/index.ts`: wraps `NextAuth({...})` with the Drizzle adapter (`usersTable`, `accountsTable`, `sessionsTable`, `verificationTokensTable` from `lib/db/schema`), the `GitHub` provider invoked WITHOUT explicit args (Auth.js v5 auto-discovers via `AUTH_GITHUB_ID` + `AUTH_GITHUB_SECRET` env vars per the canonical convention), `session: { strategy: "database" }` (matches ADR-0012 D-C), `trustHost: true` (allows Vercel preview-deploy hosts; CSRF defense is provided by the OAuth `redirect_uri` lock + signed `state` parameter, not host-pinning). Exports `{ auth, handlers, signIn, signOut }`.
+  - `app/api/auth/[...nextauth]/route.ts`: canonical Auth.js v5 pattern — `import { handlers } from "@/lib/auth"; export const { GET, POST } = handlers;`. Registered as Dynamic ƒ in the build.
+- **Edits** — `lib/db/schema.ts`:
+  - Adds `import type { AdapterAccountType } from "next-auth/adapters"`.
+  - Restores `.$type<AdapterAccountType>()` cast on `accounts.type` (deferred from Unit 9.3 — couldn't import the type before `next-auth` was installed). Runtime SQL unchanged.
+- **Edits** — `.env.example`:
+  - Renames `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` → `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` (Auth.js v5 canonical names; provider auto-discovers them).
+  - Reason: invoking `GitHub({ clientId: process.env.GITHUB_CLIENT_ID, ... })` runs afoul of `exactOptionalPropertyTypes: true` (config types `clientId: string`, not `string | undefined`). Auto-discovery side-steps the issue + matches the framework's idiom.
+- **Edits** — `OPEN_QUESTIONS.md` Q54:
+  - Updates the operational-gate text to reflect the renamed env vars. Adds `AUTH_SECRET` to the required-env-vars list (32-byte base64 secret; generate via `openssl rand -base64 32` or `npx auth secret`; required by Auth.js v5 for CSRF + session-cookie signing).
+- **NOT in this unit** (deferred):
+  - Session middleware composition (chain Auth.js with the Phase-8 next-intl middleware) — Unit 9.5.
+  - Sign-in / sign-out UI in SiteHeader — Unit 9.5.
+  - `events.createUser` callback that populates `users.githubLogin` from the GitHub OAuth profile on first sign-in — Unit 9.5 alongside the user-aware UI.
+  - Watchlist table + write-path + DB-trigger (a) flip — Unit 9.6.
+  - OAuth app smoke-test against real github.com — gated on Q54 operational unblock.
+- **Smoke gates**:
+  - `pnpm validate-content` → 203 files unchanged.
+  - `pnpm typecheck` clean (post-`AdapterAccountType` import + `providers: [GitHub]` simplification).
+  - `pnpm test` → 388/388 across 44 files unchanged (no test files touched; full e2e auth flow requires the OAuth app from Q54).
+  - `pnpm build` → +1 route (`/api/auth/[...nextauth]`, Dynamic ƒ); ~590 prerendered pages otherwise unchanged. Compile 6.0s (was 3.6s; next-auth adds ~2s). First Load JS shared chunk = **103 kB UNCHANGED** (auth runtime is server-side; UI lands Unit 9.5).
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- THINK artifact: `docs/thinking/9.4-auth-wrapper.md`.
+
 
 
 

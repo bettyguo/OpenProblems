@@ -377,7 +377,7 @@ The Phase-9 auth thread depends on a registered GitHub OAuth app. Operational ga
 
 1. Register the OAuth app under the `bettyguo` GitHub org with `Homepage URL: https://llm-openproblems.org` (Q2 placeholder; may shift when DNS lands), `Authorization callback URL: https://llm-openproblems.org/api/auth/callback/github` (NextAuth.js v5 default callback path under `localePrefix: "always"` middleware).
 2. Generate the OAuth app's Client ID + Client Secret.
-3. Store `GITHUB_CLIENT_ID` + `GITHUB_CLIENT_SECRET` in Vercel project env (production + preview scopes).
+3. Store `AUTH_GITHUB_ID` + `AUTH_GITHUB_SECRET` + `AUTH_SECRET` (a 32-byte base64 secret generated via `openssl rand -base64 32` or `npx auth secret`) in Vercel project env (production + preview scopes). Auth.js v5 auto-detects these by canonical names; provider config in `lib/auth/index.ts` invokes `GitHub` without explicit args (Unit 9.4 commit).
 4. Add a separate OAuth app for local-dev (`http://localhost:3000` Homepage + `http://localhost:3000/api/auth/callback/github` callback).
 5. Optionally: a third OAuth app per-curator for individual local-dev (so multiple curators don't share secrets).
 
