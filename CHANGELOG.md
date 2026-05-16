@@ -1820,6 +1820,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline unchanged); typecheck / test / build untouched (docs-only).
 - THINK artifact: `docs/thinking/6.8-phase-6-hygiene-status.md`.
 
+#### Unit 6.9 — OPEN_QUESTIONS hygiene + ADR review (Phase 6 close)
+
+- Eighth code-track unit of Phase 6 (docs-only). Reconciles the OPEN_QUESTIONS.md ledger against Phase-6 outcomes; refines status flags; surveys ADR-0001 through 0010 for drift introduced by Phase 6's surfaces. Mirrors Phase-5 Unit 5.12 framing.
+- **OPEN_QUESTIONS deltas this unit**:
+  - **Q46** (Discussions backend) — unchanged (already closed by ADR-0010 in Unit 6.1).
+  - **Q47** (repo Discussions enablement) — open; reaffirmed; documented the unblock sequence: repo-settings toggle → giscus.app config → `NEXT_PUBLIC_GISCUS_REPO_ID` env on prod deploy → `GITHUB_TOKEN` in CI. Phase 6's 4 read surfaces all gracefully degrade without Q47 (Units 6.2 / 6.4 / 6.5 / 6.6).
+  - **Q48** (talk-page indexing posture) — **partially-resolved**. The "linked from problem detail" half closed in Units 6.3 + 6.5 (with count upgrade). The sitemap half stays open — no sitemap surface exists at HEAD; tracked as a Phase-7+ hygiene candidate.
+  - **Q49** (comment moderation routing) — **resolved** (closed by ADR-0010 D-F codifying the lean). The OPEN_QUESTIONS entry is now the cross-reference; ADR-0010 D-F is the locus.
+- **ADR review (0001 – 0010)**: no drift introduced by Phase 6. ADR-0001 / 0002 / 0003 / 0004 / 0005 / 0006 / 0007 / 0008 / 0009 all held — Phase 6 added no Velite collections, no Zod schemas, no rating actions, no LLM calls, no drafts, no viz. ADR-0010 (new this phase) — Units 6.2 / 6.3 / 6.4 / 6.5 / 6.6 conform to the six D-A through D-F contracts; the env-safe wrappers added during Units 6.5 / 6.6 (`tryGetDiscussionByPath`, `tryGetRecentDiscussionActivity`) are mechanically faithful to D-D's fail-soft contract. No supersession needed.
+- **Pre-Phase-6 questions untouched this phase**: Q2 / Q3 (DNS); Q6-Q11 / Q14-Q17 / Q19 (Phase-0/1); Q25 (JSON envelope); Q26 / Q28-Q31 (Phase-1/2; Q31 Velite+Zod-4 incompat still in `velite.config.ts` — Phase 6 added no new collections); Q33 (RSS `dc:creator`, coupled to Q2); Q37 (issue-template form-fields, Phase-4 deferred). decided-as-lean set Q34-Q36 / Q38-Q39 / Q42 / Q44 — none touched.
+- **Cross-phase invariants reconfirmed at HEAD `e1be7e1`**:
+  - First Load JS shared chunk = **103 kB** through every Phase-6 unit (verified at Units 6.2 / 6.3 / 6.4 / 6.5 / 6.6 build smokes).
+  - Test count = **323/323 across 38 files** (Phase-6 +39 tests vs. Phase-5 close baseline of 284).
+  - Route count = **333 prerendered pages** (Phase-6 +10 from Unit 6.3's talk pages; Phase-5 close was 322; Unit 5.13b added 1; 322 + 1 + 10 = 333 ✓).
+  - `pnpm audit-content` = 0 errors / 6 warnings (Q32 baseline since Phase 2; unchanged).
+- Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings; typecheck / test / build untouched (docs-only).
+- THINK artifact: `docs/thinking/6.9-open-questions-adr-review.md`.
+
+
 
 
 

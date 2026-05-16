@@ -305,24 +305,28 @@ Six concrete contracts (ADR-0010 D-A through D-F): embed = Giscus; read-side = f
 
 ## Q47. GitHub repository discussions enablement
 
-**Status:** open (operational, not architectural) · **Surfaced:** Unit 6.0.
+**Status:** open (operational, not architectural) · **Surfaced:** Unit 6.0 · **Phase-6 hygiene reaffirmed:** Unit 6.9.
 
-GitHub Discussions must be enabled in the `bettyguo/OpenProblems` repository settings for any Phase-6 Discussions work to function. Requires owner action; out-of-band for docs units. Check before Unit 6.2 (`lib/discussions/github-graphql.ts`) ships — the GraphQL queries against a discussions-disabled repo return empty.
+GitHub Discussions must be enabled in the `bettyguo/OpenProblems` repository settings for any Phase-6 Discussions surface to render live data. Requires owner action; out-of-band for docs units. Verified at Unit 6.9 hygiene pass: still open. Code-side handling is complete + graceful — Unit 6.2's GraphQL client + Units 6.5 / 6.6's env-safe wrappers (`tryGetDiscussionByPath` / `tryGetRecentDiscussionActivity`) all return null/[] without throwing, and Unit 6.4's embed renders an "embed unavailable" curator-facing message when `NEXT_PUBLIC_GISCUS_REPO_ID` is unset.
 
-Not architectural; tracked as a gating operational checklist item rather than a question with a "right answer".
+Not architectural; tracked as a gating operational checklist item. Unblocks (in order): repo-settings toggle → giscus.app config UI → set `NEXT_PUBLIC_GISCUS_REPO_ID` env on production deploy → set `GITHUB_TOKEN` in CI (auto-injected on GitHub Actions; verify the workflow has the correct permissions).
 
 ## Q48. Talk-page indexing posture
 
-**Status:** decided-as-lean · **Surfaced:** Unit 6.0.
+**Status:** partially-resolved · **Surfaced:** Unit 6.0 · **Refined:** Unit 6.9.
 
 Should `/problems/<slug>/talk` pages be in the sitemap + linked from problem detail pages?
 
-**Lean**: yes — sitemap-included; surface a "Discuss" link from `app/problems/[slug]/page.tsx`. Revisit after talk-page Lighthouse a11y baseline lands (Unit 6.7). Rationale: discussion activity is genuine content; hiding the route from indexing would defeat the discovery purpose.
+**Decision-half (linked from detail)**: **resolved** — Unit 6.3 ships the "Discuss this problem →" link from `app/problems/[slug]/page.tsx`. Unit 6.5 upgraded the link with a parenthesized count when known.
+
+**Decision-half (sitemap-included)**: **still open** — no sitemap surface (`app/sitemap.ts`) exists at HEAD. The lean stays "yes, include when a sitemap lands"; tracked as a Phase 7+ hygiene candidate if/when a sitemap is added. Not blocking Phase 6 acceptance.
 
 ## Q49. Comment moderation routing
 
-**Status:** decided-as-lean · **Surfaced:** Unit 6.0.
+**Status:** decided · **Surfaced:** Unit 6.0 · **Resolved:** Unit 6.1 (codified in ADR-0010 D-F).
 
 When a Giscus comment is flagged in the embed, where does the curator chain pick it up?
 
-**Lean**: **defer entirely to GitHub Discussions' native moderation**. Don't build a first-party moderation queue alongside. Revisit only if curator workload signals a real backlog or if moderation needs to flow into rating-action evidence chains (which would couple Discussions to the editorial pipeline in a way Phase 6 v1 doesn't require).
+**Decision** (pinned in [ADR-0010 D-F](./docs/adr/0010-discussions-backend.md)): **defer entirely to GitHub Discussions' native moderation**. No first-party moderation queue alongside. Revisit only if curator workload signals a real backlog OR if moderation needs to flow into rating-action evidence chains (out-of-scope for Phase 6 v1; would warrant a future ADR).
+
+ADR-0010 D-F language is the canonical statement; this entry is the OPEN_QUESTIONS-side cross-reference for searchers who reach this file first.
