@@ -2470,6 +2470,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 14 — Community-adjacent surfaces (**fifth NON-§13 phase**: Public profile page at `/[locale]/u/[handle]` — honored-deferral pick; surfaces ADR-0015)
 
+#### Unit 14.4 — Per-user challenges sub-route + Phase-13 per-problem listing `@login`-to-Link upgrade (Q58 lean #3 closure)
+
+- Fifth Phase-14 unit; third code unit. **Closes Q58 lean #3 deferred from Phase 13** (Unit 13.0 D-9 + Unit 13.5 explicit Phase-14+ carveout): `/[locale]/u/[handle]/challenges` per-user surface lands. **Also closes Phase-13 Unit 13.3 D-13** dangling `@login` plain-text link target via the per-problem listing's submitter-login upgrade.
+- **`app/[locale]/u/[handle]/challenges/page.tsx` (new)**: per-user public challenges listing. `force-dynamic`. Consumes Unit 14.2's `getPublicChallengesByUser(profile.userId)` extension on `lib/rating-challenges/`. Per-user analogue of Phase-13 Unit 13.3 per-problem listing, rotated by submitter axis. Mirrors Phase-13's row shape verbatim (200-char rationale truncation; same status-pill color palette; same dimension+proposedValue+date columns); differs only on the column rendered alongside the row (per-user listing renders problem title linked to `/problems/{slug}`; per-problem listing renders submitter `@login` — now linked to `/u/{login}` per the same-unit edit below).
+- **`app/[locale]/problems/[slug]/challenges/page.tsx` (edit)**: Phase-13 per-problem listing row's `@login` text upgraded from plain `<p>` to `<Link href="/u/{login}">` per ADR-0015 D-A + Phase-13 Unit 13.3 D-13's explicit forward-reference ("Phase 14+ when public profile route lands, upgrade to clickable Link"). `submitter_unknown` branch stays plain text — there's no profile to link to when `submitterLogin` is null (Phase-9 retrofit edge from Unit 9.6's deferred `events.linkAccount` on prior sign-ins). Hover register: `hover:text-accent` + underline matches the page's other clickable text patterns; preserves visual density.
+- **Why mirror Phase-13 listing instead of extracting shared `<ChallengeRow>`**: per Unit 14.0 D-6 lean, extracting saves ~50 LOC but couples future divergence (per-user listing may later want per-row "edit / withdraw" buttons when viewing own profile; per-problem listing never has that surface). Phase 15+ may extract once a third axis surfaces.
+- **Empty state**: bordered-dashed card with `@{login} has no public challenges yet` (per pre-added `public_profile.challenges_empty_message`) + "Submit a challenge →" link to `/problems`. CTA renders unconditionally (anyone signed-in can submit; pointing other visitors to `/problems` is a reasonable next-step). Phase 15+ may refine to show CTA only on own profile per Unit 14.0 D-20 lean.
+- **Back-link shape**: `← @{githubLogin}` (short, dense, matches GitHub's nav pattern) → `/u/{login}`. The "rating challenges" framing is implicit via the page heading right below.
+- **Build smoke**: new route `ƒ /[locale]/u/[handle]/challenges` (1.92 kB / 108 kB First Load JS). Total dynamic page+API routes: **7** (was 5 at Phase-13 close; +1 Unit 14.3 shell + 1 this unit sub-route).
+- **Smoke gates**:
+  - `pnpm typecheck` clean.
+  - `pnpm test` → 480/480 across 52 vitest files unchanged.
+  - `pnpm build` → ~593 prerendered + 7 dynamic; First Load JS shared chunk = **103 kB UNCHANGED**; middleware = **160 kB UNCHANGED**.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- **Not in this unit** (Unit 14.5 + Phase 15+ follow):
+  - SiteHeader "Your profile" link (Unit 14.5).
+  - Per-row "edit / withdraw" button on per-user listing when viewing own profile (Phase 15+; couples to Q63 promotion).
+  - URL search-param sort + pagination on per-user listing (Phase-13 Class B items 2 + 7 carryover; Phase 15+; LIMIT 50 silent cap is sufficient for current scale).
+- **Architectural completion**: the Phase-14 thread now has BOTH per-user surfaces operational (shell + sub-route) + the Phase-13 listing's `@login` link target wired. The community-feedback **publication** loop is end-to-end clickable: submitter `@login` on per-problem listing → public profile → public challenges sub-route → back to per-problem detail page.
+- THINK artifact: `docs/thinking/14.4-per-user-challenges-sub-route.md`.
+
 #### Unit 14.3 — Public profile shell page at `/[locale]/u/[handle]` + `messages.public_profile.*` (EN + FR) + curator-of-record badge
 
 - Fourth Phase-14 unit; second code unit. Establishes the **first per-USER read-side public surface** in the project. Largest UI consumer of Unit 14.2's `lib/users/` module. Realizes ADR-0015 D-A (field partition) + D-B (case-preserved-URL, case-insensitive lookup, no redirect) + D-E (curator-of-record case-sensitive) + D-F ("Edit your profile" CTA when own profile).
