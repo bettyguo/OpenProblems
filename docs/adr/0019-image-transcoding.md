@@ -399,6 +399,32 @@ and `.toBuffer()`. Audit boundary stays explicit; transforms
 compose. Multiple Phase 20+ transforms can stack (moderation +
 crop + resize + webp).
 
+**REALIZED Phase 24 Unit 24.1** — the resizing + WebP format-
+conversion paths (rows 3 + 4 of the D-F example pipeline)
+landed in Phase-19 `lib/storage/putAvatar` per the D-F
+inheritance contract verbatim:
+`sharp(buffer).rotate().resize({ width: 512, height: 512, fit: "cover" }).webp({ quality: 85 }).toBuffer()`.
+`AVATAR_SIZE = 512` and `WEBP_QUALITY = 85` constants pin
+Phase-24's parameter choices (rationale comments inline in
+`lib/storage/index.ts`). Storage-key extension + content-type
+are always `.webp` / `image/webp` post-Phase-24 regardless of
+input MIME (input MIME validation unchanged per ADR-0017 D-B).
+Phase-16's `inferExt()` helper became dead code with this
+change and was removed (first dead-code removal in an
+operational-script-keystone phase). `scripts/backfill-resize-webp.ts`
+ships the retroactive backfill mirror (mirrors Phase-20
+`backfill-exif-strip.ts` shape with the new sharp chain;
+`-resize.webp` storage-key suffix distinguishes from Phase-20's
+`-backfill.<ext>` outputs in Vercel Blob console; both backfill
+cycles coexist). 5 existing `lib/storage/index.test.ts` tests
+modified in-place to assert the new pipeline shape (0 net new
+tests Phase 24). Phase 24 did NOT need a new ADR — the
+implementation realizes this D-clause without architectural
+surface. Phase-25+ remaining D-F candidates: Q68 expansion
+content moderation (row 1 of the example pipeline; ADR-0020
+candidate); cropping UI (row 2); AVIF format conversion (row 4
+half).
+
 ## Consequences
 
 ### Positive
