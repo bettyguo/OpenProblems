@@ -1,4 +1,5 @@
 import { del, put } from "@vercel/blob";
+import sharp from "sharp";
 
 /**
  * Vercel Blob storage wrapper — first storage layer in project history
@@ -46,13 +47,40 @@ function inferExt(mime: string): string {
  * Upload an avatar file to Vercel Blob and return the public URL.
  * Storage-key shape: `avatars/<userId>-<timestamp>.<ext>`.
  *
- * Public-access by ADR-0017 D-A (avatar images are public on profile
- * pages; private-access mode would require a token-signed URL per render
- * with no win).
+ * Per [ADR-0019](../../docs/adr/0019-image-transcoding.md) (Phase
+ * 19), the file passes through a `sharp` transcoding pipeline
+ * BEFORE Vercel Blob upload:
+ *
+ *   1. `Buffer.from(await file.arrayBuffer())` — File → Buffer.
+ *   2. `sharp(buffer).rotate()` — auto-rotation per D-D: reads
+ *      EXIF Orientation tag (1-8), applies rotation/flip to pixel
+ *      data, resets Orientation to 1. iOS portrait shots render
+ *      correctly across all clients including those that ignore
+ *      EXIF Orientation.
+ *   3. `.toBuffer()` — re-encode WITHOUT EXIF metadata per D-B:
+ *      `sharp.toBuffer()`'s default behavior strips ALL EXIF
+ *      tags (GPS / camera serial / datetime / software / author /
+ *      copyright / comment / etc.). Color profile + dimensions +
+ *      encoding settings preserved. No `.withMetadata()` call
+ *      Phase 19 — strip everything (conservative privacy default).
+ *   4. `put(key, strippedBuffer, ...)` — upload to Vercel Blob.
+ *
+ * Output format matches input format (`sharp` preserves input
+ * format by default when no explicit `.jpeg()/.png()/.webp()` is
+ * called); `contentType: file.type` remains correct.
+ *
+ * Public-access by ADR-0017 D-A (avatar images are public on
+ * profile pages; private-access mode would require a token-signed
+ * URL per render with no win). EXIF stripping (D-A through D-D)
+ * is the privacy-by-default surface per Phase 19; existing Phase
+ * 16-18 avatars NOT retroactively processed (D-E backwards-compat
+ * decision).
  */
 export async function putAvatar(file: File, userId: string): Promise<string> {
+  const inputBuffer = Buffer.from(await file.arrayBuffer());
+  const strippedBuffer = await sharp(inputBuffer).rotate().toBuffer();
   const key = `avatars/${userId}-${Date.now()}.${inferExt(file.type)}`;
-  const { url } = await put(key, file, {
+  const { url } = await put(key, strippedBuffer, {
     access: "public",
     contentType: file.type,
   });

@@ -2470,6 +2470,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 19 — Community-adjacent surfaces (**tenth NON-§13 phase**: Q70 promotion — EXIF stripping on uploaded images; surfaces ADR-0019 image-transcoding pipeline; first server-side image processing surface; third consecutive 0-migration phase)
 
+#### Unit 19.2 — `lib/storage/putAvatar` extension: `sharp` integration + EXIF strip + auto-rotation (564 tests; +2 / 0)
+
+- Third Phase-19 unit; **first (and only) code unit of Phase 19**. Realizes ADR-0019 D-A library + D-B EXIF allow-list + D-C pipeline placement + D-D auto-rotation preservation at the helper layer. Anticipated dependency for downstream Phase-19 hygiene + OQ + gate units.
+- **`pnpm add sharp` (dep install)**: `sharp@0.34.5` direct runtime dep. Previously transitively available via `next/image` per Phase-0 `pnpm-workspace.yaml` `allowBuilds.sharp: true` configuration; explicit direct dep makes the import stable across future `next` updates.
+- **`lib/storage/index.ts` (edit)**: `putAvatar` extended with sharp pipeline per ADR-0019:
+  - **D-C input stage**: `Buffer.from(await file.arrayBuffer())` converts `File` → Node `Buffer`.
+  - **D-D auto-rotation**: `sharp(inputBuffer).rotate()` reads EXIF Orientation tag (1-8), applies rotation/flip to pixel data, resets Orientation to 1. **iOS portrait shots render correctly across all clients including those that ignore EXIF Orientation.**
+  - **D-B EXIF strip**: `.toBuffer()` re-encodes WITHOUT EXIF metadata (sharp's default behavior strips ALL EXIF tags). **No `.withMetadata()` call Phase 19** — strip everything (conservative privacy default per Unit 19.0 D-3 inverted-allow-list approach). Color profile + dimensions + encoding settings preserved internally by sharp.
+  - **D-C upload stage**: `put(key, strippedBuffer, ...)` — existing Vercel Blob `put()` call now receives the transcoded buffer instead of the raw `File`. Output format preserved (sharp keeps input format by default; `contentType: file.type` remains correct).
+- **`lib/storage/index.test.ts` (edit)**: mocks `sharp` via `vi.mock("sharp", () => ({ default: sharpFactory }))` with fluent-chain stub (`sharpFactory().rotate() → sharpInstance`; `sharpInstance.toBuffer() → STRIPPED_BUFFER` sentinel). **2 new tests + 3 modified tests**:
+  - **"transcodes input via sharp(buffer).rotate().toBuffer() before Vercel Blob upload"** (NEW) — asserts `sharpFactory` called once with `Buffer` arg; `.rotate()` called once no-args (D-D); `.toBuffer()` called once (D-B).
+  - **"uploads the sharp-stripped buffer (NOT the original file) to Vercel Blob"** (NEW) — asserts `put` receives `STRIPPED_BUFFER` (the sharp output), not the original File; confirms the integration handoff.
+  - **3 modified tests** (existing JPEG / PNG / WebP shape tests) — assertions updated to expect `STRIPPED_BUFFER` as `put()`'s second arg instead of the original `file`; storage-key shape + contentType behavior unchanged.
+- **Why mock `sharp` (not run real sharp + fixture)**: unit tests verify the INTEGRATION shape (sharp invoked correctly + output flows to Vercel Blob); real EXIF-strip behavior is sharp's responsibility (verified by sharp's own test suite + integration tests against real fixtures Phase 20+). Risks of running real sharp in unit tests rejected: native libvips bindings unreliable across CI environments; ~20 KB fixture management burden; ~100 ms cold-start per test slows suite.
+- **Backwards compatibility per ADR-0019 D-E**: Phase 19 only strips NEW uploads via `updateProfileImageAction`; existing Phase 16-18 avatars NOT retroactively processed. **Phase-20+ backfill script candidate** (`scripts/backfill-exif-strip.ts`; manual curator invocation; CLI dry-run flag; ~1-2 units when promoted).
+- **Phase 20+ inheritance contract realized per ADR-0019 D-F**: the `sharp(buffer).rotate().toBuffer()` pipeline establishes the integration point — Phase-20+ image-processing surfaces (Q68 expansion content moderation; cropping UI via `.extract()`; resizing via `.resize()`; WebP/AVIF transcoding via `.webp()/.avif()`) insert their transforms between `.rotate()` and `.toBuffer()`. Multiple Phase-20+ transforms can stack.
+- **Smoke gates**:
+  - `pnpm typecheck` clean (after `sharp` install + import resolution).
+  - `pnpm test` → **564/564 across 54 vitest files** (**+2 / 0** vs Phase-18 close 562/54).
+  - `pnpm build` → ~659 prerendered pages + 7 dynamic page+API routes UNCHANGED. **First Load JS shared chunk = 103 kB UNCHANGED** per ADR-0019 (extends ADR-0018 D-F) invariant — sharp is server-only; no client bundle delta. **Middleware bundle = 160 kB UNCHANGED**.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2; unchanged through every Phase 3-17 unit).
+- **ADR-0019 D-A through D-D fully realized** at helper layer in this single code unit (vs Phase-17's 2-code-unit + Phase-18's 3-code-unit cadences). Phase 19's narrower scope (single consumer surface; no UI affordance; no DB schema; no i18n) compresses the code work into one unit.
+- THINK artifact: `docs/thinking/19.2-sharp-integration.md`.
+
 #### Unit 19.1 — ADR-0019 image-transcoding pipeline (`sharp` server-side; **19 ADRs total**)
 
 - Second Phase-19 unit; first ADR-class architectural pin. Mirrors Phase-12 Unit 12.1 + Phase-14 Unit 14.1 + Phase-15 Unit 15.1 + Phase-16 Unit 16.1 + Phase-17 Unit 17.1 cadences: prep doc (19.0) → ADR (19.1; this unit) → integration (19.2) → hygiene (19.3 + 19.4) → gate (19.5). Lands per Unit 19.0 D-8 anticipated shape.
