@@ -2470,6 +2470,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 19 — Community-adjacent surfaces (**tenth NON-§13 phase**: Q70 promotion — EXIF stripping on uploaded images; surfaces ADR-0019 image-transcoding pipeline; first server-side image processing surface; third consecutive 0-migration phase)
 
+#### Unit 19.4 — OPEN_QUESTIONS hygiene + ADR review (Q70 promoted from `open` to `resolved`; **19 ADRs unchanged**; 26 resolved / 4 lean / 29 open / **59 total**; first STATUS-CHANGE-ONLY promotion)
+
+- Fifth Phase-19 unit; docs-only. Mirrors Phase-13 Unit 13.5 + Phase-14 Unit 14.7 + Phase-15 Unit 15.7 + Phase-16 Unit 16.7 + Phase-17 Unit 17.6 + Phase-18 Unit 18.5 hygiene patterns. Promotes Q70 (EXIF stripping on uploaded images) from `open` to `resolved` status.
+- **First STATUS-CHANGE-ONLY promotion** since Phase-12 Q57 + Phase-13 Q58 + Phase-15 Q63 + Phase-16 Q67 + Phase-17 Q66 + Phase-18 Q71 same-unit add-and-resolve pattern. Q70 was Phase-16-added carryover (surfaced Unit 16.1 with full `Status: open (privacy candidate)` body; carried Phase 17 Unit 17.5 B.1 + Phase 18 Unit 18.4 B.1 = 3-phase wait before resolution). **Entry body already existed Phase 16-18; Phase 19 changes `Status:` line + extends body** with ADR-0019 citation + Units 19.1 + 19.2 realization details + "What Q70 closes architecturally" section + Phase-20+ follow-on candidates.
+- **`OPEN_QUESTIONS.md` (edit)**: replaces Q70's `Status: open` line + extends body. New status line cites resolved 2026-05-16 (Unit 19.1); references ADR-0019 + Unit 19.2 helper-layer realization. **What Q70 closes architecturally** section documents 5 bullets:
+  - **First server-side image processing surface** in project history.
+  - **First explicit privacy-by-default surface** (Phase 16 imageOverride shipped privacy-by-omission; Phase 19 closes gap intentionally; conservative PII posture).
+  - **First inverted-allow-list pattern** in project history (vs Phase-17/18 `bioSchema`/`reviewNotesSchema` explicit-allow-list).
+  - **Third consecutive 0-migration phase** (Phase 17 + 18 + 19; 6 of 10 phases since DB landed).
+  - **Bundle invariant preserved** per ADR-0018 D-F extension — 103 kB First Load JS UNCHANGED through every Phase 9-19 unit.
+  - **First "explicit-dep promotion" of transitive dep** (`sharp` was transitively available via `next/image`; Phase 19 promotes to direct runtime dep).
+- **OPEN_QUESTIONS tally delta** (Unit 9.8 mechanical `**Status:**`-field count):
+
+  | Class | Phase 18 close | Phase 19 close | Δ |
+  |---|---|---|---|
+  | resolved | 25 | **26** | +1 (Q70) |
+  | decided-as-lean | 4 | 4 | 0 |
+  | open | 30 | **29** | -1 (Q70 promoted out) |
+  | **TOTAL** | **59** | **59** | **0** |
+
+  **Mechanical Q-count unchanged** — Q70 was already in file as `open`; status-change-only promotion doesn't add entries. Compare to same-unit add-and-resolve pattern (Q57/Q58/Q63/Q67/Q66/Q71) which adds +1 to total.
+
+- **NOT promoted this unit** (Phase-20+ candidates stay flagged; **8 carry**):
+  - **Q59 candidate** (CLI emit-challenge-action) — carried Phase-12 through Phase-19 (**8 phases**).
+  - **Q60 / Q61 / Q62 / Q64 / Q65** — Phase-13/14 carryovers.
+  - **Q68 expansion** (content moderation on uploaded images) — ADR-0019 D-F integration point now documented at `.rotate()` ↔ `.toBuffer()` boundary; Phase-20+ insertion straightforward.
+  - **Q72 candidate** (`reviewNotesSchema` divergence) — Phase-18 carryover.
+- **ADR review** (**19 ADRs unchanged** from Phase 19 Unit 19.1 close): 0001-0019 all `accepted`; no superseding; no deprecations Phase 19.
+- **Phase-20+ ADR-0020 candidate slot open after 6-phase ADR cycle without multi-provider-OAuth claim** (Phase-15 ADR-0016 + Phase-16 ADR-0017 + Phase-17 ADR-0018 + Phase-18 NO-new-ADR + Phase-19 ADR-0019). **Phase-9 Class B item 8 carried 9 phases** — **strongest architectural "patience signal"**. Other candidates: image-processing API content moderation (Q68 expansion + Q68 expansion); markdown subset extensions ADR (Phase-17 D-H + Q72); subscriber-list email provider (Phase-5 D-4 punt carried **13+ phases** — strongest overall "patience signal"); per-challenge detail page (may not need new ADR).
+- Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2; unchanged through every Phase 3-17 unit); typecheck / test / build untouched since no source files modified.
+- THINK artifact: `docs/thinking/19.4-open-questions-hygiene.md`.
+
 #### Unit 19.3 — Phase-19 hygiene status pass (**0 Class A** / ~11 Class B / Class C unchanged; **eight consecutive well-scoped phases**)
 
 - Fourth Phase-19 unit; docs-only. Mirrors Phase-13 Unit 13.4 + Phase-14 Unit 14.6 + Phase-15 Unit 15.6 + Phase-16 Unit 16.6 + Phase-17 Unit 17.5 + Phase-18 Unit 18.4 hygiene catalog patterns.

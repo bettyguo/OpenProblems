@@ -519,21 +519,22 @@ Parallel to **Q54** (GitHub OAuth app registration) + **Q55** (Turso production 
 
 ## Q70. EXIF stripping on uploaded images (privacy)
 
-**Status:** open (privacy candidate; surfaced 2026-05-16 Unit 16.1 per ADR-0017 D-B + D-H deferral; Phase 17+ if user privacy report surfaces).
+**Status:** resolved 2026-05-16 (Unit 19.1): pinned in [ADR-0019](./docs/adr/0019-image-transcoding.md) — `sharp@0.34.5` server-side `lib/storage/putAvatar` integration (`sharp(buffer).rotate().toBuffer()` pipeline; auto-rotation preserved via `.rotate()` no-args reading EXIF Orientation tag before stripping; strip-everything-by-default per `sharp.toBuffer()`'s inverted-allow-list behavior; no `.withMetadata()` call Phase 19 — color profile + dimensions + encoding settings preserved by sharp internally; conservative privacy default per Unit 19.0 D-3). Realized via Unit 19.2 (`lib/storage/index.ts` extension + 5 tests: 2 new sharp-integration shape verification + 3 modified JPEG/PNG/WebP shape tests asserting `STRIPPED_BUFFER` as `put()` arg; mocked sharp via `vi.mock("sharp")` for unit-test reliability; real EXIF-strip verified by sharp's own test suite + Phase 20+ integration tests against real fixtures). **First server-side image processing surface + first explicit privacy-by-default surface in project history** (Phase 16 imageOverride shipped privacy-by-omission; Phase 19 closes the privacy gap intentionally — conservative posture for PII surfaces; single user privacy report would surface this immediately). **First inverted-allow-list pattern** in project history (vs Phase-17 / Phase-18 bioSchema / reviewNotesSchema explicit-allow-list approach). Phase-20+ inheritance contract per D-F documents how Q68 expansion (content moderation) + cropping UI + server-side resizing + WebP/AVIF transcoding all compose via the same `.rotate()` ↔ `.toBuffer()` integration point. Backwards compatibility per D-E: existing Phase 16-18 avatars NOT retroactively processed; **Phase-20+ backfill script candidate** `scripts/backfill-exif-strip.ts` ~1-2 units when promoted. Bundle invariant preserved per ADR-0018 D-F extension: **103 kB First Load JS UNCHANGED** end-to-end through every Phase 9-19 unit (sharp is server-only; no client bundle delta). · **Surfaced:** Phase-16 Unit 16.1 (ADR-0017 D-B + D-H deferral) + Phase-17 Unit 17.5 B.1 carryover + Phase-18 Unit 18.4 B.1 carryover + Phase-18 Unit 18.6 acceptance-gate "strongest privacy signal" callout · **Resolved:** Unit 19.1 (ADR-0019 acceptance) + Unit 19.2 (helper-layer realization).
 
-Phase 16 ships image upload WITHOUT EXIF stripping. User-uploaded photos may embed GPS coordinates, camera serial numbers, datetime metadata, and other PII. The `imageOverride` URL is publicly served via Vercel Blob CDN; any client downloading the avatar can read the embedded EXIF.
+What Q70 closes architecturally:
 
-Deferred per ADR-0017 D-H: "EXIF stripping — privacy concern (GPS metadata, camera serials). Defer until first user privacy report."
+- **First server-side image processing surface in project history**. Phase 9-18 stored images as-is via Vercel Blob; Phase 19 transcodes (re-encodes without EXIF) before upload. Establishes the integration-point pattern for Phase-20+ image-processing surfaces per ADR-0019 D-F inheritance contract.
+- **First explicit privacy-by-default surface in project history**. Phase 16 imageOverride shipped without EXIF stripping — privacy-by-omission. Phase 19 closes the privacy gap intentionally (single user privacy report would surface this immediately; conservative posture for PII surfaces; strip-by-default is the security-correct approach).
+- **First inverted-allow-list pattern in project history**. Phase-17 + 18 used explicit-allow-list `bioSchema` / `reviewNotesSchema` (specify what's allowed; everything else stripped). Phase 19 uses inverted-allow-list via `sharp.toBuffer()`'s strip-everything default (specify what's preserved via opt-in `.withMetadata({...})`; everything else stripped). Both patterns establish security-correct defaults via library choice.
+- **Third consecutive 0-migration phase** (Phase 17 + 18 + 19; 6 of 10 phases since DB landed are 0-migration). Phase 19 ships rendering layer expansion only; `users.imageOverride` column already existed from Phase-16 `0005_user_image_override` migration.
+- **Bundle invariant preserved** per ADR-0018 D-F extension — First Load JS shared chunk = **103 kB UNCHANGED** end-to-end through every Phase 9-19 unit (sharp is server-only; no client bundle delta).
+- **First "explicit-dep promotion" of transitive dep**. `sharp` was previously transitively available via `next/image` per Phase-0 `pnpm-workspace.yaml` `allowBuilds.sharp: true` configuration; Phase 19 promotes to direct runtime dep for stability across future `next` updates.
 
-Phase-17+ resolution options (in roughly increasing complexity):
+Phase-20+ follow-on candidates explicitly flagged in ADR-0019 D-E + D-F + Unit 19.3 hygiene catalog:
 
-- **`sharp` server-side pipeline** — reads upload, strips EXIF, re-encodes; ~30 KB additional bundle; well-known + battle-tested. Lean choice.
-- **External transcoding service** (Vercel Image Optimization / Cloudinary / similar) — heavier; eats into request budget.
-- **Client-side stripping pre-upload** — browser-side EXIF strip via JavaScript; user-trustable surface; ~10 KB additional bundle on `/profile`; couples to client component.
-
-Surfaces ADR-0018+ candidate for the image-transcoding pipeline choice. ~2-3 units when promoted.
-
-Couples to **Q68 expansion** (content moderation on uploaded images) — both surfaces sit in the "uploaded image needs server-side processing" category; pipeline choice may land them together.
+- **EXIF backfill script** (`scripts/backfill-exif-strip.ts`) — Phase-20+ ~1-2 units when promoted. Iterates existing Phase 16-18 `users.imageOverride` URLs; downloads each blob; sharp-strips; re-uploads; updates DB column; deletes original.
+- **Q68 expansion content moderation** on uploaded images — Phase-20+ ~3-4 units; ADR-0020+ candidate; inserts moderation API call between `.rotate()` and `.toBuffer()` per ADR-0019 D-F inheritance contract.
+- **Cropping UI** + **server-side resizing** + **WebP/AVIF format conversion** + **color profile preservation** — Phase-20+ image-processing expansion candidates per ADR-0019 D-F.
 
 ## Q66. Markdown rendering in `users.bio`
 
