@@ -8,7 +8,7 @@ import { visit } from "unist-util-visit";
 import type { Element, Root } from "hast";
 import type { Plugin } from "unified";
 
-import { bioSchema } from "./sanitize-schema";
+import { bioSchema, reviewNotesSchema } from "./sanitize-schema";
 
 /**
  * Server-side markdown rendering pipeline for `users.bio` per
@@ -51,7 +51,47 @@ export function renderBioMarkdown(text: string | null): string | null {
   const trimmed = text.trim();
   if (trimmed.length === 0) return null;
 
-  const file = processor.processSync(trimmed);
+  const file = bioProcessor.processSync(trimmed);
+  const html = String(file).trim();
+  return html.length === 0 ? null : html;
+}
+
+/**
+ * Server-side markdown rendering for `ratingChallenge.reviewNotes`
+ * per [ADR-0018](../../docs/adr/0018-markdown-sanitization.md) D-G
+ * inheritance contract (Phase-18 Unit 18.1 sibling of
+ * {@link renderBioMarkdown}).
+ *
+ * Identical pipeline + behavior to {@link renderBioMarkdown}; uses
+ * the parallel `reviewNotesSchema` (which is currently identical to
+ * `bioSchema` Phase-18 per Unit 18.0 D-3 scope-cap discipline;
+ * Phase-19+ may diverge if curator demand surfaces — Q72 candidate).
+ * Separate processor instance keeps the schema audit boundary
+ * explicit per surface.
+ *
+ * Consumer surfaces (Phase 18):
+ *   - `/[locale]/curator/challenges/[id]/page.tsx` — curator
+ *     dashboard; **full render, no clamp** (curator wants full
+ *     editorial readability).
+ *   - `/[locale]/profile/page.tsx` — user's own challenges listing;
+ *     **full render + CSS `line-clamp-3`** for visual truncation
+ *     (replaces Phase-12's `truncateRationale()` source-truncation
+ *     which is incompatible with markdown — mid-tag truncation risks
+ *     breaking formatting).
+ *
+ * @param text The raw markdown source from `ratingChallenge.reviewNotes`,
+ *   or null when no curator review notes were attached.
+ * @returns Sanitized HTML string, or null when input is null /
+ *   whitespace-only. Caller (server component) renders via
+ *   `dangerouslySetInnerHTML`; null caller omits the reviewNotes
+ *   block entirely.
+ */
+export function renderReviewNotesMarkdown(text: string | null): string | null {
+  if (text === null) return null;
+  const trimmed = text.trim();
+  if (trimmed.length === 0) return null;
+
+  const file = reviewNotesProcessor.processSync(trimmed);
   const html = String(file).trim();
   return html.length === 0 ? null : html;
 }
@@ -119,12 +159,33 @@ const rehypeStripUnsafeHrefs: Plugin<[], Root> = () => (tree) => {
  * Singleton `unified` processor instance for `renderBioMarkdown`.
  * Build cost is amortized across requests (server-side cache
  * across the module's lifetime).
+ *
+ * Renamed from anonymous `processor` per Unit 18.0 D-8 refactor to
+ * disambiguate against `reviewNotesProcessor` (Phase 18). Zero
+ * behavior change.
  */
-const processor = unified()
+const bioProcessor = unified()
   .use(remarkParse)
   .use(remarkGfm)
   .use(remarkRehype, { allowDangerousHtml: false })
   .use(rehypeDemoteHeadings)
   .use(rehypeSanitize, bioSchema)
+  .use(rehypeStripUnsafeHrefs)
+  .use(rehypeStringify);
+
+/**
+ * Singleton `unified` processor instance for
+ * `renderReviewNotesMarkdown` per ADR-0018 D-G inheritance contract
+ * (Phase 18). Identical pipeline shape to `bioProcessor`; uses
+ * `reviewNotesSchema` (currently identical to `bioSchema` Phase-18
+ * per Unit 18.0 D-3 scope-cap discipline). Separate instance keeps
+ * the schema audit boundary explicit per surface.
+ */
+const reviewNotesProcessor = unified()
+  .use(remarkParse)
+  .use(remarkGfm)
+  .use(remarkRehype, { allowDangerousHtml: false })
+  .use(rehypeDemoteHeadings)
+  .use(rehypeSanitize, reviewNotesSchema)
   .use(rehypeStripUnsafeHrefs)
   .use(rehypeStringify);

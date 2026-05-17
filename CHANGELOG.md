@@ -2470,6 +2470,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 18 — Community-adjacent surfaces (**ninth NON-§13 phase**: multi-surface markdown render — `renderReviewNotesMarkdown` sibling via ADR-0018 D-G inheritance; first reviewNotes markdown surface; second consecutive 0-migration phase)
 
+#### Unit 18.1 — `lib/markdown/` extension: `renderReviewNotesMarkdown` + `reviewNotesSchema` sibling (562 tests; +10 / 0; first ADR-0018 D-G exercise)
+
+- Second Phase-18 unit; **first code unit of Phase 18**. Realizes ADR-0018 D-G inheritance contract at the helper layer — **first exercise of "each surface gets its own helper + schema; audit boundary stays explicit per surface" pattern documented Phase-17 Unit 17.1**.
+- **`lib/markdown/sanitize-schema.ts` (edit)**: restructures schema authoring — extracts schema config to local `baseSchemaConfig` constant; `bioSchema` = `baseSchemaConfig` (Phase-17 surface reference; unchanged behavior); **`reviewNotesSchema` (NEW)** = `{ ...baseSchemaConfig }` **explicit shallow copy** per Unit 18.0 D-3 "intentional parity Phase-18 / Phase-19+ may diverge" signal. Comment block documents Q72 candidate path (curator reviewNotes tables / footnotes if curator demand surfaces; Phase-19+ if signal).
+- **`lib/markdown/index.ts` (edit)**: sibling helper + sibling processor:
+  - **`renderReviewNotesMarkdown(text: string | null): string | null` (NEW)** — identical pipeline shape to `renderBioMarkdown`; uses `reviewNotesProcessor` singleton. JSDoc block documents Phase-18 consumer surfaces (`/curator/challenges/[id]` **FULL render — no clamp** + `/profile` own-challenges listing **markdown + CSS `line-clamp-3` visual truncation**).
+  - **`bioProcessor` rename** — Phase-17 anonymous `processor` constant renamed to `bioProcessor` per Unit 18.0 D-8 refactor; zero behavior change; disambiguates against new sibling.
+  - **`reviewNotesProcessor` (NEW)** — identical 7-stage pipeline to `bioProcessor` (`remarkParse` → `remarkGfm` → `remarkRehype` with `allowDangerousHtml: false` → `rehypeDemoteHeadings` → `rehypeSanitize(reviewNotesSchema)` → `rehypeStripUnsafeHrefs` → `rehypeStringify`). Separate instance keeps schema audit boundary explicit per surface.
+- **`lib/markdown/index.test.ts` (edit)**: **+10 new tests** organized into two groups:
+  - **7 `renderReviewNotesMarkdown` happy-path + XSS-defense spot-checks**: bold rendering / https link preservation / javascript: URL strip (inherited XSS defense) / raw `<script>` strip (inherited sanitization) / heading demotion (D-C shared) / null / whitespace-only.
+  - **3 schema parity tests**: `reviewNotesSchema.tagNames` ≡ `bioSchema.tagNames`; `protocols` parity; `attributes` parity. Phase-17's 12 XSS-vector tests cover the pipeline; sibling helper inheritance means defense is shared by construction — spot-check tests confirm inheritance at the boundary.
+- **`truncateRationale()` source-truncation incompatibility surfaced** (resolution anticipated Unit 18.3): truncating markdown SOURCE mid-string risks breaking formatting — `**bold text mor` (unclosed `**`); `[link te` (unclosed `[`); multi-line collapse loses block-level context. Unit 18.3 drops `truncateRationale(challenge.reviewNotes)` entirely; renders FULL markdown; applies CSS `line-clamp-3` (Tailwind v4 built-in) for visual truncation. The `truncateRationale()` helper itself stays for rationale field (Phase-11 plain-text; not markdown Phase 18; defer to Phase 19+ if rationale markdown promotes).
+- **Zero behavior change for Phase-17 `renderBioMarkdown`** — rename refactor only; all Phase-17 tests pass unchanged (XSS suite + happy path + heading demotion + null/empty).
+- **Smoke gates**:
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **562/562 across 54 vitest files**. **+10 / 0** this unit (552/54 at Phase-17 close; Phase-18 brings the suite to 562/54).
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2; unchanged through every Phase 3-17 unit).
+  - `pnpm build` — not re-run this unit (helper additions are module-internal; no consumer-surface changes yet; build invariants land in Units 18.2 + 18.3 acceptance checks).
+- **Not in this unit** (Units 18.2 + 18.3 follow):
+  - `/curator/challenges/[id]/page.tsx` reviewNotes markdown render (Unit 18.2; FULL render — no clamp).
+  - `/profile/page.tsx` own-challenges listing reviewNotes markdown + `line-clamp-3` + `truncateRationale()` removal for reviewNotes (Unit 18.3).
+- THINK artifact: `docs/thinking/18.1-lib-markdown-review-notes.md`.
+
 #### Unit 18.0 — Phase 18 prep (multi-surface markdown via ADR-0018 D-G; Q71 candidate; thirteenth "Continue" override)
 
 - First Phase-18 unit; docs-only. Opens Phase 18 (**ninth NON-§13 phase**). Mirrors Phase-12 / 13 / 14 / 15 / 16 / 17 phase-prep patterns. **§13 ledger CLOSED** at Unit 9.9 (carried unchanged through Phases 10-17); Phase 18 inferred-not-§13 like its eight predecessors.

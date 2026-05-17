@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { renderBioMarkdown } from "./index";
+import { renderBioMarkdown, renderReviewNotesMarkdown } from "./index";
+import { bioSchema, reviewNotesSchema } from "./sanitize-schema";
 
 /**
  * Tests for `renderBioMarkdown` per [ADR-0018](../../docs/adr/0018-markdown-sanitization.md).
@@ -197,5 +198,61 @@ describe("renderBioMarkdown — null + empty edge cases", () => {
 
   it("returns null for whitespace-only input", () => {
     expect(renderBioMarkdown("   \n\n  ")).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-18 — `renderReviewNotesMarkdown` sibling per ADR-0018 D-G inheritance.
+// Identical pipeline + schema (Phase 18) to `renderBioMarkdown`; full XSS
+// suite covered at the pipeline layer above. These tests cover the sibling
+// helper shape + schema parity + happy-path consumer ergonomics.
+// ---------------------------------------------------------------------------
+
+describe("renderReviewNotesMarkdown — sibling helper (D-G inheritance)", () => {
+  it("renders bold via `<strong>`", () => {
+    expect(renderReviewNotesMarkdown("**reviewed**")).toBe("<p><strong>reviewed</strong></p>");
+  });
+
+  it("renders https links preserving href (D-D allow-list shared)", () => {
+    expect(renderReviewNotesMarkdown("[paper](https://arxiv.org/abs/2401.00001)")).toBe(
+      '<p><a href="https://arxiv.org/abs/2401.00001">paper</a></p>',
+    );
+  });
+
+  it("strips javascript: URL (Phase-17 XSS defense inherited)", () => {
+    const html = renderReviewNotesMarkdown("[bad](javascript:alert(1))") ?? "";
+    expect(html).not.toContain("javascript:");
+    expect(html).not.toContain("alert(1)");
+  });
+
+  it("strips raw HTML script tags (Phase-17 sanitization inherited)", () => {
+    const html = renderReviewNotesMarkdown("<script>alert(1)</script>") ?? "";
+    expect(html).not.toContain("<script");
+  });
+
+  it("demotes `#` to `<h3>` (D-C shared)", () => {
+    expect(renderReviewNotesMarkdown("# COI finding")).toBe("<h3>COI finding</h3>");
+  });
+
+  it("returns null for null input", () => {
+    expect(renderReviewNotesMarkdown(null)).toBeNull();
+  });
+
+  it("returns null for whitespace-only input", () => {
+    expect(renderReviewNotesMarkdown("   \n\n  ")).toBeNull();
+  });
+});
+
+describe("Phase-18 schema parity — `reviewNotesSchema` ≡ `bioSchema`", () => {
+  it("shares the same tag allowlist Phase-18", () => {
+    expect(reviewNotesSchema.tagNames).toEqual(bioSchema.tagNames);
+  });
+
+  it("shares the same URL protocol allow-list Phase-18", () => {
+    expect(reviewNotesSchema.protocols).toEqual(bioSchema.protocols);
+  });
+
+  it("shares the same attribute allowlist Phase-18", () => {
+    expect(reviewNotesSchema.attributes).toEqual(bioSchema.attributes);
   });
 });

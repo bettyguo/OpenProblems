@@ -24,7 +24,7 @@ import type { Options as Schema } from "rehype-sanitize";
  * own customization per ADR-0018 D-G. This schema is named
  * `bioSchema` (NOT `defaultSchema`) to signal Phase-17 scope.
  */
-export const bioSchema: Schema = {
+const baseSchemaConfig: Schema = {
   tagNames: [
     "p",
     "strong",
@@ -62,3 +62,29 @@ export const bioSchema: Schema = {
   allowComments: false,
   allowDoctypes: false,
 };
+
+/**
+ * Schema for `users.bio` markdown rendering (Phase 17 per ADR-0018
+ * D-A through D-F).
+ */
+export const bioSchema: Schema = baseSchemaConfig;
+
+/**
+ * Schema for `ratingChallenge.reviewNotes` markdown rendering
+ * (Phase 18 per ADR-0018 D-G inheritance contract).
+ *
+ * **Identical to `bioSchema` Phase-18** per Unit 18.0 D-3
+ * scope-cap discipline:
+ *   - Audit-boundary consistency at minimum cost (one schema audit
+ *     covers both surfaces).
+ *   - No observed curator demand for tables / footnotes Phase 12-17.
+ *   - Schema divergence opens unbounded design space; promotion
+ *     driven by signal.
+ *
+ * Phase-19+ may diverge if curator demand surfaces (Q72 candidate
+ * for curator reviewNotes tables / footnotes per Phase-18 Unit 18.0
+ * D-6 + Unit 18.5 OQ-hygiene anticipated note). Explicit shallow
+ * copy below signals "intentional parity Phase-18" rather than
+ * "same object reference."
+ */
+export const reviewNotesSchema: Schema = { ...baseSchemaConfig };
