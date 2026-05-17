@@ -270,6 +270,24 @@ export const ratingChallenges = sqliteTable("ratingChallenge", {
  * Migration `0006_subscriber` — **first non-zero-migration phase since
  * Phase 16** = 14-phase gap; **breaks 13-phase 0-migration streak**
  * (Phase 17-29).
+ *
+ * Phase-31 column extension per [ADR-0022](../../docs/adr/0022-weekly-digest-scheduler.md)
+ * D-10:
+ * - `lastDigestSentAt` (nullable `timestamp_ms`) — populated when the
+ *   weekly cron route per ADR-0022 D-C successfully sends a digest to
+ *   this subscriber; checked on the next cron invocation to skip
+ *   already-sent rows (idempotency guard against Vercel Cron at-least-
+ *   once delivery semantics + retries on 5xx). NULL means "never received
+ *   a digest" (fresh subscriber Phase 30+; Phase-31 cron will pick them
+ *   up on first invocation).
+ *
+ * Migration `0007_subscriber_last_digest_sent_at` — **second
+ * consecutive migration phase** since Phase 30 broke the 13-phase
+ * 0-migration streak = **first migration cluster since Phase 15-16**
+ * (Phase-15 `displayName`+`bio` → Phase-16 `imageOverride` series shape).
+ * **First migration that extends an existing table from a prior phase**
+ * in project history (prior new tables were always net-new in their
+ * introducing phase).
  */
 export const subscribers = sqliteTable(
   "subscriber",
@@ -285,6 +303,7 @@ export const subscribers = sqliteTable(
     unsubscribeToken: text("unsubscribeToken").notNull(),
     verifiedAt: integer("verifiedAt", { mode: "timestamp_ms" }),
     unsubscribedAt: integer("unsubscribedAt", { mode: "timestamp_ms" }),
+    lastDigestSentAt: integer("lastDigestSentAt", { mode: "timestamp_ms" }),
     createdAt: integer("createdAt", { mode: "timestamp_ms" })
       .notNull()
       .default(sql`(unixepoch() * 1000)`),

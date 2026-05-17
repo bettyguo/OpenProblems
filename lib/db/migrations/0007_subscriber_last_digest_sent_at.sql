@@ -1,0 +1,1 @@
+ALTER TABLE `subscriber` ADD `lastDigestSentAt` integer;
