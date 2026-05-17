@@ -2,13 +2,17 @@ import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { eq } from "drizzle-orm";
 import NextAuth from "next-auth";
 import GitHub from "next-auth/providers/github";
+import Google from "next-auth/providers/google";
 
 import { db } from "@/lib/db";
 import { accounts, sessions, users, verificationTokens } from "@/lib/db/schema";
 
+import { extractGithubLogin } from "./link-account";
+
 /**
  * NextAuth.js v5 (Auth.js) wrapper — single source of truth for the
- * project's auth surface per [ADR-0012](../../docs/adr/0012-auth-provider.md).
+ * project's auth surface per [ADR-0012](../../docs/adr/0012-auth-provider.md)
+ * + [ADR-0020](../../docs/adr/0020-multi-provider-oauth.md).
  *
  * Re-exports: `{ auth, handlers, signIn, signOut }`.
  *   - `auth()` — server-side session/user accessor.
@@ -17,22 +21,41 @@ import { accounts, sessions, users, verificationTokens } from "@/lib/db/schema";
  *
  * Per ADR-0012 D-A: `next-auth` is the only auth runtime; other libraries
  * (Clerk SDK, Lucia, Iron Session) forbidden.
- * Per ADR-0012 D-B: GitHub OAuth is the only provider initially.
+ * Per ADR-0012 D-B (**lifted by ADR-0020**): GitHub OAuth was the only
+ * initial provider; Phase 28 adds Google as the second provider.
+ * Per ADR-0020 D-B: provider count is exactly 2 at Phase 28 close
+ * (GitHub first, Google second); third+ requires ADR-0020 amendment.
  * Per ADR-0012 D-C: DB-backed sessions via the Drizzle adapter (no JWT
  * sessions); revocable + auditable.
  *
- * The `events.linkAccount` callback (Unit 9.6) populates `githubLogin` on
- * first sign-in from the GitHub OAuth profile's `login` field (per
- * ADR-0012 D-E). Joins file-system `editorial.primary_curator` to DB user
- * identity via a stable GitHub handle. `linkAccount` is the right hook
- * because `createUser` doesn't expose `profile`; we need `profile.login`
- * which only `linkAccount({ user, account, profile })` provides.
+ * Per ADR-0020 D-D the curator-of-record gate remains GitHub-only.
+ * The `events.linkAccount` callback (Unit 9.6) populates `githubLogin`
+ * on first sign-in **only when `account.provider === "github"`** via
+ * the {@link extractGithubLogin} helper (Phase-28 Unit 28.2 refactor
+ * extracted the pure logic out for unit testability). Joins file-system
+ * `editorial.primary_curator` to DB user identity via a stable GitHub
+ * handle. Google sign-ins leave `users.githubLogin` NULL — non-GitHub
+ * users cannot be a curator-of-record per ADR-0020 D-D (Q74 architectural
+ * candidate for Phase 29+).
  *
- * Operational gate: Q54 (`GITHUB_CLIENT_ID` + `GITHUB_CLIENT_SECRET` env
- * vars; OAuth app registration under the project's GitHub org). When env
- * vars are unset, the GitHub provider treats `clientId`/`clientSecret` as
- * undefined; the sign-in flow surfaces an OAuth-configuration error to the
- * user. Unit 9.5's auth-aware UI handles this gracefully.
+ * Per ADR-0020 D-E account-linking strategy = Auth.js default
+ * `allowDangerousEmailAccountLinking: false`: same-email-different-provider
+ * yields two separate `users.id` rows. Phase 29+ account-merge UI
+ * candidate if curator demand surfaces.
+ *
+ * Operational gates:
+ *   - **Q54** (`AUTH_GITHUB_ID` + `AUTH_GITHUB_SECRET`; GitHub OAuth app
+ *     registration). When unset, the GitHub provider treats clientId /
+ *     clientSecret as undefined; the sign-in flow surfaces an OAuth-
+ *     configuration error.
+ *   - **Q73** (`AUTH_GOOGLE_ID` + `AUTH_GOOGLE_SECRET`; Google OAuth app
+ *     registration via Google Cloud Console; Phase 28 new). Same
+ *     graceful-degradation posture as Q54.
+ *
+ * Unit 9.5's auth-aware UI + SiteHeader's `safeAuth()` together handle
+ * both gates gracefully — when either provider is unconfigured, the
+ * signed-out branch still renders (the affected provider's button just
+ * surfaces an error on click).
  */
 export const { auth, handlers, signIn, signOut } = NextAuth({
   adapter: DrizzleAdapter(db, {
@@ -41,25 +64,24 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     sessionsTable: sessions,
     verificationTokensTable: verificationTokens,
   }),
-  // GitHub provider invoked without args; Auth.js v5 auto-detects
-  // `AUTH_GITHUB_ID` + `AUTH_GITHUB_SECRET` env vars per the canonical
-  // convention. Q54 operational gate names these vars + the OAuth app
-  // registration required to populate them.
-  providers: [GitHub],
+  // GitHub + Google providers invoked without args; Auth.js v5 auto-
+  // detects `AUTH_<PROVIDER>_ID` + `AUTH_<PROVIDER>_SECRET` env vars
+  // per the canonical convention (Q54 + Q73 operational gates).
+  //
+  // Order matters: GitHub first preserves Phase-9 user expectation +
+  // tracks `PROVIDER_IDS` in link-account.ts which the sign-in UI
+  // (`<AuthControl>`) iterates against.
+  providers: [GitHub, Google],
   session: { strategy: "database" },
   trustHost: true,
   events: {
     async linkAccount({ user, account, profile }) {
-      if (account.provider !== "github") return;
-      // Auth.js v5 types `profile` as `User | AdapterUser` which loses the
-      // provider-specific shape; GitHub's profile carries `login` (the
-      // `@handle` we need to join file-system `editorial.primary_curator`
-      // per ADR-0012 D-E). Narrow via a structural unknown cast.
-      const providerProfile = profile as Record<string, unknown>;
-      const rawLogin = providerProfile.login;
-      const login = typeof rawLogin === "string" ? rawLogin : null;
-      if (!login || !user.id) return;
-      await db.update(users).set({ githubLogin: login }).where(eq(users.id, user.id));
+      const extracted = extractGithubLogin(account, profile, user);
+      if (!extracted) return;
+      await db
+        .update(users)
+        .set({ githubLogin: extracted.githubLogin })
+        .where(eq(users.id, extracted.userId));
     },
   },
 });

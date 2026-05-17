@@ -27,6 +27,8 @@
   },
   "auth": {
     "sign_in": "Se connecter",
+    "sign_in_with_github": "Se connecter avec GitHub",
+    "sign_in_with_google": "Se connecter avec Google",
     "sign_out": "Se déconnecter",
     "signed_in_fallback": "Connecté"
   },
