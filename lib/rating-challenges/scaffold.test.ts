@@ -1,4 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { parse as parseYaml } from "yaml";
 import { RatingActionSchema, type RatingAction } from "@/lib/schemas/rating-action";
 import {
@@ -11,6 +14,8 @@ import {
   PLACEHOLDER_SATURATION_VALUE,
   PLACEHOLDER_SIGNAL,
   PLACEHOLDER_STARS,
+  type PriorActionInfo,
+  readPriorRatingAction,
   type ScaffoldInput,
 } from "./scaffold";
 
@@ -170,5 +175,182 @@ describe("buildRatingActionYaml — scaffold shape", () => {
     expect(yaml).toContain('for problem "hallucination-reduction"');
     expect(yaml).toContain("content/problems/hallucination-reduction/ratings/2026-05-17-");
     expect(yaml).toContain("/curator/challenges/c-abc-123");
+  });
+});
+
+// Phase-23 — readPriorRatingAction + auto-fill integration.
+
+const VALID_PRIOR_YAML = `problem_slug: hallucination-reduction
+date: 2026-04-01
+methodology_version: "1.0.0"
+curator: alice
+prior_action: hallucination-reduction/2026-01-15-initial
+dimensions:
+  difficulty:
+    grade: A
+    confidence: 0.8
+    rationale: |
+      Difficulty A — capability ceiling tight; reasoning-heavy benchmarks resist.
+  saturation:
+    value: 25
+    confidence: 0.6
+    rationale: |
+      Saturation 25 — coarse approaches plateau; per-prompt allocators show gap.
+  urgency:
+    stars: 4
+    confidence: 0.7
+    rationale: |
+      Urgency 4 — hallucinations remain the dominant frontier failure mode.
+  value:
+    stars: 5
+    confidence: 0.8
+    rationale: |
+      Value 5 — eliminating hallucinations unblocks tool-using-agent reliability.
+  industry_call:
+    stars: 5
+    confidence: 0.85
+    rationale: |
+      Industry call 5 — frontier labs publishing safety evals quarterly.
+signals_considered:
+  - 2026-Q1 frontier-lab eval reports
+  - 2026-Q1 retrieval-grounded-decoding result
+watchlist: true
+`;
+
+describe("readPriorRatingAction — Phase-23 D-4", () => {
+  let contentRoot: string;
+
+  beforeEach(async () => {
+    contentRoot = await mkdtemp(path.join(tmpdir(), "scaffold-test-"));
+  });
+  afterEach(async () => {
+    await rm(contentRoot, { recursive: true, force: true });
+  });
+
+  it("returns null when problem directory does not exist", async () => {
+    const result = await readPriorRatingAction({
+      contentRoot,
+      problemSlug: "no-such-problem",
+    });
+    expect(result).toBeNull();
+  });
+
+  it("returns null when ratings/ exists but contains no .yaml files", async () => {
+    const ratingsDir = path.join(contentRoot, "hallucination-reduction", "ratings");
+    await mkdir(ratingsDir, { recursive: true });
+    await writeFile(path.join(ratingsDir, "README.md"), "not a yaml", "utf8");
+    const result = await readPriorRatingAction({
+      contentRoot,
+      problemSlug: "hallucination-reduction",
+    });
+    expect(result).toBeNull();
+  });
+
+  it("returns the most-recent action when multiple .yaml files exist (lexical-sort-descending picks latest)", async () => {
+    const ratingsDir = path.join(contentRoot, "hallucination-reduction", "ratings");
+    await mkdir(ratingsDir, { recursive: true });
+    // Three priors; lexical desc sort yields 2026-04-01 as most recent.
+    await writeFile(path.join(ratingsDir, "2026-01-15-initial.yaml"), VALID_PRIOR_YAML, "utf8");
+    await writeFile(path.join(ratingsDir, "2026-02-20-q1-revision.yaml"), VALID_PRIOR_YAML, "utf8");
+    await writeFile(
+      path.join(ratingsDir, "2026-04-01-spring-update.yaml"),
+      VALID_PRIOR_YAML,
+      "utf8",
+    );
+    const result = await readPriorRatingAction({
+      contentRoot,
+      problemSlug: "hallucination-reduction",
+    });
+    expect(result).not.toBeNull();
+    expect(result!.filename).toBe("2026-04-01-spring-update");
+    expect(result!.action.curator).toBe("alice");
+    expect(result!.action.dimensions.difficulty.grade).toBe("A");
+  });
+
+  it("skips malformed YAML and returns the next-most-recent valid action", async () => {
+    const ratingsDir = path.join(contentRoot, "hallucination-reduction", "ratings");
+    await mkdir(ratingsDir, { recursive: true });
+    await writeFile(path.join(ratingsDir, "2026-01-15-initial.yaml"), VALID_PRIOR_YAML, "utf8");
+    // Most-recent by sort order is malformed — should fall back.
+    await writeFile(
+      path.join(ratingsDir, "2026-12-99-broken.yaml"),
+      "not: valid: yaml: at: all",
+      "utf8",
+    );
+    const result = await readPriorRatingAction({
+      contentRoot,
+      problemSlug: "hallucination-reduction",
+    });
+    expect(result).not.toBeNull();
+    expect(result!.filename).toBe("2026-01-15-initial");
+  });
+});
+
+describe("buildRatingActionYaml — Phase-23 priorAction auto-fill", () => {
+  const PRIOR: PriorActionInfo = {
+    filename: "2026-04-01-spring-update",
+    action: RatingActionSchema.parse(parseYaml(VALID_PRIOR_YAML)),
+  };
+
+  it("copies OTHER 4 dimensions from prior; PROPOSED dimension still populated from challenge", () => {
+    const yaml = buildRatingActionYaml({
+      ...BASE_INPUT,
+      dimension: "difficulty",
+      proposedValue: "B",
+      priorAction: PRIOR,
+    });
+    const action = parseAction(yaml);
+
+    // PROPOSED dimension overrides prior with challenge data.
+    expect(action.dimensions.difficulty.grade).toBe("B");
+    expect(action.dimensions.difficulty.rationale).toContain("tighter ceiling");
+
+    // OTHER 4 dimensions copied verbatim from prior (saturation/urgency/value/industry_call).
+    expect(action.dimensions.saturation.value).toBe(25);
+    expect(action.dimensions.saturation.rationale).toContain("coarse approaches plateau");
+    expect(action.dimensions.urgency.stars).toBe(4);
+    expect(action.dimensions.value.stars).toBe(5);
+    expect(action.dimensions.industry_call.stars).toBe(5);
+  });
+
+  it("sets prior_action to `<problemSlug>/<filename>` shape", () => {
+    const yaml = buildRatingActionYaml({ ...BASE_INPUT, priorAction: PRIOR });
+    const action = parseAction(yaml);
+    expect(action.prior_action).toBe("hallucination-reduction/2026-04-01-spring-update");
+  });
+
+  it("seeds signals_considered from prior + appends a placeholder TODO entry", () => {
+    const yaml = buildRatingActionYaml({ ...BASE_INPUT, priorAction: PRIOR });
+    const action = parseAction(yaml);
+    expect(action.signals_considered).toEqual([
+      "2026-Q1 frontier-lab eval reports",
+      "2026-Q1 retrieval-grounded-decoding result",
+      PLACEHOLDER_SIGNAL,
+    ]);
+  });
+
+  it("inherits watchlist from prior", () => {
+    const yaml = buildRatingActionYaml({ ...BASE_INPUT, priorAction: PRIOR });
+    const action = parseAction(yaml);
+    expect(action.watchlist).toBe(true); // PRIOR has watchlist: true
+  });
+
+  it("header notes COPIED-FROM-PRIOR origin instead of TODO placeholder", () => {
+    const yaml = buildRatingActionYaml({ ...BASE_INPUT, priorAction: PRIOR });
+    expect(yaml).toContain("COPIED FROM PRIOR (2026-04-01-spring-update)");
+    expect(yaml).toContain(
+      '`prior_action` is auto-set to "hallucination-reduction/2026-04-01-spring-update"',
+    );
+    expect(yaml).not.toContain("`prior_action` is a TODO");
+  });
+
+  it("priorAction: null preserves Phase-22 placeholder behavior (regression guard)", () => {
+    const yaml = buildRatingActionYaml({ ...BASE_INPUT, priorAction: null });
+    const action = parseAction(yaml);
+    expect(action.prior_action).toBe(PLACEHOLDER_PRIOR_ACTION);
+    expect(action.dimensions.saturation.value).toBe(PLACEHOLDER_SATURATION_VALUE);
+    expect(action.dimensions.urgency.stars).toBe(PLACEHOLDER_STARS);
+    expect(action.signals_considered).toEqual([PLACEHOLDER_SIGNAL]);
+    expect(action.watchlist).toBe(false);
   });
 });

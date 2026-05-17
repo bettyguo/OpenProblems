@@ -53,11 +53,13 @@ import {
   buildRatingActionYaml,
   CHALLENGE_DIMENSIONS,
   isChallengeDimension,
+  readPriorRatingAction,
   TERMINAL_STATUSES,
 } from "@/lib/rating-challenges/scaffold";
 
 const SCRIPT_NAME = "emit-challenge-action";
 const DRAFTS_DIR = path.join("drafts", "ratings");
+const CONTENT_PROBLEMS_ROOT = path.join("content", "problems");
 
 interface CliArgs {
   challengeId: string;
@@ -176,6 +178,23 @@ async function main(): Promise<number> {
   }
 
   const today = new Date().toISOString().slice(0, 10);
+
+  // Phase-23: auto-fill OTHER 4 dimensions + signals + watchlist + prior_action
+  // from the most-recent prior rating-action when one exists.
+  const priorAction = await readPriorRatingAction({
+    contentRoot: CONTENT_PROBLEMS_ROOT,
+    problemSlug: challenge.problemSlug,
+  });
+  if (priorAction) {
+    console.log(
+      `Auto-filled OTHER 4 dimensions from prior: ${challenge.problemSlug}/${priorAction.filename}`,
+    );
+  } else {
+    console.log(
+      `No prior rating-action found under ${CONTENT_PROBLEMS_ROOT}/${challenge.problemSlug}/ratings — using placeholders.`,
+    );
+  }
+
   const yaml = buildRatingActionYaml({
     problemSlug: challenge.problemSlug,
     challengeId: challenge.id,
@@ -186,6 +205,7 @@ async function main(): Promise<number> {
     proposedValue: challenge.proposedValue,
     rationale: challenge.rationale,
     date: today,
+    priorAction,
   });
 
   if (dryRun) {
