@@ -1,0 +1,1 @@
+ALTER TABLE `subscriber` ADD `userId` text REFERENCES user(id) ON DELETE CASCADE;

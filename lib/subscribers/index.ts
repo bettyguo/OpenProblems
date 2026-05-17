@@ -102,22 +102,66 @@ export interface CreateSubscriptionResult {
 }
 
 /**
+ * Pure helper: decide the `userId` value for a subscriber row UPDATE
+ * given the existing row's `userId` and the current session's user id.
+ *
+ * Implements [ADR-0023](../../docs/adr/0023-per-user-account-subscriptions.md)
+ * D-E / D-F / D-G semantics:
+ *
+ * - D-G: existing `userId = NULL` + session user-A → update to user-A
+ *   (anonymous → authenticated migration).
+ * - D-E: existing `userId = user-A` + session user-A → keep user-A (no-op).
+ * - D-F: existing `userId = user-A` + session user-B → KEEP user-A
+ *   (conservative; cross-user re-subscribe preserves original
+ *   attribution).
+ * - D-E: existing `userId = user-A` + session NULL (anonymous submit
+ *   over existing authenticated row) → KEEP user-A (do NOT clear).
+ * - Existing `userId = NULL` + session NULL → stay NULL.
+ *
+ * Kept separate from the DB-helper `createOrRefreshPendingSubscription`
+ * below so the decision logic is unit-testable without a live DB.
+ */
+export function decideSubscriberUserId(
+  existingUserId: string | null,
+  sessionUserId: string | null,
+): string | null {
+  // D-G anonymous → authenticated migration: existing NULL + session populated → upgrade.
+  if (existingUserId === null && sessionUserId !== null) return sessionUserId;
+  // D-F conservative-preserve: existing populated → KEEP existing regardless of session
+  // (covers both cross-user re-subscribe AND anonymous-submit-over-authenticated-row cases).
+  if (existingUserId !== null) return existingUserId;
+  // Existing NULL + session NULL → stay anonymous.
+  return null;
+}
+
+/**
  * Create a new `pending_verification` subscriber row, or refresh tokens
  * on an existing row. Implements the state-transition semantics per
- * ADR-0021 D-D step 3:
- *   - No row → create new with fresh tokens.
- *   - Existing `pending_verification` → refresh `verificationToken` + expiry.
- *   - Existing `verified` → no-op (caller treats as "already subscribed").
- *   - Existing `unsubscribed` → re-use row + reset status; preserves
- *     `unsubscribedAt` for audit trail.
+ * ADR-0021 D-D step 3 + ADR-0023 D-E/D-F/D-G `userId` semantics:
+ *
+ *   - No row → create new with fresh tokens; populate `userId = sessionUserId`
+ *     (NULL for anonymous, populated for signed-in per ADR-0023 D-C).
+ *   - Existing `pending_verification` → refresh `verificationToken` +
+ *     expiry; update `userId` per `decideSubscriberUserId`.
+ *   - Existing `verified` → no-op on status (caller treats as "already
+ *     subscribed"); but STILL UPDATE `userId` per D-G anonymous →
+ *     authenticated migration when applicable.
+ *   - Existing `unsubscribed` → re-use row + reset status; update
+ *     `userId` per `decideSubscriberUserId`; preserves `unsubscribedAt`
+ *     for audit trail.
  *
  * Caller pre-validates email format + canonicalizes. Caller-side i18n
  * messages distinguish the 4 outcomes via `result.subscriber.status` +
  * `result.wasRefresh`.
+ *
+ * `sessionUserId` arg = `auth()?.user?.id` from the subscribe route;
+ * NULL when the form-submit is anonymous (no session) or when
+ * `safeAuth()` returned NULL (DB unavailable; defensive fallback).
  */
 export async function createOrRefreshPendingSubscription(
   email: string,
   domains: readonly string[],
+  sessionUserId: string | null = null,
 ): Promise<CreateSubscriptionResult> {
   const now = new Date(Date.now());
   const expiresAt = new Date(Date.now() + VERIFICATION_TOKEN_TTL_MS);
@@ -128,7 +172,23 @@ export async function createOrRefreshPendingSubscription(
 
   const existingRow = existing[0];
   if (existingRow) {
+    const nextUserId = decideSubscriberUserId(existingRow.userId, sessionUserId);
+
     if (existingRow.status === "verified") {
+      // D-G anonymous → authenticated migration: if userId changes, persist the
+      // change without touching status/tokens. Otherwise no-op.
+      if (nextUserId !== existingRow.userId) {
+        const updated = await db
+          .update(subscribers)
+          .set({ userId: nextUserId, updatedAt: now })
+          .where(eq(subscribers.email, email))
+          .returning();
+        const updatedRow = updated[0];
+        if (!updatedRow) {
+          throw new Error("Subscriber row vanished between SELECT and UPDATE on userId migration");
+        }
+        return { subscriber: updatedRow, wasRefresh: false };
+      }
       // No-op: row stays in `verified`; caller renders "already subscribed".
       return { subscriber: existingRow, wasRefresh: false };
     }
@@ -140,6 +200,7 @@ export async function createOrRefreshPendingSubscription(
         domainSubscriptions,
         verificationToken,
         verificationTokenExpiresAt: expiresAt,
+        userId: nextUserId,
         updatedAt: now,
       })
       .where(eq(subscribers.email, email))
@@ -161,6 +222,7 @@ export async function createOrRefreshPendingSubscription(
       verificationToken,
       verificationTokenExpiresAt: expiresAt,
       unsubscribeToken,
+      userId: sessionUserId,
     })
     .returning();
   const insertedRow = inserted[0];

@@ -1,5 +1,6 @@
 import { taxonomy } from "#site/content";
 
+import { auth } from "@/lib/auth";
 import { sendEmail } from "@/lib/email";
 import { renderVerificationEmail } from "@/lib/email/templates/verification";
 import {
@@ -9,9 +10,10 @@ import {
 } from "@/lib/subscribers";
 
 /**
- * Subscribe endpoint (Unit 30.3) per
- * [ADR-0021](../../../../docs/adr/0021-subscriber-list-email.md) D-D
- * verification-flow contract.
+ * Subscribe endpoint (Unit 30.3 + Unit 33.2 ADR-0023 D-C extension)
+ * per [ADR-0021](../../../../docs/adr/0021-subscriber-list-email.md) D-D
+ * verification-flow contract + [ADR-0023](../../../../docs/adr/0023-per-user-account-subscriptions.md)
+ * D-C auto-link-on-signed-in contract.
  *
  * `POST /api/v1/subscribe` (body JSON `{ email, domains: string[] }`).
  *
@@ -42,6 +44,23 @@ function badRequest(field: string, message: string): Response {
   return Response.json({ error: "bad-request", field, message }, { status: 400 });
 }
 
+/**
+ * Defensive `auth()` wrapper per ADR-0023 D-G — falls back to NULL when
+ * the DB / migration / session-read fails (mirrors `safeAuth` from
+ * `components/watchlist-toggle/`, `components/rating-challenge-form/`,
+ * `components/site-header/` = 4th in-place copy; extraction-threshold
+ * pattern preserved per ADR-0023 Negative consequences). When NULL is
+ * returned, the subscribe route falls through to the anonymous email-
+ * only path (Phase-30 behavior preserved verbatim).
+ */
+async function safeAuth() {
+  try {
+    return await auth();
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(req: Request): Promise<Response> {
   let body: SubscribeBody;
   try {
@@ -68,9 +87,17 @@ export async function POST(req: Request): Promise<Response> {
     return badRequest("domains", "Select at least one valid domain.");
   }
 
+  // ADR-0023 D-C: auto-link `subscriber.userId` to `users.id` when the
+  // form-submit user has an active session. `safeAuth()` falls back to
+  // NULL on DB / session-read failure (D-G defensive posture) so the
+  // anonymous email-only path is preserved verbatim under failures.
+  const session = await safeAuth();
+  const sessionUserId = session?.user?.id ?? null;
+
   const { subscriber, wasRefresh } = await createOrRefreshPendingSubscription(
     email,
     requestedDomains,
+    sessionUserId,
   );
 
   if (subscriber.status === "verified") {

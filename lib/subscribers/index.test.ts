@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   canonicalizeEmail,
+  decideSubscriberUserId,
   generateToken,
   parseDomainSubscriptions,
   safeCompareTokens,
@@ -133,6 +134,38 @@ describe("serializeDomainSubscriptions", () => {
   it("returns [] for all-empty input", () => {
     expect(serializeDomainSubscriptions([])).toBe("[]");
     expect(serializeDomainSubscriptions(["", "  "])).toBe("[]");
+  });
+});
+
+describe("decideSubscriberUserId", () => {
+  // Per ADR-0023 D-E/D-F/D-G semantics; covers 6 explicit cases from the
+  // D-E state-transition table (and the 4 anonymous → authenticated /
+  // cross-user / preserve cases inferred from them).
+
+  it("D-G: anonymous → authenticated migration when existing NULL + session populated", () => {
+    expect(decideSubscriberUserId(null, "user-A")).toBe("user-A");
+  });
+
+  it("D-E same-user: existing user-A + session user-A → keep user-A", () => {
+    expect(decideSubscriberUserId("user-A", "user-A")).toBe("user-A");
+  });
+
+  it("D-F cross-user: existing user-A + session user-B → preserve user-A (conservative)", () => {
+    expect(decideSubscriberUserId("user-A", "user-B")).toBe("user-A");
+  });
+
+  it("D-E preserve: existing user-A + session NULL → keep user-A (do NOT clear)", () => {
+    expect(decideSubscriberUserId("user-A", null)).toBe("user-A");
+  });
+
+  it("anonymous + anonymous: existing NULL + session NULL → stay NULL", () => {
+    expect(decideSubscriberUserId(null, null)).toBe(null);
+  });
+
+  it("handles non-trivial UUID strings unchanged", () => {
+    const uuid = "a1b2c3d4-e5f6-7890-abcd-ef1234567890";
+    expect(decideSubscriberUserId(null, uuid)).toBe(uuid);
+    expect(decideSubscriberUserId(uuid, "other-id")).toBe(uuid);
   });
 });
 

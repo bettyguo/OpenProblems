@@ -57,6 +57,13 @@
       "when": 1779049207116,
       "tag": "0007_subscriber_last_digest_sent_at",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1779055903653,
+      "tag": "0008_subscriber_user_id",
+      "breakpoints": true
     }
   ]
 }

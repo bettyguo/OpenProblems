@@ -45,6 +45,7 @@ function subRow(
     verifiedAt: new Date("2026-05-01T00:00:00Z"),
     unsubscribedAt: null,
     lastDigestSentAt: null,
+    userId: null,
     createdAt: new Date("2026-05-01T00:00:00Z"),
     updatedAt: new Date("2026-05-01T00:00:00Z"),
     ...overrides,

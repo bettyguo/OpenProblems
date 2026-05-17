@@ -288,6 +288,26 @@ export const ratingChallenges = sqliteTable("ratingChallenge", {
  * **First migration that extends an existing table from a prior phase**
  * in project history (prior new tables were always net-new in their
  * introducing phase).
+ *
+ * Phase-33 column extension per [ADR-0023](../../docs/adr/0023-per-user-account-subscriptions.md)
+ * D-A + D-B:
+ * - `userId` (nullable text FK to `users.id` with `ON DELETE cascade`) —
+ *   populated when a signed-in user submits the subscribe form per
+ *   ADR-0023 D-C; NULL = anonymous email-only subscriber (Phase-30
+ *   path preserved verbatim); NOT NULL = authenticated subscriber.
+ *   Cascade-on-user-delete per ADR-0023 D-D ensures future account-
+ *   deletion flow (Phase 34+ candidate) automatically removes
+ *   associated subscription rows. Matches Phase-9 `accounts.userId` +
+ *   `sessions.userId` + Phase-11 `ratingChallenges.userId` cascade-FK
+ *   precedent (text type for UUID; cascade-on-delete).
+ *
+ * Migration `0008_subscriber_user_id` — **third migration on the
+ * `subscriber` table within 4 phases** (Phase 30 create + Phase 31
+ * `lastDigestSentAt` + Phase 33 `userId`) = **most active table-
+ * extension cluster in project history**. **Third migration in 4
+ * phases** (Phase 30 + 31 + 33; Phase 32 gap). **First "migration-
+ * cluster-resume-after-1-phase-gap"** in project history — mirrors
+ * Phase 15-16 cluster shape with post-cluster-pause extension.
  */
 export const subscribers = sqliteTable(
   "subscriber",
@@ -304,6 +324,7 @@ export const subscribers = sqliteTable(
     verifiedAt: integer("verifiedAt", { mode: "timestamp_ms" }),
     unsubscribedAt: integer("unsubscribedAt", { mode: "timestamp_ms" }),
     lastDigestSentAt: integer("lastDigestSentAt", { mode: "timestamp_ms" }),
+    userId: text("userId").references(() => users.id, { onDelete: "cascade" }),
     createdAt: integer("createdAt", { mode: "timestamp_ms" })
       .notNull()
       .default(sql`(unixepoch() * 1000)`),
