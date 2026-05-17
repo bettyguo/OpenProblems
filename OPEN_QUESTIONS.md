@@ -532,9 +532,9 @@ What Q70 closes architecturally:
 
 Phase-20+ follow-on candidates explicitly flagged in ADR-0019 D-E + D-F + Unit 19.3 hygiene catalog:
 
-- **EXIF backfill script** (`scripts/backfill-exif-strip.ts`) — Phase-20+ ~1-2 units when promoted. Iterates existing Phase 16-18 `users.imageOverride` URLs; downloads each blob; sharp-strips; re-uploads; updates DB column; deletes original.
-- **Q68 expansion content moderation** on uploaded images — Phase-20+ ~3-4 units; ADR-0020+ candidate; inserts moderation API call between `.rotate()` and `.toBuffer()` per ADR-0019 D-F inheritance contract.
-- **Cropping UI** + **server-side resizing** + **WebP/AVIF format conversion** + **color profile preservation** — Phase-20+ image-processing expansion candidates per ADR-0019 D-F.
+- **EXIF backfill script** (`scripts/backfill-exif-strip.ts`) — ~~Phase-20+ ~1-2 units when promoted~~ **CLOSED Phase 20 Unit 20.1**. Per-row 5-phase pipeline (fetch → `sharp(buf).rotate().toBuffer()` → `put(<new-key>)` → `UPDATE user SET imageOverride` → `del(<old-url>)`) + `--dry-run` CLI flag + URL-pattern filter narrowing to `https://*.public.blob.vercel-storage.com/avatars/*` + per-row try/catch (one bad row doesn't kill batch). **First retroactive-privacy-correction surface** in project history; **first operational-script-only phase** in project history; **first "zero new dep + zero new test + zero new ADR" well-scoped phase** (reuses Phase-19 `sharp@0.34.5` direct dep + Phase-16 `@vercel/blob` + Phase-9 drizzle-orm). `--user-id` + `--verbose` + session-level dry-run sentinel deferred to Phase-21+ refinements (Phase-20 D-4 + D-6).
+- **Q68 expansion content moderation** on uploaded images — Phase-21+ ~3-4 units; ADR-0020+ candidate; inserts moderation API call between `.rotate()` and `.toBuffer()` per ADR-0019 D-F inheritance contract. **Phase-20 backfill pattern reusable** if Q68 expansion ships — same `scripts/backfill-content-moderation.ts` shape can retroactively scan existing avatars for moderation policy violations.
+- **Cropping UI** + **server-side resizing** + **WebP/AVIF format conversion** + **color profile preservation** — Phase-21+ image-processing expansion candidates per ADR-0019 D-F.
 
 ## Q66. Markdown rendering in `users.bio`
 
