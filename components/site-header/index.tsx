@@ -43,9 +43,11 @@ async function safeAuth() {
  * link when `githubLogin` is null; AuthControl falls back through
  * the chain when `displayName` is null.
  */
-async function safeUserMetadata(
-  userId: string,
-): Promise<{ githubLogin: string | null; displayName: string | null } | null> {
+async function safeUserMetadata(userId: string): Promise<{
+  githubLogin: string | null;
+  displayName: string | null;
+  imageOverride: string | null;
+} | null> {
   try {
     return await getUserMetadataById(userId);
   } catch {

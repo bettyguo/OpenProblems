@@ -60,6 +60,10 @@ export default async function PublicProfilePage({ params }: PublicProfilePagePro
   // Email never surfaces on public profile per ADR-0015 D-A invariant.
   const displayName =
     profile.displayName ?? profile.name ?? profile.githubLogin ?? t("display_name_fallback");
+  // ADR-0017 D-E public-surface image fallback chain: imageOverride →
+  // image (GitHub-derived) → null. Fallback initials placeholder
+  // (when both are null) stays Phase-9/15 behavior — omit the <img>.
+  const currentAvatar = profile.imageOverride ?? profile.image ?? null;
   const joinedDate = profile.createdAt.toISOString().slice(0, 10);
   const totalActivity =
     activity.watchedCount + activity.pendingChallengeCount + activity.acceptedChallengeCount;
@@ -70,13 +74,13 @@ export default async function PublicProfilePage({ params }: PublicProfilePagePro
       aria-label={t("aria_label", { login: profile.githubLogin })}
     >
       <header className="flex items-start gap-4">
-        {profile.image && (
+        {currentAvatar && (
           <img
-            src={profile.image}
+            src={currentAvatar}
             alt=""
             width={64}
             height={64}
-            className="size-16 shrink-0 rounded-full"
+            className="size-16 shrink-0 rounded-full object-cover"
             loading="lazy"
           />
         )}

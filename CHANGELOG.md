@@ -2470,6 +2470,54 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 16 — Community-adjacent surfaces (**seventh NON-§13 phase**: Q67 promotion — image override / avatar upload; surfaces ADR-0017 image-storage choice; third ALTER migration)
 
+#### Unit 16.5 — Public consumption: `imageOverride` avatar fallback chain + `getUserMetadataById` extension (all Phase-16 surface delivery complete)
+
+- Sixth Phase-16 unit; fourth (and final) code unit. Realizes ADR-0017 D-E (public consumption fallback chain) across the two identity surfaces (`/u/{handle}` + `/profile`) and extends Phase-15's `getUserMetadataById` helper forward-compat for future Phase-16+ avatar-pill consumers. **All Phase-16 surface delivery complete after this unit**; Units 16.6 – 16.8 are hygiene + acceptance.
+- **`app/[locale]/u/[handle]/page.tsx` (edit)**: public profile avatar fallback chain updated to `imageOverride → image → omit` per ADR-0017 D-E. New `currentAvatar = profile.imageOverride ?? profile.image ?? null` derived before render; `<img>` src switches from `profile.image` to `currentAvatar`; `object-cover` CSS class added (handles non-square uploads). **Email never surfaces on public surface** — ADR-0015 D-A invariant preserved (`imageOverride` is user-controlled override of a field already public on github.com).
+- **`lib/auth/login.ts` (edit)**: `getUserMetadataById` return shape extended:
+  - SELECT clause gains `imageOverride: users.imageOverride`.
+  - Return type widened from `{ githubLogin, displayName }` to `{ githubLogin, displayName, imageOverride }`.
+  - Doc comment notes Phase-16 forward-compat for the Phase-14 Class B SiteHeader avatar-dropdown follow-on; no current consumer renders the image override in SiteHeader / AuthControl.
+- **`components/site-header/index.tsx` (edit)**: `safeUserMetadata` wrapper return type extended to match new `getUserMetadataById` shape: `Promise<{ githubLogin, displayName, imageOverride } | null>`. No render-path changes (SiteHeader doesn't render avatar in Phase 16; image-override plumbed through for future consumers).
+- **Why `/profile` avatar was already updated in Unit 16.4**: the own-surface fallback chain landed alongside the upload form (header `<img>` updated to `currentAvatar = userRow?.imageOverride ?? session.user.image ?? null`). Unit 16.5 focuses on the public surface (`/u/{handle}`) which Unit 16.4 didn't touch. Two surfaces share the same architectural pattern but live in different files; splitting per surface preserves single-file-per-unit hygiene.
+- **Why SiteHeader + AuthControl pill UNCHANGED Phase 16** (per ADR-0017 D-E): SiteHeader currently text-only; adding avatar pill warrants its own design review + couples to broader UX refactor (mobile-nav variant; nav-link expansion) flagged as Phase-14 Class B item. `safeUserMetadata` plumbs `imageOverride` through anyway as forward-compat — when SiteHeader gains an avatar pill, value is available without another DB round-trip. AuthControl pill renders TEXT only (no avatar); image override irrelevant; chain stays Phase-15 shape verbatim.
+- **Why no test extension for `getUserMetadataById`**: the `lib/auth/login.ts` module has NO test file. Phase 15 added `getUserMetadataById` without a dedicated test — precedent is "thin Drizzle wrappers don't get unit tests; their consumers do." Phase 16 follows the precedent; new `imageOverride` field surfaces transitively through SiteHeader → AuthControl typecheck (TS build verifies the extended shape compatible with all consumers).
+- **Two-tier email-fallback semantics (preserved + extended)**:
+  | Surface | displayName chain | image chain |
+  |---|---|---|
+  | `/u/{handle}` public | `displayName → name → githubLogin → fallback` | **`imageOverride → image → omit`** |
+  | `/profile` own | `displayName → name → githubLogin → email → fallback` | **`imageOverride → session.user.image → omit`** |
+  | AuthControl pill | `displayName → name → email → fallback` | N/A (text-only) |
+
+  **ADR-0015 D-A invariant**: email NEVER on public surface; **ADR-0017 D-E invariant**: `imageOverride` supersedes GitHub-derived `image`; if both null, render no avatar (omit Phase-9/15 behavior preserved).
+- **All 8 ADR-0017 D-clauses now shipped/operational**:
+  - D-A (Vercel Blob storage): Units 16.2 + 16.3.
+  - D-B (upload pipeline scope): Units 16.3 + 16.4.
+  - D-C (extend `/profile` route): Unit 16.4.
+  - D-D (sibling server-action): Unit 16.4.
+  - D-E (public consumption fallback chain): **Unit 16.5** + 16.4 (own header).
+  - D-F (validation + sanitization model): Unit 16.3.
+  - D-G (operational gating): Q69 candidate flagged; promotes to `open (operational)` in Unit 16.7.
+  - D-H (Phase 17+ deferrals): text-only deferral; carried.
+- **Smoke gates**:
+  - `pnpm typecheck` clean (wider return type from `getUserMetadataById` ripples through `safeUserMetadata` cleanly; no consumer breaks).
+  - `pnpm test` → **519/519 across 53 vitest files UNCHANGED** (no test files touched).
+  - `pnpm build` → ~659 prerendered + 10 dynamic page+API routes unchanged. **First Load JS shared chunk = 103 kB UNCHANGED**. **Middleware = 160 kB UNCHANGED**. **`/profile` = 117 kB UNCHANGED from Unit 16.4** (no edit). **`/u/{handle}` = 108 kB UNCHANGED** (server-only avatar swap; no client-side bundle delta).
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- **Phase-16 architectural firsts (consolidating across Units 16.0 – 16.5)**:
+  1. **First binary storage layer in project history** (Unit 16.3 `lib/storage/` module wrapping `@vercel/blob`; alongside file-system content + Turso DB).
+  2. **Third ALTER migration in project history** (`0005_user_image_override`; ADR-0014 D-E discipline crystallized at THIRD exercise — clean drizzle-kit emission).
+  3. **First user-controlled binary write surface** (Phase 9 added auth-side writes; Phase 11 challenge submission writes; Phase 15 user-controlled text writes; Phase 16 user-controlled BINARY writes).
+  4. **First new runtime dependency since Phase 9's auth stack** (`@vercel/blob@2.3.3`; ~30 kB server-only).
+  5. **First `"use client"` boundary on `/profile`** (`ProfileImageUploadField` for `URL.createObjectURL` preview; page-scoped at +9 kB).
+  6. **First multipart-form server action in project history** (`updateProfileImageAction` with `encType="multipart/form-data"`).
+  7. **First three-way `?saved=...` banner pattern** (`saved=1` text / `saved=image` upload / `saved=image-cleared` clear; extends Phase-11's single-state precedent).
+- **Not in this unit** (Units 16.6 – 16.8 follow):
+  - Phase-16 hygiene status pass (Class A in-flight + Class B follow-ons; **abandoned-blob cleanup script** flagged as Class B per ADR-0017 D-H).
+  - OPEN_QUESTIONS hygiene + ADR review (Q67 → resolved; Q69 → open (operational); Q70 newly flagged; Q66 + Q68 carried; **17 ADRs total**).
+  - Phase 16 acceptance gate (twelfth "Continue" override opportunity for Phase 17).
+- THINK artifact: `docs/thinking/16.5-public-consumption-image-fallback.md`.
+
 #### Unit 16.4 — `/[locale]/profile` image upload affordance + multipart server actions + `messages.profile_edit.image_*` namespace (24 keys net; **first client-side JS in Phase 16**)
 
 - Fifth Phase-16 unit; third code unit. Realizes ADR-0017 D-C (edit surface route shape — extend Phase-15 `/profile`) + D-D (server-action driven; new sibling action) at the UI layer. First write-form UI consumer of Unit 16.3's `updateProfileImage` + `clearProfileImage` helpers.
