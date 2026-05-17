@@ -2470,6 +2470,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 27 — Community-adjacent surfaces (**eighteenth NON-§13 phase**: markdown rationale + "View details" listing links bundled — Phase-26 B.10 items 1+2; ninth phase since Phase 3 to close without new ADR; eleventh consecutive 0-migration phase anticipated)
 
+#### Unit 27.3 — OPEN_QUESTIONS hygiene + ADR review (ADR-0018 D-G Phase-27 enhancement note + Phase-18 retroactive note appended; **19 ADRs**; first eight-phase Q-tally freeze)
+
+- Fourth Phase-27 unit; docs-only. Mirrors Phase-13 through Phase-26 hygiene patterns. **One surface change**: ADR-0018 D-G gets a Phase-27 enhancement note appended + Phase-18 retroactive note back-filled per the APPEND-not-EDIT convention codified Phase 22+23 + extended Phase 24. **First APPEND-not-EDIT notes on a third distinct ADR** — convention now spans 3 ADRs (ADR-0014 D-D + ADR-0019 D-F + ADR-0018 D-G).
+- **ADR-0018 D-G annotations**: (1) **REALIZED Phase 18 Unit 18.2** retroactive note (back-fills the Phase-18 reviewNotes sibling realization to make the three-phase audit trail visible directly on the ADR; this had been documented implicitly in Phase-18 hygiene catalog but not appended per the Phase-22+ convention); (2) **REALIZED Phase 27 Unit 27.1** note documenting `renderRationaleMarkdown` + `rationaleSchema` third sibling realization (signature `string → string` differs from prior siblings; 4 new call sites in one code unit; line-clamp-replacing-source-truncation pattern extended across 3 listing pages; Phase-28+ remaining markdown-promotion candidate = rating-action `rationale`).
+- **No OPEN_QUESTIONS.md edit Phase 27**. Phase-26 B.10 items 1+2 were class-B-tracked operational/UX follow-ons; never had OQ entries. Item 1 (markdown rationale) actually closes the open ADR-0018 D-G deferral wording "possibly rating-action `rationale`", so ADR annotation is the correct target per source-of-truth-of-deferral rule.
+- **OPEN_QUESTIONS tally unchanged**: 26 resolved + 4 lean + 29 open = **59 total** (same as Phase 19-26 close). **Eighth consecutive no-promotion / no-status-change hygiene pass** (Phase 20-27). **First eight-phase Q-tally freeze in project history**.
+- **ADR review**: ADR-0018 carries with Phase-18 retroactive + Phase-27 enhancement notes appended to D-G. ADR-0014 still carries Phase-22 + Phase-23 notes on D-D; ADR-0019 still carries Phase-24 note on D-F. **Total ADR count stays at 19**. **Eighth consecutive no-new-ADR phase** (Phase 20-27 = **first eight-phase no-new-ADR streak**). **Ninth phase since Phase 3 to close without new ADR** (Phase 18 + 20-27).
+- **Implementation-note convention now spans three distinct ADRs**: ADR-0014 D-D (Phase 22+23 notes); ADR-0019 D-F (Phase 24 note); ADR-0018 D-G (Phase 18 retroactive + Phase 27 notes). **Convention generalizes beyond a single ADR** — three distinct ADRs now carry phase-tagged enhancement notes; pattern is recurring.
+- **Phase-28+ Q-candidates carried** (7 unchanged from Phase 22-26): Q60 / Q61 / Q62 / Q64 / Q65 / Q68 expansion / Q72. Plus **rationaleSchema-divergence Q72-analogue** newly surfaced under Phase-27 B.3 (not promoted to OQ; no demand signal).
+- **ADR-0020 candidate slot remains open after 14-phase ADR cycle without multi-provider-OAuth claim** (Phase-9 Class B item 8 carried **17 phases**; Phase-5 D-4 subscriber-list email carried **21+ phases**).
+- Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline unchanged); typecheck / test / build untouched since no source files modified (ADR-0018 amendment is docs-only).
+- File modified: `docs/adr/0018-markdown-sanitization.md` (D-G Phase-18 retroactive + Phase-27 enhancement notes appended).
+- THINK artifact: `docs/thinking/27.3-open-questions-hygiene.md`.
+
 #### Unit 27.2 — Phase-27 hygiene status pass (0 Class A / ~5 Class B / Class C unchanged; sixteen consecutive well-scoped phases)
 
 - Third Phase-27 unit; docs-only. Mirrors Phase-13 through Phase-26 hygiene catalog patterns.

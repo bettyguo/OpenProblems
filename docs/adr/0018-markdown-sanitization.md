@@ -446,6 +446,40 @@ in `lib/markdown/sanitize-schema.ts` is named `bioSchema` (NOT
 `defaultSchema`); Phase 18+ surfaces define their own schemas
 (`reviewNotesSchema`, etc.) deriving from a shared base if useful.
 
+**REALIZED Phase 18 Unit 18.2** — `renderReviewNotesMarkdown` +
+`reviewNotesSchema` sibling helpers shipped. Surface: curator
+review notes on `ratingChallenge.reviewNotes`; first call site
+at `/curator/challenges/[id]`; second + third call sites added
+on `/profile` and (Phase-26) `/u/{handle}/challenges/{id}`.
+`reviewNotesSchema = { ...baseSchemaConfig }` (intentional parity
+with `bioSchema`; explicit shallow copy signals "schema may
+diverge Phase-19+" — tracked as Q72 candidate Phase-18-onward).
+
+**REALIZED Phase 27 Unit 27.1** — `renderRationaleMarkdown` +
+`rationaleSchema` sibling helpers shipped (**third sibling
+schema** under this D-G inheritance contract). Surface:
+rating-challenge `ratingChallenge.rationale` (NOT NULL per
+Phase-11 schema 50-2000 chars; helper signature `string →
+string` differs from `bioMarkdown` + `reviewNotesMarkdown` which
+accept `string | null`). Four new call sites added in one code
+unit: `/u/{handle}/challenges/{id}` (Phase-26 detail page; full
+render) + 3 listing pages `/u/{handle}/challenges` + `/profile`
++ `/problems/{slug}/challenges` (full render + CSS `line-clamp-3`
+visual truncation; replaces Phase-12 `truncateRationale()`
+source-truncation across all 3 listings simultaneously per the
+Phase-18 line-clamp-replacing-source-truncation precedent).
+`rationaleSchema = { ...baseSchemaConfig }` (intentional parity
+with `bioSchema` Phase-27; Phase-28+ Q72-analogue divergence
+candidate if user demand surfaces). 10 new vitest tests at
+`lib/markdown/index.test.ts` mirror the Phase-18 reviewNotes
+test pattern: 7 helper tests + 3 schema parity tests. Phase 27
+did NOT need a new ADR — implementation realizes D-G inheritance
+at a third call site without architectural surface. Phase-28+
+remaining markdown-promotion candidate: rating-action
+`dimensions.<dim>.rationale` (distinct schema field from
+rating-challenge `rationale`; would extend to a fourth sibling
+helper if curator demand surfaces).
+
 ### D-H. Phase 18+ deferrals
 
 Phase 17 ships MINIMAL markdown surface. Deferred to Phase 18+:
