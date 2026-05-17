@@ -217,6 +217,54 @@ export async function verifyByToken(token: string): Promise<VerifyResult> {
   return { ok: true, subscriber: updatedRow, alreadyVerified: false };
 }
 
+/**
+ * Pure helper: does a subscriber row (identified by its `domainSubscriptions`
+ * JSON column) opt into the given taxonomy domain?
+ *
+ * Phase-31 Unit 31.2 extraction per [ADR-0022](../../docs/adr/0022-weekly-digest-scheduler.md)
+ * D-C. Kept separate from the DB-helper `getVerifiedSubscribersForDomain`
+ * below so the in-memory filter logic is unit-testable without a live
+ * DB or full Drizzle mock — mirrors the Phase-30 pure/DB split.
+ *
+ * Defensive: malformed `domainSubscriptions` JSON yields `false`
+ * (matches `parseDomainSubscriptions` empty-array contract). Trims +
+ * lowercases the `domain` arg before comparison to tolerate caller-side
+ * casing variance.
+ */
+export function subscriberSubscribesToDomain(
+  domainSubscriptionsJson: string,
+  domain: string,
+): boolean {
+  const target = domain.trim();
+  if (!target) return false;
+  const list = parseDomainSubscriptions(domainSubscriptionsJson);
+  return list.includes(target);
+}
+
+/**
+ * DB-helper: fetch all verified subscribers who opted into the given
+ * taxonomy domain. Phase-31 Unit 31.2 extraction per ADR-0022 D-C.
+ *
+ * Implementation: SELECT `status = 'verified'` rows from `subscriber`,
+ * then filter in JS using `subscriberSubscribesToDomain`. SQLite
+ * `JSON_EXTRACT` over a JSON-encoded string array is messy (no first-
+ * class JSON array search), and Phase-31 scale is bounded at ~750
+ * subscribers by the Resend 3,000/month free-tier ceiling per ADR-0022
+ * D-G — in-JS filtering is acceptable. Index-scan optimization deferred
+ * Phase 32+ per ADR-0022 D-H if signal emerges.
+ *
+ * Returns subscriber rows in DB-default order (no explicit ORDER BY;
+ * deterministic only within a single SELECT). Cron-route consumer
+ * iterates the result independent of order (per-row idempotency via
+ * `lastDigestSentAt` guards against double-sends regardless).
+ */
+export async function getVerifiedSubscribersForDomain(
+  domain: string,
+): Promise<(typeof subscribers.$inferSelect)[]> {
+  const rows = await db.select().from(subscribers).where(eq(subscribers.status, "verified"));
+  return rows.filter((row) => subscriberSubscribesToDomain(row.domainSubscriptions, domain));
+}
+
 export type UnsubscribeResult =
   | { ok: true; subscriber: typeof subscribers.$inferSelect; alreadyUnsubscribed: boolean }
   | { ok: false; error: "invalid_token" };

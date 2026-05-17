@@ -6,6 +6,7 @@ import {
   parseDomainSubscriptions,
   safeCompareTokens,
   serializeDomainSubscriptions,
+  subscriberSubscribesToDomain,
   validateEmail,
 } from "./index";
 
@@ -132,5 +133,37 @@ describe("serializeDomainSubscriptions", () => {
   it("returns [] for all-empty input", () => {
     expect(serializeDomainSubscriptions([])).toBe("[]");
     expect(serializeDomainSubscriptions(["", "  "])).toBe("[]");
+  });
+});
+
+describe("subscriberSubscribesToDomain", () => {
+  it("returns true when the domain is in the subscription list", () => {
+    expect(subscriberSubscribesToDomain('["general-ml","applications"]', "general-ml")).toBe(true);
+    expect(subscriberSubscribesToDomain('["general-ml","applications"]', "applications")).toBe(
+      true,
+    );
+  });
+
+  it("returns false when the domain is not in the subscription list", () => {
+    expect(subscriberSubscribesToDomain('["general-ml"]', "applications")).toBe(false);
+    expect(subscriberSubscribesToDomain('["general-ml"]', "deep-learning")).toBe(false);
+  });
+
+  it("returns false when the subscription JSON is malformed", () => {
+    expect(subscriberSubscribesToDomain("not-json", "general-ml")).toBe(false);
+    expect(subscriberSubscribesToDomain('{"foo":"bar"}', "general-ml")).toBe(false);
+  });
+
+  it("returns false when the domain arg is empty / whitespace", () => {
+    expect(subscriberSubscribesToDomain('["general-ml"]', "")).toBe(false);
+    expect(subscriberSubscribesToDomain('["general-ml"]', "   ")).toBe(false);
+  });
+
+  it("tolerates surrounding whitespace on the domain arg", () => {
+    expect(subscriberSubscribesToDomain('["general-ml"]', "  general-ml  ")).toBe(true);
+  });
+
+  it("returns false for an empty subscription array", () => {
+    expect(subscriberSubscribesToDomain("[]", "general-ml")).toBe(false);
   });
 });
