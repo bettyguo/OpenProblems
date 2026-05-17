@@ -2470,6 +2470,52 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 29 — Community-adjacent surfaces (**twentieth NON-§13 phase**: rating-action `dimensions.<dim>.rationale` markdown promotion via ADR-0018 D-G inheritance contract — fourth sibling under D-G; closes Phase-27 B.12 at 2-phase carryover; first content-side — Velite-validated — markdown render call site; tenth no-new-ADR phase since Phase 3; thirteenth consecutive 0-migration phase anticipated)
 
+#### Unit 29.2 — Phase-29 hygiene status pass (0 Class A; **Phase-27 B.12 CLOSED at 2-phase age**; **Phase-29 B.14 newly surfaced** — wikilink rendering deferred; 142 i18n keys/locale UNCHANGED)
+
+- Third Phase-29 unit; docs-only. Mirrors Phase-13 through Phase-28 hygiene catalog patterns.
+- **Class A items: 0** (matches Phase-12 through Phase-28 well-scoped pattern; **eighteen consecutive phases** ship with 0 Class A items). Phase 29 shipped Units 29.0 + 29.1 without deferrals.
+- **Class B items: ~5 across 13 categories** (was ~5 across 12 categories at Phase 28 close; +1 new category B.14):
+  - **B.1 Image-processing expansion**: 3 carried unchanged (Q68 expansion content moderation; cropping UI; AVIF).
+  - **B.2 Phase-17 markdown subset expansion**: 8 carried unchanged.
+  - **B.3 Phase-18 surface expansion**: 3 carried + **Q72 family expanded to 3 sibling-divergence candidates** at Phase 29 entry (`reviewNotesSchema` Phase-18 + `rationaleSchema` Phase-27 + `actionRationaleSchema` Phase-29 — each could diverge from `bioSchema` if surface-specific demand surfaces).
+  - **B.4 Phase-20 backfill operational follow-ons**: 3 carried unchanged.
+  - **B.5 Phase-21 cleanup operational follow-ons**: 2 carried unchanged.
+  - **B.6 + B.7**: 0 carried (closed Phase 25).
+  - **B.8 Phase-24 transcode operational follow-ons**: 1 carried unchanged.
+  - **B.9 Operational + infrastructure**: 8 carried unchanged (Phase-9 B item 8 closed Phase 28).
+  - **B.10 Phase-26 detail-page follow-ons**: 2 carried (acceptedActionId link target; curator-translated FR review).
+  - **B.11 Operational + i18n maintenance**: 1 carried — i18n key count audit (now **142 per-locale UNCHANGED** Phase 29; first i18n-stable phase since Phase 28).
+  - **B.12 Phase-27 markdown-promotion follow-ons**: **CLOSED Phase 29 Unit 29.1** — rating-action `dimensions.<dim>.rationale` markdown promotion realized via fourth sibling under ADR-0018 D-G. **First Phase-27-Class-B follow-on closed at 2-phase age** (Phase 27 → 28 carry → Phase 29 close).
+  - **B.13 Phase-28 multi-provider follow-ons**: 4 carried unchanged (Q73 / Q74 / account-merge UI / 3rd+ provider expansion).
+  - **B.14 Phase-29 wikilink-rendering follow-ons (NEWLY SURFACED)**: **1 item** — rating-action rationale wikilink resolution. Existing YAML content contains `[[problem-slug]]` syntax (e.g., `hallucination-reduction/2026-05-14-initial.yaml` value rationale references `[[scalable-oversight]]` + `[[long-context-rag]]`; Phase-29 markdown promotion renders these as literal text — **no regression** vs the Phase-3 `whitespace-pre-line` renderer). Active wikilink resolution gated on: (1) curator/user demand signal; (2) cross-surface wikilink consistency decision (challenge rationale + review notes + bio could also use wikilinks); (3) ADR-0018 D-G amendment shape or new ADR. **Documented-not-promoted** to Q absent demand signal; couples naturally with Q72 family (B.3) if wikilink resolution becomes a Phase-30+ ADR-0021-candidate scope.
+- **Class C carryovers unchanged**: all ~25 pre-existing Class C items persist (Q47 / Q54 / Q55 / Q69 / Q73 operational gates + Phase-2 ROR-ID orphan + `<managingEditor>` RSS + W3C validator + `pnpm clean-drafts` + LHCI first run + abandoned-blob cleanup script gap + middleware-based auth-route protection + CI dummy `AUTH_SECRET` + `pnpm db:migrate` doc + per-script operational docs + etc.).
+- **Phase 28 → Phase 29 delta (final at pre-this-unit HEAD `11c2fa4`)**:
+  - **ADRs**: 20 → **20** (no new ADR; **tenth phase since Phase 3 to close without new ADR** = Phase 18 + 20-27 + 29; **first post-ADR-streak-break no-new-ADR phase** — Phase 28 broke the 8-phase Phase-18 + 20-27 streak with ADR-0020; Phase 29 starts a new 1-phase streak immediately). **ADR-0021 candidate slot stays open** (opened Phase 28).
+  - **Migrations**: 6 → **6** (**thirteenth consecutive 0-migration phase**; 16 of 20 phases since DB landed; Phase 17-29 all 0-migration).
+  - **Env vars**: 9 → **9** UNCHANGED (first env-var-stable phase since Phase 28; Phase 28 was 7 → 9).
+  - **Runtime deps**: 0 net change (no new dependencies Phase 29).
+  - **Tests**: 616/56 → **627/56** (+11 / 0 file; vitest file count UNCHANGED — tests extend existing `lib/markdown/index.test.ts`; **first non-zero test-count delta + zero-file-count delta since Phase 22** = 7-phase gap; mirrors Phase-18 + Phase-27 "extend existing file" precedent).
+  - **First Load JS shared chunk**: **103 kB UNCHANGED** (38th consecutive unit at 103 kB; Phase 9-29 invariant preserved).
+  - **Middleware bundle**: **160 kB UNCHANGED** since Phase 12.
+  - **All affected page bundles UNCHANGED**: `/[locale]/problems/[slug]/ratings` = 1.92 kB / 108 kB UNCHANGED.
+  - **Dynamic page+API routes**: 8 → **8** UNCHANGED (Phase-29 ratings-page promotion adds no dynamism; route already SSG-prerendered).
+  - **OPEN_QUESTIONS state**: 26 / 4 / 31 / 61 UNCHANGED pre-this-unit (Unit 29.3 will not promote — B.14 stays Class B absent demand signal).
+  - **i18n keys per locale**: 142 → **142** UNCHANGED (Phase 29 is structural-replace; no new strings; first i18n-stable phase since Phase 28).
+  - **`lib/markdown/`**: 3 → **3** source files + 1 test file (no new file; helpers added in-place via Unit 29.1).
+  - **`lib/markdown/` exports**: 3 schemas + 3 render helpers + 3 processors → **4 schemas + 4 render helpers + 4 processors**.
+  - **Markdown render surfaces**: 3 → **4**.
+  - **Markdown render call sites**: 9 → **10**.
+  - **`dangerouslySetInnerHTML` surfaces**: 9 → **10**.
+  - **XSS-audit surfaces**: 3 → **4**.
+  - **First content-side (Velite) markdown render call site**: 0 → **1** (rating-action rationale via Velite `RatingActions` collection; first non-DB-backed call site under ADR-0018 D-G).
+  - **APPEND-not-EDIT notes on ADR-0018 D-G** (anticipated post-Unit-29.3): 2 → **3** (Phase-18 retroactive + Phase-27 + Phase-29; **first three-APPEND ADR D-clause**).
+- **13 Phase-29 architectural firsts** (pre-this-unit at HEAD `11c2fa4`): (1) **fourth sibling schema under ADR-0018 D-G** realized; (2) **first content-side (Velite-validated YAML) markdown render call site** under ADR-0018 D-G (establishes storage-layer-agnostic inheritance); (3) **realizes the 12-phase Phase-17 anticipation** in `sanitize-schema.ts:22-24` (load-bearing test of D-G inheritance contract durability); (4) **first post-ADR-streak-break no-new-ADR phase** (Phase 28 broke the 8-phase Phase-18 + 20-27 streak; Phase 29 starts a new 1-phase streak immediately); (5) **tenth phase since Phase 3 to close without new ADR**; (6) **thirteenth consecutive 0-migration phase**; (7) **thirteenth consecutive single-session phase anticipated**; (8) **first Phase-27-Class-B follow-on closed at 2-phase age** (tight cadence resumed); (9) **first non-zero test-count delta + zero-file-count delta since Phase 22** (7-phase gap); (10) **markdown render surfaces 3 → 4**; **call sites 9 → 10**; **`dangerouslySetInnerHTML` surfaces 9 → 10**; **XSS-audit surfaces 3 → 4**; (11) **first env-var-stable phase since Phase 28**; (12) **first i18n-stable phase since Phase 28**; (13) **Q72 family expanded to 3 sibling-divergence candidates** at Phase 29 entry.
+- **Phase-30+ Q-candidates flagged**: 7 carried from Phase 27 (Q60 / Q61 / Q62 / Q64 / Q65 / Q68 expansion / Q72) + 2 carried from Phase 28 (Q73 + Q74). **9 total**. Q72 family expanded to 3 sibling-divergence candidates at Phase 29 entry. **NEW Class B.14 (NOT promoted to Q)**: rating-action rationale wikilink rendering (gated on demand).
+- **Phase-30+ ADR slot reservations**: **ADR-0021 candidate slot stays open** (opened Phase 28). Strongest remaining candidates at Phase 29 close: **Phase-5 D-4 subscriber-list email** (carried **22+ phases** — **sole strongest patience signal** at Phase 30 entry); image-processing content moderation (Q68 + Q68 expansion; 10+ phases); markdown evolution ADR (Phase-17 D-H + Q72 family-expanded + Phase-29 wikilink B.14 could couple into one ADR); account-merge UI (ADR-0020 D-E candidate; 1-phase age); third+ provider expansion (ADR-0020 D-B amendment; 1-phase age).
+- Smoke gates (docs-only): `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline unchanged); typecheck / test / build untouched since no source files modified.
+- Parallel-curator awareness: this unit docs-only, no collision risk. No parallel-session activity observed during Phase 29 work; working tree clean at each unit boundary.
+- THINK artifact: `docs/thinking/29.2-phase-29-hygiene.md`.
+
 #### Unit 29.1 — `actionRationaleSchema` + `renderActionRationaleMarkdown` + `actionRationaleProcessor` + `DimensionCard` edit + 11 new tests (627/56)
 
 - Second Phase-29 unit; code unit. Realizes Phase-29 D-1 thread — rating-action `dimensions.<dim>.rationale` markdown promotion via ADR-0018 D-G inheritance contract — in a single code unit. **Test count 616/56 → 627/56** (+11 tests / 0 file; vitest file count UNCHANGED — tests extend existing `lib/markdown/index.test.ts`). **First Load JS 103 kB UNCHANGED** (38th consecutive unit at 103 kB; Phase 9-29 invariant preserved); **middleware 160 kB UNCHANGED** since Phase 12. **Closes Phase-27 Class B.12 carryover at 2-phase age** (mirrors Phase 21/23/25/27 tight-follow-on-close pattern; resumes the cadence after Phase 28's patience-signal thread took the slot).
