@@ -225,5 +225,18 @@
     "methodology_heading": "Méthodologie",
     "methodology_description": "Chaque note remonte à une méthodologie publiée et versionnée. Cinq dimensions, un composite consultatif, et un journal d'actions de notation strict — modelé sur la façon dont les agences de notation de crédit publient leurs opinions souveraines, adapté aux questions de recherche en IA.",
     "methodology_cta": "Lire la méthodologie v1 →"
+  },
+  "email": {
+    "subscribe_heading": "S'abonner au résumé hebdomadaire",
+    "subscribe_description": "Recevez par e-mail un résumé par domaine lorsque le planificateur du résumé hebdomadaire sera lancé. Vous confirmerez votre adresse avec un lien de vérification avant l'arrivée du moindre résumé.",
+    "email_label": "Adresse e-mail",
+    "domains_label": "Quels domaines ?",
+    "subscribe": "S'abonner",
+    "submitting": "Inscription en cours…",
+    "verify_sent": "Vérifiez votre boîte de réception — nous avons envoyé un lien de vérification. Cliquez dessus dans les 24 heures pour confirmer.",
+    "already_subscribed": "Cette adresse e-mail est déjà abonnée. Utilisez le lien de désabonnement dans n'importe quel résumé pour vous désinscrire.",
+    "send_unavailable": "Nous n'avons pas pu envoyer l'e-mail de vérification pour le moment. Veuillez réessayer plus tard ou contacter le support.",
+    "invalid_input": "Veuillez saisir une adresse e-mail valide et sélectionner au moins un domaine.",
+    "select_at_least_one_domain": "Veuillez sélectionner au moins un domaine."
   }
 }

@@ -225,5 +225,18 @@
     "methodology_heading": "Methodology",
     "methodology_description": "Every rating traces back to a published, versioned methodology. Five dimensions, one advisory composite, and a strict rating-action log — modeled on how credit rating agencies publish sovereign opinions, adapted for AI research questions.",
     "methodology_cta": "Read methodology v1 →"
+  },
+  "email": {
+    "subscribe_heading": "Subscribe to the weekly digest",
+    "subscribe_description": "Get a per-domain summary by email when the weekly digest scheduler launches. You'll confirm your address with a verification link before any digest emails arrive.",
+    "email_label": "Email address",
+    "domains_label": "Which domains?",
+    "subscribe": "Subscribe",
+    "submitting": "Subscribing…",
+    "verify_sent": "Check your inbox — we sent a verification link. Click it within 24 hours to confirm.",
+    "already_subscribed": "This email is already subscribed. Use the unsubscribe link in any digest email to opt out.",
+    "send_unavailable": "We couldn't send the verification email right now. Please try again later or contact support.",
+    "invalid_input": "Please enter a valid email address and select at least one domain.",
+    "select_at_least_one_domain": "Please select at least one domain."
   }
 }

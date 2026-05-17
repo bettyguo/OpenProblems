@@ -43,6 +43,13 @@
       "when": 1778979899383,
       "tag": "0005_user_image_override",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1779041176797,
+      "tag": "0006_subscriber",
+      "breakpoints": true
     }
   ]
 }

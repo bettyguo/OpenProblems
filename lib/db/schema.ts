@@ -1,5 +1,12 @@
 import { sql } from "drizzle-orm";
-import { integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import {
+  index,
+  integer,
+  primaryKey,
+  sqliteTable,
+  text,
+  uniqueIndex,
+} from "drizzle-orm/sqlite-core";
 import type { AdapterAccountType } from "next-auth/adapters";
 
 /**
@@ -216,3 +223,78 @@ export const ratingChallenges = sqliteTable("ratingChallenge", {
   reviewNotes: text("reviewNotes"),
   acceptedActionId: text("acceptedActionId"),
 });
+
+/**
+ * Subscriber list for the per-domain weekly digest (Unit 30.3) — the
+ * project's **second new user-state table since [`ratingChallenge`](#ratingChallenges)**
+ * (19-phase gap; **third write-path** after `watchlist` Phase 9 +
+ * `ratingChallenge` Phase 11). Closes the Phase-5 D-4 punt
+ * (`MASTER_PROMPT.md §5` *"Email/RSS digest: per-domain weekly summary"*)
+ * carried 22+ phases — **single longest patience-signal closure in
+ * project history** (prior longest: Phase 28's Phase-9 Class B item 8 at
+ * 17 phases).
+ *
+ * Schema decisions per [ADR-0021](../../docs/adr/0021-subscriber-list-email.md)
+ * D-B:
+ * - **UUID PK** (matches `users.id` + `ratingChallenge.id` precedent via
+ *   `crypto.randomUUID()`).
+ * - **No userId FK** (anonymous subscribers Phase 30; per-user-account
+ *   subscriptions are Q76 Phase 31+ candidate; FK column will be added
+ *   nullable on promotion).
+ * - **email UNIQUE** — case-insensitive subscription; caller normalizes
+ *   to lowercase canonical form before insert (`canonicalizeEmail` in
+ *   `lib/subscribers/index.ts`).
+ * - **status enum TEXT** — three values: `pending_verification` (initial
+ *   row + sent verification email) / `verified` (token confirmed) /
+ *   `unsubscribed` (soft-delete via single-click token; row preserved
+ *   for audit trail per ADR-0021 D-E).
+ * - **domainSubscriptions** TEXT — JSON-encoded `string[]` of taxonomy
+ *   domain IDs (foundation Phase 30 = often 1 domain per row;
+ *   multi-domain shape preserved Phase 31+).
+ * - **verificationToken** + **verificationTokenExpiresAt** — nullable;
+ *   cleared on verify; 24h expiry per ADR-0021 D-D.
+ * - **unsubscribeToken** TEXT NOT NULL UNIQUE — never expires; idempotent
+ *   per ADR-0021 D-E; never cleared.
+ * - **verifiedAt** + **unsubscribedAt** — nullable timestamps; audit
+ *   trail; `unsubscribedAt` NOT cleared on re-subscribe (audit trail).
+ * - **createdAt** + **updatedAt** — `timestamp_ms` default (matches
+ *   existing tables' precedent).
+ *
+ * Indexes per ADR-0021 D-B:
+ * - UNIQUE on `email`.
+ * - INDEX on `verificationToken` (nullable; non-unique).
+ * - UNIQUE on `unsubscribeToken` (always non-null; cryptographically
+ *   impossible to collide at 256-bit entropy but unique constraint is
+ *   cheap).
+ *
+ * Migration `0006_subscriber` — **first non-zero-migration phase since
+ * Phase 16** = 14-phase gap; **breaks 13-phase 0-migration streak**
+ * (Phase 17-29).
+ */
+export const subscribers = sqliteTable(
+  "subscriber",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    email: text("email").notNull(),
+    status: text("status").notNull(),
+    domainSubscriptions: text("domainSubscriptions").notNull(),
+    verificationToken: text("verificationToken"),
+    verificationTokenExpiresAt: integer("verificationTokenExpiresAt", { mode: "timestamp_ms" }),
+    unsubscribeToken: text("unsubscribeToken").notNull(),
+    verifiedAt: integer("verifiedAt", { mode: "timestamp_ms" }),
+    unsubscribedAt: integer("unsubscribedAt", { mode: "timestamp_ms" }),
+    createdAt: integer("createdAt", { mode: "timestamp_ms" })
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
+    updatedAt: integer("updatedAt", { mode: "timestamp_ms" })
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
+  },
+  (table) => ({
+    emailIdx: uniqueIndex("subscriber_email_idx").on(table.email),
+    verificationTokenIdx: index("subscriber_verification_token_idx").on(table.verificationToken),
+    unsubscribeTokenIdx: uniqueIndex("subscriber_unsubscribe_token_idx").on(table.unsubscribeToken),
+  }),
+);

@@ -4,6 +4,7 @@ import { taxonomy } from "#site/content";
 import { buildDigest, type DigestPayload } from "@/lib/digest/build-digest";
 import { Link } from "@/lib/i18n/navigation";
 import { isLocale } from "@/lib/i18n/routing";
+import { SubscribeForm } from "./_components/SubscribeForm";
 
 const PREVIEW_ITEMS_PER_DOMAIN = 3;
 
@@ -142,6 +143,8 @@ export default async function DigestPage({ params }: DigestPageProps) {
           <PerDomainSection key={payload.domain} payload={payload} />
         ))}
       </div>
+
+      <SubscribeForm domains={taxonomy.domains.map((d) => ({ id: d.id, title: d.title }))} />
     </main>
   );
 }
