@@ -98,7 +98,8 @@
     "status_submitted": "Submitted",
     "status_under_review": "Under review",
     "status_accepted": "Accepted",
-    "back_to_problem": "← Back to problem"
+    "back_to_problem": "← Back to problem",
+    "view_details": "View details →"
   },
   "public_challenge_detail": {
     "back_to_challenges": "← Back to challenges",

@@ -98,7 +98,8 @@
     "status_submitted": "Soumise",
     "status_under_review": "En cours d'examen",
     "status_accepted": "Acceptée",
-    "back_to_problem": "← Retour au problème"
+    "back_to_problem": "← Retour au problème",
+    "view_details": "Voir les détails →"
   },
   "public_challenge_detail": {
     "back_to_challenges": "← Retour aux contestations",

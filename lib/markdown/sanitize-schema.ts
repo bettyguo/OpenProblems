@@ -88,3 +88,27 @@ export const bioSchema: Schema = baseSchemaConfig;
  * "same object reference."
  */
 export const reviewNotesSchema: Schema = { ...baseSchemaConfig };
+
+/**
+ * Schema for `ratingChallenge.rationale` markdown rendering
+ * (Phase 27 per ADR-0018 D-G inheritance contract — **third
+ * sibling schema** after `bioSchema` Phase-17 + `reviewNotesSchema`
+ * Phase-18).
+ *
+ * **Identical to `bioSchema` Phase-27** per ADR-0018 D-G scope-cap
+ * discipline, mirroring the Phase-18 `reviewNotesSchema` precedent:
+ *   - Audit-boundary consistency at minimum cost (one schema audit
+ *     covers all three surfaces).
+ *   - No observed user demand for tables / footnotes in challenge
+ *     rationale Phase 11-26 (rationale is 50-2000 chars; submitters
+ *     have been writing short prose paragraphs).
+ *   - Schema divergence opens unbounded design space; promotion
+ *     driven by signal.
+ *
+ * Phase-28+ may diverge if user demand surfaces (parallels Q72
+ * candidate for reviewNotes; could surface as Q73-style candidate
+ * for rationale-specific markdown features). Explicit shallow copy
+ * below signals "intentional parity Phase-27" rather than "same
+ * object reference."
+ */
+export const rationaleSchema: Schema = { ...baseSchemaConfig };

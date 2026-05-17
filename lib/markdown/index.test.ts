@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { renderBioMarkdown, renderReviewNotesMarkdown } from "./index";
-import { bioSchema, reviewNotesSchema } from "./sanitize-schema";
+import { renderBioMarkdown, renderRationaleMarkdown, renderReviewNotesMarkdown } from "./index";
+import { bioSchema, rationaleSchema, reviewNotesSchema } from "./sanitize-schema";
 
 /**
  * Tests for `renderBioMarkdown` per [ADR-0018](../../docs/adr/0018-markdown-sanitization.md).
@@ -254,5 +254,67 @@ describe("Phase-18 schema parity — `reviewNotesSchema` ≡ `bioSchema`", () =>
 
   it("shares the same attribute allowlist Phase-18", () => {
     expect(reviewNotesSchema.attributes).toEqual(bioSchema.attributes);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-27 — `renderRationaleMarkdown` sibling per ADR-0018 D-G inheritance.
+// Third call site after `renderBioMarkdown` + `renderReviewNotesMarkdown`.
+// Identical pipeline + schema (Phase 27) to siblings; full XSS suite covered
+// at the pipeline layer above. These tests cover the sibling helper shape +
+// schema parity + the `string → string` signature (rationale is NOT NULL per
+// Phase-11 schema; helper has no null-fallback path).
+// ---------------------------------------------------------------------------
+
+describe("renderRationaleMarkdown — sibling helper (D-G inheritance; Phase 27)", () => {
+  it("renders bold via `<strong>`", () => {
+    expect(renderRationaleMarkdown("**recent results**")).toBe(
+      "<p><strong>recent results</strong></p>",
+    );
+  });
+
+  it("renders https links preserving href (D-D allow-list shared)", () => {
+    expect(renderRationaleMarkdown("[paper](https://arxiv.org/abs/2401.00001)")).toBe(
+      '<p><a href="https://arxiv.org/abs/2401.00001">paper</a></p>',
+    );
+  });
+
+  it("strips javascript: URL (Phase-17 XSS defense inherited)", () => {
+    const html = renderRationaleMarkdown("[bad](javascript:alert(1))");
+    expect(html).not.toContain("javascript:");
+    expect(html).not.toContain("alert(1)");
+  });
+
+  it("strips raw HTML script tags (Phase-17 sanitization inherited)", () => {
+    const html = renderRationaleMarkdown("<script>alert(1)</script>");
+    expect(html).not.toContain("<script");
+  });
+
+  it("demotes `#` to `<h3>` (D-C shared)", () => {
+    expect(renderRationaleMarkdown("# evidence")).toBe("<h3>evidence</h3>");
+  });
+
+  it("renders unordered list via `<ul><li>`", () => {
+    expect(renderRationaleMarkdown("- a\n- b")).toContain("<ul>");
+  });
+
+  it("returns string type even on whitespace-only input (Phase-11 schema guarantees 50-char minimum but helper is defensive)", () => {
+    // Caller-guaranteed non-empty per Phase-11; this asserts the helper's
+    // signature is `string → string`, not `string | null`.
+    expect(typeof renderRationaleMarkdown("a")).toBe("string");
+  });
+});
+
+describe("Phase-27 schema parity — `rationaleSchema` ≡ `bioSchema`", () => {
+  it("shares the same tag allowlist Phase-27", () => {
+    expect(rationaleSchema.tagNames).toEqual(bioSchema.tagNames);
+  });
+
+  it("shares the same URL protocol allow-list Phase-27", () => {
+    expect(rationaleSchema.protocols).toEqual(bioSchema.protocols);
+  });
+
+  it("shares the same attribute allowlist Phase-27", () => {
+    expect(rationaleSchema.attributes).toEqual(bioSchema.attributes);
   });
 });

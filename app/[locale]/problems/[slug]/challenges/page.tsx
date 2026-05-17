@@ -5,6 +5,7 @@ import { problems } from "#site/content";
 
 import { Link } from "@/lib/i18n/navigation";
 import { isLocale } from "@/lib/i18n/routing";
+import { renderRationaleMarkdown } from "@/lib/markdown";
 import { getPublicChallengesByProblem } from "@/lib/rating-challenges";
 import { cn } from "@/lib/utils";
 
@@ -31,12 +32,28 @@ import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-const RATIONALE_PREVIEW_CHARS = 200;
-
-function truncateRationale(rationale: string): string {
-  if (rationale.length <= RATIONALE_PREVIEW_CHARS) return rationale;
-  return rationale.slice(0, RATIONALE_PREVIEW_CHARS).trimEnd() + "…";
-}
+/**
+ * Phase-27 shared prose-styling classes for markdown rationale.
+ * Listing pages add `line-clamp-3` for visual truncation (source
+ * truncation incompatible with markdown per Phase-18 reviewNotes
+ * precedent).
+ */
+const RATIONALE_PROSE_CLASSES = cn(
+  "text-foreground/90 mt-1 text-sm",
+  "[&_a]:text-accent [&_a]:underline-offset-2 hover:[&_a]:underline",
+  "[&_code]:bg-muted [&_code]:rounded [&_code]:px-1 [&_code]:font-mono [&_code]:text-xs",
+  "[&_pre]:bg-muted [&_pre]:my-2 [&_pre]:overflow-x-auto [&_pre]:rounded [&_pre]:p-3",
+  "[&_pre_code]:bg-transparent [&_pre_code]:p-0",
+  "[&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5",
+  "[&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5",
+  "[&_blockquote]:border-border [&_blockquote]:my-2 [&_blockquote]:border-l-2 [&_blockquote]:pl-3 [&_blockquote]:italic",
+  "[&_hr]:border-border [&_hr]:my-3",
+  "[&_p+p]:mt-2",
+  "[&_h3]:mt-3 [&_h3]:font-serif [&_h3]:text-base [&_h3]:font-semibold",
+  "[&_h4]:mt-2 [&_h4]:font-serif [&_h4]:text-sm [&_h4]:font-semibold",
+  "[&_h5]:mt-2 [&_h5]:font-serif [&_h5]:text-sm [&_h5]:font-medium",
+  "[&_h6]:mt-2 [&_h6]:font-serif [&_h6]:text-sm [&_h6]:font-medium",
+);
 
 interface ChallengesPageProps {
   params: Promise<{ locale: string; slug: string }>;
@@ -134,15 +151,28 @@ export default async function PublicChallengesListPage({ params }: ChallengesPag
                     <p className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
                       {t("rationale_label")}
                     </p>
-                    <p className="text-foreground/90 mt-1 text-sm whitespace-pre-wrap">
-                      {truncateRationale(row.rationale)}
-                    </p>
+                    <div
+                      className={cn(RATIONALE_PROSE_CLASSES, "line-clamp-3")}
+                      dangerouslySetInnerHTML={{
+                        __html: renderRationaleMarkdown(row.rationale),
+                      }}
+                    />
                   </div>
                   {row.status === "accepted" && row.acceptedActionId && (
                     <p className="text-muted-foreground mt-2 text-xs">
                       <span>{t("action_attached_label")}</span>
                       <span className="ml-1.5 font-mono">{row.acceptedActionId}</span>
                     </p>
+                  )}
+                  {row.submitterLogin && (
+                    <div className="mt-2">
+                      <Link
+                        href={`/u/${row.submitterLogin}/challenges/${row.id}`}
+                        className="text-accent text-sm underline-offset-2 hover:underline"
+                      >
+                        {t("view_details")}
+                      </Link>
+                    </div>
                   )}
                 </li>
               );

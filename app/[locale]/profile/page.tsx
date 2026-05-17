@@ -13,10 +13,15 @@ import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { Link } from "@/lib/i18n/navigation";
 import { isLocale } from "@/lib/i18n/routing";
-import { renderBioMarkdown, renderReviewNotesMarkdown } from "@/lib/markdown";
+import {
+  renderBioMarkdown,
+  renderRationaleMarkdown,
+  renderReviewNotesMarkdown,
+} from "@/lib/markdown";
 import {
   getUserChallenges,
   isAllowedWithdrawal,
+  isPublicChallengeStatus,
   withdrawChallenge,
   type ChallengeStatus,
 } from "@/lib/rating-challenges";
@@ -30,12 +35,29 @@ import {
 import { cn } from "@/lib/utils";
 import { getWatchedSlugs } from "@/lib/watchlist";
 
-const RATIONALE_PREVIEW_CHARS = 200;
-
-function truncateRationale(rationale: string): string {
-  if (rationale.length <= RATIONALE_PREVIEW_CHARS) return rationale;
-  return rationale.slice(0, RATIONALE_PREVIEW_CHARS).trimEnd() + "…";
-}
+/**
+ * Phase-27 shared prose-styling classes for markdown-rendered
+ * rationale. Listing pages add `line-clamp-3` for visual truncation
+ * (source truncation incompatible with markdown per Phase-18
+ * reviewNotes precedent — `truncateRationale` helper removed Phase 27
+ * across all 3 listing pages).
+ */
+const RATIONALE_PROSE_CLASSES = cn(
+  "text-foreground/90 mt-2 text-sm",
+  "[&_a]:text-accent [&_a]:underline-offset-2 hover:[&_a]:underline",
+  "[&_code]:bg-muted [&_code]:rounded [&_code]:px-1 [&_code]:font-mono [&_code]:text-xs",
+  "[&_pre]:bg-muted [&_pre]:my-2 [&_pre]:overflow-x-auto [&_pre]:rounded [&_pre]:p-3",
+  "[&_pre_code]:bg-transparent [&_pre_code]:p-0",
+  "[&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5",
+  "[&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5",
+  "[&_blockquote]:border-border [&_blockquote]:my-2 [&_blockquote]:border-l-2 [&_blockquote]:pl-3 [&_blockquote]:italic",
+  "[&_hr]:border-border [&_hr]:my-3",
+  "[&_p+p]:mt-2",
+  "[&_h3]:mt-3 [&_h3]:font-serif [&_h3]:text-base [&_h3]:font-semibold",
+  "[&_h4]:mt-2 [&_h4]:font-serif [&_h4]:text-sm [&_h4]:font-semibold",
+  "[&_h5]:mt-2 [&_h5]:font-serif [&_h5]:text-sm [&_h5]:font-medium",
+  "[&_h6]:mt-2 [&_h6]:font-serif [&_h6]:text-sm [&_h6]:font-medium",
+);
 
 /**
  * `/[locale]/profile` — the first protected route in the project
@@ -121,6 +143,7 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
 
   const challenges = await getUserChallenges(userId);
   const tRC = await getTranslations("rating_challenge");
+  const tPC = await getTranslations("public_challenges");
 
   const updateProfileAction = async (formData: FormData) => {
     "use server";
@@ -511,25 +534,25 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
                       {t(`challenges_status_${challenge.status}`)}
                     </span>
                   </p>
-                  <p className="text-foreground/90 mt-2 text-sm">
-                    {truncateRationale(challenge.rationale)}
-                  </p>
+                  <div
+                    className={cn(RATIONALE_PROSE_CLASSES, "line-clamp-3")}
+                    dangerouslySetInnerHTML={{
+                      __html: renderRationaleMarkdown(challenge.rationale),
+                    }}
+                  />
                   {(() => {
                     // ADR-0018 D-G inheritance: reviewNotes rendered as
                     // sanitized markdown via `renderReviewNotesMarkdown`
                     // per Phase-18 Unit 18.3. Same XSS-safety as bio +
                     // curator-dashboard surfaces.
                     //
-                    // Markdown + CSS `line-clamp-3` for visual truncation
-                    // (Phase-18 Unit 18.0 D-5 + Unit 18.1 incompatibility
-                    // analysis): full markdown rendered; visual height
-                    // clamped at 3 lines. **Replaces Phase-12's
-                    // `truncateRationale(challenge.reviewNotes)` source-
-                    // truncation** which is incompatible with markdown
-                    // (mid-tag truncation risks broken formatting:
-                    // unclosed `**`, `[`, etc.). `truncateRationale` helper
-                    // itself stays for the rationale plain-text field
-                    // above (Phase-11; not markdown Phase 18).
+                    // Phase-27 Unit 27.1 extends this pattern to the
+                    // rationale field via `renderRationaleMarkdown`
+                    // above (replacing the Phase-12 `truncateRationale`
+                    // source-truncation that was incompatible with
+                    // markdown — mid-tag truncation risks broken
+                    // formatting: unclosed `**`, `[`, etc.).
+                    // `truncateRationale` helper removed Phase 27.
                     const showReviewNotes = status === "accepted" || status === "rejected";
                     if (!showReviewNotes) return null;
                     const reviewNotesHtml = renderReviewNotesMarkdown(challenge.reviewNotes);
@@ -576,6 +599,16 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
                       <span>{t("challenges_action_attached_label")}</span>
                       <span className="ml-1.5 font-mono">{challenge.acceptedActionId}</span>
                     </p>
+                  )}
+                  {isPublicChallengeStatus(challenge.status) && githubLogin && (
+                    <div className="mt-2">
+                      <Link
+                        href={`/u/${githubLogin}/challenges/${challenge.id}`}
+                        className="text-accent text-sm underline-offset-2 hover:underline"
+                      >
+                        {tPC("view_details")}
+                      </Link>
+                    </div>
                   )}
                   {canWithdraw && (
                     <form action={withdrawChallengeAction} className="mt-3">

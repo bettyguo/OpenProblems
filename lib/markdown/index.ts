@@ -8,7 +8,7 @@ import { visit } from "unist-util-visit";
 import type { Element, Root } from "hast";
 import type { Plugin } from "unified";
 
-import { bioSchema, reviewNotesSchema } from "./sanitize-schema";
+import { bioSchema, rationaleSchema, reviewNotesSchema } from "./sanitize-schema";
 
 /**
  * Server-side markdown rendering pipeline for `users.bio` per
@@ -189,3 +189,59 @@ const reviewNotesProcessor = unified()
   .use(rehypeSanitize, reviewNotesSchema)
   .use(rehypeStripUnsafeHrefs)
   .use(rehypeStringify);
+
+/**
+ * Singleton `unified` processor instance for
+ * `renderRationaleMarkdown` per ADR-0018 D-G inheritance contract
+ * (Phase 27 — **third sibling processor** after `bioProcessor`
+ * Phase-17 + `reviewNotesProcessor` Phase-18). Identical pipeline
+ * shape; uses `rationaleSchema` (currently identical to `bioSchema`
+ * Phase-27 per ADR-0018 D-G scope-cap discipline). Separate
+ * instance keeps the schema audit boundary explicit per surface.
+ */
+const rationaleProcessor = unified()
+  .use(remarkParse)
+  .use(remarkGfm)
+  .use(remarkRehype, { allowDangerousHtml: false })
+  .use(rehypeDemoteHeadings)
+  .use(rehypeSanitize, rationaleSchema)
+  .use(rehypeStripUnsafeHrefs)
+  .use(rehypeStringify);
+
+/**
+ * Server-side markdown rendering pipeline for
+ * `ratingChallenges.rationale` per ADR-0018 D-G inheritance
+ * contract (Phase 27 — third call site after `renderBioMarkdown`
+ * + `renderReviewNotesMarkdown`).
+ *
+ * **Differs from siblings in input shape**: rationale is `NOT NULL`
+ * per Phase-11 schema (50-2000 chars required; column has no
+ * nullable case). Signature is `string → string` rather than
+ * `string | null → string | null`. Caller (server component on
+ * detail page + 3 listing pages) renders the returned HTML via
+ * `dangerouslySetInnerHTML`; no null-fallback path needed.
+ *
+ * Render surfaces:
+ *   - `app/[locale]/u/[handle]/challenges/[id]/page.tsx` — full
+ *     render (Phase-26 detail page; closes Phase-26 B.10 item 1).
+ *   - `app/[locale]/u/[handle]/challenges/page.tsx` — full render +
+ *     CSS `line-clamp-3` (per-user listing; replaces Phase-14
+ *     `truncateRationale` source-truncation per Phase-18
+ *     line-clamp precedent).
+ *   - `app/[locale]/profile/page.tsx` — full render + `line-clamp-3`
+ *     (user's own challenges; replaces Phase-12 source-truncation).
+ *   - `app/[locale]/problems/[slug]/challenges/page.tsx` — full
+ *     render + `line-clamp-3` (per-problem listing; replaces
+ *     Phase-13 source-truncation).
+ *
+ * @param text Raw markdown source from `ratingChallenges.rationale`.
+ *   Caller-guaranteed non-empty per Phase-11 schema; helper does
+ *   not need to handle null / empty fallback.
+ * @returns Sanitized HTML string. Always non-empty when input
+ *   contains at least one non-whitespace character (which the
+ *   schema guarantees).
+ */
+export function renderRationaleMarkdown(text: string): string {
+  const file = rationaleProcessor.processSync(text);
+  return String(file).trim();
+}

@@ -5,7 +5,7 @@ import { problems } from "#site/content";
 
 import { Link } from "@/lib/i18n/navigation";
 import { isLocale } from "@/lib/i18n/routing";
-import { renderReviewNotesMarkdown } from "@/lib/markdown";
+import { renderRationaleMarkdown, renderReviewNotesMarkdown } from "@/lib/markdown";
 import { getPublicChallengeDetailById } from "@/lib/rating-challenges";
 import { getPublicProfileByHandle } from "@/lib/users";
 import { cn } from "@/lib/utils";
@@ -67,6 +67,7 @@ export default async function PublicChallengeDetailPage({
     ? challenge.reviewedAt.toISOString().slice(0, 10)
     : null;
   const problem = problems.find((p) => p.slug === challenge.problemSlug);
+  const rationaleHtml = renderRationaleMarkdown(challenge.rationale);
   const reviewNotesHtml = renderReviewNotesMarkdown(challenge.reviewNotes);
 
   return (
@@ -141,9 +142,25 @@ export default async function PublicChallengeDetailPage({
           <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
             {t("rationale_label")}
           </p>
-          <p className="text-foreground/90 mt-2 text-sm whitespace-pre-wrap">
-            {challenge.rationale}
-          </p>
+          <div
+            className={cn(
+              "text-foreground/90 mt-2 text-sm",
+              "[&_a]:text-accent [&_a]:underline-offset-2 hover:[&_a]:underline",
+              "[&_code]:bg-muted [&_code]:rounded [&_code]:px-1 [&_code]:font-mono [&_code]:text-xs",
+              "[&_pre]:bg-muted [&_pre]:my-2 [&_pre]:overflow-x-auto [&_pre]:rounded [&_pre]:p-3",
+              "[&_pre_code]:bg-transparent [&_pre_code]:p-0",
+              "[&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5",
+              "[&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5",
+              "[&_blockquote]:border-border [&_blockquote]:my-2 [&_blockquote]:border-l-2 [&_blockquote]:pl-3 [&_blockquote]:italic",
+              "[&_hr]:border-border [&_hr]:my-3",
+              "[&_p+p]:mt-2",
+              "[&_h3]:mt-3 [&_h3]:font-serif [&_h3]:text-base [&_h3]:font-semibold",
+              "[&_h4]:mt-2 [&_h4]:font-serif [&_h4]:text-sm [&_h4]:font-semibold",
+              "[&_h5]:mt-2 [&_h5]:font-serif [&_h5]:text-sm [&_h5]:font-medium",
+              "[&_h6]:mt-2 [&_h6]:font-serif [&_h6]:text-sm [&_h6]:font-medium",
+            )}
+            dangerouslySetInnerHTML={{ __html: rationaleHtml }}
+          />
         </div>
 
         {challenge.status === "accepted" && (
