@@ -150,6 +150,10 @@ The DB stores **user-state only** (sessions, users, watchlist, future rating-cha
 
 Cross-references between DB rows and content files use string keys (e.g., `problem_slug` in `watchlist` is a TEXT column with no FK; references the file-system slug). Orphan rows (problem_slug pointing at a deleted problem.yaml) are tolerated until a cleanup script lands (deferred follow-on).
 
+**EXTENDED Phase 11 Unit 11.1** — `ratingChallenge` table added as the **first user-derived write-path beyond `watchlist`**; schema-first ALTER discipline preserved (migration `0002_rating_challenges` + Phase-12 `0003_rating_challenge_review`). USER-STATE-only invariant unchanged — challenges reference `problemSlug` as plain text (no FK) per the `watchlist` precedent.
+
+**EXTENDED Phase 30 Unit 30.4** — `subscriber` table added as the **second new DB table since Phase 11** (19-phase gap; **third write-path** after `watchlist` + `ratingChallenge`) per [ADR-0021](./0021-subscriber-list-email.md) D-B. Closes the Phase-5 D-4 `Email/RSS digest: per-domain weekly summary` punt (22+ phase carryover — single longest patience-signal closure in project history). Migration `0006_subscriber` is the **first non-zero-migration phase since Phase 16** (14-phase gap) and **breaks the 13-phase 0-migration streak** Phase 17-29. USER-STATE-only invariant unchanged — subscriber rows are user-derived (email-only Phase 30; per-user-account-FK candidate per [Q76](../../OPEN_QUESTIONS.md#q76-per-user-account-based-subscriptions) Phase 31+); the `domainSubscriptions` JSON column references taxonomy domain IDs as plain text (no FK) per the `problemSlug` precedent. Indexes use explicit `index()` + `uniqueIndex()` Drizzle helpers (first use; prior tables used implicit column-level `unique()` or `primaryKey()` composites). Sender domain operational gate ([Q75](../../OPEN_QUESTIONS.md#q75-resend-account-domain-provisioning)) is parallel to Q55's hosting-tier gate; Resend provider isolation lives in `lib/email/` per ADR-0021 D-A, leaving the DB layer free of email-side concerns.
+
 ## Consequences
 
 ### Positive

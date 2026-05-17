@@ -618,3 +618,39 @@ They CANNOT (in Phase 28):
 **Phase-28 D-3 rationale for deferral**: curator-of-record semantics have ten phases of accreted invariants (`editorial.primary_curator` schema + `LOP_CURATOR_LOGINS` env-var convention + Phase-12 curator dashboard authz + Phase-14 `/u/{handle}` reviewer info + Phase-22-23 emit-challenge-action attribution). Widening this surface needs explicit curator buy-in + a new ADR; Phase 28's scope is the **submitter** + **profile-editing** widening, not the **curator-eligibility** widening.
 
 **Cross-references**: [ADR-0020 D-D](./docs/adr/0020-multi-provider-oauth.md) (the Phase-28 boundary statement preserving the GitHub-only gate); [ADR-0012 D-E](./docs/adr/0012-auth-provider.md#d-e-user-identity-model) (the Phase-9 editorial-identity model preserved); [ADR-0014 D-C](./docs/adr/0014-curator-review-pipeline.md) (curator identity + COI surface); [ADR-0005](./docs/adr/0005-rating-action-immutability.md) (rating-action immutability + `editorial.primary_curator` schema).
+
+## Q75. Resend account + domain provisioning (operational; `RESEND_API_KEY` + `EMAIL_FROM` + DKIM/SPF/DMARC records)
+
+**Status:** open (operational; surfaced 2026-05-17 Unit 30.4; Phase 31+ before deploy or when subscribe form needs live testing). · **Blocks:** end-to-end verification + welcome + (future) weekly digest email delivery; subscribe form returns `email.send_unavailable` until resolved. · **Surfaced:** [ADR-0021](./docs/adr/0021-subscriber-list-email.md) D-G.
+
+Mirrors [Q54](#q54-github-oauth-app-registration) (GitHub OAuth registration) + [Q73](#q73-google-oauth-app-registration) shape verbatim. Phase 30 ships the architectural commitment; production-grade transactional email delivery requires:
+
+1. **Resend account** at resend.com (free tier: 100 emails/day + 3,000/month; sufficient for MVP-scale verification + welcome traffic Phase 30; weekly digest send Phase 31+ will monitor against the per-month ceiling — at 750 subscribers × 4 weekly sends = 3,000 the free tier saturates).
+2. **API key generation** in Resend dashboard → set as `RESEND_API_KEY` env var on Vercel production + on `.env.local` for any dev that wants to exercise the live send path.
+3. **Sender domain verification**: Resend's domain setup flow provisions DKIM + SPF + DMARC records on the Q2-resolved DNS domain (presumably `llm-openproblems.org` per §5.10 placeholder). Without verified sender identity, recipient mail providers (Gmail / Outlook / iCloud) will mark transactional emails as spam or reject outright.
+4. **`EMAIL_FROM` env var** in canonical RFC 5322 format with display name + email address, e.g. `"LLM OpenProblems <digest@llm-openproblems.org>"`. The email portion MUST be on a Resend-verified domain.
+5. **Reply-to handling** (operational): Resend supports a separate reply-to. Phase 30 ships no explicit reply-to (recipients reply to the sender domain); operational decision Phase 31+ if curator volume signals needing routing.
+
+**Graceful degradation Phase 30**: when `RESEND_API_KEY` unset, the subscribe form returns `email.send_unavailable` (i18n message); the subscriber row is still created in `pending_verification` status (server doesn't know the row will never receive a verification email; consistent with the i18n message advising the user to contact support). When `EMAIL_FROM` unset, same code path. Mirrors Phase-28 Q73 + Phase-9 Q54 graceful-degradation posture.
+
+**Cross-references**: [ADR-0021 D-G](./docs/adr/0021-subscriber-list-email.md#d-g-sender-identity--email_from-env-var--q75-operational-gate) (sender identity + Q75 gate); [Q2](#q2-domain-dns) (DNS domain that DKIM/SPF/DMARC records attach to — Q75 depends on Q2 resolution); [Q54](#q54-github-oauth-app-registration) + [Q73](#q73-google-oauth-app-registration) (parallel operational gates with identical graceful-degradation shape).
+
+## Q76. Per-user-account-based subscriptions (architectural; ADR-0021 D-C Phase 31+ deferral)
+
+**Status:** open (architectural; surfaced 2026-05-17 Unit 30.4; Phase 31+ candidate if signed-in-user-subscription demand surfaces). · **Blocks:** nothing critical; affects future subscription-management UX + curator analytics. · **Surfaced:** [ADR-0021](./docs/adr/0021-subscriber-list-email.md) D-C.
+
+Phase 30's [ADR-0021](./docs/adr/0021-subscriber-list-email.md) D-C scopes subscriptions to **per-domain only** with **anonymous email-only** rows in the `subscriber` table — no FK to `users.id`. A user signed in via GitHub / Google can subscribe via the form but the subscription row has no relationship to their `users.id`; from the system's view, the subscription is identified purely by email + token.
+
+Phase 30 is the **foundation**; Phase 31+ candidates for richer subscription semantics:
+
+1. **Authenticated-user subscriptions**: when a signed-in user submits the subscribe form, link the resulting `subscriber` row to their `users.id` via a nullable FK. Enables: (a) "manage my subscriptions" page on `/profile`; (b) auto-unsubscribe on account deletion; (c) curator analytics ("which signed-in users are subscribed").
+2. **Per-problem subscriptions**: subscribe to all rating actions on `hallucination-reduction` (independent of domain). Couples to content schema; requires either a separate `problem_subscriptions` table or a `domainSubscriptions`-shaped extension (`problemSubscriptions` JSON column).
+3. **Cross-domain weekly-digest summary**: single weekly email aggregating all opted-in domains for the user (vs N separate emails Phase 30 baseline).
+
+**Question to resolve in Phase 31+**: should signed-in users get account-linked subscriptions automatically (on form submit when signed in) OR via an explicit opt-in toggle? Three resolution options:
+
+- **Option A**: FK from `subscriber.userId` to `users.id` with `ON DELETE cascade`; populated automatically on form submit when `auth()` returns a session; nullable for anonymous email-only subscribes. ~2-3 units; preserves email-only path; adds the `userId` column + migration.
+- **Option B**: separate `user_subscriptions` table keyed on `users.id` × `domain`; the `subscriber` table stays anonymous email-only; the curator analytics / "manage my subscriptions" page queries the new table. ~3-4 units; more separation between anonymous + authenticated paths.
+- **Option C**: keep `subscriber` anonymous email-only indefinitely; "manage my subscriptions" UX uses the email-token verification cycle (user enters email; receives a manage-subscriptions link). ~0 units (already shipped Phase 30); least UX-pleasant but architecturally simplest.
+
+**Cross-references**: [ADR-0021 D-C](./docs/adr/0021-subscriber-list-email.md#d-c-subscription-scope--per-domain-phase-30-q76-architectural-for-phase-31) (the Phase-30 boundary statement scoping subscriptions to per-domain); [ADR-0015 D-A](./docs/adr/0015-per-user-privacy-model.md) (public-data invariant — subscriber email is private; authenticated-subscription linkage would preserve this); [ADR-0012 D-E](./docs/adr/0012-auth-provider.md#d-e-user-identity-model) (the existing user-identity model; FK from `subscriber.userId` would join here); [ADR-0020 D-D](./docs/adr/0020-multi-provider-oauth.md) (Phase-28 boundary on `users.githubLogin`-based gating; Phase-30+ subscriptions are provider-agnostic since they key on `users.id` not `githubLogin`).
