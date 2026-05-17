@@ -112,3 +112,33 @@ export const reviewNotesSchema: Schema = { ...baseSchemaConfig };
  * object reference."
  */
 export const rationaleSchema: Schema = { ...baseSchemaConfig };
+
+/**
+ * Schema for rating-action `dimensions.<dim>.rationale` markdown
+ * rendering (Phase 29 per ADR-0018 D-G inheritance contract —
+ * **fourth sibling schema** after `bioSchema` Phase-17 +
+ * `reviewNotesSchema` Phase-18 + `rationaleSchema` Phase-27).
+ *
+ * **First content-side (Velite-validated YAML) markdown render
+ * call site** under ADR-0018 D-G. The three prior siblings all
+ * consume DB-backed columns via Drizzle; this one consumes
+ * `RatingAction.dimensions.<dim>.rationale` from the Velite
+ * `RatingActions` collection per ADR-0002. Establishes the
+ * convention that ADR-0018 D-G inheritance is **storage-layer-
+ * agnostic** — DB-backed and content-backed surfaces share the
+ * same sanitization audit boundary.
+ *
+ * **Identical to `bioSchema` Phase-29** per ADR-0018 D-G scope-cap
+ * discipline (mirrors Phase-18 + Phase-27 sibling precedents).
+ * Content already contains `[[problem-slug]]` wikilink syntax;
+ * markdown promotion does NOT resolve wikilinks (literal-text
+ * display preserved; active wikilink resolution is Phase-30+
+ * candidate gated on demand signal + cross-surface scope decision
+ * + ADR-0018 D-G amendment shape — see Phase-29 Class B.14).
+ *
+ * Realizes the Phase-17 anticipation in this file's header
+ * comment: "possibly rating-action `rationale`" named as a future
+ * sibling at the original ADR-0018 D-G author time; **12-phase
+ * anticipation → realization gap** (Phase 17 → Phase 29).
+ */
+export const actionRationaleSchema: Schema = { ...baseSchemaConfig };

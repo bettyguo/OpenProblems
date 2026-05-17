@@ -1,7 +1,17 @@
 import { describe, expect, it } from "vitest";
 
-import { renderBioMarkdown, renderRationaleMarkdown, renderReviewNotesMarkdown } from "./index";
-import { bioSchema, rationaleSchema, reviewNotesSchema } from "./sanitize-schema";
+import {
+  renderActionRationaleMarkdown,
+  renderBioMarkdown,
+  renderRationaleMarkdown,
+  renderReviewNotesMarkdown,
+} from "./index";
+import {
+  actionRationaleSchema,
+  bioSchema,
+  rationaleSchema,
+  reviewNotesSchema,
+} from "./sanitize-schema";
 
 /**
  * Tests for `renderBioMarkdown` per [ADR-0018](../../docs/adr/0018-markdown-sanitization.md).
@@ -316,5 +326,83 @@ describe("Phase-27 schema parity — `rationaleSchema` ≡ `bioSchema`", () => {
 
   it("shares the same attribute allowlist Phase-27", () => {
     expect(rationaleSchema.attributes).toEqual(bioSchema.attributes);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-29 — `renderActionRationaleMarkdown` sibling per ADR-0018 D-G
+// inheritance. Fourth call site after `renderBioMarkdown` +
+// `renderReviewNotesMarkdown` + `renderRationaleMarkdown`. **First content-
+// side (Velite-validated YAML) markdown render call site** under D-G — the
+// three prior siblings consume DB-backed Drizzle reads. Identical pipeline +
+// schema (Phase 29) to siblings; full XSS suite covered at the pipeline
+// layer above. These tests cover the sibling helper shape + schema parity +
+// the `string → string` signature (rating-action rationale required per
+// `rating-action.ts` Zod schema; helper has no null-fallback path).
+// ---------------------------------------------------------------------------
+
+describe("renderActionRationaleMarkdown — sibling helper (D-G inheritance; Phase 29)", () => {
+  it("renders bold via `<strong>`", () => {
+    expect(renderActionRationaleMarkdown("**unchanged**")).toBe(
+      "<p><strong>unchanged</strong></p>",
+    );
+  });
+
+  it("renders https links preserving href (D-D allow-list shared)", () => {
+    expect(renderActionRationaleMarkdown("[paper](https://arxiv.org/abs/2401.00001)")).toBe(
+      '<p><a href="https://arxiv.org/abs/2401.00001">paper</a></p>',
+    );
+  });
+
+  it("strips javascript: URL (Phase-17 XSS defense inherited)", () => {
+    const html = renderActionRationaleMarkdown("[bad](javascript:alert(1))");
+    expect(html).not.toContain("javascript:");
+    expect(html).not.toContain("alert(1)");
+  });
+
+  it("strips raw HTML script tags (Phase-17 sanitization inherited)", () => {
+    const html = renderActionRationaleMarkdown("<script>alert(1)</script>");
+    expect(html).not.toContain("<script");
+  });
+
+  it("demotes `#` to `<h3>` (D-C shared)", () => {
+    expect(renderActionRationaleMarkdown("# evidence")).toBe("<h3>evidence</h3>");
+  });
+
+  it("renders unordered list via `<ul><li>`", () => {
+    expect(renderActionRationaleMarkdown("- a\n- b")).toContain("<ul>");
+  });
+
+  it("preserves wikilink syntax as literal text (Phase 30+ resolution; B.14)", () => {
+    // Existing YAML content contains `[[problem-slug]]` wikilinks (e.g.,
+    // `hallucination-reduction/2026-05-14-initial.yaml` value rationale
+    // references `[[scalable-oversight]]`). Markdown promotion does NOT
+    // resolve wikilinks — `remark-parse` lacks native wikilink support
+    // and the pipeline has no `remark-wiki-link` plugin. Active
+    // resolution is Phase-30+ candidate (Class B.14 hygiene item).
+    const html = renderActionRationaleMarkdown("see [[scalable-oversight]] for context");
+    expect(html).toContain("[[scalable-oversight]]");
+    expect(html).not.toContain("<a href=");
+  });
+
+  it("returns string type (Phase-29 signature regression guard)", () => {
+    // Caller-guaranteed non-empty per `rating-action.ts` Zod schema; this
+    // asserts the helper's signature is `string → string`, not
+    // `string | null`.
+    expect(typeof renderActionRationaleMarkdown("a")).toBe("string");
+  });
+});
+
+describe("Phase-29 schema parity — `actionRationaleSchema` ≡ `bioSchema`", () => {
+  it("shares the same tag allowlist Phase-29", () => {
+    expect(actionRationaleSchema.tagNames).toEqual(bioSchema.tagNames);
+  });
+
+  it("shares the same URL protocol allow-list Phase-29", () => {
+    expect(actionRationaleSchema.protocols).toEqual(bioSchema.protocols);
+  });
+
+  it("shares the same attribute allowlist Phase-29", () => {
+    expect(actionRationaleSchema.attributes).toEqual(bioSchema.attributes);
   });
 });

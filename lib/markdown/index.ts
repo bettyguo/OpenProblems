@@ -8,7 +8,12 @@ import { visit } from "unist-util-visit";
 import type { Element, Root } from "hast";
 import type { Plugin } from "unified";
 
-import { bioSchema, rationaleSchema, reviewNotesSchema } from "./sanitize-schema";
+import {
+  actionRationaleSchema,
+  bioSchema,
+  rationaleSchema,
+  reviewNotesSchema,
+} from "./sanitize-schema";
 
 /**
  * Server-side markdown rendering pipeline for `users.bio` per
@@ -243,5 +248,71 @@ const rationaleProcessor = unified()
  */
 export function renderRationaleMarkdown(text: string): string {
   const file = rationaleProcessor.processSync(text);
+  return String(file).trim();
+}
+
+/**
+ * Singleton `unified` processor instance for
+ * `renderActionRationaleMarkdown` per ADR-0018 D-G inheritance
+ * contract (Phase 29 — **fourth sibling processor** after
+ * `bioProcessor` Phase-17 + `reviewNotesProcessor` Phase-18 +
+ * `rationaleProcessor` Phase-27). Identical pipeline shape; uses
+ * `actionRationaleSchema` (currently identical to `bioSchema`
+ * Phase-29 per ADR-0018 D-G scope-cap discipline). Separate
+ * instance keeps the schema audit boundary explicit per surface.
+ */
+const actionRationaleProcessor = unified()
+  .use(remarkParse)
+  .use(remarkGfm)
+  .use(remarkRehype, { allowDangerousHtml: false })
+  .use(rehypeDemoteHeadings)
+  .use(rehypeSanitize, actionRationaleSchema)
+  .use(rehypeStripUnsafeHrefs)
+  .use(rehypeStringify);
+
+/**
+ * Server-side markdown rendering pipeline for rating-action
+ * `dimensions.<dim>.rationale` per ADR-0018 D-G inheritance
+ * contract (Phase 29 — fourth call site after `renderBioMarkdown`
+ * + `renderReviewNotesMarkdown` + `renderRationaleMarkdown`).
+ *
+ * **First content-side (Velite-validated YAML) markdown render
+ * call site under ADR-0018 D-G**. The three prior helpers consume
+ * DB-backed Drizzle reads; this consumer reads from the Velite
+ * `RatingActions` collection at build time. Establishes the
+ * convention that ADR-0018 D-G inheritance is storage-layer-
+ * agnostic.
+ *
+ * **Signature mirrors Phase-27 `renderRationaleMarkdown`**:
+ * `string → string`. Rating-action rationale is required per the
+ * `rating-action.ts` Zod schema (ADR-0005 every-action-is-
+ * complete-snapshot principle); helper has no null-fallback path.
+ *
+ * Render surface (Phase 29):
+ *   - `app/[locale]/problems/[slug]/ratings/page.tsx` — full
+ *     render in `DimensionCard` (instantiated 5× per rating
+ *     action via `DimensionsBlock`; difficulty + saturation +
+ *     urgency + value + industry_call). Closes Phase-27 Class
+ *     B.12 carryover (rating-action rationale markdown
+ *     promotion).
+ *
+ * Wikilink handling: content already contains `[[problem-slug]]`
+ * syntax in some action rationales (e.g.,
+ * `hallucination-reduction/2026-05-14-initial.yaml` value
+ * rationale references `[[scalable-oversight]]`). After markdown
+ * promotion these continue to render as literal text — neither
+ * `remark-parse` nor `remark-gfm` resolves wikilinks. **No
+ * regression** vs the Phase-3 `whitespace-pre-line` renderer.
+ * Active wikilink resolution is Phase-30+ candidate (Phase-29
+ * Class B.14 hygiene item; gated on demand signal).
+ *
+ * @param text Raw markdown source from
+ *   `RatingAction.dimensions.<dim>.rationale` (Velite-validated
+ *   YAML). Caller-guaranteed non-empty per `rating-action.ts`
+ *   Zod schema; helper does not handle null / empty fallback.
+ * @returns Sanitized HTML string.
+ */
+export function renderActionRationaleMarkdown(text: string): string {
+  const file = actionRationaleProcessor.processSync(text);
   return String(file).trim();
 }

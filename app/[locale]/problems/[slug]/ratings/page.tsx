@@ -9,6 +9,36 @@ import {
 } from "@/lib/content/load-ratings";
 import { Link } from "@/lib/i18n/navigation";
 import { isLocale, locales } from "@/lib/i18n/routing";
+import { renderActionRationaleMarkdown } from "@/lib/markdown";
+import { cn } from "@/lib/utils";
+
+/**
+ * Tailwind prose-styling stack for rating-action `dimensions.<dim>.rationale`
+ * markdown render (Phase 29 per ADR-0018 D-G inheritance contract — fourth
+ * sibling under D-G). Mirrors Phase-27 `RATIONALE_PROSE_CLASSES` shape but
+ * tuned to `DimensionCard`'s tight `text-xs` scale (Phase-3 typography
+ * preserved); compact vertical rhythm fits the 2-column dimension grid.
+ *
+ * Heading-demotion (ADR-0018 D-C) sends `<h1>` → `<h3>` etc.; tight against
+ * the page's existing `<h3>` "Signals considered" heading but acceptable
+ * per D-C semantics (clamp is the failure mode, not co-existence).
+ */
+const ACTION_RATIONALE_PROSE_CLASSES = cn(
+  "mt-2 text-xs",
+  "[&_a]:text-accent [&_a]:underline-offset-2 hover:[&_a]:underline",
+  "[&_code]:bg-muted [&_code]:rounded [&_code]:px-1 [&_code]:font-mono",
+  "[&_pre]:bg-muted [&_pre]:my-2 [&_pre]:overflow-x-auto [&_pre]:rounded [&_pre]:p-2",
+  "[&_pre_code]:bg-transparent [&_pre_code]:p-0",
+  "[&_ul]:my-1.5 [&_ul]:list-disc [&_ul]:pl-4",
+  "[&_ol]:my-1.5 [&_ol]:list-decimal [&_ol]:pl-4",
+  "[&_blockquote]:border-border [&_blockquote]:my-1.5 [&_blockquote]:border-l-2 [&_blockquote]:pl-2 [&_blockquote]:italic",
+  "[&_hr]:border-border [&_hr]:my-2",
+  "[&_p+p]:mt-1.5",
+  "[&_h3]:mt-2 [&_h3]:font-serif [&_h3]:text-sm [&_h3]:font-semibold",
+  "[&_h4]:mt-2 [&_h4]:font-serif [&_h4]:text-sm [&_h4]:font-semibold",
+  "[&_h5]:mt-1.5 [&_h5]:font-serif [&_h5]:text-xs [&_h5]:font-medium",
+  "[&_h6]:mt-1.5 [&_h6]:font-serif [&_h6]:text-xs [&_h6]:font-medium",
+);
 
 interface RatingsPageProps {
   params: Promise<{ locale: string; slug: string }>;
@@ -269,7 +299,10 @@ function DimensionCard({
             conf {confidence.toFixed(2)}
           </span>
         </div>
-        <p className="mt-2 text-xs whitespace-pre-line">{rationale}</p>
+        <div
+          className={ACTION_RATIONALE_PROSE_CLASSES}
+          dangerouslySetInnerHTML={{ __html: renderActionRationaleMarkdown(rationale) }}
+        />
       </dd>
     </div>
   );
