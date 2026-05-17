@@ -2470,6 +2470,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 20 — Community-adjacent surfaces (**eleventh NON-§13 phase**: ADR-0019 D-E EXIF backfill — `scripts/backfill-exif-strip.ts` for Phase 16-18 avatars; second phase since Phase 3 to close without new ADR; fourth consecutive 0-migration phase)
 
+#### Unit 20.1 — `scripts/backfill-exif-strip.ts` (ADR-0019 D-E implementation; `sharp` pipeline reuse; `--dry-run` flag)
+
+- Second Phase-20 unit; code. Ships `scripts/backfill-exif-strip.ts` — the retroactive EXIF-stripping CLI tool that closes [ADR-0019](docs/adr/0019-image-transcoding.md) D-E (*"Backfill script Phase 20+ candidate if curator demands retroactive privacy correction"*). **First retroactive-privacy-correction surface** in project history.
+- **Reuses Phase-19 `sharp@0.34.5` direct dep verbatim**. Same `sharp(buffer).rotate().toBuffer()` pipeline contract as `lib/storage/putAvatar` (ADR-0019 D-B + D-D); same Vercel Blob `put` / `del` calls as `lib/storage/index.ts`; same drizzle-orm `eq` / `isNotNull` predicates as Phase 9+ DB code. **Zero new runtime deps Phase 20**.
+- **Per-row 5-phase pipeline** (one for loop iteration per affected row):
+  1. `fetch(url)` → `Buffer.from(await response.arrayBuffer())` — download the original with-EXIF blob from Vercel Blob (public URL; no auth header).
+  2. `sharp(buffer).rotate().toBuffer()` — apply EXIF Orientation to pixel data per ADR-0019 D-D, then re-encode without metadata per ADR-0019 D-B inverted-allow-list.
+  3. `put(<new-key>, strippedBuffer, { access: "public", contentType })` — upload to a **new storage-key** with `-backfill` suffix (`avatars/<userId>-<timestamp>-backfill.<ext>` per D-10 lean). Vercel Blob URLs are immutable; cannot overwrite the original key.
+  4. `UPDATE user SET imageOverride = <new-url> WHERE id = <userId>` — point the row at the stripped blob via drizzle `db.update().set().where(eq(users.id, userId))`.
+  5. `del(<old-url>)` — best-effort cleanup of the original blob. Idempotent on already-deleted (Vercel Blob `del` is no-op).
+- **`--dry-run` flag** (D-4): inventories affected rows + logs expected mutations without executing steps 1-5. Curator inspects log first; production-safety check. Mirrors `extract-leaderboard` / `ingest-arxiv` operational-script posture. `--help` / `-h` prints usage + exit-code matrix. **No other flags Phase 20** (`--user-id` + `--verbose` Phase 21+ if curator demands).
+- **URL-pattern filter** (D-6): `^https:\/\/[^/]+\.public\.blob\.vercel-storage\.com\/avatars\/.+\.(jpg|jpeg|png|webp)$/i` filters down from `imageOverride IS NOT NULL` candidates to Vercel-Blob-avatar-only rows. Defends against future S3/R2 swap surfacing alongside legacy rows; skips non-matching URLs silently.
+- **Per-row try/catch** (D-6): failed rows logged + skipped + counted in summary; non-zero exit (1) if any row failed. **One bad row doesn't kill the batch** — script processes all matched rows even when intermediate failures occur. Surfaces failure URLs + error messages at end for curator triage.
+- **Serial-row processing** (Phase-20 scope cap): `for (const row of affected) { ... }`. No concurrency / batching / rate limiting Phase 20 — user count low at MVP scale. Phase 21+ if curator demands parallelism or if affected-row count grows.
+- **Idempotent re-run safety** (Phase-20 scope cap): re-stripping an already-stripped blob is a no-op pixel-wise (sharp produces identical buffer when no EXIF present); the DB row just gets a fresh URL with the next `Date.now()` timestamp. Curator can re-run without corruption risk if first run was partial.
+- **Script alias** (D-13) added to `package.json#scripts`: `"backfill-exif-strip": "tsx scripts/backfill-exif-strip.ts"`. Mirrors existing operational-script patterns (`audit-content`, `validate-content`, `ingest-arxiv`, `extract-leaderboard`).
+- **No new vitest tests Phase 20** (D-7). Script correctness depends on live Turso DB + Vercel Blob storage (not unit-testable without integration fixtures); `sharp` strip behavior already exercised by Phase-19 Unit 19.2 tests (564/564); Vercel Blob `put` / `del` already tested at `lib/storage/` layer (Phase-19 + Phase-16 tests). **Phase-20 verification posture**: manual `--dry-run` inspection by curator before each execution run. Test count stays at **564/564 across 54 vitest files**.
+- **Server-only**: depends on `BLOB_READ_WRITE_TOKEN` (Q69) + `TURSO_DATABASE_URL` / `TURSO_AUTH_TOKEN` (Q55) at runtime. No client bundle impact; **First Load JS shared chunk UNCHANGED at 103 kB** per ADR-0018 D-F invariant extension. **Middleware bundle UNCHANGED at 160 kB**. Backfill script is a CLI tool — not bundled into the Next.js app.
+- **No new ADR Phase 20** (D-8). ADR-0019 D-E already pins the backfill contract. ADR count stays at **19**.
+- Smoke gates: `pnpm typecheck` clean; `pnpm lint` clean; `pnpm test` → **564/564 across 54 vitest files** UNCHANGED; `pnpm backfill-exif-strip --help` confirms script registers and arg parsing works; `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline unchanged).
+- File added: `scripts/backfill-exif-strip.ts`. Files modified: `package.json` (script alias). 1 new operational script; 7 total `scripts/` files (was 6).
+
 #### Unit 20.0 — Phase 20 prep (ADR-0019 D-E backfill; no new ADR; fifteenth "Continue" override)
 
 - First Phase-20 unit; docs-only. Opens Phase 20 (**eleventh NON-§13 phase**). Mirrors Phase-12 / 13 / 14 / 15 / 16 / 17 / 18 / 19 phase-prep patterns. **§13 ledger CLOSED** at Unit 9.9 (carried unchanged through Phases 10-19); Phase 20 inferred-not-§13 like its ten predecessors.
