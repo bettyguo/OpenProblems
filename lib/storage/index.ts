@@ -22,67 +22,77 @@ import sharp from "sharp";
  * - `timestamp` segment prevents CDN cache collisions on rapid replace
  *   (Vercel Blob URLs are CDN-fronted; same key would serve stale bytes).
  * - `ext` segment preserves browser content-type sniffing fallback when
- *   the URL is loaded outside of an `<img>` tag.
+ *   the URL is loaded outside of an `<img>` tag. Phase 24+: always
+ *   `.webp` (output is always WebP regardless of input MIME).
  */
 
 /**
- * Accepted MIME → file extension mapping. Mirrors ADR-0017 D-B's
- * accepted-MIME set. Caller has already validated `file.type`
- * against this set via `updateProfileImage` before reaching here.
+ * Phase-24 avatar transcode parameters per
+ * [ADR-0019](../../docs/adr/0019-image-transcoding.md) D-F:
+ * `sharp(buf).rotate().resize(maxSize).webp({ quality }).toBuffer()`.
+ *
+ * - **AVATAR_SIZE (512px square)**: covers hi-DPI use cases (32-150px
+ *   display @ 2-4x) for SiteHeader pill / `/profile` edit form /
+ *   `/u/{handle}` cover. Larger than typical avatar render size
+ *   (giving headroom) but small enough that bandwidth + storage stay
+ *   tight. Phase 25+ if hi-DPI signal demands 768/1024.
+ * - **WEBP_QUALITY (85)**: sharp's recommended default per ADR-0019
+ *   D-F example. ~70-80% smaller than equivalent JPEG/PNG at
+ *   visually-indistinguishable quality. Phase 25+ if observed
+ *   quality issue.
  */
-function inferExt(mime: string): string {
-  switch (mime) {
-    case "image/jpeg":
-      return "jpg";
-    case "image/png":
-      return "png";
-    case "image/webp":
-      return "webp";
-    default:
-      return "bin"; // unreachable per upstream validation
-  }
-}
+const AVATAR_SIZE = 512;
+const WEBP_QUALITY = 85;
 
 /**
  * Upload an avatar file to Vercel Blob and return the public URL.
- * Storage-key shape: `avatars/<userId>-<timestamp>.<ext>`.
+ * Storage-key shape: `avatars/<userId>-<timestamp>.webp`.
  *
  * Per [ADR-0019](../../docs/adr/0019-image-transcoding.md) (Phase
- * 19), the file passes through a `sharp` transcoding pipeline
- * BEFORE Vercel Blob upload:
+ * 19 + Phase 24), the file passes through a `sharp` transcoding
+ * pipeline BEFORE Vercel Blob upload:
  *
  *   1. `Buffer.from(await file.arrayBuffer())` — File → Buffer.
- *   2. `sharp(buffer).rotate()` — auto-rotation per D-D: reads
- *      EXIF Orientation tag (1-8), applies rotation/flip to pixel
- *      data, resets Orientation to 1. iOS portrait shots render
- *      correctly across all clients including those that ignore
- *      EXIF Orientation.
- *   3. `.toBuffer()` — re-encode WITHOUT EXIF metadata per D-B:
- *      `sharp.toBuffer()`'s default behavior strips ALL EXIF
- *      tags (GPS / camera serial / datetime / software / author /
- *      copyright / comment / etc.). Color profile + dimensions +
- *      encoding settings preserved. No `.withMetadata()` call
- *      Phase 19 — strip everything (conservative privacy default).
- *   4. `put(key, strippedBuffer, ...)` — upload to Vercel Blob.
+ *   2. `sharp(buffer).rotate()` — auto-rotation per D-D (Phase 19):
+ *      reads EXIF Orientation tag (1-8), applies rotation/flip to
+ *      pixel data, resets Orientation to 1. iOS portrait shots
+ *      render correctly across all clients including those that
+ *      ignore EXIF Orientation.
+ *   3. `.resize({ width: 512, height: 512, fit: "cover" })` —
+ *      Phase-24 resize per D-F: scale + crop to fill the target
+ *      square while preserving aspect ratio. Avatars render at
+ *      32-150px display; 512px covers hi-DPI without bloat.
+ *   4. `.webp({ quality: 85 })` — Phase-24 format conversion per
+ *      D-F: re-encode as WebP. ~70-80% smaller than equivalent
+ *      JPEG/PNG at visually-indistinguishable quality.
+ *   5. `.toBuffer()` — re-encode WITHOUT EXIF metadata per D-B
+ *      (Phase 19): sharp's default behavior strips ALL EXIF tags.
+ *   6. `put(key, strippedBuffer, ...)` — upload to Vercel Blob
+ *      with `image/webp` content-type.
  *
- * Output format matches input format (`sharp` preserves input
- * format by default when no explicit `.jpeg()/.png()/.webp()` is
- * called); `contentType: file.type` remains correct.
+ * Input MIME validation (ADR-0017 D-B accepted set: jpg/png/webp)
+ * is enforced by the caller (`updateProfileImage` in `lib/users/`)
+ * BEFORE reaching this helper. Phase 24 changes only the OUTPUT
+ * format (always WebP) — input validation is unchanged.
  *
  * Public-access by ADR-0017 D-A (avatar images are public on
- * profile pages; private-access mode would require a token-signed
- * URL per render with no win). EXIF stripping (D-A through D-D)
- * is the privacy-by-default surface per Phase 19; existing Phase
- * 16-18 avatars NOT retroactively processed (D-E backwards-compat
- * decision).
+ * profile pages). EXIF stripping (Phase 19) + WebP resize-transcoding
+ * (Phase 24) are server-side privacy + bandwidth surfaces; existing
+ * Phase 16-23 avatars NOT retroactively processed (D-E backwards-compat
+ * decision; retroactive backfill via `pnpm backfill-exif-strip`
+ * for EXIF + `pnpm backfill-resize-webp` for resize+WebP).
  */
 export async function putAvatar(file: File, userId: string): Promise<string> {
   const inputBuffer = Buffer.from(await file.arrayBuffer());
-  const strippedBuffer = await sharp(inputBuffer).rotate().toBuffer();
-  const key = `avatars/${userId}-${Date.now()}.${inferExt(file.type)}`;
-  const { url } = await put(key, strippedBuffer, {
+  const outputBuffer = await sharp(inputBuffer)
+    .rotate()
+    .resize({ width: AVATAR_SIZE, height: AVATAR_SIZE, fit: "cover" })
+    .webp({ quality: WEBP_QUALITY })
+    .toBuffer();
+  const key = `avatars/${userId}-${Date.now()}.webp`;
+  const { url } = await put(key, outputBuffer, {
     access: "public",
-    contentType: file.type,
+    contentType: "image/webp",
   });
   return url;
 }

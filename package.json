@@ -25,6 +25,7 @@
     "backfill-exif-strip": "tsx scripts/backfill-exif-strip.ts",
     "cleanup-orphan-blobs": "tsx scripts/cleanup-orphan-blobs.ts",
     "emit-challenge-action": "tsx scripts/emit-challenge-action.ts",
+    "backfill-resize-webp": "tsx scripts/backfill-resize-webp.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
