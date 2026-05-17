@@ -2470,6 +2470,39 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 16 — Community-adjacent surfaces (**seventh NON-§13 phase**: Q67 promotion — image override / avatar upload; surfaces ADR-0017 image-storage choice; third ALTER migration)
 
+#### Unit 16.4 — `/[locale]/profile` image upload affordance + multipart server actions + `messages.profile_edit.image_*` namespace (24 keys net; **first client-side JS in Phase 16**)
+
+- Fifth Phase-16 unit; third code unit. Realizes ADR-0017 D-C (edit surface route shape — extend Phase-15 `/profile`) + D-D (server-action driven; new sibling action) at the UI layer. First write-form UI consumer of Unit 16.3's `updateProfileImage` + `clearProfileImage` helpers.
+- **`messages/en.json` (edit)** + **`messages/fr.json` (edit)**: adds 11 new keys per locale to existing `profile_edit.*` namespace (12 keys per locale × 2 locales = **22 keys net** — corrected count; atomic pre-add per Phase-14/15 i18n discipline): `image_aria_label`, `image_heading`, `image_description`, `image_label`, `image_hint`, `image_upload_button`, `image_remove_button`, `image_remove_aria_label`, `image_current_label`, `image_success_message`, `image_remove_success_message`.
+- **`components/profile-image-upload-field/index.tsx` (new)**: client-side image upload field with `URL.createObjectURL`-driven preview. **The ONLY client-side JS in Phase 16** per ADR-0017 §10.4 perf-budget. ~50 lines; isolated to a small `"use client"` boundary on `/profile`. Renders a circular preview adjacent to `<input type="file">`; on file select, swaps preview to a local object URL via `URL.createObjectURL`. Server-rendered initial avatar passed as `currentSrc` prop; i18n strings resolved server-side + passed pre-localized.
+- **`app/[locale]/profile/page.tsx` (edit)** — four edits:
+  - **Imports**: adds `clearProfileImage` + `updateProfileImage` from `@/lib/users` + `ProfileImageUploadField` component.
+  - **`searchParams` shape expanded**: `saved` now distinguishes `"1"` (text save) / `"image"` (image upload) / `"image-cleared"` (image clear). Three independent banners. The page reads three boolean flags + renders the matching banner.
+  - **SELECT clause** extends to include `users.imageOverride`; `currentAvatar` derived via ADR-0017 D-E own-surface fallback chain `imageOverride → session.user.image → null`. Header card `<img>` uses `currentAvatar` (was `session.user.image`). Adds `object-cover` CSS class to handle non-square uploads.
+  - **Two new sibling server actions**:
+    - `updateProfileImageAction` — multipart `<form encType="multipart/form-data">` handler; validates session; reads `FormData.get("image")` as File instance; bails with error banner if missing/empty; calls `updateProfileImage`; redirects with `?saved=image` (success) or `?error=<encoded>` (validation failure).
+    - `clearProfileImageAction` — no-arg form handler; validates session; calls `clearProfileImage`; redirects with `?saved=image-cleared`.
+  - **New `<section>` insertion**: between Phase-15 edit form and watchlist section. Two child forms: file-upload + "Upload picture" button; conditional "Use GitHub avatar" form (only when `imageOverride` non-null).
+- **Why TWO sibling forms (upload + clear)** instead of one form with a flag (UX architectural choice): empty `<input type="file">` submission is unusual UX (most browsers don't even submit empty file inputs). Explicit "Remove" button maps cleanly to a dedicated server action; no flag-passing inside FormData; "Remove" only renders when override exists (clean conditional). Cleaner separation than one-form-many-modes.
+- **Why the `"use client"` boundary is page-scoped** (perf-budget discipline): `ProfileImageUploadField` is NOT in shared client surfaces (SiteHeader / AuthControl / WatchlistToggle). React's client runtime + the component land in `/profile` route bundle only. **`/profile` First Load JS: 108 kB → 117 kB (+9 kB)** — page-scoped; **shared chunk UNCHANGED at 103 kB** end-to-end through every Phase 9-16 unit. Other routes unaffected.
+- **Why no client-side MIME / size validation** (defense-in-depth via server only): `<input type="file" accept="...">` is a UX hint to the file picker; doesn't prevent submission of other types. Server-side check (Unit 16.3 `updateProfileImage`) is authoritative with first-bytes magic-byte check. Belt-and-suspenders client-side validation is Phase 17+ if UX feedback demands.
+- **Why explicit `?saved=image` etc. instead of generic `?saved=1`** (clearer UX): Phase-15's `?saved=1` flag distinguished a single success state. Phase 16 adds two new save shapes (image upload + image clear); generic flag would conflate three distinct user actions into one banner message. Localized per-action banners are clearer UX. Mirror Phase-11's `?challenge=submitted` precedent at finer granularity.
+- **Form submit + redirect-with-status pattern**: identical to Phase-15 Unit 15.4's `updateProfileAction` shape verbatim — server action validates session → reads FormData → calls helper → `redirect(?error=<encoded>)` on validation failure OR `redirect(?saved=<flag>)` on success; `revalidatePath` invalidates cached fragments before redirect. Canonical Phase 10-16 "signed-in own-state mutation" shape; new server actions inherit without deviation.
+- **`currentAvatar` ADR-0017 D-E fallback chain semantics**: `userRow?.imageOverride ?? session.user.image ?? null`. If imageOverride non-null → render uploaded avatar; else if GitHub `image` non-null → render GitHub-derived avatar (Phase 9-15 behavior preserved); else → omit `<img>` (existing Phase 9-15 behavior; fallback initials placeholder is Phase 17+).
+- **Smoke gates**:
+  - `pnpm typecheck` clean (server-action types + `File` instance narrowing all check).
+  - `pnpm test` → **519/519 across 53 vitest files UNCHANGED** (no test files touched; client-side smoke covered by typecheck + build).
+  - `pnpm build` → ~659 prerendered + 10 dynamic page+API routes unchanged. **First Load JS shared chunk = 103 kB UNCHANGED**. **Middleware = 160 kB UNCHANGED**. **`/profile` route = 117 kB (was 108 kB; +9 kB page-scoped for the `"use client"` boundary)**. `/u/{handle}` + all other routes UNCHANGED at their Phase 15-close sizes.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- **i18n keys per locale**: **124** (was 113 at Phase-15 close; +11 in Unit 16.4: `image_aria_label` + `image_heading` + `image_description` + `image_label` + `image_hint` + `image_upload_button` + `image_remove_button` + `image_remove_aria_label` + `image_current_label` + `image_success_message` + `image_remove_success_message`).
+- **First `"use client"` boundary added to `/profile`** in project history. `/profile` was entirely server-rendered through Phases 10-15; Phase 16's `URL.createObjectURL` preview requirement justifies the boundary per Unit 16.0 D-14 lean. Future client-side enhancements (form-state preservation, optimistic UI) on `/profile` amortize against the same client runtime cost.
+- **Not in this unit** (Unit 16.5 follows):
+  - `/[locale]/u/[handle]` public profile avatar fallback chain update.
+  - `lib/auth/login.ts` `getUserMetadataById` extension to return `imageOverride`.
+  - AuthControl pill avatar — UNCHANGED (defer until SiteHeader avatar-dropdown lands as Phase-14 Class B item).
+  - SiteHeader avatar — UNCHANGED (same deferral).
+- THINK artifact: `docs/thinking/16.4-profile-image-upload-form.md`.
+
 #### Unit 16.3 — `lib/storage/` Vercel Blob wrapper + `lib/users/` image-override helpers + tests (519 tests across 53 files; +22 from Phase 15)
 
 - Fourth Phase-16 unit; second code unit. Realizes ADR-0017 D-A storage architecture + D-B upload pipeline scope + D-F validation/sanitization model at the helper layer. **First storage layer in project history** (binary blob alongside file-system content + Turso DB). Anticipated dependency for Unit 16.4 (upload form) + Unit 16.5 (public consumption).

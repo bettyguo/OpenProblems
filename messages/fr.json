@@ -112,7 +112,18 @@
     "bio_hint": "Jusqu'à 280 caractères. Texte brut (pas de markdown).",
     "save_button": "Enregistrer",
     "success_message": "Profil mis à jour.",
-    "error_label": "Impossible d'enregistrer"
+    "error_label": "Impossible d'enregistrer",
+    "image_aria_label": "Modifier votre photo de profil",
+    "image_heading": "Photo de profil",
+    "image_description": "Remplacez votre avatar GitHub par une image téléchargée.",
+    "image_label": "Télécharger une nouvelle photo",
+    "image_hint": "JPEG, PNG ou WebP jusqu'à 2 Mo. Les images carrées s'affichent mieux.",
+    "image_upload_button": "Téléverser la photo",
+    "image_remove_button": "Utiliser l'avatar GitHub",
+    "image_remove_aria_label": "Revenir à l'avatar GitHub",
+    "image_current_label": "Photo actuelle",
+    "image_success_message": "Photo de profil mise à jour.",
+    "image_remove_success_message": "Avatar GitHub restauré."
   },
   "public_profile": {
     "aria_label": "Profil public de @{login}",

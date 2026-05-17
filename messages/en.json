@@ -112,7 +112,18 @@
     "bio_hint": "Up to 280 characters. Plain text (no markdown).",
     "save_button": "Save changes",
     "success_message": "Profile updated.",
-    "error_label": "Couldn't save"
+    "error_label": "Couldn't save",
+    "image_aria_label": "Edit your profile picture",
+    "image_heading": "Profile picture",
+    "image_description": "Override your GitHub avatar with an uploaded image.",
+    "image_label": "Upload a new picture",
+    "image_hint": "JPEG, PNG, or WebP up to 2 MB. Square images look best.",
+    "image_upload_button": "Upload picture",
+    "image_remove_button": "Use GitHub avatar",
+    "image_remove_aria_label": "Revert to GitHub avatar",
+    "image_current_label": "Current picture",
+    "image_success_message": "Profile picture updated.",
+    "image_remove_success_message": "Reverted to GitHub avatar."
   },
   "public_profile": {
     "aria_label": "Public profile of @{login}",

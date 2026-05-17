@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { problems } from "#site/content";
 
+import { ProfileImageUploadField } from "@/components/profile-image-upload-field";
 import { StatusPill } from "@/components/ui/status-pill";
 import { WatchlistToggle } from "@/components/watchlist-toggle";
 import { auth, signOut } from "@/lib/auth";
@@ -18,7 +19,13 @@ import {
   withdrawChallenge,
   type ChallengeStatus,
 } from "@/lib/rating-challenges";
-import { MAX_BIO_CHARS, MAX_DISPLAY_NAME_CHARS, updateProfile } from "@/lib/users";
+import {
+  clearProfileImage,
+  MAX_BIO_CHARS,
+  MAX_DISPLAY_NAME_CHARS,
+  updateProfile,
+  updateProfileImage,
+} from "@/lib/users";
 import { cn } from "@/lib/utils";
 import { getWatchedSlugs } from "@/lib/watchlist";
 
@@ -84,6 +91,8 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
   const userId = session.user.id;
   const sp = await searchParams;
   const editSaved = sp.saved === "1";
+  const imageSaved = sp.saved === "image";
+  const imageCleared = sp.saved === "image-cleared";
   const editError = typeof sp.error === "string" ? sp.error : null;
 
   const [userRow] = await db
@@ -91,6 +100,7 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
       githubLogin: users.githubLogin,
       displayName: users.displayName,
       bio: users.bio,
+      imageOverride: users.imageOverride,
     })
     .from(users)
     .where(eq(users.id, userId))
@@ -98,6 +108,10 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
   const githubLogin = userRow?.githubLogin ?? null;
   const currentDisplayName = userRow?.displayName ?? "";
   const currentBio = userRow?.bio ?? "";
+  // ADR-0017 D-E own-surface image fallback chain: imageOverride →
+  // GitHub-derived session.user.image → null (placeholder rendered
+  // inside the field component when null).
+  const currentAvatar = userRow?.imageOverride ?? session.user.image ?? null;
 
   const watchedSlugs = await getWatchedSlugs(userId);
   const watched = watchedSlugs
@@ -124,6 +138,38 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
       redirect(`/${locale}/profile?error=${encodeURIComponent(err)}`);
     }
     redirect(`/${locale}/profile?saved=1`);
+  };
+
+  const updateProfileImageAction = async (formData: FormData) => {
+    "use server";
+    const actionSession = await auth();
+    if (!actionSession?.user?.id) {
+      redirect(`/api/auth/signin/github?callbackUrl=/${locale}/profile`);
+    }
+    const file = formData.get("image");
+    if (!(file instanceof File) || file.size === 0) {
+      revalidatePath(`/[locale]/profile`, "page");
+      redirect(
+        `/${locale}/profile?error=${encodeURIComponent("Please select an image to upload.")}`,
+      );
+    }
+    const err = await updateProfileImage(actionSession.user.id, file);
+    revalidatePath(`/[locale]/profile`, "page");
+    if (err) {
+      redirect(`/${locale}/profile?error=${encodeURIComponent(err)}`);
+    }
+    redirect(`/${locale}/profile?saved=image`);
+  };
+
+  const clearProfileImageAction = async () => {
+    "use server";
+    const actionSession = await auth();
+    if (!actionSession?.user?.id) {
+      redirect(`/api/auth/signin/github?callbackUrl=/${locale}/profile`);
+    }
+    await clearProfileImage(actionSession.user.id);
+    revalidatePath(`/[locale]/profile`, "page");
+    redirect(`/${locale}/profile?saved=image-cleared`);
   };
 
   const withdrawChallengeAction = async (formData: FormData) => {
@@ -161,13 +207,13 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
   return (
     <main className="mx-auto max-w-prose px-6 py-12">
       <header className="flex items-center gap-4">
-        {session.user.image && (
+        {currentAvatar && (
           <img
-            src={session.user.image}
+            src={currentAvatar}
             alt=""
             width={64}
             height={64}
-            className="size-16 shrink-0 rounded-full"
+            className="size-16 shrink-0 rounded-full object-cover"
             loading="lazy"
           />
         )}
@@ -209,6 +255,22 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
             className="mt-4 rounded border border-emerald-300/60 bg-emerald-50 px-3 py-2 text-sm text-emerald-900 dark:border-emerald-700/40 dark:bg-emerald-900/20 dark:text-emerald-100"
           >
             {tE("success_message")}
+          </p>
+        )}
+        {imageSaved && (
+          <p
+            role="status"
+            className="mt-4 rounded border border-emerald-300/60 bg-emerald-50 px-3 py-2 text-sm text-emerald-900 dark:border-emerald-700/40 dark:bg-emerald-900/20 dark:text-emerald-100"
+          >
+            {tE("image_success_message")}
+          </p>
+        )}
+        {imageCleared && (
+          <p
+            role="status"
+            className="mt-4 rounded border border-emerald-300/60 bg-emerald-50 px-3 py-2 text-sm text-emerald-900 dark:border-emerald-700/40 dark:bg-emerald-900/20 dark:text-emerald-100"
+          >
+            {tE("image_remove_success_message")}
           </p>
         )}
         {editError && (
@@ -260,6 +322,54 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
             {tE("save_button")}
           </button>
         </form>
+      </section>
+
+      <section aria-label={tE("image_aria_label")} className="mt-12">
+        <h2 className="font-serif text-xl font-semibold tracking-tight">{tE("image_heading")}</h2>
+        <p className="text-muted-foreground mt-2 text-sm">{tE("image_description")}</p>
+
+        <form
+          action={updateProfileImageAction}
+          encType="multipart/form-data"
+          className="mt-6 space-y-4"
+        >
+          <ProfileImageUploadField
+            name="image"
+            currentSrc={currentAvatar}
+            accept="image/jpeg,image/png,image/webp"
+            labels={{
+              field: tE("image_label"),
+              hint: tE("image_hint"),
+              currentImage: tE("image_current_label"),
+            }}
+          />
+          <button
+            type="submit"
+            className={cn(
+              "border-border bg-foreground text-background inline-flex h-9 items-center justify-center rounded-md border px-4 text-sm font-medium",
+              "hover:bg-foreground/90 focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none",
+              "transition-colors",
+            )}
+          >
+            {tE("image_upload_button")}
+          </button>
+        </form>
+
+        {userRow?.imageOverride && (
+          <form action={clearProfileImageAction} className="mt-3">
+            <button
+              type="submit"
+              aria-label={tE("image_remove_aria_label")}
+              className={cn(
+                "border-border bg-background text-muted-foreground inline-flex h-9 items-center justify-center rounded-md border px-3 text-xs font-medium",
+                "hover:text-foreground hover:bg-muted focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none",
+                "transition-colors",
+              )}
+            >
+              {tE("image_remove_button")}
+            </button>
+          </form>
+        )}
       </section>
 
       <section aria-label={t("watching_aria_label")} className="mt-12">
