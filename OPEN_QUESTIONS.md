@@ -574,3 +574,47 @@ Phase-19+ follow-on candidates explicitly flagged in Phase 18 Unit 18.4 hygiene 
 - **Markdown rating-action `rationale`** (Phase-11 plain-text field; couples to existing `truncateRationale()` helper; promotion would need analogous CSS line-clamp + markdown render swap; couples to per-challenge detail page).
 - **Methodology page markdown unification** (long-term; Velite MDX pipeline vs `lib/markdown/` USER-STATE markdown — unification is a larger architectural decision).
 - **Per-challenge detail page** (Phase-11 + 13 carryover; couples to Phase-18 Unit 18.3's `line-clamp-3` UX — user clicks through for full reviewNotes / rationale rendering). ~2-3 units when promoted.
+
+## Q73. Google OAuth app registration (operational; `AUTH_GOOGLE_ID` + `AUTH_GOOGLE_SECRET`)
+
+**Status:** open (operational; surfaced 2026-05-17 Unit 28.4; expected to resolve when curator provisions Google Cloud Console OAuth app + sets env vars via `vercel env pull`). · **Blocks:** Phase-28 Google sign-in end-to-end smoke; production deploy with Google sign-in enabled. · **Surfaced:** [ADR-0020](./docs/adr/0020-multi-provider-oauth.md) D-C; Phase-28 prep D-9.
+
+Mirrors [Q54](./OPEN_QUESTIONS.md#q54-github-oauth-app-registration) shape verbatim for the second provider. Phase 28's [ADR-0020](./docs/adr/0020-multi-provider-oauth.md) (D-B + D-C + D-F) lifts ADR-0012 D-B's single-provider restriction and adds Google OAuth via `next-auth/providers/google`; the provider's env vars (`AUTH_GOOGLE_ID` + `AUTH_GOOGLE_SECRET`) follow the Auth.js v5 canonical naming convention. Phase-28 implementation (Unit 28.2) ships the lib/auth + UI + i18n + `.env.example` extensions; the operational unblock is the OAuth app registration in Google Cloud Console.
+
+Required steps (mirrors Q54 verbatim per Phase-28 D-3 lean):
+
+- **Production app**: register in Google Cloud Console under the project's Google Cloud organization (e.g., a dedicated `llm-openproblems-prod` GCP project). Authorized JavaScript origins = `https://llm-openproblems.org`; Authorized redirect URIs = `https://llm-openproblems.org/api/auth/callback/google`. Populate `AUTH_GOOGLE_ID` + `AUTH_GOOGLE_SECRET` in production env (Vercel).
+- **Local dev app**: register a separate Google Cloud Console OAuth app (avoids polluting production OAuth state with dev redirects). Authorized JavaScript origins = `http://localhost:3000`; Authorized redirect URIs = `http://localhost:3000/api/auth/callback/google`. Populate `AUTH_GOOGLE_ID` + `AUTH_GOOGLE_SECRET` in `.env.local`.
+
+**Graceful degradation when unset** (per Phase-28 Unit 28.2 + ADR-0020 D-C): the Google provider treats `clientId`/`clientSecret` as undefined; Auth.js v5 surfaces an OAuth-configuration error page on click for the Google sign-in button. **The GitHub sign-in button still works if Q54 is satisfied** (independent failure modes per provider; SiteHeader's `safeAuth()` catches any DB-read failure and renders the signed-out branch with both buttons regardless).
+
+**Why Phase 28+ operational, not Phase 28 unit-shipping**: provisioning is curator-track (requires Google Cloud Console access + decision about which GCP org owns the app + production/dev split governance); not a code-shipping step. The code (Unit 28.2) ships ready to consume the env vars once provisioned.
+
+**Cross-references**: [ADR-0020](./docs/adr/0020-multi-provider-oauth.md) (multi-provider OAuth); [Q54](./OPEN_QUESTIONS.md#q54-github-oauth-app-registration) (analogous GitHub operational gate); ADR-0012 D-B (now lifted by ADR-0020); [Q69](./OPEN_QUESTIONS.md#q69-vercel-blob-storage-token-provisioning-operational-blob_read_write_token) (precedent for the operational-gate-Q pattern; Phase-16 carryover).
+
+## Q74. Non-GitHub users as curators (architectural; ADR-0020 D-D Phase 29+ deferral)
+
+**Status:** open (architectural; surfaced 2026-05-17 Unit 28.4; Phase 29+ candidate if curator demand widens). · **Blocks:** nothing critical; affects future editorial-identity model. · **Surfaced:** [ADR-0020](./docs/adr/0020-multi-provider-oauth.md) D-D.
+
+Phase 28's [ADR-0020](./docs/adr/0020-multi-provider-oauth.md) D-D preserves the GitHub-only curator-of-record gate: `users.githubLogin` is populated only via the GitHub `linkAccount` event (Phase-9 Unit 9.6 verbatim); non-GitHub users (Google sign-ins) leave `githubLogin` NULL. File-system `editorial.primary_curator` (per [ADR-0005](./docs/adr/0005-rating-action-immutability.md) + [ADR-0012 D-E](./docs/adr/0012-auth-provider.md#d-e-user-identity-model)) joins to `users.githubLogin`, so non-GitHub users **cannot be a curator-of-record** on rating-action YAML in Phase 28. They CAN:
+
+- Sign in via Google OAuth.
+- Submit rating challenges (Phase 11+ submission flow).
+- Edit their profile (display name, bio, image override per Phase 15-19; markdown rationale per Phase 27).
+- View public surfaces (Phase 13+ public visibility; Phase 14+ `/u/{handle}` profile; Phase 26+ per-challenge detail page).
+
+They CANNOT (in Phase 28):
+
+- Be named as `primary_curator` on a rating-action YAML.
+- Review challenges via `/curator/...` routes (Phase-12 `LOP_CURATOR_LOGINS` env var contains GitHub logins).
+- Appear as the reviewer on Phase-26 detail page acceptance metadata.
+
+**Question to resolve in Phase 29+**: should non-GitHub users be eligible to be curators? If yes, what's the editorial-identity model?
+
+- **Option A**: add a separate `users.googleLogin` (or generic `users.editorialIdentity`) column; expand `LOP_CURATOR_LOGINS` env var or split into per-provider lists; widen `editorial.primary_curator` schema to accept multi-provider identities. ~3-4 units; bigger downstream change than the Phase-28 widening.
+- **Option B**: introduce a username-claim mechanism (users pick a stable handle independent of provider; rating-action YAML uses the claimed handle). ~4-6 units; requires migration + claim-resolution UX + collision-handling.
+- **Option C**: keep curator-of-record GitHub-only indefinitely; accept that the broader Google user base is a submitter community only. Phase 28's lean.
+
+**Phase-28 D-3 rationale for deferral**: curator-of-record semantics have ten phases of accreted invariants (`editorial.primary_curator` schema + `LOP_CURATOR_LOGINS` env-var convention + Phase-12 curator dashboard authz + Phase-14 `/u/{handle}` reviewer info + Phase-22-23 emit-challenge-action attribution). Widening this surface needs explicit curator buy-in + a new ADR; Phase 28's scope is the **submitter** + **profile-editing** widening, not the **curator-eligibility** widening.
+
+**Cross-references**: [ADR-0020 D-D](./docs/adr/0020-multi-provider-oauth.md) (the Phase-28 boundary statement preserving the GitHub-only gate); [ADR-0012 D-E](./docs/adr/0012-auth-provider.md#d-e-user-identity-model) (the Phase-9 editorial-identity model preserved); [ADR-0014 D-C](./docs/adr/0014-curator-review-pipeline.md) (curator identity + COI surface); [ADR-0005](./docs/adr/0005-rating-action-immutability.md) (rating-action immutability + `editorial.primary_curator` schema).
