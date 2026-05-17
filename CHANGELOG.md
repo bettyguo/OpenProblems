@@ -2470,6 +2470,64 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 16 — Community-adjacent surfaces (**seventh NON-§13 phase**: Q67 promotion — image override / avatar upload; surfaces ADR-0017 image-storage choice; third ALTER migration)
 
+#### Unit 16.8 — Phase 16 acceptance gate (Q67 closure; **17 ADRs total**; **6 migrations**; first binary storage layer; third ALTER discipline crystallized)
+
+- Ninth and final Phase-16 unit; docs-only. Closes Phase 16 (**seventh NON-§13 phase**; Q67 image override / avatar upload promotion). Mirrors Phase-12 Unit 12.8 + Phase-13 Unit 13.6 + Phase-14 Unit 14.8 + Phase-15 Unit 15.8 acceptance-gate patterns: ledger of deliverables; smoke-gate results; surviving follow-ons; Phase-17+ entry conditions.
+- **9 units shipped** (16.0 prep → 16.8 gate; this unit). **0 deferrals**; **0 scope drift**; matches Phase-12 + Phase-13 + Phase-14 + Phase-15 well-scoped-phase pattern — **fifth consecutive 9-unit phase shipping clean**.
+- **Q67 closure summary**: Q67 was a Phase-15-anticipated candidate flagged in Unit 15.6 hygiene Class B item 2 + Unit 15.7 OQ-hygiene + Unit 15.8 acceptance gate ("strongest honored-deferral pick"). Promoted + resolved in Unit 16.7 simultaneously (Phase-12 Q57 + Phase-13 Q58 + Phase-15 Q63 pattern). Closes the two-phase honored-deferral lineage: Phase-15 Class B item 2 (image override per ADR-0016 D-G) + Phase-15 Unit 15.8 acceptance-gate "strongest honored-deferral pick" surface flag.
+- **Final smoke gates** (all green at HEAD pre-this-unit `6844ad2`):
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **519/519 across 53 vitest files**. +22 tests / +1 file from Phase 15 close (497/52); all from Unit 16.3 (4 in new `lib/storage/index.test.ts` + 18 in `lib/users/index.test.ts`).
+  - `pnpm build` → ~659 prerendered pages + **10 dynamic page+API routes** unchanged. **First Load JS shared chunk = 103 kB UNCHANGED** end-to-end through every Phase 9-16 unit. **Middleware bundle = 160 kB UNCHANGED** since Phase 12. **`/profile` bundle = 117 kB (was 108 kB; +9 kB page-scoped for the `"use client"` boundary on `ProfileImageUploadField`)**. `/u/{handle}` = 108 kB UNCHANGED. All other routes UNCHANGED at their Phase 15-close sizes.
+  - `pnpm audit-content` → **0 errors / 6 warnings** (Q32 baseline since Phase 2; unchanged through every Phase 3-16 unit).
+- **8 Phase-16 architectural firsts**:
+  1. **First binary storage layer in project history** (Vercel Blob alongside file-system content + Turso DB). New `lib/storage/` module pattern (~3 functions; thin wrapper; vendor-swap surface bounded) for Phase-17+ binary-asset inheritance.
+  2. **Third ALTER migration validates ADR-0014 D-E discipline at THIRD exercise** (`0005_user_image_override`; clean drizzle-kit emission on nullable text column). Discipline crystallized for Phase-17+ inheritance.
+  3. **First user-controlled BINARY write surface in project history**. Surface-category progression complete for Phase 9-16 identity architecture (Phase 9 auth-side / Phase 11 challenge / Phase 15 text / **Phase 16 binary**).
+  4. **First new runtime dependency since Phase-9 auth stack** (`@vercel/blob@2.3.3`; ~30 kB server-only). 5-phase dependency-discipline interval.
+  5. **First `"use client"` boundary on `/profile`** (`ProfileImageUploadField` for `URL.createObjectURL` preview; ~50 lines; +9 kB page-scoped; shared chunk UNCHANGED at 103 kB).
+  6. **First multipart-form server action in project history** (`updateProfileImageAction` with `encType="multipart/form-data"`).
+  7. **First three-way `?saved=...` banner pattern** (`saved=1` text / `saved=image` upload / `saved=image-cleared` clear; extends Phase-15's bi-state precedent).
+  8. **First sibling-helper-extension-Phase-16** in `getUserMetadataById` — gains third field (`imageOverride`) forward-compat for Phase-14 Class B SiteHeader avatar-dropdown follow-on.
+- **Delta summary** (Phase 15 → Phase 16):
+  | Metric | Phase 15 close | Phase 16 close | Δ |
+  |---|---|---|---|
+  | ADRs | 16 | **17** | +1 (ADR-0017) |
+  | Migrations | 5 | **6** | +1 (`0005_user_image_override`; **third ALTER**) |
+  | Env vars | 6 | **7** | +1 (`BLOB_READ_WRITE_TOKEN` Q69 gate) |
+  | Runtime deps | (Phase-15 stack) | (+`@vercel/blob@2.3.3`) | +1 |
+  | Storage layers | 2 (FS content + Turso DB) | **3** (+Vercel Blob) | +1 |
+  | `users` columns | 9 | **10** | +1 (`imageOverride`) |
+  | Tests | 497 / 52 files | **519 / 53 files** | +22 / +1 |
+  | First Load JS (shared) | 103 kB | **103 kB** | 0 |
+  | Middleware bundle | 160 kB | **160 kB** | 0 |
+  | `/profile` bundle | 108 kB | **117 kB** | **+9 kB (page-scoped use-client)** |
+  | `/u/{handle}` bundle | 108 kB | **108 kB** | 0 |
+  | OPEN_QUESTIONS resolved | 22 | **23** | +1 (Q67) |
+  | OPEN_QUESTIONS open | 28 | **30** | +2 (Q69 + Q70) |
+  | OPEN_QUESTIONS total | 54 | **57** | +3 |
+  | i18n keys per locale | 113 | **124** | +11 |
+- **Phase 17 sign-off pending** per §12 cardinal rule. **12 candidate Phase-17+ threads** flagged (in rough decreasing strength):
+  - **A. Q70 promotion — EXIF stripping** (~2-3 units; ADR-0018 candidate for image-transcoding pipeline; strongest privacy signal among Phase-16-surfaced candidates; couples to Q68 expansion).
+  - **B. Q66 promotion — markdown bio** (~3 units; Phase-15 carryover; ADR-0018+ sanitization subset).
+  - **C. Q64 promotion — privacy opt-out** (~3 units; Phase-14 carryover; pre-emptive).
+  - **D. Q65 promotion — per-curator activity feed** (~4-5 units; Phase-14 carryover).
+  - **E. Q59 promotion — CLI emit-challenge-action** (~2-3 units; smallest reasonable scope; carried 5 phases).
+  - **F. Multi-provider OAuth** (~3-4 units; ADR-0018+ candidate; Phase-9 carryover).
+  - **G. Subscriber-list email** (~6 units; ADR-0018+ candidate; Phase-5 D-4 punt carried 11+ phases — strongest "patience signal").
+  - **H. Q68 expansion — content moderation on uploaded images** (~3-4 units; ADR-0018+ candidate for moderation API; Phase-15/16 carryover/expansion).
+  - **I. External URL allowlist composability** (ADR-0017 Option 2 extension; ~3-5 units; Phase-16 alternative path).
+  - **J. SiteHeader avatar pill / avatar-dropdown menu** (Phase-14 Class B; Phase 16 forward-compat'd `getUserMetadataById` for this; couples to mobile-nav variant).
+  - **K. Full §8.6 24-mo collaborator COI check** (~3-5 units; ADR-0014 D-C deferral).
+  - **L. Image-pipeline expansion** (cropping UI / server-side resizing / multiple-avatars history / abandoned-blob cleanup script).
+  - **HTML shell migration STILL ON HOLD**.
+  - **Monetization** Phase 18+ candidate.
+- **DB-migration trigger re-eval at Phase 17 kickoff**: trigger (a) FIRED Unit 9.6; trigger (b) cold (~1.6% of 5 MB threshold; content count 239 unchanged). Phase 17 migration count depends on chosen thread.
+- **Risk surface at HEAD `6844ad2`**: 3 operational gates (Q54 + Q55 + Q69) pending curator action; orphan blob accumulation tolerated; middleware bundle ~15% of Edge limit; `/profile` +9 kB acceptable; no content moderation / EXIF stripping on uploaded images (Q68 expansion + Q70 deferred Phase 17+).
+- **Boundary statement**: NOT operational unblocks (Q54 / Q55 / Q69 deferred to curator action); NOT image transcoding / cropping / moderation (Phase 17+); NOT FR content backfill (Q51 curator-track); NOT destructive cleanup (Class C still gated). This unit is the **closure**, not the **unblock**.
+- Smoke gates (this unit): `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline); typecheck / test / build untouched.
+- THINK artifact: `docs/thinking/16.8-phase-16-acceptance-gate.md`.
+
 #### Unit 16.7 — OPEN_QUESTIONS hygiene + ADR review (Q67 promoted + resolved; Q69 + Q70 newly flagged; **17 ADRs total**; 23 resolved / 4 decided-as-lean / 30 open / **57 total**)
 
 - Eighth Phase-16 unit; docs-only. Mirrors Phase-13 Unit 13.5 + Phase-14 Unit 14.7 + Phase-15 Unit 15.7 hygiene patterns. Promotes Q67 (image override / avatar upload) from Phase-15 "flagged but not promoted" candidate to `resolved` ledger entry. Same "added + resolved in same unit" shape as Phase-12 Q57 + Phase-13 Q58 + Phase-15 Q63 promotions.
