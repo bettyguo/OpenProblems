@@ -2470,6 +2470,47 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 28 — Community-adjacent surfaces (**nineteenth NON-§13 phase**: multi-provider OAuth expansion via ADR-0020 — lifts ADR-0012 D-B single-provider restriction; first new ADR since Phase 19; eight-phase no-new-ADR streak ends; first architectural patience-signal phase since Phase 19; twelfth consecutive 0-migration phase anticipated)
 
+#### Unit 28.3 — Phase-28 hygiene status pass (0 Class A; **Phase-9 Class B item 8 CLOSED at 17-phase carryover**; 4 newly surfaced B.13 items; 142 i18n keys/locale)
+
+- Fourth Phase-28 unit; docs-only. Mirrors Phase-13 through Phase-27 hygiene catalog patterns.
+- **Class A items: 0** (matches Phase-12 through Phase-27 well-scoped pattern; **seventeen consecutive phases** ship with 0 Class A items). Phase 28 shipped Units 28.0 / 28.1 / 28.2 without deferrals.
+- **Class B items: ~5 across 12 categories** (was ~5 across 11 categories at Phase 27 close):
+  - **B.1 Image-processing expansion**: 3 carried unchanged (Q68 expansion content moderation; cropping UI; AVIF).
+  - **B.2 Phase-17 markdown subset expansion**: 8 carried unchanged.
+  - **B.3 Phase-18 surface expansion**: 3 + Q72 + rationale-Q72-analogue carried unchanged.
+  - **B.4 Phase-20 backfill operational follow-ons**: 3 carried unchanged.
+  - **B.5 Phase-21 cleanup operational follow-ons**: 2 carried unchanged.
+  - **B.6 + B.7**: 0 carried (closed Phase 25).
+  - **B.8 Phase-24 transcode operational follow-ons**: 1 carried unchanged (AVATAR_SIZE / WEBP_QUALITY tuning).
+  - **B.9 Operational + infrastructure**: **8 of 9 carried; 1 CLOSED Phase 28** — **multi-provider OAuth expansion** (Phase-9 Class B item 8 carried **17 phases** = strongest non-multi-phase architectural patience signal at entry; closed via ADR-0020 partial-supersession of ADR-0012 D-B + Google provider integration + per-provider sign-in UI + Q73 operational gate surfaced + Q74 architectural candidate surfaced). 8 carried: Q54/Q55/Q69 operational gates; CI dummy `AUTH_SECRET`; `pnpm db:migrate` doc; first LHCI run; middleware-based auth-route protection; per-script operational docs (backfill-exif-strip + cleanup-orphan-blobs + emit-challenge-action).
+  - **B.10 Phase-26 detail-page follow-ons**: 2 carried (acceptedActionId link target; curator-translated FR review).
+  - **B.11 Operational + i18n maintenance**: 1 carried — i18n key count audit (now **142 per-locale**; was 140 at Phase 27 close; +2 Phase-28 keys).
+  - **B.12 Phase-27 markdown-promotion follow-ons**: 1 carried unchanged (rating-action `rationale` markdown promotion; separate from rating-challenge `rationale`).
+  - **B.13 Phase-28 multi-provider follow-ons (NEWLY SURFACED)**: 4 items — (1) Q73 Google OAuth registration operational; (2) Q74 non-GitHub-users-as-curators architectural; (3) account-merge UI for same-email cross-provider users (ADR-0020 D-E Phase 29+); (4) third+ provider expansion (GitLab / email-link / passkeys candidates; each requires ADR-0020 amendment or new ADR per D-B).
+- **Class C carryovers unchanged**: all ~25 pre-existing Class C items persist (Q47 / Q54 / Q55 / Q69 + Phase-2 ROR-ID orphan + `<managingEditor>` RSS + W3C validator + `pnpm clean-drafts` + LHCI first run + abandoned-blob cleanup script gap + etc.).
+- **Phase 27 → Phase 28 delta (final at pre-this-unit HEAD `6219ccc`)**:
+  - **ADRs**: 19 → **20** (+1; ADR-0020 multi-provider OAuth; **first new ADR since Phase 19** = 10-phase no-new-ADR gap closes; **eight-phase no-new-ADR streak ends** Phase 18 + 20-27).
+  - **Migrations**: 6 → **6** (**twelfth consecutive 0-migration phase**; 15 of 19 phases since DB landed).
+  - **Env vars**: 7 → **9** (+2 `AUTH_GOOGLE_ID` + `AUTH_GOOGLE_SECRET`; **first env-var-count change since Phase 16 Q69 BLOB_READ_WRITE_TOKEN** = 12-phase gap).
+  - **Runtime deps**: 0 net change (`next-auth/providers/google` is part of existing `next-auth@5.0.0-beta.31`).
+  - **Tests**: 605/55 → **616/56** (+11 / +1 file; +8 `extractGithubLogin` cases + 3 `PROVIDER_IDS` cases; **first new test file in `lib/auth/` since Phase-12 Unit 12.3** = 16-phase gap).
+  - **First Load JS shared chunk**: **103 kB UNCHANGED** (37th consecutive unit at 103 kB; Phase 9-28 invariant preserved).
+  - **Middleware bundle**: **160 kB UNCHANGED** (since Phase 12).
+  - **All 4 affected page bundles**: `/profile` 117 kB; `/u/{handle}` / `/u/{handle}/challenges` / `/u/{handle}/challenges/{id}` / `/problems/{slug}/challenges` 108 kB each — all UNCHANGED.
+  - **Dynamic page+API routes**: 8 (UNCHANGED; Google sign-in reuses existing `/api/auth/[...nextauth]`).
+  - **OPEN_QUESTIONS state**: 26 resolved / 4 lean / 29 open / 59 total (UNCHANGED pre-this-unit; Q73 + Q74 land Unit 28.4).
+  - **i18n keys per locale**: 140 → **142** (+2 `auth.sign_in_with_github` + `auth.sign_in_with_google`; **first `auth` namespace addition since Phase-9 Unit 9.5** = 16-phase gap).
+  - **`lib/auth/` files**: 3 → **5** (+`link-account.ts` + `link-account.test.ts`).
+  - **OAuth providers configured**: 1 → **2** (GitHub + Google; **first multi-provider state**).
+  - **Patience-signal-closing phases since Phase 19**: 0 → **1** (Phase 28 closes 17-phase Phase-9 Class B item 8; **first such phase since Phase 19** = 10-phase gap).
+  - **`.env.example` blocks**: 4 → **5** (Phase-28 Auth multi-provider inserted before Phase-9 DB block).
+- **15 Phase-28 architectural firsts** (pre-this-unit at HEAD `6219ccc`): **first new ADR since Phase 19**; **first architectural patience-signal phase since Phase 19**; **first time an ADR D-clause is partially superseded by a follow-on ADR** (ADR-0020 supersedes ADR-0012 D-B); **eight-phase no-new-ADR streak ends**; **eight-phase Q-tally freeze ends anticipated** (Unit 28.4 +Q73 + +Q74); **first 2-OAuth-provider state in project history**; **first env-var-count change since Phase 16** (12 phases); **first pure-function-extraction from `lib/auth/index.ts`** (Phase-22+23 `scaffold.ts` pattern applied to Phase-9 surface); **first multi-button signed-out UI in `<AuthControl>`** (Phase-9 single-button shape preserved through 18 NON-§13 phases); **first new test file in `lib/auth/` since Phase 12** (16-phase gap); **first `auth` namespace i18n-key addition since Phase 9** (16-phase gap); **`PROVIDER_IDS` constant establishes single-source-of-truth** for provider count + ordering (data-structure-enforced ADR-0020 D-B/D-F invariants); **twelfth consecutive 0-migration phase**; **twelfth consecutive single-session phase anticipated**; **Phase 28 closes the strongest non-multi-phase architectural patience signal** (Phase-9 Class B item 8 17-phase carryover).
+- **Phase-29+ Q-candidates flagged**: 7 carried from Phase 27 (Q60 / Q61 / Q62 / Q64 / Q65 / Q68 expansion / Q72) **+ 2 NEW Phase-28**: Q73 (operational; Google OAuth app registration; mirrors Q54 shape; Phase 29+ if curator provisions ahead of deploy) + Q74 (architectural; non-GitHub-users-as-curators; ADR-0020 D-D Phase 29+ candidate if curator demand widens). **9 total Phase-29+ Q-candidates**.
+- **Phase-29+ ADR slot reservations**: **ADR-0021 candidate slot opens** (Phase 28 claimed ADR-0020). Strongest remaining candidates: image-processing API content moderation (Q68 + Q68 expansion); markdown subset extensions ADR (Phase-17 D-H + Q72 + Phase-27 Q72-analogue); **subscriber-list email provider** (Phase-5 D-4 punt carried **21+ phases** — **now the single strongest patience signal** after Phase 28 closed Phase-9 Class B item 8); account-merge UI (ADR-0020 D-E candidate); third+ provider expansion ADR-0020 amendment.
+- Smoke gates (docs-only): `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline unchanged); typecheck / test / build untouched since no source files modified.
+- Parallel-curator awareness: this unit docs-only, no collision risk. No parallel-session activity observed during Phase 28 work; working tree clean at each unit boundary.
+- THINK artifact: `docs/thinking/28.3-phase-28-hygiene.md`.
+
 #### Unit 28.2 — Google provider + per-provider sign-in UI + env vars + i18n + 11 new tests (616/56)
 
 - Third Phase-28 unit; code unit. Realizes ADR-0020 D-A through D-F via in-place edits to `lib/auth/index.ts` + `components/auth-control/index.tsx` + `.env.example` + 2 i18n locale files + 2 new files in `lib/auth/`. **Test count 605/55 → 616/56** (+11 tests / +1 file Δ from Phase 27 close); **First Load JS 103 kB UNCHANGED** (37th consecutive unit at 103 kB; end-to-end through every Phase 9-28 unit); **middleware 160 kB UNCHANGED** since Phase 12.
