@@ -1,6 +1,6 @@
 import { randomBytes, timingSafeEqual } from "node:crypto";
 
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 import { db } from "@/lib/db";
 import { subscribers } from "@/lib/db/schema";
@@ -301,6 +301,53 @@ export function subscriberSubscribesToDomain(
   if (!target) return false;
   const list = parseDomainSubscriptions(domainSubscriptionsJson);
   return list.includes(target);
+}
+
+/**
+ * Pure helper: format the `lastDigestSentAt` timestamp for the
+ * Phase-34 Q79 Profile A "manage my subscriptions" widget per
+ * [ADR-0023](../../docs/adr/0023-per-user-account-subscriptions.md)
+ * D-H first-row realization.
+ *
+ * Returns ISO date `YYYY-MM-DD` when the timestamp is present;
+ * literal string `"Never"` when NULL. ISO date format matches the
+ * project's existing date-rendering convention (Phase-9 watchlist +
+ * Phase-11 rating-challenges + Phase-22+ markdown rationale all use
+ * ISO dates via `.toISOString().slice(0, 10)`).
+ *
+ * Kept separate from the DB-helper `getSubscriptionsForUser` below so
+ * the label-format logic is unit-testable without a live DB — mirrors
+ * the Phase-30 pure/DB split pattern carried through Phase 31 + 33.
+ */
+export function formatLastDigestLabel(lastDigestSentAt: Date | null): string {
+  if (lastDigestSentAt === null) return "Never";
+  return lastDigestSentAt.toISOString().slice(0, 10);
+}
+
+/**
+ * DB-helper: fetch all verified subscriptions for the given signed-in
+ * `users.id`. Phase-34 Unit 34.1 per [ADR-0023](../../docs/adr/0023-per-user-account-subscriptions.md)
+ * D-H first-row realization (Q79 Profile A read-only widget).
+ *
+ * Filters to `status = "verified"` only — pending verification rows
+ * (mid-flight; not yet confirmed) and unsubscribed rows (soft-deleted
+ * audit-trail) are hidden from the widget. Matches the Phase-31 cron-
+ * route's verified-only filter posture.
+ *
+ * Multi-row-per-user supported: if the signed-in user submitted the
+ * subscribe form from multiple emails (personal + work), they may
+ * have multiple authenticated rows; the widget displays all of them.
+ * Anonymous rows (NULL `userId`) do NOT appear here even if the email
+ * matches the user's session email — they're tracked separately per
+ * the email-as-primary-identity Phase-30 model.
+ */
+export async function getSubscriptionsForUser(
+  userId: string,
+): Promise<(typeof subscribers.$inferSelect)[]> {
+  return db
+    .select()
+    .from(subscribers)
+    .where(and(eq(subscribers.userId, userId), eq(subscribers.status, "verified")));
 }
 
 /**

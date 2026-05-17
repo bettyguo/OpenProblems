@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   canonicalizeEmail,
   decideSubscriberUserId,
+  formatLastDigestLabel,
   generateToken,
   parseDomainSubscriptions,
   safeCompareTokens,
@@ -134,6 +135,28 @@ describe("serializeDomainSubscriptions", () => {
   it("returns [] for all-empty input", () => {
     expect(serializeDomainSubscriptions([])).toBe("[]");
     expect(serializeDomainSubscriptions(["", "  "])).toBe("[]");
+  });
+});
+
+describe("formatLastDigestLabel", () => {
+  // Phase-34 Unit 34.1 widget label formatter per ADR-0023 D-H first-row
+  // realization. Returns ISO date for populated timestamps + literal
+  // "Never" for NULL (matches widget's UX-intent).
+
+  it("returns 'Never' when lastDigestSentAt is NULL", () => {
+    expect(formatLastDigestLabel(null)).toBe("Never");
+  });
+
+  it("returns ISO date when populated", () => {
+    expect(formatLastDigestLabel(new Date("2026-05-18T00:00:00Z"))).toBe("2026-05-18");
+  });
+
+  it("truncates time component to date-only (slice 0,10)", () => {
+    expect(formatLastDigestLabel(new Date("2026-05-18T23:59:59.999Z"))).toBe("2026-05-18");
+  });
+
+  it("handles Unix epoch as a real date (not NULL)", () => {
+    expect(formatLastDigestLabel(new Date(0))).toBe("1970-01-01");
   });
 });
 

@@ -3,7 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { problems } from "#site/content";
+import { problems, taxonomy } from "#site/content";
 
 import { ProfileImageUploadField } from "@/components/profile-image-upload-field";
 import { StatusPill } from "@/components/ui/status-pill";
@@ -25,6 +25,11 @@ import {
   withdrawChallenge,
   type ChallengeStatus,
 } from "@/lib/rating-challenges";
+import {
+  formatLastDigestLabel,
+  getSubscriptionsForUser,
+  parseDomainSubscriptions,
+} from "@/lib/subscribers";
 import {
   clearProfileImage,
   MAX_BIO_CHARS,
@@ -144,6 +149,25 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
   const challenges = await getUserChallenges(userId);
   const tRC = await getTranslations("rating_challenge");
   const tPC = await getTranslations("public_challenges");
+
+  // Phase-34 Q79 Profile A read-only widget per ADR-0023 D-H first-row
+  // realization. Lists verified-only subscriptions for the signed-in
+  // user (anonymous email-only rows do NOT appear here per ADR-0023 D-A
+  // userId-keyed lookup). Multi-row-per-user supported (one user may
+  // have multiple authenticated rows from different submit emails).
+  const subscriptions = await getSubscriptionsForUser(userId);
+  const subscriptionRows = subscriptions.map((sub) => {
+    const domainIds = parseDomainSubscriptions(sub.domainSubscriptions);
+    const domainTitles = taxonomy.domains
+      .filter((d) => domainIds.includes(d.id))
+      .map((d) => d.title);
+    return {
+      id: sub.id,
+      unsubscribeToken: sub.unsubscribeToken,
+      domainTitlesLabel: domainTitles.join(", "),
+      lastDigestLabel: formatLastDigestLabel(sub.lastDigestSentAt),
+    };
+  });
 
   const updateProfileAction = async (formData: FormData) => {
     "use server";
@@ -466,6 +490,44 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
                 </div>
                 <StatusPill status={problem.status} className="shrink-0" />
                 <WatchlistToggle slug={problem.slug} className="shrink-0" />
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section aria-label={t("subscriptions_aria_label")} className="mt-12">
+        <h2 className="font-serif text-xl font-semibold tracking-tight">
+          {t("subscriptions_heading")}
+        </h2>
+
+        {subscriptionRows.length === 0 ? (
+          <div className="border-border mt-6 rounded border border-dashed p-8 text-center">
+            <p className="text-muted-foreground text-sm">{t("subscriptions_empty_message")}</p>
+            <Link
+              href="/digest"
+              className="text-accent mt-3 inline-block text-sm underline-offset-2 hover:underline"
+            >
+              {t("subscriptions_empty_cta")}
+            </Link>
+          </div>
+        ) : (
+          <ul className="border-border mt-6 divide-y divide-current/10 border-t border-b">
+            {subscriptionRows.map((row) => (
+              <li key={row.id} className="flex flex-wrap items-baseline gap-x-3 gap-y-1 py-3">
+                <div className="min-w-0 flex-1">
+                  <p className="font-serif text-base">{row.domainTitlesLabel}</p>
+                  <p className="text-muted-foreground mt-0.5 font-mono text-xs">
+                    {t("subscriptions_last_digest_label")}: {row.lastDigestLabel}
+                  </p>
+                </div>
+                <a
+                  href={`/api/v1/subscribe/unsubscribe/${encodeURIComponent(row.unsubscribeToken)}`}
+                  aria-label={t("subscriptions_unsubscribe_aria_label")}
+                  className="text-accent shrink-0 text-xs underline-offset-2 hover:underline"
+                >
+                  {t("subscriptions_unsubscribe_link")}
+                </a>
               </li>
             ))}
           </ul>

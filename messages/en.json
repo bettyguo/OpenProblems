@@ -81,7 +81,15 @@
     "challenges_curator_notes_label": "Curator notes",
     "challenges_action_attached_label": "Rating action:",
     "challenges_withdraw": "Withdraw",
-    "challenges_withdraw_aria_label": "Withdraw this rating challenge"
+    "challenges_withdraw_aria_label": "Withdraw this rating challenge",
+    "subscriptions_heading": "Digest subscriptions",
+    "subscriptions_aria_label": "Weekly digest domains you've subscribed to",
+    "subscriptions_empty_message": "You haven't subscribed to the weekly digest yet.",
+    "subscriptions_empty_cta": "Subscribe to the digest →",
+    "subscriptions_last_digest_label": "Last digest sent",
+    "subscriptions_last_digest_never": "Never",
+    "subscriptions_unsubscribe_link": "Unsubscribe",
+    "subscriptions_unsubscribe_aria_label": "Unsubscribe from this domain's digest"
   },
   "public_challenges": {
     "aria_label": "Public rating challenges for this problem",

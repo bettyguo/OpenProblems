@@ -81,7 +81,15 @@
     "challenges_curator_notes_label": "Notes du curateur",
     "challenges_action_attached_label": "Action de notation :",
     "challenges_withdraw": "Retirer",
-    "challenges_withdraw_aria_label": "Retirer cette contestation de notation"
+    "challenges_withdraw_aria_label": "Retirer cette contestation de notation",
+    "subscriptions_heading": "Abonnements au digest",
+    "subscriptions_aria_label": "Domaines auxquels vous êtes abonné pour le digest hebdomadaire",
+    "subscriptions_empty_message": "Vous ne vous êtes pas encore abonné au digest hebdomadaire.",
+    "subscriptions_empty_cta": "S'abonner au digest →",
+    "subscriptions_last_digest_label": "Dernier digest envoyé",
+    "subscriptions_last_digest_never": "Jamais",
+    "subscriptions_unsubscribe_link": "Se désabonner",
+    "subscriptions_unsubscribe_aria_label": "Se désabonner du digest de ce domaine"
   },
   "public_challenges": {
     "aria_label": "Contestations de notation publiques pour ce problème",
