@@ -2470,6 +2470,46 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 19 — Community-adjacent surfaces (**tenth NON-§13 phase**: Q70 promotion — EXIF stripping on uploaded images; surfaces ADR-0019 image-transcoding pipeline; first server-side image processing surface; third consecutive 0-migration phase)
 
+#### Unit 19.5 — Phase 19 acceptance gate (Q70 closure; **19 ADRs total**; eight consecutive well-scoped phases; first server-side image processing surface)
+
+- Sixth and final Phase-19 unit; docs-only. Closes Phase 19 (**tenth NON-§13 phase**; Q70 EXIF stripping resolved). Mirrors Phase-12 / 13 / 14 / 15 / 16 / 17 / 18 acceptance-gate patterns.
+- **6 units shipped** (19.0 prep → 19.5 gate; this unit). **0 deferrals**; **0 scope drift**. **Eighth consecutive well-scoped phase** shipping clean. **Smallest phase since Phase 13** (which shipped 7 units; Phase 14 + 15 + 16 each 9 units; Phase 17 = 8 units; Phase 18 = 7 units; Phase 19 = 6 units).
+- **Q70 closure summary**: Phase-16-added carryover (surfaced Unit 16.1 with full `Status: open (privacy candidate)` body; carried Phase 17 Unit 17.5 B.1 + Phase 18 Unit 18.4 B.1 = 3-phase wait before resolution). Promoted from `open` to `resolved` in Unit 19.4 — **first STATUS-CHANGE-ONLY promotion** since Phase-12 Q57 + Phase-13 Q58 + Phase-15 Q63 + Phase-16 Q67 + Phase-17 Q66 + Phase-18 Q71 all used same-unit add-and-resolve pattern. ADR-0019 pins 6 D-clauses: D-A library `sharp@0.34.5`; D-B EXIF allow-list strip-all-default (inverted-allow-list); D-C pipeline placement `lib/storage/putAvatar` server-side; D-D auto-rotation preservation `.rotate()` no-args; D-E backwards-compat no-retroactive Phase 19; D-F Phase-20+ inheritance contract for Q68 expansion / cropping / resizing / format conversion / EXIF backfill.
+- **Final smoke gates** (all green at HEAD pre-this-unit `466e9d3`):
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **564/564 across 54 vitest files**. +2 / 0 from Phase 18 close (562/54); both new tests from Unit 19.2 (sharp integration shape verification: sharp called with Buffer; .rotate() chained no-args; stripped-buffer flows to put()).
+  - `pnpm build` → ~659 prerendered pages + **7 dynamic page+API routes** UNCHANGED. **First Load JS shared chunk = 103 kB UNCHANGED** end-to-end through every Phase 9-19 unit per ADR-0019 (extends ADR-0018 D-F) invariant. **Middleware bundle = 160 kB UNCHANGED** since Phase 12. `/profile` = 117 kB UNCHANGED. `/u/{handle}` = 108 kB UNCHANGED.
+  - `pnpm audit-content` → **0 errors / 6 warnings** (Q32 baseline since Phase 2; unchanged through every Phase 3-17 unit).
+- **8 architectural firsts shipped in Phase 19**:
+  1. **First server-side image processing surface** in project history.
+  2. **First explicit privacy-by-default surface** (Phase 16 imageOverride shipped privacy-by-omission; Phase 19 closes gap intentionally).
+  3. **Third consecutive 0-migration phase** (Phase 17 + 18 + 19; 6 of 10 phases since DB landed).
+  4. **ADR-0019 claims slot after 5-phase ADR cycle without multi-provider-OAuth claim** (Phase-9 Class B item 8 carried 9 phases becomes ADR-0020+ candidate).
+  5. **First inverted-allow-list pattern** (vs Phase-17/18 explicit-allow-list `bioSchema`/`reviewNotesSchema`).
+  6. **First single-code-unit-per-phase realization of multiple D-clauses** — Phase 17 took 2 code units; Phase 18 took 3; Phase 19 compresses D-A through D-D into one code unit (19.2). Compressed scope (single consumer surface; no UI/i18n/schema).
+  7. **First "explicit-dep promotion" of transitive dep** — `sharp` was transitive via `next/image`; Phase 19 promotes to direct runtime dep.
+  8. **First STATUS-CHANGE-ONLY Q-promotion** — Q70 was Phase-16-added carryover (3-phase wait); Phase 19 promotes existing entry's status rather than adding new entry.
+- **Delta summary** (Phase 18 → Phase 19):
+  | Metric | Phase 18 close | Phase 19 close | Δ |
+  |---|---|---|---|
+  | ADRs | 18 | **19** | +1 (ADR-0019) |
+  | Migrations | 6 | **6** | **0** (third consecutive 0-migration phase) |
+  | Runtime deps | (Phase-18 stack) | **+1 net** (`sharp@0.34.5` explicit-dep promotion) | +1 |
+  | Tests | 562 / 54 files | **564 / 54 files** | +2 / 0 |
+  | First Load JS (shared) | 103 kB | **103 kB** | **0** (per ADR-0019 extends ADR-0018 D-F invariant) |
+  | Middleware bundle | 160 kB | **160 kB** | 0 |
+  | OPEN_QUESTIONS resolved | 25 | **26** | +1 (Q70) |
+  | OPEN_QUESTIONS open | 30 | **29** | -1 (Q70 promoted out) |
+  | OPEN_QUESTIONS total | 59 | **59** | **0** (mechanical Q-count unchanged for status-change-only) |
+  | i18n keys per locale | 127 | 127 | 0 |
+  | Server-side image processing surfaces | 0 | **1** | +1 |
+  | Privacy-by-default surfaces | 0 | **1** | +1 |
+- **Surviving follow-ons** (from Unit 19.3): Class B ~11 items in 4 categories (5 image-processing expansion + 8 Phase-17 markdown subset + 3 Phase-18 surface + 5 operational). Class C unchanged.
+- **Phase 20+ sign-off pending** per §12 cardinal rule. **11 candidate Phase-20+ threads** flagged: (a) Q68 expansion content moderation (ADR-0020 candidate); (b) EXIF backfill script (per ADR-0019 D-E); (c) cropping UI (per ADR-0019 D-F); (d) server-side resizing + WebP/AVIF (per D-F); (e) Q72 markdown subset extensions; (f) per-challenge detail page; (g) markdown rationale; (h) Q64 per-user privacy opt-out; (i) **multi-provider OAuth** (Phase-9 Class B item 8 carried **9 phases**; ADR-0020 candidate; strongest architectural patience signal); (j) **subscriber-list email** (Phase-5 D-4 punt carried **13+ phases**; strongest overall patience signal); (k) Q59 CLI emit-challenge-action (carried 8 phases).
+- **Parallel-curator note**: Phase 19 shipped as a **single-session phase** (primary shipped all 6 units 19.0 → 19.5 in one coherent session). **Three consecutive single-session phases** (Phase 17 + 18 + 19) demonstrate well-scoped phase convergence regardless of session count.
+- Smoke gates (this unit): `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline); typecheck / test / build untouched.
+- THINK artifact: `docs/thinking/19.5-phase-19-acceptance-gate.md`.
+
 #### Unit 19.4 — OPEN_QUESTIONS hygiene + ADR review (Q70 promoted from `open` to `resolved`; **19 ADRs unchanged**; 26 resolved / 4 lean / 29 open / **59 total**; first STATUS-CHANGE-ONLY promotion)
 
 - Fifth Phase-19 unit; docs-only. Mirrors Phase-13 Unit 13.5 + Phase-14 Unit 14.7 + Phase-15 Unit 15.7 + Phase-16 Unit 16.7 + Phase-17 Unit 17.6 + Phase-18 Unit 18.5 hygiene patterns. Promotes Q70 (EXIF stripping on uploaded images) from `open` to `resolved` status.
