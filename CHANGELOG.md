@@ -2470,6 +2470,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 18 — Community-adjacent surfaces (**ninth NON-§13 phase**: multi-surface markdown render — `renderReviewNotesMarkdown` sibling via ADR-0018 D-G inheritance; first reviewNotes markdown surface; second consecutive 0-migration phase)
 
+#### Unit 18.2 — `/curator/challenges/[id]` reviewNotes markdown render (FULL render; no clamp)
+
+- Third Phase-18 unit; **second code unit**. Realizes ADR-0018 D-G inheritance contract at the **first consumer surface** (Phase-12 curator dashboard). Uses Unit 18.1's `renderReviewNotesMarkdown` helper.
+- **`app/[locale]/curator/challenges/[id]/page.tsx` (edit)**: imports `renderReviewNotesMarkdown` from `@/lib/markdown`. ReviewNotes block (formerly `<p className="...whitespace-pre-wrap">{challenge.reviewNotes}</p>` at line 235) swapped for `<div className="...prose-utilities..." dangerouslySetInnerHTML={{ __html: reviewNotesHtml }}>` where `reviewNotesHtml = renderReviewNotesMarkdown(challenge.reviewNotes)`. Render conditional shifts from `challenge.reviewNotes &&` to `reviewNotesHtml !== null` (helper returns null for null / empty / whitespace-only per Phase-15 D-F empty-state preserved). Comment block explains why this surface renders FULL (curator wants full editorial readability — no clamp here; clamp is /profile-listing-specific Phase-18 D-5).
+- **Curator dashboard renders FULL reviewNotes** (per ADR-0018 D-G + Unit 18.0 D-5). 4000-char cap (Phase-12 ADR-0014) preserved; markdown changes format, not length. No CSS `line-clamp` applied — full editorial reasoning visible by design.
+- **Third `dangerouslySetInnerHTML` surface in project history** (Phase-17 = 2 surfaces: /u/{handle} bio + /profile bio preview; Phase-18 Unit 18.2 = 3rd: /curator/challenges/[id] reviewNotes; Unit 18.3 will be 4th). All XSS-safe by ADR-0018 sanitization pipeline (sibling `reviewNotesSchema` identical to `bioSchema` Phase-18).
+- **14 arbitrary-variant prose utility classes** reused verbatim from Phase-17 surfaces — same `<a>` / `<code>` / `<pre>` / `<ul>` / `<ol>` / `<blockquote>` / `<hr>` / `<h3>`-`<h6>` / `<p+p>` styling. Three surfaces now share the same prose styling vocabulary (4th surface lands in Unit 18.3).
+- **Smoke gates**:
+  - `pnpm typecheck` clean.
+  - `pnpm test` → 562/562 across 54 files UNCHANGED (no test file touched; page-component swap is thin pass-through to `renderReviewNotesMarkdown` which is fully covered at the helper layer Unit 18.1).
+  - `pnpm build` → ~659 prerendered pages + 7 dynamic page+API routes UNCHANGED. **First Load JS shared chunk = 103 kB UNCHANGED** per ADR-0018 D-F invariant. **Middleware bundle = 160 kB UNCHANGED**.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2; unchanged through every Phase 3-17 unit).
+- **Not in this unit** (Unit 18.3 follows):
+  - `/profile/page.tsx` own-challenges listing reviewNotes markdown + CSS `line-clamp-3` + `truncateRationale()` removal for reviewNotes (Phase-12 source-truncation pattern incompatible with markdown rendering per Unit 18.1 incompatibility analysis).
+- THINK artifact: inline (this entry; pattern mirrors Unit 17.3's THINK doc verbatim — single edit + single surface swap + shared utility class set; no separate THINK doc this unit since architectural rationale is identical to 17.3 with surface-specific notes captured in the CHANGELOG entry).
+
 #### Unit 18.1 — `lib/markdown/` extension: `renderReviewNotesMarkdown` + `reviewNotesSchema` sibling (562 tests; +10 / 0; first ADR-0018 D-G exercise)
 
 - Second Phase-18 unit; **first code unit of Phase 18**. Realizes ADR-0018 D-G inheritance contract at the helper layer — **first exercise of "each surface gets its own helper + schema; audit boundary stays explicit per surface" pattern documented Phase-17 Unit 17.1**.

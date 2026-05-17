@@ -9,6 +9,7 @@ import { isCurator } from "@/lib/auth/curator";
 import { getLoginById } from "@/lib/auth/login";
 import { Link } from "@/lib/i18n/navigation";
 import { isLocale } from "@/lib/i18n/routing";
+import { renderReviewNotesMarkdown } from "@/lib/markdown";
 import {
   attachAcceptedAction,
   getChallengeById,
@@ -227,14 +228,43 @@ export default async function CuratorChallengeDetailPage({
           <p className="mt-2 text-sm whitespace-pre-wrap">{challenge.rationale}</p>
         </div>
 
-        {challenge.reviewNotes && (
-          <div>
-            <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-              {t("review_notes_label")}
-            </p>
-            <p className="mt-2 text-sm whitespace-pre-wrap">{challenge.reviewNotes}</p>
-          </div>
-        )}
+        {(() => {
+          // ADR-0018 D-G inheritance: reviewNotes rendered as
+          // sanitized markdown via `renderReviewNotesMarkdown` per
+          // Phase-18 Unit 18.2. `reviewNotesSchema` is identical to
+          // `bioSchema` Phase-18 (Unit 18.0 D-3 scope-cap). Curator
+          // dashboard renders FULL editorial reasoning — no clamp
+          // (curator wants full readability of their own / peer
+          // review notes). XSS-safe by ADR-0018 sanitization pipeline.
+          const reviewNotesHtml = renderReviewNotesMarkdown(challenge.reviewNotes);
+          if (!reviewNotesHtml) return null;
+          return (
+            <div>
+              <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                {t("review_notes_label")}
+              </p>
+              <div
+                className={cn(
+                  "mt-2 text-sm",
+                  "[&_a]:text-accent [&_a]:underline-offset-2 hover:[&_a]:underline",
+                  "[&_code]:bg-muted [&_code]:rounded [&_code]:px-1 [&_code]:font-mono [&_code]:text-xs",
+                  "[&_pre]:bg-muted [&_pre]:my-2 [&_pre]:overflow-x-auto [&_pre]:rounded [&_pre]:p-3",
+                  "[&_pre_code]:bg-transparent [&_pre_code]:p-0",
+                  "[&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5",
+                  "[&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5",
+                  "[&_blockquote]:border-border [&_blockquote]:my-2 [&_blockquote]:border-l-2 [&_blockquote]:pl-3 [&_blockquote]:italic",
+                  "[&_hr]:border-border [&_hr]:my-3",
+                  "[&_p+p]:mt-2",
+                  "[&_h3]:mt-3 [&_h3]:font-serif [&_h3]:text-base [&_h3]:font-semibold",
+                  "[&_h4]:mt-2 [&_h4]:font-serif [&_h4]:text-sm [&_h4]:font-semibold",
+                  "[&_h5]:mt-2 [&_h5]:font-serif [&_h5]:text-sm [&_h5]:font-medium",
+                  "[&_h6]:mt-2 [&_h6]:font-serif [&_h6]:text-sm [&_h6]:font-medium",
+                )}
+                dangerouslySetInnerHTML={{ __html: reviewNotesHtml }}
+              />
+            </div>
+          );
+        })()}
       </section>
 
       {coi.warning && (
