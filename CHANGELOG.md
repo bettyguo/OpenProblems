@@ -2470,6 +2470,63 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 18 — Community-adjacent surfaces (**ninth NON-§13 phase**: multi-surface markdown render — `renderReviewNotesMarkdown` sibling via ADR-0018 D-G inheritance; first reviewNotes markdown surface; second consecutive 0-migration phase)
 
+#### Unit 18.6 — Phase 18 acceptance gate (Q71 closure; **18 ADRs unchanged**; first phase since Phase 3 to close a Q without a new ADR; seven consecutive well-scoped phases)
+
+- Seventh and final Phase-18 unit; docs-only. Closes Phase 18 (**ninth NON-§13 phase**; Q71 multi-surface markdown render via ADR-0018 D-G inheritance). Mirrors Phase-12 / 13 / 14 / 15 / 16 / 17 acceptance-gate patterns.
+- **7 units shipped** (18.0 prep → 18.6 gate; this unit). **0 deferrals**; **0 scope drift**. **Seventh consecutive well-scoped phase** shipping clean. Phase-18 shipped 7 units vs the typical 8-9 unit shape (one unit lighter — no new ADR; D-G inheritance contract pre-documented Phase 17).
+- **Q71 closure summary**: Q71 promoted + resolved in Unit 18.5 simultaneously — **sixth invocation of "added + resolved in same unit" pattern** (Phase-12 Q57 + Phase-13 Q58 + Phase-15 Q63 + Phase-16 Q67 + Phase-17 Q66 + Phase-18 Q71). Closes the **seven-reference convergence**: Phase-15 Class B B.2 item 5 + Phase-15 Unit 15.6 + 15.7 + 15.8 + Phase-17 ADR-0018 D-G + Phase-17 Unit 17.5 B.2 + Phase-18 Unit 18.0.
+- **Final smoke gates** (all green at HEAD pre-this-unit `85dee1f`):
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **562/562 across 54 vitest files**. +10 / 0 from Phase 17 close (552/54); all from Unit 18.1's 7 `renderReviewNotesMarkdown` happy-path + XSS spot-checks + 3 schema-parity tests.
+  - `pnpm build` → ~659 prerendered pages + **7 dynamic page+API routes** UNCHANGED. **First Load JS shared chunk = 103 kB UNCHANGED** end-to-end through every Phase 9-18 unit. **Middleware bundle = 160 kB UNCHANGED** since Phase 12. `/profile` = 117 kB UNCHANGED. `/u/{handle}` = 108 kB UNCHANGED.
+  - `pnpm audit-content` → **0 errors / 6 warnings** (Q32 baseline since Phase 2; unchanged through every Phase 3-17 unit).
+- **8 architectural firsts shipped in Phase 18**:
+  1. **First ADR-0018 D-G inheritance exercise** in project history — sibling helper + sibling schema pattern realized at second exercise.
+  2. **First reviewNotes markdown surface** — Phase-12 plain-text rendering upgraded across both consumer surfaces.
+  3. **Second consecutive 0-migration phase** (Phase 17 + 18; 5 of 9 phases since DB landed).
+  4. **First 4-surface markdown render consistency** — single 14-class prose-styling vocabulary across `/u/{handle}` bio + `/profile` bio preview + `/curator/challenges/[id]` reviewNotes + `/profile` own-challenges reviewNotes.
+  5. **First CSS `line-clamp` visual truncation** in project history — Tailwind v4 built-in utility; replaces Phase-12's `truncateRationale()` source-truncation pattern for markdown-incompatible field. Establishes pattern: source-truncation breaks markdown rendering; CSS visual-truncation is the correct alternative.
+  6. **First XSS-audit schema-parity pattern** — 3 parity tests assert `reviewNotesSchema` ≡ `bioSchema` Phase-18; Phase-19+ divergence requires explicit parity-test removal.
+  7. **First "rename refactor" code unit** — `bioProcessor` rename per Unit 18.0 D-8 (zero behavior change); establishes pattern that disambiguating renames are valid Class A cleanup type.
+  8. **First phase since Phase 3 to close a Q-candidate without a new ADR** — Phase 3 closed Q18 via ADR-0006; Phase 4-17 each closed Q via new ADR; **Phase 18 closes Q71 via ADR-0018 D-G inheritance contract realization** (no architectural decision surface remaining open). Validates the D-G inheritance contract Phase-17 documented.
+- **Delta summary** (Phase 17 → Phase 18):
+  | Metric | Phase 17 close | Phase 18 close | Δ |
+  |---|---|---|---|
+  | ADRs | 18 | **18** | **0** (first phase since Phase 3 to close Q without new ADR) |
+  | Migrations | 6 | **6** | **0** (second consecutive 0-migration phase) |
+  | Runtime deps | (Phase-17 stack) | (Phase-17 stack) | **0** |
+  | `users` columns | 10 | 10 | 0 |
+  | Tests | 552 / 54 files | **562 / 54 files** | +10 / 0 |
+  | First Load JS (shared) | 103 kB | **103 kB** | **0** (per ADR-0018 D-F invariant) |
+  | Middleware bundle | 160 kB | **160 kB** | 0 |
+  | `/profile` + `/u/{handle}` bundles | 117 + 108 kB | 117 + 108 kB | 0 |
+  | OPEN_QUESTIONS resolved | 24 | **25** | +1 (Q71) |
+  | OPEN_QUESTIONS total | 58 | **59** | +1 |
+  | i18n keys per locale | 127 | 127 | **0** |
+  | XSS-audit surfaces | 1 | **2** | +1 |
+  | `dangerouslySetInnerHTML` surfaces | 2 | **4** | +2 |
+  | Markdown render-consistency surfaces | 2 | **4** | +2 |
+  | Schema-parity test surfaces | 0 | **1** | +1 |
+- **Surviving follow-ons** (from Unit 18.4):
+  - **Class B — ~12 items**: B.1 markdown subset expansion (9 — 8 Phase-17 carryovers + Q72 new); B.2 surface expansion (3 — markdown rationale / methodology unification / per-challenge detail page); B.3 operational (5 — Q69/Q54/Q55 + CI AUTH_SECRET + db:migrate doc + LHCI + middleware).
+  - **Class C** — pre-existing carryovers unchanged from Phase 17.
+- **Phase 19+ sign-off pending** per §12 cardinal rule. **12 candidate Phase-19+ threads** flagged (in rough decreasing strength):
+  - (a) **Q70 EXIF stripping** (~2-3 units; ADR-0019 candidate for image-transcoding pipeline).
+  - (b) **Q68 expansion content moderation** (~3-4 units; ADR-0019+ candidate).
+  - (c) **Q72 markdown subset extensions** (~2-3 units; schema-extension ADR).
+  - (d) **Per-challenge detail page** (Phase-11 + 13 carryover; couples to line-clamp UX; ~2-3 units).
+  - (e) **Markdown rating-action rationale** (~2-3 units).
+  - (f) **Q64 per-user privacy opt-out** (~3 units; ADR-0015 D-D Phase-15+ deferral).
+  - (g) **Q65 per-curator activity feed** (~4-5 units).
+  - (h) **Q59 CLI emit-challenge-action** (~2-3 units; carried 7 phases).
+  - (i) **Multi-provider OAuth** (~3-4 units; ADR-0019+ candidate; Phase-9 Class B item 8 carried 9 phases — **strongest architectural "patience signal"**).
+  - (j) **Subscriber-list email** (~6 units; Phase-5 D-4 punt carried 13+ phases — **strongest overall "patience signal"**).
+  - (k) **SiteHeader avatar pill / avatar-dropdown**.
+  - (l) **Full §8.6 24-mo COI** + **HTML shell migration STILL ON HOLD** + **monetization Phase 19+/20+**.
+- **Parallel-curator note**: Phase 18 shipped as a **single-session phase** (primary shipped all 7 units 18.0 → 18.6 in one coherent session). Continues Phase 17's single-session pattern after Phase 16's parallel-session pattern. Demonstrates that the constitution + auto-memory + ADR ledger converges work on equivalent outputs regardless of session count given well-scoped phases.
+- Smoke gates (this unit): `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline); typecheck / test / build untouched.
+- THINK artifact: `docs/thinking/18.6-phase-18-acceptance-gate.md`.
+
 #### Unit 18.5 — OPEN_QUESTIONS hygiene + ADR review (Q71 promoted + resolved; **18 ADRs unchanged**; 25 resolved / 4 decided-as-lean / 30 open / **59 total**; sixth same-unit add-and-resolve)
 
 - Sixth Phase-18 unit; docs-only. Mirrors Phase-13 Unit 13.5 + Phase-14 Unit 14.7 + Phase-15 Unit 15.7 + Phase-16 Unit 16.7 + Phase-17 Unit 17.6 hygiene patterns. Promotes Q71 (multi-surface markdown render via ADR-0018 D-G inheritance) from Phase-18 Unit 18.0 anticipated promotion to `resolved` ledger entry. **Sixth invocation of "added + resolved in same unit" pattern** (Phase-12 Q57 + Phase-13 Q58 + Phase-15 Q63 + Phase-16 Q67 + Phase-17 Q66 + Phase-18 Q71).
