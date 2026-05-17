@@ -2470,6 +2470,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 26 — Community-adjacent surfaces (**seventeenth NON-§13 phase**: per-challenge detail page — Phase-11+13 carryover; **first user-facing UX since Phase 18**; breaks operational-script-keystone streak at 6 phases; eighth phase since Phase 3 to close without new ADR; tenth consecutive 0-migration phase anticipated)
 
+#### Unit 26.3 — OPEN_QUESTIONS hygiene + ADR review (0 OQ edits; 0 ADR amendments; **19 ADRs**; first seven-phase Q-tally freeze)
+
+- Fourth Phase-26 unit; docs-only. Mirrors Phase-13 through Phase-25 hygiene patterns. **Zero surface changes**: no `OPEN_QUESTIONS.md` edit, no ADR amendment. **Third hygiene unit in the operational-script-keystone-streak-or-immediate-aftermath with zero edits** (Phase 21.3 first; Phase 25.3 second; Phase 26.3 third).
+- **Why no edits**: Phase 26 closed the Phase-11+13 carryover (per-challenge detail page), but the carryover was a UI/UX surface anticipated by Phase-13 D-3 + Phase-18 hygiene catalog without being pinned in an OQ entry or ADR D-clause specifically. Falls under the **"no annotation when neither OQ nor ADR D-clause pinned the deferral"** branch of the implementation-note convention codified Phase 22+23.
+- **OPEN_QUESTIONS tally unchanged**: 26 resolved + 4 lean + 29 open = **59 total** (same as Phase 19-25 close). **Seventh consecutive no-promotion / no-status-change hygiene pass** (Phase 20-26). **First seven-phase Q-tally freeze in project history**.
+- **ADR review**: No ADR amendments Phase 26. All 19 ADRs unchanged from Phase 25 close. ADR-0014 still carries Phase-22 + Phase-23 notes on D-D; ADR-0019 still carries Phase-24 note on D-F. **Total ADR count stays at 19**. **Seventh consecutive no-new-ADR phase** (Phase 20-26 = **first seven-phase no-new-ADR streak**). **Eighth phase since Phase 3 to close without new ADR** (Phase 18 + 20 + 21 + 22 + 23 + 24 + 25 + 26).
+- **Hygiene-pass weight comparison Phase 20-26**: Phase 20.3 annotated Q70 body in OQ; Phase 21.3 no edits; Phase 22.3 + 23.3 appended ADR-0014 D-D notes; Phase 24.3 appended ADR-0019 D-F note; Phase 25.3 + 26.3 no edits. Convention's three branches (OQ-pinned → annotate OQ; ADR-pinned → annotate ADR; neither → no annotation) now exercised six times across Phase 20-26. **Phase 21 + 25 + 26 all qualify for the "no annotation" branch** — three hygiene units with zero edits across the streak.
+- **Phase-27+ Q-candidates carried** (7 unchanged from Phase 23-25; Phase 26 added zero new and promoted zero): Q60 / Q61 / Q62 / Q64 / Q65 / Q68 expansion / Q72.
+- **ADR-0020 candidate slot remains open after 13-phase ADR cycle without multi-provider-OAuth claim** (Phase-9 Class B item 8 carried **16 phases**; Phase-5 D-4 subscriber-list email carried **20+ phases**).
+- Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline unchanged); typecheck / test / build untouched since no source files modified.
+- THINK artifact: `docs/thinking/26.3-open-questions-hygiene.md`.
+
 #### Unit 26.2 — Phase-26 hygiene status pass (0 Class A / ~7 Class B / Class C unchanged; fifteen consecutive well-scoped phases)
 
 - Third Phase-26 unit; docs-only. Mirrors Phase-13 through Phase-25 hygiene catalog patterns.
