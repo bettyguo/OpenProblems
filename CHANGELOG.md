@@ -2470,6 +2470,47 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 16 — Community-adjacent surfaces (**seventh NON-§13 phase**: Q67 promotion — image override / avatar upload; surfaces ADR-0017 image-storage choice; third ALTER migration)
 
+#### Unit 16.6 — Phase-16 hygiene status pass (0 Class A / 17 Class B / Class C carryover; Q70 + Q69 candidates flagged for Unit 16.7)
+
+- Seventh Phase-16 unit; docs-only. Mirrors Phase-13 Unit 13.4 + Phase-14 Unit 14.6 + Phase-15 Unit 15.6 hygiene catalog patterns. Catalogs what's in-flight after Phase 16's 5 code units (16.1 – 16.5) and what survives as follow-ons or carryovers heading into the acceptance gate.
+- **Class A — in-flight Phase-16 cleanup**: **0 items**. Phase 16's 5 code units (16.1 ADR through 16.5 public consumption) shipped cleanly without deferrals; all ADR-0017 code-realizable D-clauses (D-A through D-F) shipped; D-G is operational (Q69 candidate); D-H is text-only deferral. Matches Phase-12 + Phase-13 + Phase-14 + Phase-15 pattern of well-scoped phases shipping with 0 Class A items.
+- **Class B — Phase-16 follow-ons**: **17 items** in 3 categories:
+  - **B.1 Image-override expansion (8)**: EXIF stripping on uploaded images (**Q70 candidate** newly flagged Phase 16; ADR-0017 D-B + D-H; privacy concern); content moderation on uploaded images (**Q68 expansion** — ADR-0017 D-H expands Phase-15 bio-moderation candidate scope to cover images); cropping UI (`react-easy-crop` or similar; ~3 units); server-side resizing / transcoding (`sharp` on Vercel serverless; ~3-4 units); multiple-avatars / avatar history (~3 units; needs `userImageHistory` table); image dimensions check (square-ratio enforcement; defer); **abandoned-blob cleanup script** (ADR-0017 D-B + D-H Phase-16 Class B follow-on; orphan blobs tolerated; ~1-2 units; needs cron schedule); GIF / animated WebP support (ADR-0017 D-H deferral).
+  - **B.2 Operational + infrastructure (7)** (+1 new vs Phase 15): **Q69 candidate** (`BLOB_READ_WRITE_TOKEN` provisioning — NEW Phase-16 operational gate; Vercel auto-provisions on Storage → Blob → Create store; upload silently degrades to "GitHub avatar only" if unset; promotes to `open (operational)` in Unit 16.7 alongside Q67 promotion); Q54 GitHub OAuth registration (carried); Q55 Turso DB provisioning (carried); CI dummy `AUTH_SECRET` injection (carried); `pnpm db:migrate` doc for new contributors (now **6 migrations** — Phase 16 added `0005_user_image_override`); first LHCI run validating Phase-14/15/16 auth-aware surfaces (19 LHCI URLs unchanged); middleware-based auth-route protection threshold (stays at 2 — Phase 16 added 0 protected page routes; INLINE upload form on existing route).
+  - **B.3 Surface expansion (2)**: external URL allowlist composability (ADR-0017 Option 2 deferral matrix entry; ~3-5 units if power-user demand surfaces); SiteHeader avatar pill / avatar-dropdown menu (Phase-14 Class B item carried; Phase 16 plumbed `imageOverride` through `safeUserMetadata` forward-compat).
+- **Class C — pre-existing carryovers (unchanged from Phase 15 close, with text deltas noted)**:
+  - Migration count now **6** (Phase 15 was 5).
+  - `users` columns now **10** (Phase 15 was 9).
+  - ADR count now **17** (Phase 15 was 16); next ADR slot is **ADR-0018** (multi-provider OAuth retains candidate status; subscriber-list email retains candidate status; markdown-bio sanitization-subset retains candidate status; full §8.6 COI retains candidate status).
+  - New env var: `BLOB_READ_WRITE_TOKEN` (Q69 operational gate).
+  - New runtime dep: `@vercel/blob@2.3.3` (~30 kB server-only; first new runtime dep since Phase-9 auth stack).
+  - New storage layer: Vercel Blob (binary storage alongside file-system content + Turso DB; first binary storage layer in project history).
+  - New `lib/storage/` module.
+  - New `/profile` client-side boundary (`ProfileImageUploadField`) → +9 kB page-scoped; shared chunk UNCHANGED at 103 kB.
+  - Items unchanged from Phase 15: domain-tile-grid orphan deletion; entries.json backfill on 8 problems; `<managingEditor>` on RSS feeds (Q33/Q44; Q2 DNS gate); `pnpm clean-drafts` script; Phase-2 ROR-ID + InstaDeep orphan; Q47 Discussions enablement gate; **Unit 8.4 HTML shell migration STILL ON HOLD** per parallel-session preservation signal; fallback-hint UI for `didFallback === true`; `messages.{contributing,methodology,…}.*` chrome strings + FR bulk backfill + StatusPill localization + nav labels via `useTranslations` (Q51 horizon); trailing-slash normalization for `NEXT_PUBLIC_SITE_URL`; per-entry sitemap hints; watchlist count display on `/problems` index; multi-provider OAuth (Phase-9 Class B item 8; ADR-0018+ candidate); real-API integration smoke for `lib/discussions/github-graphql.ts`; orphan-row cleanup script (now also incl. abandoned `imageOverride` user rows added Phase 16); W3C feed validator gate; per-problem listing URL sort + pagination; per-user URL sort + pagination on `/u/{handle}/challenges`; per-row edit/withdraw on `/u/{handle}/challenges`; custom 404; `/about/privacy` explainer; mobile-nav variant + SiteHeader avatar-dropdown; form-state preservation on validation error; rate-limiting on review API; curator-of-record case-insensitive enhancement; Q66 markdown bio (carried); Q64 privacy opt-out (carried); Q65 per-curator activity feed (carried); Q68 content moderation on bio (carried + Phase 16 expanded scope to images); Q59 CLI emit-challenge-action (carried); display-name uniqueness check (carried); `/profile` form-state preservation on validation error (carried); markdown-rendered curator review notes (carried); edit history / audit log on profile changes (carried).
+- **Phase 15 → Phase 16 delta**:
+  | Metric | Phase 15 close | Phase 16 close | Δ |
+  |---|---|---|---|
+  | ADRs | 16 | **17** | +1 (ADR-0017) |
+  | Migrations | 5 | **6** | +1 (`0005_user_image_override`; **third ALTER**) |
+  | `users` columns | 9 | **10** | +1 (`imageOverride`) |
+  | Tests | 497 / 52 files | **519 / 53 files** | +22 / +1 |
+  | First Load JS (shared) | 103 kB | **103 kB** | 0 |
+  | Middleware bundle | 160 kB | **160 kB** | 0 |
+  | `/profile` bundle | 108 kB | **117 kB** | **+9 kB (page-scoped "use client" boundary)** |
+  | `/u/{handle}` bundle | 108 kB | **108 kB** | 0 |
+  | i18n keys per locale | 113 | **124** | +11 |
+  | Runtime deps | (Phase-15 stack) | (+`@vercel/blob@2.3.3`) | +1 |
+  | Env vars | 6 | **7** | +1 (`BLOB_READ_WRITE_TOKEN` Q69 gate) |
+  | Storage layers | 2 (FS content + Turso DB) | **3** (+Vercel Blob) | +1 |
+  | Dynamic page+API routes | 7 | **7** | 0 |
+- **8 Phase-16 architectural firsts** (consolidating Units 16.0 – 16.5): (1) first binary storage layer in project history; (2) third ALTER migration validates ADR-0014 D-E discipline at THIRD exercise; (3) first user-controlled BINARY write surface (surface-category progression complete: Phase-9 auth-side / Phase-11 challenge / Phase-15 text / Phase-16 binary); (4) first new runtime dependency since Phase-9 auth stack; (5) first `"use client"` boundary on `/profile`; (6) first multipart-form server action in project history; (7) first three-way `?saved=...` banner pattern; (8) `getUserMetadataById` extended with third field (`imageOverride`) forward-compat for Phase-14 Class B avatar-dropdown follow-on.
+- **Q70 candidate flagged Phase 16** (EXIF stripping on uploaded images; ADR-0017 D-H deferral; privacy concern). **Q69 candidate flagged Phase 16** (`BLOB_READ_WRITE_TOKEN` operational gate; promotes to `open (operational)` Unit 16.7). **Q68 expansion** documented in ADR-0017 D-H (Phase-15 bio-moderation scope expanded to cover images).
+- **Risk surface at HEAD post-Unit-16.5**: Q69 operational gate not yet provisioned (graceful degradation in place); Q54 + Q55 still operational; middleware bundle ~15% of Edge limit; orphan blob accumulation tolerated until Class B cleanup script lands; `/profile` bundle +9 kB acceptable; no content moderation on uploaded images (Q68 expansion deferred); no EXIF stripping (Q70 deferred).
+- **Boundary statement**: this unit is the **catalog**, not the **resolution**. Q54 / Q55 / Q69 operational unblocks deferred; image transcoding / cropping / moderation Phase 17+; FR content backfill Q51 curator-track.
+- Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2); typecheck / test / build untouched.
+- THINK artifact: `docs/thinking/16.6-phase-16-hygiene.md`.
+
 #### Unit 16.5 — Public consumption: `imageOverride` avatar fallback chain + `getUserMetadataById` extension (all Phase-16 surface delivery complete)
 
 - Sixth Phase-16 unit; fourth (and final) code unit. Realizes ADR-0017 D-E (public consumption fallback chain) across the two identity surfaces (`/u/{handle}` + `/profile`) and extends Phase-15's `getUserMetadataById` helper forward-compat for future Phase-16+ avatar-pill consumers. **All Phase-16 surface delivery complete after this unit**; Units 16.6 – 16.8 are hygiene + acceptance.
