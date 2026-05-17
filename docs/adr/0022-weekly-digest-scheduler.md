@@ -392,6 +392,20 @@ Constant-time comparison is non-optional: token-comparison timing side-
 channels are the canonical attack vector (same rationale as Phase-30
 `safeCompareTokens`).
 
+**EXTENDED Phase 32 Unit 32.2** — Multi-cron reuse realized via Unit
+32.1's `/api/v1/cron/cleanup-stale-tokens` route. Both Phase-31
+digest-send cron and Phase-32 cleanup-stale-tokens cron authenticate
+via the **same shared `CRON_SECRET`** through the **same `checkCronAuth`
+pure-function helper** (extracted in Phase 31 exactly for this multi-
+cron reuse case). `vercel.json` `crons` array grows 1 → **2** entries
+with **single shared auth contract** — validates ADR-0022's "single
+shared secret across both cron endpoints" anticipation. **No new
+operational gate** (Q77 carries; covers both endpoints). **No new
+env var**. **First reuse of the Phase-31 extracted helper** in project
+history; confirms the extraction-for-reuse design intent. Phase 33+
+cron jobs (retry queue / bounce-handling / etc.) extend the same auth
+pattern + same `CRON_SECRET` + same `checkCronAuth` helper.
+
 ### D-E. Send template = `lib/email/templates/digest.tsx` plain string builder
 
 New template file `lib/email/templates/digest.tsx` sibling to Phase-30
