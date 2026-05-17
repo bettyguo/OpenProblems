@@ -465,6 +465,35 @@ Deferred to Phase 34+:
 | **Per-user-account-subscription audit trail** | Ops | Phase 34+; separate `subscription_audit` table if richer history needed. |
 | **Soft-delete on cascade vs hard-delete** | Privacy | Phase 34+ revisit; ADR-0021 D-E unsubscribe = soft-delete (preserves audit), but ADR-0023 D-D ON DELETE cascade = hard-delete (removes the row entirely). Asymmetry is intentional Phase 33 (account-deletion = full data removal per privacy expectation; unsubscribe = audit-trail-preserving). |
 
+**EXTENDED Phase 34 Unit 34.2** — First-row "Manage my subscriptions"
+page deferral **REALIZED via Q79 Profile A read-only widget** (Unit
+34.1). Closes the D-H first-row deferral at **0-phase age** —
+**tightest possible deferral-to-realization gap in project history**
+(D-H Phase-34+ row shipped Phase 34; Q79 surfaced Phase 33 + closed
+Phase 34 = 0-phase Q-carryover). Realization shape: new
+`getSubscriptionsForUser(userId)` DB helper + `formatLastDigestLabel`
+pure helper in `lib/subscribers/`; new `<section>` widget on
+`/[locale]/profile` between Watching + Your rating challenges (mirrors
+existing multi-widget profile page density pattern); per-row display =
+domain title(s) joined as list + last-digest ISO date (or "Never") +
+per-row "Unsubscribe" `<a>` link reusing Phase-30 ADR-0021 D-E
+unsubscribe-token flow (**no new server action**); 8 new i18n keys per
+locale extending existing `profile.*` namespace; zero client-bundle
+cost (server-rendered; `/profile` page bundle UNCHANGED at 2.31 kB /
+117 kB First Load JS). **First user-visible consumer of Phase-33
+`subscriber.userId` FK** in project history. **Subscriber-list-email
+arc extends to 5 phases** = Phase 30 (foundation) → 31 (scheduler) →
+32 (cleanup) → 33 (auth-linkage) → 34 (UX) = **first 5-phase complete-
+feature-with-UX arc in project history**. **Profile B full-edit UX**
++ **Profile C combined-curator-analytics dashboard** remain Phase 35+
+candidates per the Q79 three-profile structure documented Phase-33
+Unit 33.3; ADR-0023 D-H other deferred rows (curator analytics
+dashboard / per-problem subscriptions / subscription-preference editing
+UX / cross-domain aggregated summary / subscriber-list export tooling /
+user-merge UI / account-deletion flow that uses the cascade / per-user-
+account-subscription audit trail / soft-delete vs hard-delete revisit)
+all carry forward Phase 35+ unchanged.
+
 ## Consequences
 
 ### Positive
