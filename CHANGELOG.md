@@ -2470,6 +2470,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 18 — Community-adjacent surfaces (**ninth NON-§13 phase**: multi-surface markdown render — `renderReviewNotesMarkdown` sibling via ADR-0018 D-G inheritance; first reviewNotes markdown surface; second consecutive 0-migration phase)
 
+#### Unit 18.3 — `/profile` own-challenges listing reviewNotes markdown + CSS `line-clamp-3` (4th `dangerouslySetInnerHTML` surface; first `line-clamp` visual truncation)
+
+- Fourth Phase-18 unit; **third code unit**. Realizes ADR-0018 D-G inheritance contract at the **second consumer surface** (Phase-12 + 13-16 own-challenges listing on `/profile`). Uses Unit 18.1's `renderReviewNotesMarkdown` helper.
+- **`app/[locale]/profile/page.tsx` (edit)**: extends Unit 17.4's `renderBioMarkdown` import to also pull in `renderReviewNotesMarkdown` from `@/lib/markdown`. ReviewNotes block (formerly `<p whitespace-pre-wrap>{truncateRationale(challenge.reviewNotes)}</p>` at line 533) swapped for `<div className="...line-clamp-3 prose-utilities..." dangerouslySetInnerHTML={{ __html: reviewNotesHtml }}>` where `reviewNotesHtml = renderReviewNotesMarkdown(challenge.reviewNotes)`. **`truncateRationale(challenge.reviewNotes)` removed entirely** — markdown source-truncation incompatibility resolution per Unit 18.1 analysis (mid-tag truncation risks broken formatting: unclosed `**`, `[`, etc.). **`truncateRationale()` helper itself preserved for the rationale plain-text field above** (Phase-11; not markdown Phase 18; defer to Phase 19+ if rationale markdown promotes).
+- **CSS `line-clamp-3` visual truncation** (Tailwind v4 built-in utility; per Unit 18.0 D-9 + Unit 18.1 analysis): full markdown rendered server-side; visual height clamped at 3 lines on the listing page; user clicks through to per-challenge detail (Phase-11 + 13 carryover candidate; not yet shipped) for full rendering. **First `line-clamp` visual truncation in project history** — replaces Phase-12's `truncateRationale` source-truncation pattern for markdown-incompatible reviewNotes display.
+- **Conditional render shifts**: outer guard simplified from `challenge.reviewNotes && (status === "accepted" || status === "rejected")` to inline IIFE that early-returns null on either condition + handles `renderReviewNotesMarkdown(null) === null` (Phase-15 D-F empty-state preserved). Reads cleaner; same observable behavior.
+- **Fourth `dangerouslySetInnerHTML` surface in project history** (running tally: /u/{handle} bio + /profile bio preview from Phase 17 + /curator/challenges/[id] reviewNotes from Unit 18.2 + /profile own-challenges reviewNotes from this unit). **All XSS-safe by ADR-0018 sanitization** (`bioSchema` + `reviewNotesSchema` identical Phase-18; single pipeline + URL allow-list + defense-in-depth across surfaces).
+- **First 4-surface markdown render consistency** (Phase-18 ledger first; was anticipated in Unit 18.0 prep). 14 arbitrary-variant prose utility classes shared verbatim across all 4 surfaces — same `<a>` accent / `<code>` muted-bg / `<pre>` overflow-x / `<ul>`-`<ol>` list-disc / `<blockquote>` border-l / `<hr>` margin / `<h3>`-`<h6>` serif descent / `<p+p>` spacing. Single prose-styling vocabulary for the entire markdown surface family.
+- **ADR-0018 D-G inheritance contract fully realized across both consumer surfaces** (Unit 18.2 + 18.3 close the second-exercise of the pattern Phase-17 documented).
+- **Smoke gates**:
+  - `pnpm typecheck` clean.
+  - `pnpm test` → 562/562 across 54 files UNCHANGED (no test file touched; page-component swap is thin pass-through to `renderReviewNotesMarkdown` which is fully covered at the helper layer Unit 18.1).
+  - `pnpm build` → ~659 prerendered pages + 7 dynamic page+API routes UNCHANGED. **First Load JS shared chunk = 103 kB UNCHANGED** per ADR-0018 D-F invariant. **Middleware bundle = 160 kB UNCHANGED**. `/profile` bundle = 117 kB UNCHANGED (Phase-16 use-client boundary preserved; markdown render adds zero client JS).
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline unchanged through every Phase 3-17 unit).
+- THINK artifact: inline (this entry; pattern mirrors Unit 18.2's CHANGELOG entry verbatim with surface-specific notes captured here).
+
 #### Unit 18.2 — `/curator/challenges/[id]` reviewNotes markdown render (FULL render; no clamp)
 
 - Third Phase-18 unit; **second code unit**. Realizes ADR-0018 D-G inheritance contract at the **first consumer surface** (Phase-12 curator dashboard). Uses Unit 18.1's `renderReviewNotesMarkdown` helper.

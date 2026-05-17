@@ -13,7 +13,7 @@ import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { Link } from "@/lib/i18n/navigation";
 import { isLocale } from "@/lib/i18n/routing";
-import { renderBioMarkdown } from "@/lib/markdown";
+import { renderBioMarkdown, renderReviewNotesMarkdown } from "@/lib/markdown";
 import {
   getUserChallenges,
   isAllowedWithdrawal,
@@ -514,26 +514,63 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
                   <p className="text-foreground/90 mt-2 text-sm">
                     {truncateRationale(challenge.rationale)}
                   </p>
-                  {challenge.reviewNotes && (status === "accepted" || status === "rejected") && (
-                    <div className="border-border bg-muted/40 mt-3 rounded border p-3">
-                      <p className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
-                        {t("challenges_curator_notes_label")}
-                        {reviewedDate && (
-                          <>
-                            <span className="mx-1.5" aria-hidden>
-                              ·
-                            </span>
-                            <time dateTime={reviewedDate} className="font-mono">
-                              {reviewedDate}
-                            </time>
-                          </>
-                        )}
-                      </p>
-                      <p className="text-foreground/90 mt-1 text-sm whitespace-pre-wrap">
-                        {truncateRationale(challenge.reviewNotes)}
-                      </p>
-                    </div>
-                  )}
+                  {(() => {
+                    // ADR-0018 D-G inheritance: reviewNotes rendered as
+                    // sanitized markdown via `renderReviewNotesMarkdown`
+                    // per Phase-18 Unit 18.3. Same XSS-safety as bio +
+                    // curator-dashboard surfaces.
+                    //
+                    // Markdown + CSS `line-clamp-3` for visual truncation
+                    // (Phase-18 Unit 18.0 D-5 + Unit 18.1 incompatibility
+                    // analysis): full markdown rendered; visual height
+                    // clamped at 3 lines. **Replaces Phase-12's
+                    // `truncateRationale(challenge.reviewNotes)` source-
+                    // truncation** which is incompatible with markdown
+                    // (mid-tag truncation risks broken formatting:
+                    // unclosed `**`, `[`, etc.). `truncateRationale` helper
+                    // itself stays for the rationale plain-text field
+                    // above (Phase-11; not markdown Phase 18).
+                    const showReviewNotes = status === "accepted" || status === "rejected";
+                    if (!showReviewNotes) return null;
+                    const reviewNotesHtml = renderReviewNotesMarkdown(challenge.reviewNotes);
+                    if (!reviewNotesHtml) return null;
+                    return (
+                      <div className="border-border bg-muted/40 mt-3 rounded border p-3">
+                        <p className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
+                          {t("challenges_curator_notes_label")}
+                          {reviewedDate && (
+                            <>
+                              <span className="mx-1.5" aria-hidden>
+                                ·
+                              </span>
+                              <time dateTime={reviewedDate} className="font-mono">
+                                {reviewedDate}
+                              </time>
+                            </>
+                          )}
+                        </p>
+                        <div
+                          className={cn(
+                            "text-foreground/90 mt-1 line-clamp-3 text-sm",
+                            "[&_a]:text-accent [&_a]:underline-offset-2 hover:[&_a]:underline",
+                            "[&_code]:bg-muted [&_code]:rounded [&_code]:px-1 [&_code]:font-mono [&_code]:text-xs",
+                            "[&_pre]:bg-muted [&_pre]:my-2 [&_pre]:overflow-x-auto [&_pre]:rounded [&_pre]:p-3",
+                            "[&_pre_code]:bg-transparent [&_pre_code]:p-0",
+                            "[&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5",
+                            "[&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5",
+                            "[&_blockquote]:border-border [&_blockquote]:my-2 [&_blockquote]:border-l-2 [&_blockquote]:pl-3 [&_blockquote]:italic",
+                            "[&_hr]:border-border [&_hr]:my-3",
+                            "[&_p+p]:mt-2",
+                            "[&_h3]:mt-3 [&_h3]:font-serif [&_h3]:text-base [&_h3]:font-semibold",
+                            "[&_h4]:mt-2 [&_h4]:font-serif [&_h4]:text-sm [&_h4]:font-semibold",
+                            "[&_h5]:mt-2 [&_h5]:font-serif [&_h5]:text-sm [&_h5]:font-medium",
+                            "[&_h6]:mt-2 [&_h6]:font-serif [&_h6]:text-sm [&_h6]:font-medium",
+                          )}
+                          dangerouslySetInnerHTML={{ __html: reviewNotesHtml }}
+                        />
+                      </div>
+                    );
+                  })()}
                   {status === "accepted" && challenge.acceptedActionId && (
                     <p className="text-muted-foreground mt-2 text-xs">
                       <span>{t("challenges_action_attached_label")}</span>
