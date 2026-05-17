@@ -480,6 +480,70 @@ remaining markdown-promotion candidate: rating-action
 rating-challenge `rationale`; would extend to a fourth sibling
 helper if curator demand surfaces).
 
+**REALIZED Phase 29 Unit 29.1** — `renderActionRationaleMarkdown`
++ `actionRationaleSchema` sibling helpers shipped (**fourth
+sibling schema** under this D-G inheritance contract). Surface:
+rating-action `RatingAction.dimensions.<dim>.rationale`
+(content-side YAML; Velite-validated per ADR-0002 + ADR-0003 +
+ADR-0005 every-action-is-complete-snapshot principle; helper
+signature `string → string` mirrors Phase-27 `renderRationaleMarkdown`
+— rating-action rationale is required per `rating-action.ts`
+Zod schema; no null-fallback path). Single render surface:
+`app/[locale]/problems/[slug]/ratings/page.tsx` `DimensionCard`
+component (Phase-3 surface; replaces `<p className="...whitespace-pre-line">{rationale}</p>`
+with `<div className={ACTION_RATIONALE_PROSE_CLASSES}
+dangerouslySetInnerHTML={{__html: renderActionRationaleMarkdown(rationale)}} />`).
+**`DimensionCard` instantiated 5× per rating action** via
+`DimensionsBlock` (difficulty + saturation + urgency + value +
+industry_call); per-page call count `5 × actions.length`; all
+static-generated at build time.
+`actionRationaleSchema = { ...baseSchemaConfig }` (intentional
+parity with `bioSchema` Phase-29; Phase-30+ Q72-analogue
+divergence candidate if surface-specific demand surfaces — Q72
+family now expanded to **3 sibling-divergence candidates** at
+Phase 29 entry: `reviewNotesSchema` + `rationaleSchema` +
+`actionRationaleSchema`). 11 new vitest tests at
+`lib/markdown/index.test.ts` mirror the Phase-18 + Phase-27
+sibling-test pattern: 8 helper tests + 3 schema parity tests
+(one additional test beyond Phase-27 documents wikilink
+preservation as literal text — see Phase-29 Class B.14 below).
+Phase 29 did NOT need a new ADR — implementation realizes D-G
+inheritance at a fourth call site without architectural surface.
+
+This realization is the **first content-side (Velite-validated
+YAML) markdown render call site** under this D-G contract. The
+three prior siblings all consume DB-backed columns via Drizzle
+(`users.bio`, `ratingChallenges.reviewNotes`,
+`ratingChallenges.rationale`); Phase-29 K consumes a Velite
+`RatingActions` collection field at build time. **Establishes
+the convention that ADR-0018 D-G inheritance is storage-layer-
+agnostic** — DB-backed and content-backed surfaces share the
+same sanitization audit boundary. The Phase-17 anticipation in
+this file's header comment ("Phase-18+ markdown surfaces ...
+possibly rating-action `rationale`") is realized **12 phases
+later** (Phase 17 → Phase 29 anticipation-to-realization gap);
+load-bearing test of D-G inheritance-contract durability.
+
+**Phase-30+ Class B.14 (NOT promoted to Q absent demand
+signal)**: rating-action rationale **wikilink resolution**.
+Existing YAML content contains `[[problem-slug]]` syntax (e.g.,
+`hallucination-reduction/2026-05-14-initial.yaml` value
+rationale references `[[scalable-oversight]]` +
+`[[long-context-rag]]`). Phase-29 markdown promotion renders
+these as literal text — `remark-parse` lacks native wikilink
+support; `remark-gfm` does not add wikilink extension; this
+D-G tag allow-list excludes custom wikilink elements; no
+`remark-wiki-link` plugin in the pipeline. **No regression** vs
+the prior Phase-3 `whitespace-pre-line` renderer. Active
+wikilink resolution is Phase-30+ candidate gated on demand
+signal + cross-surface scope decision (challenge rationale +
+review notes + bio could also use wikilinks — needs scope
+decision first) + ADR-0018 D-G amendment shape or new ADR if
+semantics evolve beyond simple slug-to-href mapping. Could
+couple with Q72 family (sibling-divergence candidates) into a
+single "markdown evolution" ADR-0021-candidate scope if either
+surfaces demand.
+
 ### D-H. Phase 18+ deferrals
 
 Phase 17 ships MINIMAL markdown surface. Deferred to Phase 18+:
