@@ -26,6 +26,14 @@ import { RatingActionSchema, type RatingAction } from "@/lib/schemas/rating-acti
  */
 
 export const METHODOLOGY_VERSION = "1.0.0";
+
+/**
+ * Frontmatter regex for `version` field in `content/methodology/v*.mdx`.
+ * Matches `version: "1.0.0"` and `version: '1.0.0'` on its own line at
+ * frontmatter level (per Phase-0 methodology file shape).
+ */
+const METHODOLOGY_VERSION_FRONTMATTER = /^version:\s*["']([^"']+)["']/m;
+const METHODOLOGY_FILENAME = /^v\d+\.mdx$/;
 export const PLACEHOLDER_RATIONALE = "TODO: copy unchanged from prior action.";
 export const PLACEHOLDER_PRIOR_ACTION = "TODO-set-to-prior-action-filename";
 export const PLACEHOLDER_SIGNAL =
@@ -149,6 +157,50 @@ export async function readPriorRatingAction(opts: {
   return null;
 }
 
+/**
+ * Phase-25 D-3: find the current methodology version by reading
+ * `<contentRoot>/methodology/v*.mdx` frontmatter. Filters out locale
+ * variants (e.g., `v1.fr.mdx`); sorts filenames lexically descending
+ * so higher-numbered versions win when multiple files exist; parses
+ * the `version` frontmatter field via a simple regex (full YAML
+ * parsing unnecessary for one field).
+ *
+ * Returns the first successfully-parsed version OR `METHODOLOGY_VERSION`
+ * fallback when:
+ *   - The methodology directory doesn't exist.
+ *   - No `v\d+\.mdx` files are present.
+ *   - All candidate files lack a parseable `version: "..."` frontmatter
+ *     line.
+ *
+ * Pure-ish: takes `contentRoot` as parameter for fixture-based testing.
+ * Phase-26+ if v2 methodology lands (`content/methodology/v2.mdx`),
+ * this helper picks it up automatically without code change.
+ */
+export async function readMethodologyVersion(opts: { contentRoot: string }): Promise<string> {
+  const dir = path.join(opts.contentRoot, "methodology");
+  let entries: string[];
+  try {
+    entries = await readdir(dir);
+  } catch {
+    return METHODOLOGY_VERSION;
+  }
+  const candidates = entries
+    .filter((f) => METHODOLOGY_FILENAME.test(f))
+    .sort((a, b) => b.localeCompare(a));
+  for (const filename of candidates) {
+    const filepath = path.join(dir, filename);
+    try {
+      const raw = await readFile(filepath, "utf8");
+      const match = raw.match(METHODOLOGY_VERSION_FRONTMATTER);
+      if (match && match[1]) return match[1];
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(`[scaffold] Skipping unreadable methodology at ${filepath}: ${message}`);
+    }
+  }
+  return METHODOLOGY_VERSION;
+}
+
 export interface ScaffoldInput {
   problemSlug: string;
   challengeId: string;
@@ -169,6 +221,14 @@ export interface ScaffoldInput {
    * Phase-22 placeholder behavior is preserved.
    */
   priorAction?: PriorActionInfo | null;
+  /**
+   * Phase-25 D-3: methodology version string for the new action's
+   * `methodology_version` field. Defaults to the `METHODOLOGY_VERSION`
+   * constant (`"1.0.0"`) when not provided. CLI orchestration calls
+   * `readMethodologyVersion()` first and passes the result here so
+   * Phase-26+ v2 methodology is picked up automatically.
+   */
+  methodologyVersion?: string;
 }
 
 /**
@@ -246,7 +306,7 @@ export function buildRatingActionYaml(input: ScaffoldInput): string {
   const payload = {
     problem_slug: input.problemSlug,
     date: input.date,
-    methodology_version: METHODOLOGY_VERSION,
+    methodology_version: input.methodologyVersion ?? METHODOLOGY_VERSION,
     curator: input.reviewerLogin,
     prior_action: priorActionField,
     dimensions: {

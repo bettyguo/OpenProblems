@@ -75,23 +75,32 @@ const VERCEL_BLOB_AVATAR_URL =
 
 interface CliArgs {
   dryRun: boolean;
+  userId?: string;
 }
 
 function parseArgs(argv: string[]): CliArgs | { help: true } {
   let dryRun = false;
+  let userId: string | undefined;
   for (const a of argv) {
     if (a === "--help" || a === "-h") return { help: true };
     if (a === "--dry-run") {
       dryRun = true;
       continue;
     }
+    if (a.startsWith("--user-id=")) {
+      userId = a.slice("--user-id=".length);
+      if (!userId) throw new Error("--user-id requires a value");
+      continue;
+    }
     throw new Error(`Unknown argument: ${a}`);
   }
-  return { dryRun };
+  const result: CliArgs = { dryRun };
+  if (userId !== undefined) result.userId = userId;
+  return result;
 }
 
 function printHelp(): void {
-  console.log(`Usage: pnpm ${SCRIPT_NAME} [--dry-run]
+  console.log(`Usage: pnpm ${SCRIPT_NAME} [--dry-run] [--user-id=<id>]
 
 Retroactively applies Phase-24 resize + WebP transcode (ADR-0019 D-F)
 to existing Vercel Blob avatars (rows in 'user' where imageOverride
@@ -103,10 +112,14 @@ distinguishes from Phase-20's -backfill outputs in Vercel Blob
 console).
 
 Flags:
-  --dry-run    Inventory affected rows + log expected mutations; do NOT
-               download / resize / upload / update / delete. Run this
-               FIRST to verify scope before executing.
-  --help, -h   Show this help text and exit.
+  --dry-run        Inventory affected rows + log expected mutations; do
+                   NOT download / resize / upload / update / delete.
+                   Run this FIRST to verify scope before executing.
+  --user-id=<id>   Phase-25 D-6: scope retroactive resize to a single
+                   user (e.g., user reports broken avatar; surgical
+                   re-run). Defends against accidental full-batch run.
+                   Stackable with --dry-run.
+  --help, -h       Show this help text and exit.
 
 Exit codes:
   0  All matched rows processed successfully (or 0 rows matched).
@@ -166,10 +179,12 @@ async function main(): Promise<number> {
     printHelp();
     return 0;
   }
-  const { dryRun } = parsed;
+  const { dryRun, userId } = parsed;
 
   const startedAt = new Date().toISOString();
-  console.log(`${SCRIPT_NAME} — ${startedAt}${dryRun ? " (DRY RUN)" : ""}`);
+  console.log(
+    `${SCRIPT_NAME} — ${startedAt}${dryRun ? " (DRY RUN)" : ""}${userId ? ` (--user-id=${userId})` : ""}`,
+  );
 
   const candidateRows = await db
     .select({ id: users.id, imageOverride: users.imageOverride })
@@ -179,10 +194,13 @@ async function main(): Promise<number> {
   const affected: BackfillRow[] = candidateRows
     .filter((r): r is { id: string; imageOverride: string } => typeof r.imageOverride === "string")
     .filter((r) => VERCEL_BLOB_AVATAR_URL.test(r.imageOverride))
+    .filter((r) => (userId === undefined ? true : r.id === userId))
     .map((r) => ({ userId: r.id, originalUrl: r.imageOverride }));
 
   console.log(`  candidate rows (imageOverride IS NOT NULL): ${candidateRows.length}`);
-  console.log(`  affected rows (Vercel Blob avatar pattern): ${affected.length}`);
+  console.log(
+    `  affected rows (Vercel Blob avatar pattern${userId ? ` + user-id filter` : ""}): ${affected.length}`,
+  );
 
   if (affected.length === 0) {
     console.log("\nNothing to do.");

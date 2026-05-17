@@ -7,6 +7,7 @@ import { RatingActionSchema, type RatingAction } from "@/lib/schemas/rating-acti
 import {
   buildRatingActionYaml,
   CHALLENGE_DIMENSIONS,
+  METHODOLOGY_VERSION,
   parseProposedValue,
   PLACEHOLDER_DIFFICULTY_GRADE,
   PLACEHOLDER_PRIOR_ACTION,
@@ -15,6 +16,7 @@ import {
   PLACEHOLDER_SIGNAL,
   PLACEHOLDER_STARS,
   type PriorActionInfo,
+  readMethodologyVersion,
   readPriorRatingAction,
   type ScaffoldInput,
 } from "./scaffold";
@@ -352,5 +354,94 @@ describe("buildRatingActionYaml — Phase-23 priorAction auto-fill", () => {
     expect(action.dimensions.urgency.stars).toBe(PLACEHOLDER_STARS);
     expect(action.signals_considered).toEqual([PLACEHOLDER_SIGNAL]);
     expect(action.watchlist).toBe(false);
+  });
+});
+
+// Phase-25 D-3 — readMethodologyVersion + buildRatingActionYaml methodologyVersion parameter.
+
+describe("readMethodologyVersion — Phase-25 D-3", () => {
+  let contentRoot: string;
+
+  beforeEach(async () => {
+    contentRoot = await mkdtemp(path.join(tmpdir(), "methodology-test-"));
+  });
+  afterEach(async () => {
+    await rm(contentRoot, { recursive: true, force: true });
+  });
+
+  it("returns fallback METHODOLOGY_VERSION when methodology directory does not exist", async () => {
+    const result = await readMethodologyVersion({ contentRoot });
+    expect(result).toBe(METHODOLOGY_VERSION);
+  });
+
+  it("returns fallback when methodology/ exists but contains no v*.mdx files", async () => {
+    const methodologyDir = path.join(contentRoot, "methodology");
+    await mkdir(methodologyDir, { recursive: true });
+    await writeFile(path.join(methodologyDir, "README.md"), "not a version file", "utf8");
+    const result = await readMethodologyVersion({ contentRoot });
+    expect(result).toBe(METHODOLOGY_VERSION);
+  });
+
+  it("parses version from v1.mdx frontmatter", async () => {
+    const methodologyDir = path.join(contentRoot, "methodology");
+    await mkdir(methodologyDir, { recursive: true });
+    const content = `---
+version: "1.2.3"
+title: Test methodology
+---
+
+Body.
+`;
+    await writeFile(path.join(methodologyDir, "v1.mdx"), content, "utf8");
+    const result = await readMethodologyVersion({ contentRoot });
+    expect(result).toBe("1.2.3");
+  });
+
+  it("picks highest-numbered v*.mdx when multiple exist (Phase 26+ v2 forward-compat)", async () => {
+    const methodologyDir = path.join(contentRoot, "methodology");
+    await mkdir(methodologyDir, { recursive: true });
+    await writeFile(
+      path.join(methodologyDir, "v1.mdx"),
+      `---\nversion: "1.0.0"\n---\nv1 body`,
+      "utf8",
+    );
+    await writeFile(
+      path.join(methodologyDir, "v2.mdx"),
+      `---\nversion: "2.0.0"\n---\nv2 body`,
+      "utf8",
+    );
+    const result = await readMethodologyVersion({ contentRoot });
+    expect(result).toBe("2.0.0");
+  });
+
+  it("ignores locale-variant filenames like v1.fr.mdx", async () => {
+    const methodologyDir = path.join(contentRoot, "methodology");
+    await mkdir(methodologyDir, { recursive: true });
+    await writeFile(
+      path.join(methodologyDir, "v1.mdx"),
+      `---\nversion: "1.0.0"\n---\nv1 body`,
+      "utf8",
+    );
+    await writeFile(
+      path.join(methodologyDir, "v1.fr.mdx"),
+      `---\nversion: "1.0.0-fr"\n---\nv1 french body`,
+      "utf8",
+    );
+    const result = await readMethodologyVersion({ contentRoot });
+    expect(result).toBe("1.0.0");
+  });
+});
+
+describe("buildRatingActionYaml — Phase-25 methodologyVersion parameter", () => {
+  it("uses explicit methodologyVersion when provided", () => {
+    const yaml = buildRatingActionYaml({ ...BASE_INPUT, methodologyVersion: "2.0.0" });
+    const action = parseAction(yaml);
+    expect(action.methodology_version).toBe("2.0.0");
+  });
+
+  it("falls back to METHODOLOGY_VERSION constant when methodologyVersion is undefined", () => {
+    const yaml = buildRatingActionYaml(BASE_INPUT);
+    const action = parseAction(yaml);
+    expect(action.methodology_version).toBe(METHODOLOGY_VERSION);
   });
 });
