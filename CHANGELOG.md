@@ -2470,6 +2470,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 16 — Community-adjacent surfaces (**seventh NON-§13 phase**: Q67 promotion — image override / avatar upload; surfaces ADR-0017 image-storage choice; third ALTER migration)
 
+#### Unit 16.2 — DB migration `0005_user_image_override` + schema edit (`users.imageOverride`; **third ALTER migration**)
+
+- Third Phase-16 unit; **first code unit**. Realizes ADR-0017 D-A schema component. **Third ALTER migration in project history** (first was Phase-12 `0003_rating_challenge_review` per ADR-0014 D-E; second was Phase-15 `0004_user_profile_fields` per ADR-0016 D-A). Migration count **5 → 6**.
+- **`lib/db/schema.ts` (edit)**: adds one nullable text column to `users` table:
+  - `imageOverride: text("imageOverride")` — nullable; app-level 512-char URL cap enforced via Unit 16.3's `validateImageOverride`. Stores absolute Vercel Blob public URL (HTTPS + `*.public.blob.vercel-storage.com` host pattern per ADR-0017 D-F). Overrides `image` on render via ADR-0017 D-E fallback chain. Binary data lives in Vercel Blob (a separate storage primitive); the DB stores only the URL pointer — preserves ADR-0013 D-F USER-STATE-only.
+- **`lib/db/migrations/0005_user_image_override.sql` (new)**: generated via `pnpm db:generate --name user_image_override`. Output is clean single-statement ALTER ADD COLUMN; no FK; no `ON DELETE` clause; **no manual SQL inspection / correction needed**. drizzle-kit's nullable text ALTER emission is clean at THIRD exercise; ADR-0014 D-E pattern fully validated.
+  ```sql
+  ALTER TABLE `user` ADD `imageOverride` text;
+  ```
+- **`lib/db/migrations/meta/0005_snapshot.json` (new)** + **`_journal.json` (edit)**: atomic drizzle-kit write paired with the SQL file. Journal entry idx=5 added.
+- **Forward-compat**: existing `users` rows from Phase 9 onward get NULL value in the new column; application reads NULL as "no override; render fallback chain to GitHub `image`" without special handling. **No data migration needed.**
+- **Backward-incompat surface**: SQLite ALTER TABLE supports ADD COLUMN natively for nullable columns; does NOT support `DROP COLUMN` cleanly. Phase 16 makes no column removals.
+- **Migration immutability discipline** (per ADR-0013 D-B): NEVER edit `0000` – `0004` to add the `imageOverride` column. Phase 16's column add lands as ADDITIVE delta in `0005_user_image_override` (the project's 6th migration; **third ALTER**).
+- **Why separate column from `users.image`** (architectural rationale): ADR-0017 D-E + ADR-0016 D-A user-controlled-override pattern. `users.image` is GitHub-derived (Auth.js v5 populates from OAuth profile; not user-touched). `users.imageOverride` is user-controlled. Fallback chain `imageOverride → image → fallback initials` mirrors Phase-15's `displayName → name → githubLogin → fallback`. Editing `users.image` directly would lose the GitHub fallback.
+- **Why land the schema alone** (not bundled with helpers): atomic schema delivery for parallel-session safety; migration immutability discipline isolates the ALTER from helper churn.
+- **Smoke gates**:
+  - `pnpm db:generate --name user_image_override` → 1 SQL file + 1 snapshot + 1 journal entry written.
+  - `pnpm typecheck` clean (new column flows through `users.$inferSelect` automatically).
+  - `pnpm test` → **497/497 across 52 vitest files unchanged** (no test files touched; nullable column doesn't break existing fake-row builders).
+  - `pnpm build` → ~659 prerendered + 10 dynamic page+API routes unchanged. First Load JS shared chunk = **103 kB UNCHANGED**. Middleware = **160 kB UNCHANGED**. `/profile` + `/u/{handle}` bundles = 108 kB UNCHANGED.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline).
+- **`users` columns**: **10** (was 9 at Phase-15 close; +1 in Phase 16: `imageOverride`): `id`, `name`, `email`, `emailVerified`, `image`, `githubLogin`, `createdAt`, `displayName`, `bio`, **`imageOverride`**.
+- **Migrations**: **6** (`0000_initial_auth`, `0001_watchlist`, `0002_rating_challenges`, `0003_rating_challenge_review` — first ALTER, `0004_user_profile_fields` — second ALTER, **`0005_user_image_override` — third ALTER**). Drizzle-kit 0-indexed monotonic sequence preserved per ADR-0013 D-E.
+- **Not in this unit** (Units 16.3 – 16.5 follow):
+  - `lib/users/index.ts` extensions (`validateImageOverride` + `updateProfileImage` + `clearProfileImage`).
+  - `lib/storage/index.ts` new module (`putAvatar` + `delAvatar` thin wrappers around `@vercel/blob`; **first storage layer in project history**).
+  - `@vercel/blob` dependency install (deferred to Unit 16.4 alongside the upload form wiring).
+  - Helper tests (`lib/users/index.test.ts` extension + new `lib/storage/index.test.ts`).
+  - `PublicProfile` interface extension to include `imageOverride` field (Unit 16.3 helper layer).
+- THINK artifact: `docs/thinking/16.2-db-migration-user-image-override.md`.
+
 #### Unit 16.1 — ADR-0017: image storage architecture (Vercel Blob + file-upload pipeline; **17 ADRs total**)
 
 - Second Phase-16 unit; first ADR-class architectural pin of Phase 16. Mirrors Phase-12 Unit 12.1 (ADR-0014) + Phase-14 Unit 14.1 (ADR-0015) + Phase-15 Unit 15.1 (ADR-0016) cadences: prep doc (16.0) → ADR (16.1) → migration + schema (16.2) → helpers (16.3) → UI surfaces (16.4 – 16.5) → hygiene (16.6 – 16.7) → gate (16.8).

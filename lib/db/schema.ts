@@ -41,6 +41,17 @@ export const users = sqliteTable("user", {
   // `bio` renders as plain text via `whitespace-pre-wrap` (ADR-0016 D-F).
   displayName: text("displayName"),
   bio: text("bio"),
+  // Phase-16 user-editable image override per [ADR-0017](../../docs/adr/0017-image-storage.md)
+  // D-A. Nullable; app-level 512-char URL cap enforced via
+  // `validateImageOverride` in `lib/users/`. Stores absolute Vercel Blob
+  // public URL (HTTPS + `*.public.blob.vercel-storage.com` host pattern).
+  // Migration `0005_user_image_override` is the **third ALTER migration**
+  // in project history. `imageOverride` overrides `image` on render via
+  // the fallback chain `imageOverride → image → fallback initials
+  // placeholder` (ADR-0017 D-E). Binary data lives in Vercel Blob (a
+  // separate primitive); the DB stores only the URL pointer — preserves
+  // [ADR-0013](../../docs/adr/0013-db-choice.md) D-F USER-STATE-only.
+  imageOverride: text("imageOverride"),
 });
 
 export const accounts = sqliteTable(
