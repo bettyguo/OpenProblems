@@ -2470,6 +2470,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 17 — Community-adjacent surfaces (**eighth NON-§13 phase**: Q66 promotion — markdown rendering in bio; surfaces ADR-0018 sanitization subset; first `lib/markdown/` + first XSS-audit surface)
 
+#### Unit 17.3 — `/[locale]/u/[handle]` bio section markdown render (first `dangerouslySetInnerHTML` surface; 103 kB UNCHANGED)
+
+- Fourth Phase-17 unit; **second code unit**. Realizes ADR-0018 D-E render path placement at the public-surface layer. First UI consumer of Unit 17.2's `lib/markdown/renderBioMarkdown` helper.
+- **`app/[locale]/u/[handle]/page.tsx` (edit)**: imports `renderBioMarkdown` from `@/lib/markdown`. Bio section's `<p className="...whitespace-pre-wrap">` swapped for `<div className="...prose-utilities..." dangerouslySetInnerHTML={{ __html: bioHtml }}>` where `bioHtml = renderBioMarkdown(profile.bio)`. Section render conditional shifts from `profile.bio &&` to `bioHtml !== null` (helper returns null for null / empty / whitespace-only input per Phase-15 D-F empty-state behavior preserved). Comment block explains why `dangerouslySetInnerHTML` is XSS-safe (sanitization at ADR-0018 D-B + D-D pipeline boundary).
+- **First `dangerouslySetInnerHTML` surface in project history** (XSS-safe by ADR-0018 sanitization). Establishes pattern: comment block above the surface citing ADR-0018 + `lib/markdown/` + the sanitization-pipeline-is-trusted invariant.
+- **Inline arbitrary-variant prose styling** (~14 utility groups in container className): `<a>` accent + underline; `<code>` muted bg + monospace; `<pre>` muted bg + overflow-x; `<ul>`/`<ol>` list markers + padding; `<blockquote>` left border + italic; `<hr>` border + margin; `<h3>`-`<h6>` serif + size descent + weight descent (matches existing heading hierarchy); `<p+p>` paragraph spacing. **NOT using `@tailwindcss/typography` Phase 17** — adds ~30 kB + config tuning; arbitrary-variant utilities self-contained + tight; Phase-18+ may swap if richer prose surfaces demand.
+- **Smoke gates**:
+  - `pnpm typecheck` clean.
+  - `pnpm test` → 552/552 across 54 files UNCHANGED (no test file touched; Phase-17 test coverage is at the `lib/markdown/renderBioMarkdown` helper layer; page-component swap is thin pass-through).
+  - `pnpm build` → ~659 prerendered pages + 7 dynamic page+API routes UNCHANGED. **First Load JS shared chunk = 103 kB UNCHANGED** per ADR-0018 D-F invariant (helper + deps are server-only). **Middleware bundle = 160 kB UNCHANGED**.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline unchanged through every Phase 3-17 unit).
+- **Not in this unit** (deferred to Phase-17 Class A in-flight cleanup OR Phase 18+):
+  - **`/[locale]/profile/page.tsx` read-mode bio preview** (ADR-0018 D-E second integration point). Phase-17 in-flight follow-on: adding a "current bio renders as:" preview section above or below the edit form requires NEW i18n key (`profile_edit.bio_preview_*`) per Phase-7/15 atomic-i18n discipline. Scope-cap preserved this unit: ship the public-surface render (primary UX — users see own rendered bio by visiting `/u/{githubLogin}`); defer /profile in-flight preview as **Phase-17 Class A item** for Unit 17.4 hygiene pass to catalog explicitly.
+  - **Live-preview in edit form** (Phase 17+ deferral per ADR-0018 D-H).
+  - **`/u/{handle}/challenges` subroute** (no bio there; no change).
+  - **SiteHeader / AuthControl pill** (no bio there; unchanged).
+- THINK artifact: `docs/thinking/17.3-public-bio-markdown.md`.
+
 #### Unit 17.2 — `lib/markdown/` module + sanitization schema + XSS test suite (552 tests across 54 files; +33 / +1)
 
 - Third Phase-17 unit; **first code unit of Phase 17**. Realizes ADR-0018 D-A library choice + D-B allowed subset + D-C heading demotion + D-D URL allow-list + D-F server-side-only at the helper layer. Anticipated dependency for Unit 17.3 (UI surfaces).

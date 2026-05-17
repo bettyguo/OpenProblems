@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { Link } from "@/lib/i18n/navigation";
 import { isLocale } from "@/lib/i18n/routing";
+import { renderBioMarkdown } from "@/lib/markdown";
 import { getCuratorOfRecordSlugs, getProfileActivity, getPublicProfileByHandle } from "@/lib/users";
 import { cn } from "@/lib/utils";
 
@@ -118,11 +119,40 @@ export default async function PublicProfilePage({ params }: PublicProfilePagePro
         )}
       </header>
 
-      {profile.bio && (
-        <section className="mt-8" aria-label={t("bio_aria_label")}>
-          <p className="text-foreground/90 text-sm whitespace-pre-wrap">{profile.bio}</p>
-        </section>
-      )}
+      {(() => {
+        // ADR-0018 D-E: bio rendered as sanitized markdown HTML via
+        // `renderBioMarkdown` (server-side SSR-only pipeline; XSS-safe by
+        // ADR-0018 D-B + D-D sanitization). `dangerouslySetInnerHTML` is
+        // the API name — the value is sanitized HTML output of
+        // `unified` + `remark-gfm` + `rehype-sanitize`. Phase-15 D-F
+        // empty-state preserved: helper returns null for null / empty /
+        // whitespace-only input; section omits entirely on null.
+        const bioHtml = renderBioMarkdown(profile.bio);
+        if (!bioHtml) return null;
+        return (
+          <section className="mt-8" aria-label={t("bio_aria_label")}>
+            <div
+              className={cn(
+                "text-foreground/90 text-sm",
+                "[&_a]:text-accent [&_a]:underline-offset-2 hover:[&_a]:underline",
+                "[&_code]:bg-muted [&_code]:rounded [&_code]:px-1 [&_code]:font-mono [&_code]:text-xs",
+                "[&_pre]:bg-muted [&_pre]:my-2 [&_pre]:overflow-x-auto [&_pre]:rounded [&_pre]:p-3",
+                "[&_pre_code]:bg-transparent [&_pre_code]:p-0",
+                "[&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5",
+                "[&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5",
+                "[&_blockquote]:border-border [&_blockquote]:my-2 [&_blockquote]:border-l-2 [&_blockquote]:pl-3 [&_blockquote]:italic",
+                "[&_hr]:border-border [&_hr]:my-3",
+                "[&_p+p]:mt-2",
+                "[&_h3]:mt-3 [&_h3]:font-serif [&_h3]:text-base [&_h3]:font-semibold",
+                "[&_h4]:mt-2 [&_h4]:font-serif [&_h4]:text-sm [&_h4]:font-semibold",
+                "[&_h5]:mt-2 [&_h5]:font-serif [&_h5]:text-sm [&_h5]:font-medium",
+                "[&_h6]:mt-2 [&_h6]:font-serif [&_h6]:text-sm [&_h6]:font-medium",
+              )}
+              dangerouslySetInnerHTML={{ __html: bioHtml }}
+            />
+          </section>
+        );
+      })()}
 
       <section className="mt-12">
         <h2 className="font-serif text-xl font-semibold tracking-tight">{t("activity_heading")}</h2>
