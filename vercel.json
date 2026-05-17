@@ -4,6 +4,10 @@
     {
       "path": "/api/v1/cron/digest-send",
       "schedule": "0 0 * * 1"
+    },
+    {
+      "path": "/api/v1/cron/cleanup-stale-tokens",
+      "schedule": "0 0 * * 2"
     }
   ]
 }
