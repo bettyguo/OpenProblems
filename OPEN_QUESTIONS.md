@@ -637,7 +637,7 @@ Mirrors [Q54](#q54-github-oauth-app-registration) (GitHub OAuth registration) + 
 
 ## Q76. Per-user-account-based subscriptions (architectural; ADR-0021 D-C Phase 31+ deferral)
 
-**Status:** open (architectural; surfaced 2026-05-17 Unit 30.4; Phase 31+ candidate if signed-in-user-subscription demand surfaces). · **Blocks:** nothing critical; affects future subscription-management UX + curator analytics. · **Surfaced:** [ADR-0021](./docs/adr/0021-subscriber-list-email.md) D-C.
+**Status:** resolved 2026-05-17 (Unit 33.1): **Option A FK extension** pinned in [ADR-0023](./docs/adr/0023-per-user-account-subscriptions.md) — `subscriber.userId text references users(id) on delete cascade` nullable column extension via migration `0008_subscriber_user_id.sql`. Subscribe-route POST handler reads `safeAuth()` for session + auto-populates `userId = session.user.id` if signed-in else NULL per ADR-0023 D-C; existing rows' `userId` updates per `decideSubscriberUserId` pure helper realizing ADR-0023 D-E/D-F/D-G semantics (anonymous → authenticated migration smooth + cross-user re-subscribe conservative-preserve). Anonymous email-only path preserved verbatim (NULL `userId` = Phase-30 path). Cascade-on-user-delete enables future account-deletion flow (Phase 34+ candidate) to automatically remove subscription rows. Per-problem subscriptions + cross-domain summary subscriptions + "manage my subscriptions" UX page + curator analytics dashboard + subscription-preference editing UX deferred to Phase 34+ per ADR-0023 D-H ([Q79](#q79-manage-my-subscriptions-ux-page-architectural-adr-0023-d-h-phase-34-deferral) candidate for the "manage my subscriptions" page). **Option B** (separate `user_subscriptions` table) + **Option C** (stay anonymous-only-indefinitely) rejected. **Closes the Phase-31+ anticipation at 2-phase Q-carryover** (Phase 30 → 31 → 32 → 33). **First ADR to close an explicit prior ADR's Phase-N+1 anticipation at tight follow-on** in project history. **Subscriber-list-email arc completes Phase 30 → 31 → 32 → 33 = first 4-phase complete-feature pair in project history**. · **Surfaced:** [ADR-0021](./docs/adr/0021-subscriber-list-email.md) D-C; **Resolved:** Unit 33.1 (ADR-0023 acceptance).
 
 Phase 30's [ADR-0021](./docs/adr/0021-subscriber-list-email.md) D-C scopes subscriptions to **per-domain only** with **anonymous email-only** rows in the `subscriber` table — no FK to `users.id`. A user signed in via GitHub / Google can subscribe via the form but the subscription row has no relationship to their `users.id`; from the system's view, the subscription is identified purely by email + token.
 
@@ -697,3 +697,26 @@ Phase 32+ candidates for richer observability:
 **Phase-31 lean**: Profile A is the most defensible Phase-32+ first thread (lowest cost, highest reliability win), but the decision waits for Phase 31 production cron operation to surface real signal (first-week + first-month invocation patterns).
 
 **Cross-references**: [ADR-0022 D-F](./docs/adr/0022-weekly-digest-scheduler.md) (failure handling scope); [ADR-0022 D-G](./docs/adr/0022-weekly-digest-scheduler.md) (free-tier monitoring sub-step); [ADR-0022 D-H](./docs/adr/0022-weekly-digest-scheduler.md) (Phase 32+ deferrals); [Q75](#q75-resend-account--domain-provisioning-operational-resend_api_key--email_from--dkimspfdmarc-records) (operational sibling — Q78 automates Q75's tier-monitoring sub-step); [Q77](#q77-vercel-cron-production-setup--cron_secret-provisioning-operational-weekly-digest-scheduler) (operational sibling — Q77 is the gate Q78 evolves observability for).
+
+## Q79. "Manage my subscriptions" UX page (architectural; ADR-0023 D-H Phase 34+ deferral)
+
+**Status:** open (architectural; surfaced 2026-05-17 Unit 33.3; Phase 34+ candidate now that Q76 authenticated-subscription-linkage Phase 33 = realized via ADR-0023). · **Blocks:** nothing critical; affects future signed-in user subscription-management UX + closes ADR-0023 D-H first-row deferral. · **Surfaced:** [ADR-0023](./docs/adr/0023-per-user-account-subscriptions.md) D-H.
+
+Phase 33's [ADR-0023](./docs/adr/0023-per-user-account-subscriptions.md) D-H names "manage my subscriptions" page on `/[locale]/profile` as the **first Phase-34+ deferred surface**. Phase 33 ships the FK column + auto-populate logic + cascade-on-user-delete constraint architecturally; signed-in users CAN have their subscriptions linked to their account but CANNOT view / manage them through a dedicated UI (existing unsubscribe-token flow per ADR-0021 D-E continues to work — single-click email link).
+
+**Phase 34+ candidates** (each requires Q79 promotion + follow-on UX-track work):
+
+1. **Read-only "my subscriptions" widget on `/[locale]/profile`** — list subscribed taxonomy domains + last-digest-sent-at (from Phase-31 `lastDigestSentAt` column) + per-subscription unsubscribe button. Minimal scope; couples to existing `/profile` page Phase-15+.
+2. **Full subscription-management UX** — add / remove domain subscriptions inline without re-submitting the subscribe form; per-row state-machine UI; couples to `lib/subscribers/createOrRefreshPendingSubscription` (Phase-30 + 33) + new `updateSubscriptionDomains` helper.
+3. **Per-problem subscription opt-in UI** — if Phase-34+ ships per-problem subscriptions (Q76-sibling-expansion per ADR-0023 D-H), the `/profile` UI adds problem-checklist controls.
+4. **Email-preference editing** — per-subscriber preferred send-day / send-time (couples to ADR-0022 D-H deferral); requires schema column extension.
+
+**Question to resolve in Phase 34+**: which scope to ship first? Three resolution profiles:
+
+- **Profile A (read-only first)**: ship #1 minimal widget. ~1-2 units; lowest scope; lays the surface for #2 progressive enhancement.
+- **Profile B (full-edit first)**: ship #2 full-management UX. ~3-4 units; couples to new domain-update helper + state-machine UI; higher complexity but full feature parity with subscribe form.
+- **Profile C (combined #1 + curator analytics)**: ship #1 widget + ADR-0023 D-H second-row curator analytics dashboard in tandem. ~3-4 units; couples to ADR-0014 curator-review-pipeline patterns.
+
+**Phase-33 lean**: Profile A is the most defensible Phase-34+ first thread (lowest cost, builds the surface progressively). But the decision waits for signed-in user feedback to inform the management-UX shape (which subscriptions to manage / how often to edit / etc.).
+
+**Cross-references**: [ADR-0023 D-H](./docs/adr/0023-per-user-account-subscriptions.md) (Phase 34+ deferrals — names this page as the first-row deferral); [Q76](#q76-per-user-account-based-subscriptions) (architectural parent — resolved Phase 33 via ADR-0023; Q79 is the UX-side follow-on); [ADR-0015 D-F](./docs/adr/0015-per-user-privacy-model.md) ("two surfaces per identity" pattern — `/profile` Phase-14 surface extends for Q79); [ADR-0021 D-E](./docs/adr/0021-subscriber-list-email.md) (unsubscribe-token flow — preserved; Q79 widget complements, does NOT replace).
