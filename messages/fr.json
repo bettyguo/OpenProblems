@@ -100,6 +100,20 @@
     "status_accepted": "Acceptée",
     "back_to_problem": "← Retour au problème"
   },
+  "public_challenge_detail": {
+    "back_to_challenges": "← Retour aux contestations",
+    "page_title": "Contestation de notation",
+    "submitter_label": "Soumise par",
+    "submitted_at_label": "Soumise le",
+    "problem_label": "Problème",
+    "dimension_label": "Dimension",
+    "proposed_value_label": "Valeur proposée",
+    "rationale_label": "Argumentation",
+    "reviewer_label": "Examinée par",
+    "reviewed_at_label": "Examinée le",
+    "review_notes_label": "Notes de l'examen",
+    "action_attached_label": "Action de notation :"
+  },
   "profile_edit": {
     "aria_label": "Modifier votre profil",
     "heading": "Modifier le profil",

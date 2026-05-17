@@ -1,4 +1,5 @@
 import { and, asc, desc, eq, inArray } from "drizzle-orm";
+import { alias } from "drizzle-orm/sqlite-core";
 
 import { db } from "@/lib/db";
 import { ratingChallenges, users } from "@/lib/db/schema";
@@ -535,4 +536,101 @@ export async function getPublicChallengesByUser(userId: string): Promise<PublicC
       status: row.status,
       acceptedActionId: row.acceptedActionId,
     }));
+}
+
+// ---------------------------------------------------------------------------
+// Phase-26 per-challenge detail surface (Unit 26.1) — closes Phase-11 + 13
+// carryover. Detail page renders full rationale + accepted-status reviewer
+// info + reviewNotes markdown at `/[locale]/u/[handle]/challenges/[id]`.
+// ---------------------------------------------------------------------------
+
+/**
+ * Pure predicate: reviewer info (`reviewerLogin`, `reviewedAt`,
+ * `reviewNotes`, `acceptedActionId`) is shown publicly ONLY when the
+ * challenge is `accepted`. For `submitted` / `under_review` the
+ * curator's deliberation stays private (matches Phase-13 Unit 13.0
+ * D-3 + Phase-14 listing precedent — listing shows status badge only,
+ * no reviewer info for non-accepted states).
+ */
+export function shouldShowReviewerInfo(status: PublicChallengeStatus): boolean {
+  return status === "accepted";
+}
+
+/**
+ * Per-challenge detail row — extends {@link PublicChallengeRow} with
+ * reviewer fields populated only for `accepted` status per Phase-13
+ * Unit 13.0 D-3 visibility policy. For non-accepted public statuses
+ * (`submitted` / `under_review`), reviewer fields are forced to null
+ * by the helper regardless of underlying DB state.
+ */
+export interface PublicChallengeDetail extends PublicChallengeRow {
+  reviewerLogin: string | null;
+  reviewedAt: Date | null;
+  reviewNotes: string | null;
+}
+
+/**
+ * Single-row fetch for the per-challenge detail page. Joins
+ * `ratingChallenges` to two aliased `users` rows (submitter + reviewer)
+ * and applies server-side visibility filters:
+ *   - `id` matches.
+ *   - `userId === opts.profileUserId` (prevents handle/id enumeration).
+ *   - `status ∈ PUBLIC_CHALLENGE_STATUSES` (rejected + withdrawn
+ *     return null per Phase-13 D-3).
+ *
+ * Returns null on any filter miss → caller maps to `notFound()`.
+ * Reviewer fields are returned only when `status === "accepted"` per
+ * {@link shouldShowReviewerInfo}; non-accepted statuses get nulls
+ * regardless of DB row state (defense-in-depth vs UI filtering).
+ */
+export async function getPublicChallengeDetailById(opts: {
+  id: string;
+  profileUserId: string;
+}): Promise<PublicChallengeDetail | null> {
+  const reviewerUsers = alias(users, "reviewer_users");
+  const rows = await db
+    .select({
+      id: ratingChallenges.id,
+      problemSlug: ratingChallenges.problemSlug,
+      submitterLogin: users.githubLogin,
+      submittedAt: ratingChallenges.createdAt,
+      dimension: ratingChallenges.dimension,
+      proposedValue: ratingChallenges.proposedValue,
+      rationale: ratingChallenges.rationale,
+      status: ratingChallenges.status,
+      acceptedActionId: ratingChallenges.acceptedActionId,
+      reviewerLogin: reviewerUsers.githubLogin,
+      reviewedAt: ratingChallenges.reviewedAt,
+      reviewNotes: ratingChallenges.reviewNotes,
+    })
+    .from(ratingChallenges)
+    .leftJoin(users, eq(ratingChallenges.userId, users.id))
+    .leftJoin(reviewerUsers, eq(ratingChallenges.reviewerId, reviewerUsers.id))
+    .where(
+      and(
+        eq(ratingChallenges.id, opts.id),
+        eq(ratingChallenges.userId, opts.profileUserId),
+        inArray(ratingChallenges.status, [...PUBLIC_CHALLENGE_STATUSES]),
+      ),
+    )
+    .limit(1);
+  const row = rows[0];
+  if (!row) return null;
+  if (!isPublicChallengeStatus(row.status)) return null;
+  const status = row.status;
+  const showReviewer = shouldShowReviewerInfo(status);
+  return {
+    id: row.id,
+    problemSlug: row.problemSlug,
+    submitterLogin: row.submitterLogin,
+    submittedAt: row.submittedAt,
+    dimension: row.dimension as Dimension,
+    proposedValue: row.proposedValue,
+    rationale: row.rationale,
+    status,
+    acceptedActionId: showReviewer ? row.acceptedActionId : null,
+    reviewerLogin: showReviewer ? row.reviewerLogin : null,
+    reviewedAt: showReviewer ? row.reviewedAt : null,
+    reviewNotes: showReviewer ? row.reviewNotes : null,
+  };
 }

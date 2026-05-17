@@ -100,6 +100,20 @@
     "status_accepted": "Accepted",
     "back_to_problem": "← Back to problem"
   },
+  "public_challenge_detail": {
+    "back_to_challenges": "← Back to challenges",
+    "page_title": "Rating challenge",
+    "submitter_label": "Submitted by",
+    "submitted_at_label": "Submitted",
+    "problem_label": "Problem",
+    "dimension_label": "Dimension",
+    "proposed_value_label": "Proposed value",
+    "rationale_label": "Rationale",
+    "reviewer_label": "Reviewed by",
+    "reviewed_at_label": "Reviewed",
+    "review_notes_label": "Curator review notes",
+    "action_attached_label": "Rating action:"
+  },
   "profile_edit": {
     "aria_label": "Edit your profile",
     "heading": "Edit profile",

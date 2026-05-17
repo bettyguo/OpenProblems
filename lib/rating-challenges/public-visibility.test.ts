@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { PUBLIC_CHALLENGE_STATUSES, TERMINAL_STATUSES, isPublicChallengeStatus } from "./index";
+import {
+  PUBLIC_CHALLENGE_STATUSES,
+  TERMINAL_STATUSES,
+  isPublicChallengeStatus,
+  shouldShowReviewerInfo,
+} from "./index";
 
 /**
  * Tests for the Phase-13 public-visibility policy (Unit 13.1) per
@@ -80,5 +85,19 @@ describe("Visibility partition matches state machine terminals", () => {
     // `accepted` is BOTH public AND terminal (editorial-record-shaped).
     expect(publicSet.has("accepted")).toBe(true);
     expect(allTerminals.has("accepted")).toBe(true);
+  });
+});
+
+describe("shouldShowReviewerInfo — Phase-26 D-3 detail-page visibility", () => {
+  it("returns true only for accepted (curator deliberation is private until terminal)", () => {
+    expect(shouldShowReviewerInfo("accepted")).toBe(true);
+  });
+
+  it("returns false for submitted (no review started; reviewer info absent)", () => {
+    expect(shouldShowReviewerInfo("submitted")).toBe(false);
+  });
+
+  it("returns false for under_review (deliberation in progress; reviewer + notes private)", () => {
+    expect(shouldShowReviewerInfo("under_review")).toBe(false);
   });
 });
