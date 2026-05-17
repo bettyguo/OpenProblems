@@ -2470,6 +2470,50 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 17 — Community-adjacent surfaces (**eighth NON-§13 phase**: Q66 promotion — markdown rendering in bio; surfaces ADR-0018 sanitization subset; first `lib/markdown/` + first XSS-audit surface)
 
+#### Unit 17.6 — OPEN_QUESTIONS hygiene + ADR review (Q66 promoted + resolved; **18 ADRs total**; 24 resolved / 4 decided-as-lean / 30 open / **58 total**)
+
+- Seventh Phase-17 unit; docs-only. Mirrors Phase-13 Unit 13.5 + Phase-14 Unit 14.7 + Phase-15 Unit 15.7 + Phase-16 Unit 16.7 hygiene patterns. Promotes Q66 (markdown rendering in bio) from Phase-15 "flagged but not promoted" candidate to `resolved` ledger entry. **Fifth invocation of "added + resolved in same unit" pattern** (Phase-12 Q57 + Phase-13 Q58 + Phase-15 Q63 + Phase-16 Q67 + Phase-17 Q66).
+- **`OPEN_QUESTIONS.md` (edit)**: appends new `## Q66. Markdown rendering in users.bio` section after Q70 (file's last entry at Phase 16 close). Status field cites resolved 2026-05-16 (Unit 17.1); body cross-references ADR-0018 + Units 17.2 (module + tests) + 17.3 (`/u/{handle}` render) + 17.4 (`/profile` preview) as realizations. Surfaced field cites the **seven-reference convergence** (the strongest forward-reference pattern in project history — Phase 16 Q67 had 4 references; Phase 17 Q66 has 7): Unit 15.1 + ADR-0016 D-F + Unit 15.6 + Unit 15.7 + Unit 15.8 + Unit 16.6 + Unit 16.7 + Unit 16.8. Resolved field cites Unit 17.1 (ADR-0018 acceptance).
+- **Q66 entry body** explains what Q66 closes architecturally:
+  - **Four architectural firsts converge in one phase** — first markdown pipeline + first XSS-audit surface + first three-step pipeline boundary + first `dangerouslySetInnerHTML` surface in project history.
+  - **Closes the Phase 14 → 15 → 16 → 17 identity-surface arc** — Phase 14 read-only profile + Phase 15 editable text + Phase 16 editable image + **Phase 17 closes the bio expressiveness gap** that Phase 15 D-F explicitly deferred. Identity-surface arc COMPLETE across four phases.
+  - **First phase since Phase 9 to ship zero migrations** (Phase 11 + 12 + 15 + 16 each shipped 1; Phase 10 + 13 + 14 shipped 0; Phase 17 is the second 0-migration phase since DB landed).
+  - **Bundle invariant preserved** (per ADR-0018 D-F) — First Load JS shared chunk = **103 kB UNCHANGED** end-to-end through every Phase 9-17 unit. Markdown deps are server-only (8 packages ~120 kB transitive; rendered HTML inlined via `dangerouslySetInnerHTML` in async server components at request time). Middleware = **160 kB UNCHANGED**.
+  - **Public-data invariant preserved** (per ADR-0015 D-A) — markdown rendering changes the FORMAT of bio data, not the data class.
+  - **First i18n key TEXT UPDATE since Phase 7** (`bio_hint` rephrased from "Plain text (no markdown)." to reflect markdown support).
+- **OPEN_QUESTIONS tally delta** (Unit 9.8 mechanical `**Status:**`-field count):
+
+  | Class | Phase 16 close | Phase 17 close | Δ |
+  |---|---|---|---|
+  | resolved | 23 | **24** | +1 (Q66) |
+  | decided-as-lean | 4 | 4 | 0 |
+  | open | 30 | 30 | 0 |
+  | **TOTAL** | **57** | **58** | **+1** |
+
+  Q66 is the +1 (newly added AND resolved in same unit — fifth invocation of this pattern).
+
+- **NOT promoted this unit** (Phase-18+ candidates stay flagged; 8 carry):
+  - **Q59 candidate** (CLI `pnpm emit-challenge-action <id>`) — carried Phase-12/13/14/15/16/17; smallest scope.
+  - **Q60 candidate** (curator authz evolution beyond env-var allowlist) — couples to editorial-board (Q7).
+  - **Q61 candidate** (submitter anonymity option) — Phase-13 carryover.
+  - **Q62 candidate** (rejection-rationale public visibility) — Phase-13 carryover.
+  - **Q64 candidate** (per-user privacy opt-out; ADR-0015 D-D) — Phase-14 carryover.
+  - **Q65 candidate** (per-curator activity feed; ADR-0015 D-E) — Phase-14 carryover.
+  - **Q68 expansion** (content moderation on uploaded images alongside bio text) — Phase-15/16 carryover/expansion.
+  - **Q70 candidate** (EXIF stripping on uploaded images) — Phase-16 carryover.
+- **ADR review** (18 total):
+  - **0001-0017 unchanged** from Phase 16 close (all `accepted`; no superseding).
+  - **0018 (this phase) accepted in Unit 17.1**: Markdown sanitization subset. Carried unchanged through Units 17.2 – 17.5.
+  - **No deprecations; no supersessions; no new ADRs in Unit 17.6**.
+- **Phase-18+ ADR slot reservations** (ADR-0019 candidate options in rough decreasing strength):
+  - **Multi-provider OAuth expansion** (Phase-9 Class B item 8 carried 8 phases; previously ADR-0016 / 0017 / 0018 candidate — slots claimed by Phase 15 + 16 + 17 respectively; **fifth ADR cycle without claim**).
+  - **Image-transcoding pipeline** (Q70 EXIF + Q68 expansion) — `sharp` vs external service vs client-side stripping.
+  - **Content moderation API** (Q68 + Q68 expansion) — OpenAI moderation / Perspective / custom regex+wordlist.
+  - **Markdown subset extensions ADR** (tables / footnotes / images / syntax-highlighting) — schema-extension ADR if Phase-17 deployment surfaces signal.
+  - **Multi-surface markdown render** (curator review notes / rating-action rationale) — composes Phase-17 `lib/markdown/` pattern via D-G inheritance; may NOT need a new ADR.
+- Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2; unchanged through every Phase 3-17 unit); typecheck / test / build untouched since no source files modified.
+- THINK artifact: `docs/thinking/17.6-open-questions-hygiene.md`.
+
 #### Unit 17.5 — Phase-17 hygiene status pass (**0 Class A / 17 Class B / Class C unchanged**; ADR-0019+ candidates flagged)
 
 - Sixth Phase-17 unit; docs-only. Mirrors Phase-13 Unit 13.4 + Phase-14 Unit 14.6 + Phase-15 Unit 15.6 + Phase-16 Unit 16.6 hygiene catalog patterns. Catalogs what's in-flight after Phase 17's three code units (17.2 + 17.3 + 17.4) and what survives as follow-ons or carryovers heading into Units 17.6 (OPEN_QUESTIONS hygiene) + 17.7 (acceptance gate).
