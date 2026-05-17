@@ -2470,6 +2470,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 17 — Community-adjacent surfaces (**eighth NON-§13 phase**: Q66 promotion — markdown rendering in bio; surfaces ADR-0018 sanitization subset; first `lib/markdown/` + first XSS-audit surface)
 
+#### Unit 17.4 — `/[locale]/profile` read-mode bio preview (closes ADR-0018 D-E second integration point; 6 i18n key adds/edits)
+
+- Fifth Phase-17 unit; **third code unit**. Closes the ADR-0018 D-E second integration point that Unit 17.3 deferred (preserves the "all D-E surfaces ship in-phase" property; Phase-17 Class A count stays at **0** matching Phase-12/13/14/15/16 well-scoped pattern instead of regressing to 1).
+- **`app/[locale]/profile/page.tsx` (edit)**: imports `renderBioMarkdown` from `@/lib/markdown`. Adds a `<section aria-label={tE("bio_preview_aria_label")}>` rendered ABOVE the edit form when current saved bio is non-empty. Section contains a small heading (`Preview` / `Aperçu`) + a bordered/muted-background `<div>` carrying the same arbitrary-variant prose utilities as `/u/{handle}` (14 utility groups consistent across surfaces). Conditional `renderBioMarkdown(currentBio)` returning null collapses the section entirely per Phase-15 D-F empty-state behavior preserved.
+- **Placement rationale** (preview ABOVE form): user lands on `/profile` and immediately sees "here's my current saved bio rendered as the public surface sees it"; then below they see "edit the markdown source here". Mirrors GitHub's profile edit UX where canonical-render appears before edit affordance. Alternative (preview below form) considered + rejected — separates current-state from edit-affordance with the Save button in between.
+- **`messages/en.json` + `messages/fr.json` (edit)**: 6 i18n key adds/edits per locale:
+  - **`profile_edit.bio_hint` updated** (EN: "Up to 280 characters. Markdown supported (bold, italic, links, lists, code)." / FR: "Jusqu'à 280 caractères. Markdown pris en charge (gras, italique, liens, listes, code)."). Phase-15 phrasing "Plain text (no markdown)" was misleading post-Phase-17 markdown enablement.
+  - **`profile_edit.bio_preview_heading`** added (EN: "Preview" / FR: "Aperçu").
+  - **`profile_edit.bio_preview_aria_label`** added (EN: "How your bio will appear publicly" / FR: "Comment votre bio apparaîtra publiquement").
+- **i18n discipline** (atomic pre-add per Phase-7/15 convention): both locales updated in same unit; EN + FR matched key-for-key. **127 keys per locale** (was 124 at Phase-16 close + Phase-17 17.0/17.1/17.2/17.3 changed zero i18n keys; +3 net this unit).
+- **NOT using `@tailwindcss/typography`** — same as 17.3 reasoning; arbitrary-variant utilities consistent between `/u/{handle}` and `/profile` preview surfaces; ~30 kB saved.
+- **Smoke gates**:
+  - `pnpm typecheck` clean.
+  - `pnpm test` → 552/552 across 54 files UNCHANGED (no test file touched; page-component swap is thin pass-through to `lib/markdown/renderBioMarkdown` which is fully covered at the helper layer Unit 17.2).
+  - `pnpm build` → ~659 prerendered pages + 7 dynamic page+API routes UNCHANGED. **First Load JS shared chunk = 103 kB UNCHANGED** per ADR-0018 D-F invariant (helper + deps are server-only). **Middleware bundle = 160 kB UNCHANGED**. `/profile` bundle = 117 kB UNCHANGED (page-scoped use-client boundary from Phase 16 unchanged; markdown render adds zero client JS).
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2; unchanged through every Phase 3-17 unit).
+- **ADR-0018 D-E now fully realized across both integration points** (`/u/{handle}` public canonical surface in Unit 17.3 + `/profile` own read-mode preview in this unit). Combined with D-A library / D-B subset / D-C heading demotion / D-D URL allow-list / D-F server-side-only / D-G inheritance contract / D-H Phase-18+ deferrals — **6 of 8 ADR-0018 D-clauses now code-realized** (D-G is forward-compat documentation; D-H is text-only deferral).
+- THINK artifact (lightweight inline; the implementation pattern mirrors Unit 17.3's THINK doc verbatim — single edit + single new section + thin shared utility class set; no separate THINK doc this unit since the architectural rationale is identical to 17.3).
+
 #### Unit 17.3 — `/[locale]/u/[handle]` bio section markdown render (first `dangerouslySetInnerHTML` surface; 103 kB UNCHANGED)
 
 - Fourth Phase-17 unit; **second code unit**. Realizes ADR-0018 D-E render path placement at the public-surface layer. First UI consumer of Unit 17.2's `lib/markdown/renderBioMarkdown` helper.

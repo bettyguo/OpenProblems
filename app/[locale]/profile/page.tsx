@@ -13,6 +13,7 @@ import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { Link } from "@/lib/i18n/navigation";
 import { isLocale } from "@/lib/i18n/routing";
+import { renderBioMarkdown } from "@/lib/markdown";
 import {
   getUserChallenges,
   isAllowedWithdrawal,
@@ -281,6 +282,46 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
             <span className="font-medium">{tE("error_label")}:</span> {editError}
           </p>
         )}
+
+        {(() => {
+          // ADR-0018 D-E second integration point: read-mode bio
+          // preview shows the current saved bio rendered as markdown
+          // (the public-canonical render path) so the user can see
+          // how their bio appears at /u/{githubLogin} before editing
+          // below. Helper returns null on null/empty/whitespace-only
+          // input → omit section entirely (Phase-15 D-F empty-state
+          // preserved). XSS-safe via the same sanitization layer the
+          // public surface uses.
+          const previewHtml = renderBioMarkdown(currentBio);
+          if (!previewHtml) return null;
+          return (
+            <section className="mt-6" aria-label={tE("bio_preview_aria_label")}>
+              <p className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
+                {tE("bio_preview_heading")}
+              </p>
+              <div
+                className={cn(
+                  "border-border bg-muted/30 mt-2 rounded-md border p-3",
+                  "text-foreground/90 text-sm",
+                  "[&_a]:text-accent [&_a]:underline-offset-2 hover:[&_a]:underline",
+                  "[&_code]:bg-muted [&_code]:rounded [&_code]:px-1 [&_code]:font-mono [&_code]:text-xs",
+                  "[&_pre]:bg-muted [&_pre]:my-2 [&_pre]:overflow-x-auto [&_pre]:rounded [&_pre]:p-3",
+                  "[&_pre_code]:bg-transparent [&_pre_code]:p-0",
+                  "[&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5",
+                  "[&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5",
+                  "[&_blockquote]:border-border [&_blockquote]:my-2 [&_blockquote]:border-l-2 [&_blockquote]:pl-3 [&_blockquote]:italic",
+                  "[&_hr]:border-border [&_hr]:my-3",
+                  "[&_p+p]:mt-2",
+                  "[&_h3]:mt-3 [&_h3]:font-serif [&_h3]:text-base [&_h3]:font-semibold",
+                  "[&_h4]:mt-2 [&_h4]:font-serif [&_h4]:text-sm [&_h4]:font-semibold",
+                  "[&_h5]:mt-2 [&_h5]:font-serif [&_h5]:text-sm [&_h5]:font-medium",
+                  "[&_h6]:mt-2 [&_h6]:font-serif [&_h6]:text-sm [&_h6]:font-medium",
+                )}
+                dangerouslySetInnerHTML={{ __html: previewHtml }}
+              />
+            </section>
+          );
+        })()}
 
         <form action={updateProfileAction} className="mt-6 space-y-5">
           <label className="block">
