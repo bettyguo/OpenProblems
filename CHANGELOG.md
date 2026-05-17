@@ -2470,6 +2470,46 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 18 — Community-adjacent surfaces (**ninth NON-§13 phase**: multi-surface markdown render — `renderReviewNotesMarkdown` sibling via ADR-0018 D-G inheritance; first reviewNotes markdown surface; second consecutive 0-migration phase)
 
+#### Unit 18.5 — OPEN_QUESTIONS hygiene + ADR review (Q71 promoted + resolved; **18 ADRs unchanged**; 25 resolved / 4 decided-as-lean / 30 open / **59 total**; sixth same-unit add-and-resolve)
+
+- Sixth Phase-18 unit; docs-only. Mirrors Phase-13 Unit 13.5 + Phase-14 Unit 14.7 + Phase-15 Unit 15.7 + Phase-16 Unit 16.7 + Phase-17 Unit 17.6 hygiene patterns. Promotes Q71 (multi-surface markdown render via ADR-0018 D-G inheritance) from Phase-18 Unit 18.0 anticipated promotion to `resolved` ledger entry. **Sixth invocation of "added + resolved in same unit" pattern** (Phase-12 Q57 + Phase-13 Q58 + Phase-15 Q63 + Phase-16 Q67 + Phase-17 Q66 + Phase-18 Q71).
+- **`OPEN_QUESTIONS.md` (edit)**: appends new `## Q71. Multi-surface markdown render (ratingChallenge.reviewNotes via ADR-0018 D-G inheritance)` section after Q66 (file's last entry at Phase 17 close). Status field cites resolved 2026-05-16 (Unit 18.1); body cross-references ADR-0018 D-G inheritance contract + Units 18.1 (module extension) + 18.2 (curator dashboard FULL render) + 18.3 (`/profile` listing markdown + CSS line-clamp + `truncateRationale()` incompatibility resolution). Surfaced field cites **seven-reference convergence**: Phase-15 Class B B.2 item 5 + Phase-15 Unit 15.6 + Unit 15.7 + Unit 15.8 + Phase-17 ADR-0018 D-G + Phase-17 Unit 17.5 B.2 + Phase-18 Unit 18.0. Resolved field cites Unit 18.1.
+- **Q71 entry body** explains what Q71 closes architecturally:
+  - **First ADR-0018 D-G inheritance exercise** in project history (Phase 17 documented the inheritance pattern; Phase 18 realized it at second exercise).
+  - **First reviewNotes markdown surface** in project history (Phase-12 plain-text rendering upgraded across both consumer surfaces).
+  - **Second consecutive 0-migration phase** (Phase 17 + 18; 5 of 9 phases since DB landed).
+  - **Bundle invariant preserved** at 103 kB First Load JS UNCHANGED end-to-end through every Phase 9-18 unit per ADR-0018 D-F invariant.
+  - **Schema-parity-by-explicit-shallow-copy decision** (`{ ...baseSchemaConfig }`) signaling "intentional parity Phase-18 / Phase-19+ may diverge".
+  - **`truncateRationale()` source-truncation incompatibility resolution** via CSS `line-clamp-3` visual truncation pattern (establishes the convention that when source-truncation breaks rendering, CSS visual truncation is the correct approach).
+- **OPEN_QUESTIONS tally delta** (Unit 9.8 mechanical `**Status:**`-field count):
+
+  | Class | Phase 17 close | Phase 18 close | Δ |
+  |---|---|---|---|
+  | resolved | 24 | **25** | +1 (Q71) |
+  | decided-as-lean | 4 | 4 | 0 |
+  | open | 30 | 30 | 0 |
+  | **TOTAL** | **58** | **59** | **+1** |
+
+  Q71 is the +1 (newly added AND resolved in same unit — sixth invocation of this pattern).
+
+- **NOT promoted this unit** (Phase-19+ candidates stay flagged; **9 carry**):
+  - **Q59 candidate** (CLI emit-challenge-action) — carried Phase-12 through Phase-18 (**7 phases**).
+  - **Q60 candidate** (curator authz evolution).
+  - **Q61 candidate** (submitter anonymity option).
+  - **Q62 candidate** (rejection-rationale public visibility).
+  - **Q64 candidate** (per-user privacy opt-out).
+  - **Q65 candidate** (per-curator activity feed).
+  - **Q68 expansion** (content moderation on uploaded images).
+  - **Q70 candidate** (EXIF stripping on uploaded images).
+  - **Q72 candidate** (Phase-18 newly flagged): `reviewNotesSchema` divergence from `bioSchema` — markdown subset extensions for curator reviewNotes (tables / footnotes / extended subset). 4000-char field may justify tabular COI comparisons + footnoted citations + structured editorial reasoning. Phase-19+ if curator demand surfaces; needs surface-specific schema authoring per ADR-0018 D-G + Phase-18 schema-parity test removal + audit comment.
+- **ADR review** (**18 ADRs unchanged** from Phase 17 close):
+  - **0001-0018** unchanged from Phase 17 close (all `accepted`; no superseding).
+  - **No new ADR Phase 18** — ADR-0018 D-G inheritance contract pre-documented Phase 17; Phase 18 realized the contract without architectural decision surface remaining open.
+  - **First phase since Phase 3 to close a Q-candidate without a new ADR** (Phase 3 closed Q18 via ADR-0006; subsequent Q-closures via Phase 4-17 each accompanied a new ADR; Phase 18 closes Q71 via inheritance contract realization).
+- **Phase-19+ ADR-0019 candidate slot open after 4-phase ADR cycle without multi-provider-OAuth claim** (Phase-15 ADR-0016 + Phase-16 ADR-0017 + Phase-17 ADR-0018 + Phase-18 NO-new-ADR; Phase-9 Class B item 8 carried 9 phases — strongest architectural "patience signal"). Other candidates: image-transcoding pipeline (Q70 + Q68 expansion); content moderation API (Q68); markdown subset extensions (per ADR-0018 D-H + Q72); subscriber-list email provider (Phase-5 D-4 punt carried 13+ phases — strongest overall "patience signal"); per-challenge detail page (Phase-11 + 13 carryover; couples to Phase-18 line-clamp UX; may not need new ADR).
+- Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2; unchanged through every Phase 3-17 unit); typecheck / test / build untouched since no source files modified.
+- THINK artifact: `docs/thinking/18.5-open-questions-hygiene.md`.
+
 #### Unit 18.4 — Phase-18 hygiene status pass (**0 Class A** / ~12 Class B / Class C unchanged; **seven consecutive well-scoped phases**)
 
 - Fifth Phase-18 unit; docs-only. Mirrors Phase-13 Unit 13.4 + Phase-14 Unit 14.6 + Phase-15 Unit 15.6 + Phase-16 Unit 16.6 + Phase-17 Unit 17.5 hygiene catalog patterns.
