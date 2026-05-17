@@ -472,3 +472,65 @@ Phase-16+ follow-on candidates explicitly flagged in ADR-0016:
 - **Q66 candidate** (markdown rendering in bio; ADR-0016 D-F deferral) — needs remark/rehype/sanitize pipeline ADR + XSS audit. Phase 16+ if power-user demand surfaces.
 - **Q67 candidate** (image override / avatar upload; ADR-0016 D-G deferral) — needs **ADR-0017** for storage choice (Vercel Blob ~$0.02/GB / S3 / R2 / external URL allowlist) + upload pipeline + cropping + EXIF stripping + image content moderation.
 - **Q68 candidate** (content moderation on bio text; ADR-0016 D-B deferral) — needs moderation API integration ADR (OpenAI moderation / Perspective / custom regex+wordlist). Phase 16+ if abuse signals accumulate.
+
+## Q67. Image override / avatar upload (`users.imageOverride`)
+
+**Status:** resolved 2026-05-16 (Unit 16.1): pinned in [ADR-0017](./docs/adr/0017-image-storage.md) — `users.imageOverride` (512-char URL cap; nullable text column; stores absolute Vercel Blob public URL matching `^https://[a-z0-9-]+\.public\.blob\.vercel-storage\.com/.+` per D-F) realized via migration `0005_user_image_override` (**third ALTER migration** in project history; ADR-0014 D-E discipline crystallized at third exercise — clean drizzle-kit emission) + new `lib/storage/` module wrapping `@vercel/blob@2.3.3` (`putAvatar` + `delAvatar` thin wrappers; **first storage layer in project history** alongside file-system content + Turso DB) + `validateImageOverride` / `updateProfileImage` (7-step pipeline: MIME + size + magic-byte + SELECT existing + upload + UPDATE + best-effort delete-on-replace) / `clearProfileImage` helpers in `lib/users/` (Unit 16.3; +22 tests; 519/53 file-suite total) + inline image-upload form on existing `/[locale]/profile` (NOT separate `/profile/edit/avatar` per D-C; continues ADR-0016 D-C "two surfaces per identity" pattern) + new sibling server actions `updateProfileImageAction` (multipart) + `clearProfileImageAction` (per D-D; mirrors Phase 10/11/12/15 inline server-action precedent) + 22-key `messages.profile_edit.image_*` namespace across EN + FR (atomic pre-add per Phase-14/15 discipline) + fallback chain consumption on `/u/{handle}` + `/profile` (Unit 16.5; per D-E: `imageOverride → image → omit`) + `getUserMetadataById` extended with `imageOverride` forward-compat (Unit 16.5; no current SiteHeader avatar consumer; Phase-14 Class B avatar-dropdown follow-on). Storage choice **Vercel Blob** (first-party Vercel; ~$0.02/GB; single `BLOB_READ_WRITE_TOKEN` env var = **Q69 operational candidate** parallel to Q54 + Q55); URL allowlist + S3/R2 documented as ADR-0017 deferral matrix (Phase 17+ if signal demands). Upload pipeline scope: **MIME validation** (`image/jpeg`, `image/png`, `image/webp` only; SVG excluded for XSS surface) + **2 MB size cap** + **first-bytes magic-byte defense-in-depth** + delete-on-replace transactional (orphan tolerated per try/finally; abandoned-blob cleanup script as Class B follow-on). EXIF stripping DEFERRED to Phase 17+ (**Q70 candidate**; privacy concern with embedded GPS metadata); content moderation on uploaded images DEFERRED to Phase 17+ (**Q68 expansion**; couples to bio moderation); cropping UI / server-side resizing / multiple-avatars-history / GIF support all DEFERRED to Phase 17+ per ADR-0017 D-H. · **Surfaced:** Unit 15.1 (ADR-0016 D-G anticipated as Q67 candidate) + Unit 15.6 hygiene (Class B item 2) + Unit 15.7 OQ-hygiene (flagged) + Unit 15.8 acceptance gate ("strongest honored-deferral pick") · **Resolved:** Unit 16.1 (ADR-0017 acceptance).
+
+What Q67 closes architecturally:
+
+- **First user-controlled BINARY write surface** in project history. Phase 9 established auth-side writes (Auth.js `events.linkAccount`); Phase 11 added challenge submission writes; Phase 15 added user-controlled TEXT writes (`displayName` + `bio`); Phase 16 closes the surface category progression with user-controlled BINARY writes. Surface-category lineage complete for Phase 9-16 identity architecture.
+- **First binary storage layer in project history** (Vercel Blob alongside file-system content + Turso DB). Establishes `lib/storage/` module pattern (~3 functions; thin wrapper; vendor-swap surface bounded) for Phase 17+ binary-asset inheritance (paper figures? curator-review attachments? methodology diagrams?). Preserves ADR-0013 D-F USER-STATE-only DB (binary lives in Blob; DB stores only URL pointer).
+- **Third ALTER migration validates ADR-0014 D-E discipline at THIRD exercise** — clean drizzle-kit emission on nullable text column (Phase-15 cleared at second exercise; Phase-16 confirms reliability for nullable additions).
+- **First new runtime dependency since Phase-9 auth stack** (`@vercel/blob@2.3.3`; ~30 kB server-only). 5-phase dependency-discipline interval (Phase 10-15 added zero new runtime deps).
+- **First `"use client"` boundary on `/profile`** (`ProfileImageUploadField` for `URL.createObjectURL` preview; ~50 lines; +9 kB page-scoped; shared chunk UNCHANGED at 103 kB). First multipart-form server action in project history (`updateProfileImageAction` with `encType="multipart/form-data"`).
+- **Public-data invariant preserved** (per ADR-0015 D-A). User-controlled `imageOverride` is an override of a field already public at github.com (avatar URL from OAuth profile is public-by-default); no NEW public-data category introduced.
+
+Phase-17+ follow-on candidates explicitly flagged in ADR-0017:
+
+- **Q70 candidate** (EXIF stripping on uploaded images; ADR-0017 D-B + D-H deferral) — privacy concern; embedded GPS coordinates + camera serial numbers in user-uploaded photos. Phase 17+ if user privacy report surfaces; needs `sharp` or similar server-side pipeline. ~2-3 units.
+- **Q68 expansion** (content moderation on uploaded images; ADR-0017 D-H deferral) — extends Phase-15's Q68 candidate scope from bio text to cover uploaded imagery. Phase 17+ if abuse signals accumulate; needs moderation API integration ADR.
+- **External URL allowlist composability** (ADR-0017 Option 2 deferral) — pre-existing-URL paste affordance alongside file upload. Phase 17+ if power-user demand surfaces; ~3-5 units; adds ADR-0018+ sanitization-subset candidate.
+- **Cropping UI** + **server-side resizing/transcoding** + **multiple-avatars/history** + **image dimensions check** + **GIF/animated WebP support** — all ADR-0017 D-H deferrals; Phase 17+ if signals demand.
+- **Abandoned-blob cleanup script** (ADR-0017 D-B + D-H Class B follow-on) — orphan blobs tolerated until script lands; periodic reconciliation against `users.imageOverride`. ~1-2 units; needs cron schedule.
+
+## Q69. Vercel Blob storage token provisioning (operational; `BLOB_READ_WRITE_TOKEN`)
+
+**Status:** open (operational; surfaced 2026-05-16 Unit 16.1; expected to resolve when curator provisions Vercel Blob store + sets env var via `vercel env pull`).
+
+Phase 16's image-storage architecture per [ADR-0017](./docs/adr/0017-image-storage.md) D-G requires `BLOB_READ_WRITE_TOKEN` env var at runtime. Vercel auto-provisions the token when a Blob store is created via Vercel dashboard (Storage → Blob → Create store); local dev pulls it via `vercel link` + `vercel env pull`.
+
+Operational unblock path:
+
+1. Curator opens Vercel project dashboard.
+2. Storage → Blob → Create store (or use existing if one was created out-of-band).
+3. Vercel auto-adds `BLOB_READ_WRITE_TOKEN` to project env vars (production + preview + development scopes).
+4. Local dev: `vercel link` (one-time) + `vercel env pull .env.local` (pulls all env vars including blob token).
+5. `.env.example` documents the var with a placeholder (defer; not yet added).
+
+Graceful degradation when unset:
+
+- `updateProfileImageAction` returns error banner ("Image must be a JPEG, PNG, or WebP file." or similar — the `@vercel/blob` SDK throws inside `putAvatar` when token missing; the helper bubbles a generic error).
+- Rest of `/profile` (text fields + watchlist + challenges) keeps working.
+- Sign-in / sign-out / read-side surfaces unaffected.
+- `/u/{handle}` displays fall back to GitHub avatar (or omits when both `imageOverride` + `image` null).
+
+Parallel to **Q54** (GitHub OAuth app registration) + **Q55** (Turso production DB provisioning). All three operational gates carry the same shape: architecture is complete; deployment unblock pending curator action. Phase 17+ may bundle Q54/Q55/Q69 into a single "operational unblock" thread once deployment is closer.
+
+## Q70. EXIF stripping on uploaded images (privacy)
+
+**Status:** open (privacy candidate; surfaced 2026-05-16 Unit 16.1 per ADR-0017 D-B + D-H deferral; Phase 17+ if user privacy report surfaces).
+
+Phase 16 ships image upload WITHOUT EXIF stripping. User-uploaded photos may embed GPS coordinates, camera serial numbers, datetime metadata, and other PII. The `imageOverride` URL is publicly served via Vercel Blob CDN; any client downloading the avatar can read the embedded EXIF.
+
+Deferred per ADR-0017 D-H: "EXIF stripping — privacy concern (GPS metadata, camera serials). Defer until first user privacy report."
+
+Phase-17+ resolution options (in roughly increasing complexity):
+
+- **`sharp` server-side pipeline** — reads upload, strips EXIF, re-encodes; ~30 KB additional bundle; well-known + battle-tested. Lean choice.
+- **External transcoding service** (Vercel Image Optimization / Cloudinary / similar) — heavier; eats into request budget.
+- **Client-side stripping pre-upload** — browser-side EXIF strip via JavaScript; user-trustable surface; ~10 KB additional bundle on `/profile`; couples to client component.
+
+Surfaces ADR-0018+ candidate for the image-transcoding pipeline choice. ~2-3 units when promoted.
+
+Couples to **Q68 expansion** (content moderation on uploaded images) — both surfaces sit in the "uploaded image needs server-side processing" category; pipeline choice may land them together.

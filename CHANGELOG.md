@@ -2470,6 +2470,39 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 16 — Community-adjacent surfaces (**seventh NON-§13 phase**: Q67 promotion — image override / avatar upload; surfaces ADR-0017 image-storage choice; third ALTER migration)
 
+#### Unit 16.7 — OPEN_QUESTIONS hygiene + ADR review (Q67 promoted + resolved; Q69 + Q70 newly flagged; **17 ADRs total**; 23 resolved / 4 decided-as-lean / 30 open / **57 total**)
+
+- Eighth Phase-16 unit; docs-only. Mirrors Phase-13 Unit 13.5 + Phase-14 Unit 14.7 + Phase-15 Unit 15.7 hygiene patterns. Promotes Q67 (image override / avatar upload) from Phase-15 "flagged but not promoted" candidate to `resolved` ledger entry. Same "added + resolved in same unit" shape as Phase-12 Q57 + Phase-13 Q58 + Phase-15 Q63 promotions.
+- **`OPEN_QUESTIONS.md` (edit)**: appends three new sections after Q63 (file's last entry at Phase 15 close):
+  - **Q67 (resolved)** — `Image override / avatar upload (users.imageOverride)`. Status field cites resolved 2026-05-16 (Unit 16.1); body cross-references ADR-0017 + Units 16.2 (migration) + 16.3 (helpers) + 16.4 (upload form) + 16.5 (public consumption) as realizations. Surfaced field cites Phase-15 anticipation chain (Unit 15.1 + ADR-0016 D-G + Unit 15.6 hygiene Class B item 2 + Unit 15.7 OQ-hygiene + Unit 15.8 acceptance gate "strongest honored-deferral pick" callout); Resolved field cites Unit 16.1 ADR-0017 acceptance.
+  - **Q69 (open operational)** — `Vercel Blob storage token provisioning (BLOB_READ_WRITE_TOKEN)`. Parallel to Q54 + Q55 operational gates; body documents unblock path (Vercel dashboard → Storage → Blob → Create store → `vercel env pull`) + graceful degradation (upload action returns error; rest of `/profile` + read-side + sign-in unaffected); Phase 17+ may bundle Q54/Q55/Q69 into single "operational unblock" thread.
+  - **Q70 (open)** — `EXIF stripping on uploaded images (privacy)`. Phase-17+ candidate per ADR-0017 D-B + D-H deferral; privacy concern (GPS coordinates, camera serials, datetime metadata embedded in user-uploaded photos; Vercel Blob CDN serves publicly). Phase-17+ resolution options documented: `sharp` server-side pipeline (lean; ~30 KB) / external transcoding service / client-side pre-upload (~10 KB). Couples to **Q68 expansion** (moderation on uploaded images).
+- **Q67 entry body** explains what Q67 closes architecturally:
+  - **First user-controlled BINARY write surface in project history** — surface-category progression complete for Phase 9-16 identity architecture (Phase 9 auth-side / Phase 11 challenge / Phase 15 text / **Phase 16 binary**).
+  - **First binary storage layer in project history** (Vercel Blob alongside file-system content + Turso DB).
+  - **Third ALTER migration validates ADR-0014 D-E discipline at THIRD exercise** — clean drizzle-kit emission on nullable text column.
+  - **First new runtime dependency since Phase-9 auth stack** (`@vercel/blob@2.3.3`; 5-phase dependency-discipline interval; Phase 10-15 added zero new runtime deps).
+  - **First `"use client"` boundary on `/profile`** + **first multipart-form server action** in project history + **first three-way `?saved=...` banner** pattern.
+  - **Public-data invariant preserved** (per ADR-0015 D-A); `imageOverride` is user-controlled override of a field already public at github.com.
+- **OPEN_QUESTIONS tally delta** (Unit 9.8 mechanical `**Status:**`-field count):
+
+  | Class | Phase 15 close | Phase 16 close | Δ |
+  |---|---|---|---|
+  | resolved | 22 | **23** | +1 (Q67) |
+  | decided-as-lean | 4 | **4** | 0 |
+  | open | 28 | **30** | +2 (Q69 + Q70) |
+  | **TOTAL** | **54** | **57** | **+3** |
+
+  Phase-16 deltas: +1 Q67 newly added AND resolved in same unit (Phase-12 Q57 + Phase-13 Q58 + Phase-15 Q63 pattern); +1 Q69 newly added as `open (operational)`; +1 Q70 newly added as `open`.
+- **NOT promoted this unit** (Phase-17+ candidates stay flagged): **Q59 candidate** (CLI `pnpm emit-challenge-action <id>`; carried Phase-12/13/14/15/16); **Q60 candidate** (curator authz evolution; couples to editorial-board Q7); **Q61 candidate** (submitter anonymity option; Phase-13 carryover); **Q62 candidate** (rejection-rationale public visibility; Phase-13 carryover); **Q64 candidate** (per-user privacy opt-out; ADR-0015 D-D; Phase-14 carryover; ~3 units); **Q65 candidate** (per-curator activity feed; ADR-0015 D-E; Phase-14 carryover; ~4-5 units); **Q66 candidate** (markdown rendering in bio; ADR-0016 D-F; Phase-15 carryover); **Q68 expansion** (content moderation on uploaded images alongside bio text; ADR-0017 D-H expands ADR-0016 D-B scope).
+- **ADR review** (17 total):
+  - **0001-0016 unchanged** from Phase 15 close (all `accepted`; no superseding).
+  - **0017 (this phase) accepted in Unit 16.1**: Image storage architecture (Vercel Blob + file-upload pipeline). Carried unchanged through Units 16.2 – 16.6.
+  - **No deprecations; no supersessions; no new ADRs in Unit 16.7**.
+- **Phase-17+ ADR slot reservations** — **ADR-0018+ candidates**: multi-provider OAuth (Phase-9 Class B item 8 carryover); subscriber-list email provider (Phase-5 D-4 punt; carried 11+ phases); markdown-bio sanitization subset (couples to Q66); image transcoding pipeline (couples to Q70 + Q68 expansion); full §8.6 24-mo COI check (ADR-0014 D-C deferral); per-user privacy opt-out (couples to Q64); per-curator activity feed surface architecture (couples to Q65); editorial-board / curator authz evolution (couples to Q7 + Q60).
+- Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2); typecheck / test / build untouched.
+- THINK artifact: `docs/thinking/16.7-open-questions-hygiene.md`.
+
 #### Unit 16.6 — Phase-16 hygiene status pass (0 Class A / 17 Class B / Class C carryover; Q70 + Q69 candidates flagged for Unit 16.7)
 
 - Seventh Phase-16 unit; docs-only. Mirrors Phase-13 Unit 13.4 + Phase-14 Unit 14.6 + Phase-15 Unit 15.6 hygiene catalog patterns. Catalogs what's in-flight after Phase 16's 5 code units (16.1 – 16.5) and what survives as follow-ons or carryovers heading into the acceptance gate.
