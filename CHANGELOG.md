@@ -2470,6 +2470,47 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 16 — Community-adjacent surfaces (**seventh NON-§13 phase**: Q67 promotion — image override / avatar upload; surfaces ADR-0017 image-storage choice; third ALTER migration)
 
+#### Unit 16.3 — `lib/storage/` Vercel Blob wrapper + `lib/users/` image-override helpers + tests (519 tests across 53 files; +22 from Phase 15)
+
+- Fourth Phase-16 unit; second code unit. Realizes ADR-0017 D-A storage architecture + D-B upload pipeline scope + D-F validation/sanitization model at the helper layer. **First storage layer in project history** (binary blob alongside file-system content + Turso DB). Anticipated dependency for Unit 16.4 (upload form) + Unit 16.5 (public consumption).
+- **`lib/storage/index.ts` (new)**: thin Vercel Blob wrapper per ADR-0017 D-A. Three pieces — `putAvatar(file, userId)` (uploads with key `avatars/<userId>-<timestamp>.<ext>`; returns public URL); `delAvatar(url)` (idempotent on already-deleted blobs); private `inferExt(mime)` helper. **Deliberately thin** (~3 functions, ~60 lines) so vendor swap to S3/R2 stays straightforward if Phase 17+ trigger fires per ADR-0017 Option 1 mitigation. NO leaking of Vercel-Blob-specific types; NO `BLOB_READ_WRITE_TOKEN` env-handling (SDK auto-resolves).
+- **`lib/storage/index.test.ts` (new)**: 4 tests covering JPEG/PNG/WebP extension mapping + `delAvatar` SDK pass-through. Mocks `@vercel/blob`'s `put` + `del` via `vi.mock`.
+- **`lib/users/index.ts` (edit)**: 5 new exports + 1 interface extension + 1 SELECT-clause extension:
+  - `MAX_IMAGE_URL_CHARS = 512` (matches ADR-0017 D-F + accommodates Vercel Blob URL format `https://*.public.blob.vercel-storage.com/<random-hash>-<filename>` plus future query suffixes).
+  - `MAX_IMAGE_BYTES = 2 * 1024 * 1024` (2 MB per ADR-0017 D-B).
+  - `validateImageOverride(value)` — null on valid (including empty for clear-by-empty-submit per D-B); error string when over length OR off-allowlist host pattern. Validates against `^https://[a-z0-9-]+\.public\.blob\.vercel-storage\.com/.+` per D-F.
+  - `updateProfileImage(userId, file)` — 7-step pipeline per D-B + D-F: (1) MIME validation against `image/jpeg`/`image/png`/`image/webp` allowlist (SVG excluded for XSS surface); (2) empty-file check; (3) size cap check; (4) **first-bytes magic-byte check** (defense-in-depth against forged `file.type` — re-validates 12-byte prefix against `0xFF 0xD8 0xFF` for JPEG, `0x89 P N G` for PNG, `RIFF<size>WEBP` for WebP); (5) SELECT existing override (so we can clean up old blob on replace); (6) upload via `putAvatar` + UPDATE imageOverride column; (7) best-effort delete prior Blob via try/finally — **orphan tolerated on partial failure** per D-B + D-H Class B cleanup follow-on. Returns null on success or human-readable error string on first failure.
+  - `clearProfileImage(userId)` — writes NULL + deletes Blob; no-op when no current override. Mirrors Phase-15 `updateProfile`'s empty-after-trim → NULL pattern for text fields.
+  - `PublicProfile` interface extended with `imageOverride: string | null` per ADR-0017 D-A.
+  - `getPublicProfileByHandle` SELECT clause extended to read the new column.
+- **`lib/users/index.test.ts` (edit)**: **+18 new tests** (file total: 48; was 30 at Phase-15 close):
+  - **`validateImageOverride`** (5 tests): accepts empty (clear-semantics); accepts valid Vercel Blob URL; rejects HTTP (HTTPS-only); rejects off-allowlist hosts (e.g., evil.com); rejects URLs over MAX_IMAGE_URL_CHARS.
+  - **`updateProfileImage`** (9 tests): happy-path JPEG with no prior override; SVG MIME rejection before any DB/storage hit; empty file rejection; oversize file rejection; **forged MIME rejection via magic-byte mismatch** (PNG declared + JPEG bytes); valid PNG magic bytes accepted; valid WebP magic bytes accepted; delete-prior-Blob after successful replace; **tolerates delete-on-replace failure** (orphan; new URL still lands).
+  - **`clearProfileImage`** (3 tests): writes NULL + deletes Blob when user has current override; no-op when no override; tolerates delete failure on clear.
+  - **PublicProfile shape extension** (1 test): returns `imageOverride` from `getPublicProfileByHandle`.
+  - **Mock update**: `@/lib/storage` module mocked alongside existing `@/lib/db` mock; `putAvatar` + `delAvatar` exposed as `vi.fn()`s.
+  - **Existing Phase-15 tests** (30) updated for the new shape: 5 fake-row builders gain `imageOverride: null` default to match the extended `PublicProfile` interface; otherwise unchanged.
+  - **`bytes(values: number[])` helper** + `makeImageFile(mime, magic, name?)` helper land for File-construction with magic-byte prefixes. The `bytes` helper wraps `new ArrayBuffer(N)` + `new Uint8Array(buffer)` pattern to satisfy TS 5.7's tightened `Uint8Array<ArrayBuffer>` vs `Uint8Array<ArrayBufferLike>` BlobPart strictness.
+- **`package.json` (edit) + `pnpm-lock.yaml` (edit)**: `@vercel/blob@2.3.3` added as runtime dependency. **First new runtime dependency since Phase 9's auth stack**. ADR-0017 D-A anticipated `@1.x`; actual install resolved to `@2.3.3` (latest stable). v1 → v2 API for `put` + `del` is API-compatible (both return `{ url, pathname, contentType, contentDisposition }` for `put`; both accept URL for `del`); v2 adds new features (client-token direct uploads; presigned URLs) this unit doesn't exercise. ADR-0017's substantive intent unaffected; CHANGELOG-only correction; ADR body stays immutable per ADR-immutability discipline.
+- **Why dynamic-import-free static imports** (architectural choice): considered + rejected dynamic `await import("@/lib/storage")` inside `updateProfileImage`. Rejected because (a) vitest's `vi.mock` works equivalently with static imports; (b) dynamic imports add runtime cost; (c) static imports surface mock-misconfiguration at test-time more cleanly.
+- **Why `validateImageOverride` exists separately from `updateProfileImage`** (forward-compat): Phase 17+ may add a URL-paste affordance per ADR-0017 Option 2 extension. Pre-shipping the URL validator keeps the surface forward-compat without changing the helper count. Validation logic is pure + tested independently of storage mocking.
+- **Architectural patterns established for Phase 17+ inheritance**:
+  - **Thin storage wrapper**: ~3 functions per provider; vendor swap surface bounded.
+  - **Magic-byte defense-in-depth**: first-bytes signature check against declared MIME; pattern reusable for any future binary uploads (paper figures, curator review attachments).
+  - **Try/finally orphan tolerance**: cleanup-on-replace failure doesn't block primary flow; orphan-cleanup script as Class B follow-on per ADR-0017 D-H.
+- **Smoke gates**:
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **519/519 across 53 vitest files** (was 497/52 at Phase-15 close; +22 / +1 in Unit 16.3: 4 new in `lib/storage/index.test.ts` + 18 new in `lib/users/index.test.ts`).
+  - `pnpm build` → ~659 prerendered + 10 dynamic page+API routes unchanged. **First Load JS shared chunk = 103 kB UNCHANGED** end-to-end through every Phase 9-16 unit. **Middleware = 160 kB UNCHANGED**. `/profile` + `/u/{handle}` bundles = 108 kB UNCHANGED.
+  - `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2).
+- **Not in this unit** (Units 16.4 – 16.5 follow):
+  - `/[locale]/profile` image upload affordance + multipart server-action wiring + `messages.profile_edit.image_*` namespace (~12 keys per locale; pre-add all upfront per Phase-14/15 atomic-i18n discipline).
+  - Client-side `URL.createObjectURL` preview (small `"use client"` boundary).
+  - `/[locale]/u/[handle]` page avatar fallback chain (`imageOverride → image → fallback initials`).
+  - `/[locale]/profile` page own avatar fallback chain.
+  - `lib/auth/login.ts` `getUserMetadataById` extension to return `imageOverride`.
+- THINK artifact: `docs/thinking/16.3-lib-storage-and-image-helpers.md`.
+
 #### Unit 16.2 — DB migration `0005_user_image_override` + schema edit (`users.imageOverride`; **third ALTER migration**)
 
 - Third Phase-16 unit; **first code unit**. Realizes ADR-0017 D-A schema component. **Third ALTER migration in project history** (first was Phase-12 `0003_rating_challenge_review` per ADR-0014 D-E; second was Phase-15 `0004_user_profile_fields` per ADR-0016 D-A). Migration count **5 → 6**.

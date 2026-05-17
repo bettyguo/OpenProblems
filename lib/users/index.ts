@@ -4,6 +4,7 @@ import { problems } from "#site/content";
 
 import { db } from "@/lib/db";
 import { ratingChallenges, users, watchlist } from "@/lib/db/schema";
+import { delAvatar, putAvatar } from "@/lib/storage";
 
 /**
  * Per-user public-profile helpers (Unit 14.2) per
@@ -62,6 +63,16 @@ export interface PublicProfile {
    * never set it OR after explicit clear.
    */
   bio: string | null;
+  /**
+   * User-controlled image override (Phase-16 per
+   * [ADR-0017](../../docs/adr/0017-image-storage.md) D-A). Stores
+   * absolute Vercel Blob public URL when set; null otherwise. Overrides
+   * `image` on render via the D-E fallback chain
+   * `imageOverride → image → fallback initials placeholder`. Null
+   * when user has never uploaded OR after explicit clear-by-empty-submit
+   * per D-B.
+   */
+  imageOverride: string | null;
 }
 
 export interface ProfileActivity {
@@ -98,6 +109,7 @@ export async function getPublicProfileByHandle(handle: string): Promise<PublicPr
       createdAt: users.createdAt,
       displayName: users.displayName,
       bio: users.bio,
+      imageOverride: users.imageOverride,
     })
     .from(users)
     .where(sql`LOWER(${users.githubLogin}) = LOWER(${normalized})`)
@@ -113,6 +125,7 @@ export async function getPublicProfileByHandle(handle: string): Promise<PublicPr
     createdAt: row.createdAt,
     displayName: row.displayName,
     bio: row.bio,
+    imageOverride: row.imageOverride,
   };
 }
 
@@ -267,4 +280,178 @@ export async function updateProfile(
 
   await db.update(users).set(set).where(eq(users.id, userId));
   return null;
+}
+
+// ---------------------------------------------------------------------------
+// Phase-16 user-editable image override (Unit 16.3) — per ADR-0017 D-A + D-B
+// + D-F. Uploads happen via lib/storage's Vercel Blob wrapper; the DB stores
+// only the URL pointer (ADR-0013 D-F USER-STATE-only preserved).
+// ---------------------------------------------------------------------------
+
+/**
+ * Max length for `users.imageOverride` per ADR-0017 D-F. Conservative
+ * cap that accommodates Vercel Blob's public URL format
+ * (`https://*.public.blob.vercel-storage.com/<random-hash>-<filename>`)
+ * plus any future query-string suffixes.
+ */
+export const MAX_IMAGE_URL_CHARS = 512;
+
+/**
+ * Max upload file size per ADR-0017 D-B. 2 MB is generous for avatar
+ * use case (typical PNG ~50-200 KB; 2 MB leaves room for high-res
+ * photos pre-resize). Server-side authoritative; client-side
+ * `file.size` is a UX-feedback layer.
+ */
+export const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
+
+/**
+ * Accepted MIME types per ADR-0017 D-B. SVG explicitly excluded for
+ * XSS surface (SVG can embed `<script>` tags). GIF / animated WebP
+ * excluded per D-H "static images only Phase 16".
+ */
+const ACCEPTED_IMAGE_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+
+/**
+ * Vercel Blob public URL pattern per ADR-0017 D-F. Matches
+ * `https://<subdomain>.public.blob.vercel-storage.com/<path>`. Used by
+ * `validateImageOverride` to defend against off-allowlist URLs that
+ * skip the upload path (e.g., manually-crafted form submissions).
+ */
+const VERCEL_BLOB_URL_PATTERN = /^https:\/\/[a-z0-9-]+\.public\.blob\.vercel-storage\.com\/.+/i;
+
+/**
+ * Returns null when the supplied image-override URL is valid (or
+ * empty — empty means "clear the field" per D-B clear-by-empty-submit),
+ * otherwise a human-readable error string. Mirrors
+ * `validateDisplayName` / `validateBio` shape.
+ *
+ * Validation per ADR-0017 D-F:
+ *   1. Empty allowed (clear semantics).
+ *   2. Length ≤ MAX_IMAGE_URL_CHARS.
+ *   3. Matches Vercel Blob public URL pattern (https + host whitelist).
+ */
+export function validateImageOverride(value: string): string | null {
+  if (value.length === 0) return null;
+  if (value.length > MAX_IMAGE_URL_CHARS) {
+    return `Image URL must be at most ${MAX_IMAGE_URL_CHARS} characters.`;
+  }
+  if (!VERCEL_BLOB_URL_PATTERN.test(value)) {
+    return "Image URL must be a Vercel Blob public URL.";
+  }
+  return null;
+}
+
+/**
+ * Defense-in-depth magic-byte check per ADR-0017 D-F. `file.type` is
+ * browser-provided and forgeable; this verifies the actual file
+ * contents start with the expected signature for the declared MIME.
+ *
+ * Signatures:
+ *   - JPEG: `0xFF 0xD8 0xFF` (any third byte 0xE0..0xEF or similar).
+ *   - PNG:  `0x89 0x50 0x4E 0x47` ("\x89PNG").
+ *   - WebP: `0x52 0x49 0x46 0x46 ?? ?? ?? ?? 0x57 0x45 0x42 0x50`
+ *           ("RIFF<size>WEBP").
+ */
+async function magicBytesMatchMime(file: File, mime: string): Promise<boolean> {
+  const buf = await file.slice(0, 12).arrayBuffer();
+  const bytes = new Uint8Array(buf);
+  switch (mime) {
+    case "image/jpeg":
+      return bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+    case "image/png":
+      return bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47;
+    case "image/webp":
+      return (
+        bytes[0] === 0x52 &&
+        bytes[1] === 0x49 &&
+        bytes[2] === 0x46 &&
+        bytes[3] === 0x46 &&
+        bytes[8] === 0x57 &&
+        bytes[9] === 0x45 &&
+        bytes[10] === 0x42 &&
+        bytes[11] === 0x50
+      );
+    default:
+      return false;
+  }
+}
+
+/**
+ * Validate + upload + write `users.imageOverride` per ADR-0017 D-B
+ * + D-F. Steps:
+ *
+ *   1. MIME validation (jpeg / png / webp; SVG / others excluded).
+ *   2. File size sanity (non-empty; ≤ MAX_IMAGE_BYTES).
+ *   3. First-bytes magic-byte check (defense-in-depth against forged
+ *      `file.type`).
+ *   4. Fetch the user's current `imageOverride` (so we can clean up
+ *      the old Blob on successful replace).
+ *   5. Upload to Vercel Blob via lib/storage `putAvatar`.
+ *   6. Write the new URL to `users.imageOverride`.
+ *   7. Best-effort delete of the previous Blob (try/finally; orphan
+ *      tolerated on failure per D-B + D-H Class B cleanup follow-on).
+ *
+ * Returns null on success or a human-readable error string on the
+ * first validation failure. Storage failures during upload propagate
+ * to the caller (the server action surfaces them in the error banner).
+ */
+export async function updateProfileImage(userId: string, file: File): Promise<string | null> {
+  if (!ACCEPTED_IMAGE_MIME_TYPES.has(file.type)) {
+    return "Image must be a JPEG, PNG, or WebP file.";
+  }
+  if (file.size === 0) {
+    return "Image file is empty.";
+  }
+  if (file.size > MAX_IMAGE_BYTES) {
+    return "Image must be smaller than 2 MB.";
+  }
+  if (!(await magicBytesMatchMime(file, file.type))) {
+    return "Image file contents do not match its declared format.";
+  }
+
+  const [existing] = await db
+    .select({ imageOverride: users.imageOverride })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+  const oldUrl = existing?.imageOverride ?? null;
+
+  const newUrl = await putAvatar(file, userId);
+  await db.update(users).set({ imageOverride: newUrl }).where(eq(users.id, userId));
+
+  if (oldUrl) {
+    try {
+      await delAvatar(oldUrl);
+    } catch {
+      // Orphan tolerated; abandoned-blob cleanup script (Phase-16
+      // Class B follow-on per ADR-0017 D-H) handles reconciliation.
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Clear `users.imageOverride` (write NULL) + delete the Blob per
+ * ADR-0017 D-B clear-by-empty-submit semantics. No-op when the user
+ * has no current override. Mirrors Phase-15 `updateProfile`'s
+ * empty-after-trim → NULL pattern for text fields.
+ */
+export async function clearProfileImage(userId: string): Promise<void> {
+  const [existing] = await db
+    .select({ imageOverride: users.imageOverride })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+  const oldUrl = existing?.imageOverride ?? null;
+
+  if (!oldUrl) return;
+
+  await db.update(users).set({ imageOverride: null }).where(eq(users.id, userId));
+
+  try {
+    await delAvatar(oldUrl);
+  } catch {
+    // Orphan tolerated; abandoned-blob cleanup script handles it.
+  }
 }

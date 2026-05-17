@@ -51,6 +51,7 @@
     "@giscus/react": "^3.1.0",
     "@libsql/client": "^0.17.3",
     "@octokit/graphql": "^9.0.3",
+    "@vercel/blob": "^2.3.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "d3-force": "^3.0.0",

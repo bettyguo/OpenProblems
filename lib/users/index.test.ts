@@ -7,6 +7,11 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 
+vi.mock("@/lib/storage", () => ({
+  putAvatar: vi.fn(),
+  delAvatar: vi.fn(),
+}));
+
 vi.mock("#site/content", () => ({
   problems: [
     { slug: "alpha", editorial: { primary_curator: "bettyguo", last_curated: "2026-05-14" } },
@@ -17,15 +22,20 @@ vi.mock("#site/content", () => ({
 }));
 
 const { db } = await import("@/lib/db");
+const { delAvatar, putAvatar } = await import("@/lib/storage");
 const {
+  clearProfileImage,
   getCuratorOfRecordSlugs,
   getProfileActivity,
   getPublicProfileByHandle,
   MAX_BIO_CHARS,
   MAX_DISPLAY_NAME_CHARS,
+  MAX_IMAGE_URL_CHARS,
   updateProfile,
+  updateProfileImage,
   validateBio,
   validateDisplayName,
+  validateImageOverride,
 } = await import("./index");
 
 /**
@@ -66,6 +76,7 @@ describe("getPublicProfileByHandle", () => {
       createdAt: new Date("2026-05-14"),
       displayName: null,
       bio: null,
+      imageOverride: null,
     };
     vi.mocked(db.select).mockReturnValueOnce(profileQuery([fakeRow]) as never);
 
@@ -82,6 +93,7 @@ describe("getPublicProfileByHandle", () => {
       createdAt: new Date("2026-05-14"),
       displayName: null,
       bio: null,
+      imageOverride: null,
     };
     vi.mocked(db.select).mockReturnValueOnce(profileQuery([fakeRow]) as never);
 
@@ -104,6 +116,7 @@ describe("getPublicProfileByHandle", () => {
       createdAt: new Date("2026-05-14"),
       displayName: null,
       bio: null,
+      imageOverride: null,
     };
     vi.mocked(db.select).mockReturnValueOnce(profileQuery([fakeRow]) as never);
 
@@ -306,6 +319,7 @@ describe("PublicProfile shape extension (Unit 15.3)", () => {
       createdAt: new Date("2026-05-14"),
       displayName: "Betty",
       bio: "I'm a PhD.",
+      imageOverride: null,
     };
     vi.mocked(db.select).mockReturnValueOnce(profileQuery([fakeRow]) as never);
 
@@ -323,11 +337,254 @@ describe("PublicProfile shape extension (Unit 15.3)", () => {
       createdAt: new Date("2026-05-14"),
       displayName: null,
       bio: null,
+      imageOverride: null,
     };
     vi.mocked(db.select).mockReturnValueOnce(profileQuery([fakeRow]) as never);
 
     const profile = await getPublicProfileByHandle("BettyGuo");
     expect(profile?.displayName).toBeNull();
     expect(profile?.bio).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-16 user-editable image override (Unit 16.3) — per ADR-0017 D-A + D-B + D-F.
+// ---------------------------------------------------------------------------
+
+/** Construct a `Uint8Array<ArrayBuffer>` (not `<ArrayBufferLike>`) so it
+ *  satisfies `BlobPart` for `new File([bytes], ...)`. TypeScript 5.7+
+ *  tightened `new Uint8Array([numbers])` to `Uint8Array<ArrayBufferLike>`
+ *  which is incompatible with the `ArrayBuffer`-bound BlobPart. */
+function bytes(values: number[]): Uint8Array<ArrayBuffer> {
+  const buf = new ArrayBuffer(values.length);
+  const view = new Uint8Array(buf);
+  values.forEach((v, i) => {
+    view[i] = v;
+  });
+  return view;
+}
+
+function makeImageFile(mime: string, magic: Uint8Array<ArrayBuffer>, name = "img.bin"): File {
+  return new File([magic], name, { type: mime });
+}
+
+/** Valid JPEG magic-byte prefix `0xFF 0xD8 0xFF`. */
+const JPEG_MAGIC = bytes([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01]);
+/** Valid PNG magic-byte prefix `0x89 P N G`. */
+const PNG_MAGIC = bytes([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d]);
+/** Valid WebP magic-byte prefix `RIFF<size>WEBP`. */
+const WEBP_MAGIC = bytes([0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50]);
+
+const VALID_BLOB_URL = "https://store.public.blob.vercel-storage.com/avatars/u-1-1234.jpg";
+
+describe("validateImageOverride", () => {
+  it("accepts empty string (clear-by-empty-submit per ADR-0017 D-B)", () => {
+    expect(validateImageOverride("")).toBeNull();
+  });
+
+  it("accepts a valid Vercel Blob public URL", () => {
+    expect(validateImageOverride(VALID_BLOB_URL)).toBeNull();
+  });
+
+  it("rejects http:// URLs (HTTPS required per ADR-0017 D-F)", () => {
+    expect(validateImageOverride("http://store.public.blob.vercel-storage.com/x.jpg")).toMatch(
+      /Vercel Blob public URL/,
+    );
+  });
+
+  it("rejects off-allowlist hosts (e.g., evil.com)", () => {
+    expect(validateImageOverride("https://evil.com/img.jpg")).toMatch(/Vercel Blob public URL/);
+  });
+
+  it("rejects URLs longer than MAX_IMAGE_URL_CHARS", () => {
+    const overlong =
+      "https://store.public.blob.vercel-storage.com/" + "a".repeat(MAX_IMAGE_URL_CHARS);
+    expect(validateImageOverride(overlong)).toMatch(/at most 512 characters/);
+  });
+});
+
+describe("updateProfileImage", () => {
+  beforeEach(() => {
+    vi.mocked(db.select).mockReset();
+    vi.mocked(db.update).mockReset();
+    vi.mocked(putAvatar).mockReset();
+    vi.mocked(delAvatar).mockReset();
+  });
+
+  function setupUpdateStub() {
+    const set = vi.fn().mockReturnThis();
+    const where = vi.fn().mockResolvedValue(undefined);
+    vi.mocked(db.update).mockReturnValueOnce({ set, where } as never);
+    return { set, where };
+  }
+
+  function setupExistingImageQuery(currentImageOverride: string | null) {
+    vi.mocked(db.select).mockReturnValueOnce(
+      profileQuery([{ imageOverride: currentImageOverride }]) as never,
+    );
+  }
+
+  it("uploads + writes URL on valid JPEG (ADR-0017 D-B happy path)", async () => {
+    setupExistingImageQuery(null);
+    vi.mocked(putAvatar).mockResolvedValueOnce(VALID_BLOB_URL);
+    const { set } = setupUpdateStub();
+
+    const file = makeImageFile("image/jpeg", JPEG_MAGIC);
+    const err = await updateProfileImage("user-1", file);
+
+    expect(err).toBeNull();
+    expect(putAvatar).toHaveBeenCalledWith(file, "user-1");
+    expect(set).toHaveBeenCalledWith({ imageOverride: VALID_BLOB_URL });
+    expect(delAvatar).not.toHaveBeenCalled(); // no prior override
+  });
+
+  it("rejects SVG MIME (XSS surface per ADR-0017 D-B) before any DB / storage hit", async () => {
+    const file = makeImageFile("image/svg+xml", bytes([0x3c, 0x73, 0x76, 0x67]));
+    const err = await updateProfileImage("user-1", file);
+    expect(err).toMatch(/JPEG, PNG, or WebP/);
+    expect(vi.mocked(db.select)).not.toHaveBeenCalled();
+    expect(putAvatar).not.toHaveBeenCalled();
+  });
+
+  it("rejects empty files", async () => {
+    const file = new File([], "empty.jpg", { type: "image/jpeg" });
+    const err = await updateProfileImage("user-1", file);
+    expect(err).toMatch(/empty/);
+    expect(putAvatar).not.toHaveBeenCalled();
+  });
+
+  it("rejects files > MAX_IMAGE_BYTES (2 MB cap per ADR-0017 D-B)", async () => {
+    const oversize = new File([new Uint8Array(2 * 1024 * 1024 + 1)], "big.jpg", {
+      type: "image/jpeg",
+    });
+    const err = await updateProfileImage("user-1", oversize);
+    expect(err).toMatch(/smaller than 2 MB/);
+    expect(putAvatar).not.toHaveBeenCalled();
+  });
+
+  it("rejects forged MIME (PNG declared but JPEG bytes) via magic-byte check (D-F defense-in-depth)", async () => {
+    const file = makeImageFile("image/png", JPEG_MAGIC);
+    const err = await updateProfileImage("user-1", file);
+    expect(err).toMatch(/do not match its declared format/);
+    expect(putAvatar).not.toHaveBeenCalled();
+  });
+
+  it("accepts valid PNG magic bytes", async () => {
+    setupExistingImageQuery(null);
+    vi.mocked(putAvatar).mockResolvedValueOnce(VALID_BLOB_URL);
+    setupUpdateStub();
+
+    const file = makeImageFile("image/png", PNG_MAGIC);
+    expect(await updateProfileImage("user-1", file)).toBeNull();
+  });
+
+  it("accepts valid WebP magic bytes", async () => {
+    setupExistingImageQuery(null);
+    vi.mocked(putAvatar).mockResolvedValueOnce(VALID_BLOB_URL);
+    setupUpdateStub();
+
+    const file = makeImageFile("image/webp", WEBP_MAGIC);
+    expect(await updateProfileImage("user-1", file)).toBeNull();
+  });
+
+  it("deletes prior Blob after successful replace (delete-on-replace per D-B)", async () => {
+    const priorUrl = "https://store.public.blob.vercel-storage.com/avatars/u-1-old.jpg";
+    setupExistingImageQuery(priorUrl);
+    vi.mocked(putAvatar).mockResolvedValueOnce(VALID_BLOB_URL);
+    setupUpdateStub();
+    vi.mocked(delAvatar).mockResolvedValueOnce(undefined);
+
+    const file = makeImageFile("image/jpeg", JPEG_MAGIC);
+    await updateProfileImage("user-1", file);
+
+    expect(delAvatar).toHaveBeenCalledWith(priorUrl);
+  });
+
+  it("tolerates delete-on-replace failure (orphan tolerated per D-B try/finally)", async () => {
+    const priorUrl = "https://store.public.blob.vercel-storage.com/avatars/u-1-old.jpg";
+    setupExistingImageQuery(priorUrl);
+    vi.mocked(putAvatar).mockResolvedValueOnce(VALID_BLOB_URL);
+    setupUpdateStub();
+    vi.mocked(delAvatar).mockRejectedValueOnce(new Error("Blob 404"));
+
+    const file = makeImageFile("image/jpeg", JPEG_MAGIC);
+    // Helper swallows; new URL still lands.
+    expect(await updateProfileImage("user-1", file)).toBeNull();
+  });
+});
+
+describe("clearProfileImage", () => {
+  beforeEach(() => {
+    vi.mocked(db.select).mockReset();
+    vi.mocked(db.update).mockReset();
+    vi.mocked(delAvatar).mockReset();
+  });
+
+  function setupUpdateStub() {
+    const set = vi.fn().mockReturnThis();
+    const where = vi.fn().mockResolvedValue(undefined);
+    vi.mocked(db.update).mockReturnValueOnce({ set, where } as never);
+    return { set, where };
+  }
+
+  function setupExistingImageQuery(currentImageOverride: string | null) {
+    vi.mocked(db.select).mockReturnValueOnce(
+      profileQuery([{ imageOverride: currentImageOverride }]) as never,
+    );
+  }
+
+  it("writes NULL + deletes Blob when user has a current override", async () => {
+    const priorUrl = "https://store.public.blob.vercel-storage.com/avatars/u-1-old.jpg";
+    setupExistingImageQuery(priorUrl);
+    const { set } = setupUpdateStub();
+    vi.mocked(delAvatar).mockResolvedValueOnce(undefined);
+
+    await clearProfileImage("user-1");
+
+    expect(set).toHaveBeenCalledWith({ imageOverride: null });
+    expect(delAvatar).toHaveBeenCalledWith(priorUrl);
+  });
+
+  it("is a no-op when user has no current override (no UPDATE, no del call)", async () => {
+    setupExistingImageQuery(null);
+    await clearProfileImage("user-1");
+    expect(vi.mocked(db.update)).not.toHaveBeenCalled();
+    expect(delAvatar).not.toHaveBeenCalled();
+  });
+
+  it("tolerates delete failure on clear (orphan tolerated)", async () => {
+    const priorUrl = "https://store.public.blob.vercel-storage.com/avatars/u-1-old.jpg";
+    setupExistingImageQuery(priorUrl);
+    setupUpdateStub();
+    vi.mocked(delAvatar).mockRejectedValueOnce(new Error("Blob 404"));
+
+    // No throw expected.
+    await clearProfileImage("user-1");
+    expect(delAvatar).toHaveBeenCalledWith(priorUrl);
+  });
+});
+
+describe("PublicProfile shape extension (Unit 16.3 — imageOverride)", () => {
+  beforeEach(() => {
+    vi.mocked(db.select).mockReset();
+  });
+
+  it("includes imageOverride field in the returned profile (ADR-0017 D-A + D-E)", async () => {
+    const fakeRow = {
+      userId: "u-1",
+      githubLogin: "BettyGuo",
+      name: "Betty G.",
+      image: "https://github.com/avatar.png",
+      createdAt: new Date("2026-05-14"),
+      displayName: null,
+      bio: null,
+      imageOverride: "https://store.public.blob.vercel-storage.com/avatars/u-1-9.jpg",
+    };
+    vi.mocked(db.select).mockReturnValueOnce(profileQuery([fakeRow]) as never);
+
+    const profile = await getPublicProfileByHandle("BettyGuo");
+    expect(profile?.imageOverride).toBe(
+      "https://store.public.blob.vercel-storage.com/avatars/u-1-9.jpg",
+    );
   });
 });
