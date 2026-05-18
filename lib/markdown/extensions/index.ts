@@ -1,34 +1,47 @@
 import { DefaultExtensionRegistry } from "./default";
 import type { MarkdownExtensionRegistry } from "./types";
+import { PHASE_38_DEFAULT_ENABLED_SURFACES, WikilinkExtensionRegistry } from "./wikilinks";
 
 /**
  * Markdown-extension registry factory per
  * [ADR-0018](../../../docs/adr/0018-markdown-sanitization.md)
- * D-G APPEND (Phase 37).
+ * D-G APPEND (Phase 37 framework; Phase 38 Unit 38.2 adds the
+ * first non-default env-var dispatch arm).
  *
  * Returns the active `MarkdownExtensionRegistry` for this
  * process; caches the returned instance per-process (lazy
  * singleton; mirrors the `lib/moderation/getModerator()` Phase
  * 35 + `lib/email/` Resend-client Phase 30 lazy-init patterns).
  *
- * Phase 37 (this build) — single dispatch arm:
+ * Reads `process.env.MARKDOWN_EXTENSIONS` lazily on first call;
+ * dispatches:
  *
- *   - default → `DefaultExtensionRegistry` (empty extension
- *     sets for all four surfaces; Day-1 behavioral parity with
- *     Phase-18/27/29 baseline).
+ *   - unset / empty-string / `"default"` → `DefaultExtensionRegistry`
+ *     (empty extension sets for all four surfaces; Day-1
+ *     behavioral parity with Phase-18/27/29 baseline; the
+ *     pre-Phase-38 default).
+ *   - `"wikilinks"` → `WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES)`
+ *     (wikilinks enabled on `actionRationale` only Phase 38; the
+ *     three other surfaces continue to receive empty extension
+ *     sets via `WikilinkExtensionRegistry`'s default-deny).
  *
- * Future Phase 38+ values (not recognized at Phase 37 ship;
- * documented in ADR-0018 D-G APPEND D-F deferral list):
+ * Future Phase 39+ values (not recognized at Phase 38 ship):
  *
- *   - env-var dispatch (e.g., `MARKDOWN_EXTENSIONS=wikilinks`)
- *     mapping to per-extension registries.
  *   - per-curator extension preferences (DB-backed registry
  *     override).
  *   - curator-facing extension-enable UI (`/curator/extensions`).
+ *   - multi-value `MARKDOWN_EXTENSIONS=wikilinks,tables`
+ *     composition of multiple framework consumers.
+ *   - surface-list-as-env-var (e.g.,
+ *     `MARKDOWN_EXTENSIONS_WIKILINKS_SURFACES=actionRationale,bio`).
  *
- * Throw-on-unknown discipline (mirrors `getModerator()` D-E)
- * applies once a second dispatch arm exists. Phase 37 has only
- * the default arm; no env-var read at this build.
+ * Unknown values throw at first `getExtensionRegistry()` call
+ * (not at module load) with a clear message listing recognized
+ * values. The throw is deliberate per Phase-37 framework's
+ * APPEND-D-E throw-on-unknown discipline (mirrors `getModerator()`
+ * D-E): a curator who typos `MARKDOWN_EXTENSIONS=wikilinkx`
+ * would otherwise silently fall through to the default — the
+ * wrong default for a mis-typed enable intent.
  *
  * Server-only: composes server-side plugin types from `unified`
  * + `rehype-sanitize`. Never include in a `"use client"`
@@ -42,8 +55,24 @@ let registryOverride: MarkdownExtensionRegistry | null = null;
 export function getExtensionRegistry(): MarkdownExtensionRegistry {
   if (registryOverride) return registryOverride;
   if (registryInstance) return registryInstance;
-  registryInstance = new DefaultExtensionRegistry();
-  return registryInstance;
+
+  const provider = process.env["MARKDOWN_EXTENSIONS"] ?? "";
+
+  switch (provider) {
+    case "":
+    case "default":
+      registryInstance = new DefaultExtensionRegistry();
+      return registryInstance;
+    case "wikilinks":
+      registryInstance = new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES);
+      return registryInstance;
+    default:
+      throw new Error(
+        `Unknown MARKDOWN_EXTENSIONS value: "${provider}". ` +
+          `Recognized values at this build: "default" (default), "wikilinks". ` +
+          `Phase 39+ values will extend this list — see ADR-0018 D-G APPEND APPEND-D-L.`,
+      );
+  }
 }
 
 /**

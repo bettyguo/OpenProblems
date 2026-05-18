@@ -10,6 +10,7 @@ import {
   type MarkdownExtensionSet,
   type MarkdownSurface,
 } from "./extensions";
+import { WikilinkExtensionRegistry } from "./extensions/wikilinks";
 import {
   __resetMarkdownCachesForTests,
   renderActionRationaleMarkdown,
@@ -537,5 +538,90 @@ describe("Phase-37 framework integration — schema override-replace semantics (
 
   it("other surfaces use their base schema unchanged", () => {
     expect(renderBioMarkdown("*italic*")).toBe("<p><em>italic</em></p>");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-38 — end-to-end wikilink resolution via WikilinkExtensionRegistry +
+// the Phase-37 framework. Verifies that wikilinks render correctly through
+// the FULL `unified` pipeline (parse → gfm → remark-rehype → demote → sanitize
+// → strip-unsafe-hrefs → wikilink → stringify) on the `actionRationale`
+// surface ONLY; bio + reviewNotes + rationale stay unaffected.
+//
+// `WikilinkExtensionRegistry` is the first non-default Phase-37 framework
+// consumer. These tests install the registry directly (bypassing the env-
+// var dispatch arm in `getExtensionRegistry`) to exercise the integration.
+// Env-var dispatch behavior itself is tested in `extensions/index.test.ts`.
+// ---------------------------------------------------------------------------
+
+describe("Phase-38 wikilinks consumer — end-to-end via WikilinkExtensionRegistry", () => {
+  beforeEach(() => {
+    __setRegistryForTests(new WikilinkExtensionRegistry(new Set(["actionRationale"])));
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it('renders [[problem-slug]] as <a href="/problems/{slug}">{slug}</a> in actionRationale', () => {
+    expect(renderActionRationaleMarkdown("see [[scalable-oversight]] for context")).toBe(
+      '<p>see <a href="/problems/scalable-oversight">scalable-oversight</a> for context</p>',
+    );
+  });
+
+  it("renders multiple wikilinks in one actionRationale paragraph", () => {
+    expect(
+      renderActionRationaleMarkdown("[[hallucination-reduction]] and [[long-context-rag]]"),
+    ).toBe(
+      '<p><a href="/problems/hallucination-reduction">hallucination-reduction</a> and <a href="/problems/long-context-rag">long-context-rag</a></p>',
+    );
+  });
+
+  it("wikilink href survives rehypeStripUnsafeHrefs because plugin folds AFTER strip step", () => {
+    // The wikilink-emitted href starts with `/` (relative URL). The default
+    // pipeline's `rehypeStripUnsafeHrefs` would strip it, but the wikilink
+    // plugin folds AFTER that step per APPEND-D-D — so the href survives.
+    // First framework-emitted relative URLs in markdown output in project
+    // history; this test asserts the plugin-order discipline's design value.
+    const html = renderActionRationaleMarkdown("[[scalable-oversight]]");
+    expect(html).toContain('href="/problems/scalable-oversight"');
+  });
+
+  it("non-matching [[Slug]] (uppercase) falls through as literal text — XSS regex contract", () => {
+    expect(renderActionRationaleMarkdown("[[Slug]]")).toContain("[[Slug]]");
+  });
+
+  it("bio surface unaffected by wikilink extension (registry default-deny on non-enabled)", () => {
+    expect(renderBioMarkdown("see [[scalable-oversight]] here")).toBe(
+      "<p>see [[scalable-oversight]] here</p>",
+    );
+  });
+
+  it("reviewNotes surface unaffected by wikilink extension", () => {
+    expect(renderReviewNotesMarkdown("see [[scalable-oversight]] here")).toBe(
+      "<p>see [[scalable-oversight]] here</p>",
+    );
+  });
+
+  it("rationale surface unaffected by wikilink extension", () => {
+    expect(renderRationaleMarkdown("see [[scalable-oversight]] here")).toBe(
+      "<p>see [[scalable-oversight]] here</p>",
+    );
+  });
+
+  it("XSS defense survives extension (javascript: URL stripped; wikilinks still resolve)", () => {
+    const html = renderActionRationaleMarkdown(
+      "[bad](javascript:alert(1)) and see [[scalable-oversight]]",
+    );
+    expect(html).not.toContain("javascript:");
+    expect(html).toContain('href="/problems/scalable-oversight"');
+  });
+
+  it("renders wikilink inside emphasized text (nested element preservation)", () => {
+    expect(renderActionRationaleMarkdown("**[[hallucination-reduction]]** is the work")).toBe(
+      '<p><strong><a href="/problems/hallucination-reduction">hallucination-reduction</a></strong> is the work</p>',
+    );
   });
 });
