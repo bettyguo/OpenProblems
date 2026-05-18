@@ -544,6 +544,146 @@ couple with Q72 family (sibling-divergence candidates) into a
 single "markdown evolution" ADR-0021-candidate scope if either
 surfaces demand.
 
+**EXTENDED Phase 37 Unit 37.1** — Q72 markdown schema-divergence
+**framework realized** via new `lib/markdown/extensions/` module
+(`types.ts` + `default.ts` + `index.ts` + 2 test files; 5 files
+total mirroring Phase-35 `lib/moderation/` shape verbatim).
+Defines `MarkdownExtensionRegistry` interface +
+`MarkdownExtensionSet` per-surface configuration shape +
+`MarkdownSurface` literal union over the **four wired surfaces**
+(`"bio"` Phase 17 + `"reviewNotes"` Phase 18 + `"rationale"`
+Phase 27 + `"actionRationale"` Phase 29). Default
+`DefaultExtensionRegistry` returns empty extension set (`{}`)
+for all four surfaces — **Day-1 behavioral parity** with the
+existing Phase-18/27/29 baseline once Unit 37.2 wires the
+registry into the four markdown helpers; folding empty plugin
+lists + empty schema overrides into the existing `unified`
+pipelines is a no-op. **First framework-only-ADR pattern reuse
+in a new domain** — Phase 35 established framework-only via
+ADR-0024 in the content-moderation domain; Phase 37 validates
+the pattern's reusability in the markdown-rendering domain.
+
+**4-surface path correction** documented explicitly: the
+Phase-37-prep doc (`docs/thinking/37.0-phase-37-prep.md`)
+anticipated **3 surfaces** (`"bio"` + `"reviewNotes"` +
+`"rationale"`) and overlooked `"actionRationale"` which
+shipped Phase 29 (a phase AFTER the Q72 candidate was first
+noted in Phase 18). Unit 37.1 expanded the `MarkdownSurface`
+union to all 4 wired surfaces — otherwise the framework would
+ship with an architectural gap from day one on the most-
+recently-added markdown surface. Documented mirror of the
+Phase-35 path correction (Phase-35-prep anticipated
+`app/api/v1/profile/update/route.ts` + `lib/images/transcode.ts`;
+actual wiring landed at `lib/users/updateProfile` +
+`lib/users/updateProfileImage` per ADR-0019 D-F APPEND).
+
+**Path A** (no new ADR) chosen per Phase-37-prep D-9 lean.
+This APPEND extends D-G; **ADR-0025 candidate slot saved** for
+Phase 38+ concrete-content-moderation-provider commitment OR
+other architectural concern surfacing first. (Path B would
+have shipped this framework as a new ADR-0025 mirroring
+ADR-0024 shape exactly; rejected as less-defensible per slot-
+preservation discipline.)
+
+**APPEND-D-A registry interface** — single-method
+`getExtensions(surface: MarkdownSurface): MarkdownExtensionSet`
+per Phase-37-prep D-10 lean. Adding a new surface (Phase 38+)
+means appending one entry to the `MarkdownSurface` union + one
+`case` arm in `DefaultExtensionRegistry.getExtensions` (exhaustive
+switch with no `default` arm — TypeScript flags missing arms at
+compile time). Per-surface methods rejected (5× method additions
+per new surface).
+
+**APPEND-D-B `MarkdownExtensionSet` shape** — three optional
+fields per Phase-37-prep D-3 D-A:
+- `remarkPlugins?: ReadonlyArray<Pluggable>` — `unified`
+  pluggable type.
+- `rehypePlugins?: ReadonlyArray<Pluggable>`.
+- `schemaOverrides?: Partial<Schema>` — `rehype-sanitize`
+  `Options as Schema` alias diff.
+
+Empty `{}` is a valid set (= no extensions for that surface);
+`DefaultExtensionRegistry` returns `{}` for all four.
+
+**APPEND-D-C override-replace semantics** (Phase-37-prep D-11
+lean): a future `MarkdownExtensionSet` with `schemaOverrides:
+{ tagNames: ["p", "table", ...] }` **replaces the entire base
+`tagNames` array**; callers supply the COMPLETE replacement
+for any field they override. The framework does NOT deep-
+merge. Future curators must include the full base list when
+overriding a field whose default they wish to extend rather
+than replace. Audit-friendly: a single grep of `schemaOverrides`
+call sites shows the full sanitization surface of each
+extension; no implicit per-key merging that would require
+multi-file reasoning.
+
+**APPEND-D-D plugin order: after default plugins** (Phase-37-
+prep D-12 lean) — extension plugins fold into the unified
+pipeline AFTER `remark-parse` + `remark-gfm` (remark side) and
+AFTER `rehype-sanitize` + `rehypeDemoteHeadings` +
+`rehypeStripUnsafeHrefs` (rehype side). Extensions are post-
+processing; the default pipeline establishes the trusted
+sanitization baseline first. Rationale: a future
+`rehype-wikilink` plugin transforming `[[slug]]` → `<a
+href="/problems/slug">` must run AFTER `rehype-sanitize` so
+the wikilink-generated `<a>` is added to the post-sanitize
+tree (sanitized output stays trustworthy; new elements are
+added under the framework's explicit schema-override allow-
+list, not slipped past the sanitizer).
+
+**APPEND-D-E factory shape** (Phase-37-prep D-3 D-C) —
+`getExtensionRegistry(): MarkdownExtensionRegistry` lazy
+singleton + `__resetRegistryForTests` hook. Mirrors
+`getModerator()` Phase-35 + `lib/email/` Resend-client
+Phase-30 patterns. Phase 37 has a single default dispatch arm
+(returns `DefaultExtensionRegistry`); future Phase 38+ env-var
+dispatch (e.g., `MARKDOWN_EXTENSIONS=wikilinks`) adds dispatch
+arms with throw-on-unknown discipline mirroring
+`getModerator()` D-E.
+
+**APPEND-D-F Phase 38+ deferrals** — concrete extensions land
+as new files in `lib/markdown/extensions/` + new factory
+dispatch arms:
+- **wikilink resolution** per-bio + per-rationale + per-
+  reviewNotes + per-actionRationale (Class B.14 carried since
+  Phase 29; couples with this Q72 family per Phase-29 D-G
+  REALIZED block).
+- **GFM tables** per-reviewNotes (D-H Phase-18-deferral
+  re-articulated through the framework).
+- **GFM footnotes** per-rationale (D-H Phase-18-deferral).
+- **`![alt](url)` images** per-bio (D-H Phase-18-deferral).
+- **`tel:` URL scheme** per-actionRationale (D-D allow-list
+  extension).
+- **`<a title>` attribute** per-surface (D-H Phase-18 XSS-
+  audit-required extension).
+- **Syntax-highlighted code blocks** per-surface (D-H Phase-
+  18-deferral).
+- **`@mentions`** per-surface (D-H Phase-18-deferral).
+- **Per-curator extension preferences** (DB-backed override
+  layered atop the env-var dispatch).
+- **Curator-facing extension-enable UI** (`/curator/extensions`).
+- **Live preview in edit form** (D-H Phase-18 caveat: breaks
+  103 kB First Load JS invariant; requires client-boundary
+  scope decision).
+- **Configurable schema per-user** (D-H Phase-18-deferral
+  unchanged).
+
+Each concrete-extension deferral above ships as an independent
+1-2-unit Phase 38+ commit consuming the Phase-37 framework
+without re-architecting the 4 markdown helpers. **Reversibility
+preserved** per ADR-0018's foundational discipline.
+
+**APPEND-D-G zero-cost-default discipline** — Phase 37 ships
+**zero new runtime dependencies** + **zero new env vars** Day 1
++ **zero new operational gates** + **zero new migrations** +
+**zero new i18n keys** + **zero new ADRs** (Path A). The
+framework's existence at the default empty-extension-set
+configuration is behaviorally indistinguishable from the
+Phase-18/27/29 baseline. First Load JS shared chunk **UNCHANGED
+at 103 kB** end-to-end (53rd consecutive unit at 103 kB on
+Unit 37.1 ship). Mirrors the Phase-35 `lib/moderation/` zero-
+cost-default discipline.
+
 ### D-H. Phase 18+ deferrals
 
 Phase 17 ships MINIMAL markdown surface. Deferred to Phase 18+:
