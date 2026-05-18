@@ -10,6 +10,7 @@ import {
   type MarkdownExtensionSet,
   type MarkdownSurface,
 } from "./extensions";
+import { CompositeExtensionRegistry } from "./extensions/composite";
 import { TablesExtensionRegistry } from "./extensions/tables";
 import { WikilinkExtensionRegistry } from "./extensions/wikilinks";
 import {
@@ -721,5 +722,68 @@ describe("Phase-39 tables consumer — end-to-end via TablesExtensionRegistry", 
     const html = renderReviewNotesMarkdown("**bold** and [link](https://example.com)") ?? "";
     expect(html).toContain("<strong>bold</strong>");
     expect(html).toContain('href="https://example.com"');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-40 — end-to-end composite consumer rendering via
+// CompositeExtensionRegistry([wikilinks, tables]) through the FULL `unified`
+// pipeline. Verifies that wikilinks + tables coexist on their respective
+// surfaces (actionRationale + reviewNotes) AND don't bleed into each other's
+// surfaces. End-to-end realization of APPEND-D-S Phase 38+39 conflict-free
+// composition example.
+// ---------------------------------------------------------------------------
+
+describe("Phase-40 composite consumer — end-to-end wikilinks + tables coexistence", () => {
+  beforeEach(() => {
+    const wikilinks = new WikilinkExtensionRegistry(new Set(["actionRationale"]));
+    const tables = new TablesExtensionRegistry(new Set(["reviewNotes"]));
+    __setRegistryForTests(new CompositeExtensionRegistry([wikilinks, tables]));
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it("wikilinks resolve on actionRationale under composite", () => {
+    expect(renderActionRationaleMarkdown("see [[scalable-oversight]] here")).toBe(
+      '<p>see <a href="/problems/scalable-oversight">scalable-oversight</a> here</p>',
+    );
+  });
+
+  it("tables render on reviewNotes under composite", () => {
+    const html = renderReviewNotesMarkdown("| A | B |\n|---|---|\n| 1 | 2 |") ?? "";
+    expect(html).toContain("<table>");
+    expect(html).toContain("<th>A</th>");
+    expect(html).toContain("<td>1</td>");
+  });
+
+  it("wikilinks do NOT resolve on reviewNotes (consumer scope respected under composite)", () => {
+    expect(renderReviewNotesMarkdown("see [[scalable-oversight]] here")).toBe(
+      "<p>see [[scalable-oversight]] here</p>",
+    );
+  });
+
+  it("tables do NOT render on actionRationale (consumer scope respected under composite)", () => {
+    const html = renderActionRationaleMarkdown("| A | B |\n|---|---|\n| 1 | 2 |");
+    expect(html).not.toContain("<table");
+  });
+
+  it("bio + rationale surfaces unaffected by either consumer under composite", () => {
+    expect(renderBioMarkdown("see [[scalable-oversight]] here")).toBe(
+      "<p>see [[scalable-oversight]] here</p>",
+    );
+    const tableHtml = renderRationaleMarkdown("| A |\n|---|\n| 1 |");
+    expect(tableHtml).not.toContain("<table");
+  });
+
+  it("composite preserves XSS defenses on all surfaces (javascript: still stripped on actionRationale)", () => {
+    const html = renderActionRationaleMarkdown(
+      "[bad](javascript:alert(1)) and [[scalable-oversight]]",
+    );
+    expect(html).not.toContain("javascript:");
+    expect(html).toContain('href="/problems/scalable-oversight"');
   });
 });

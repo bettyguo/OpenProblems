@@ -1,7 +1,24 @@
+import { CompositeExtensionRegistry } from "./composite";
 import { DefaultExtensionRegistry } from "./default";
 import { PHASE_39_DEFAULT_ENABLED_SURFACES, TablesExtensionRegistry } from "./tables";
 import type { MarkdownExtensionRegistry } from "./types";
 import { PHASE_38_DEFAULT_ENABLED_SURFACES, WikilinkExtensionRegistry } from "./wikilinks";
+
+function buildSingleConsumerRegistry(name: string): MarkdownExtensionRegistry {
+  switch (name) {
+    case "wikilinks":
+      return new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES);
+    case "tables":
+      return new TablesExtensionRegistry(PHASE_39_DEFAULT_ENABLED_SURFACES);
+    default:
+      throw new Error(
+        `Unknown MARKDOWN_EXTENSIONS value: "${name}". ` +
+          `Recognized values at this build: "default" (default), "wikilinks", "tables", ` +
+          `or a comma-separated combination of non-default values (e.g., "wikilinks,tables"). ` +
+          `Phase 41+ values will extend this list — see ADR-0018 D-G APPEND APPEND-D-T.`,
+      );
+  }
+}
 
 /**
  * Markdown-extension registry factory per
@@ -30,14 +47,18 @@ import { PHASE_38_DEFAULT_ENABLED_SURFACES, WikilinkExtensionRegistry } from "./
  *     concrete Phase-37-framework consumer; exercises the
  *     `schemaOverrides` slot per ADR-0018 D-G APPEND APPEND-D-N).
  *
- * Phase 39 mutually-exclusive dispatch: operator picks `"wikilinks"`
- * OR `"tables"` OR the default — NOT a composition of both.
- * Multi-value `MARKDOWN_EXTENSIONS=wikilinks,tables` composition
- * deferred to Phase 40+ per Phase-38-prep D-11 deferral; requires
- * a `CompositeExtensionRegistry` that merges per-surface
- * extension sets from multiple component registries.
+ *   - `"wikilinks,tables"` (or any comma-separated combination
+ *     of recognized non-default values) → `CompositeExtensionRegistry`
+ *     wrapping the listed component registries per ADR-0018
+ *     D-G APPEND APPEND-D-R composition rules. Phase 40 enables
+ *     multi-consumer dispatch — `wikilinks` and `tables` coexist
+ *     on their respective surfaces (actionRationale + reviewNotes)
+ *     without conflict because the consumers' enabled surfaces
+ *     are disjoint AND they use distinct slots (rehypePlugins +
+ *     schemaOverrides). Duplicates rejected; `"default"` cannot
+ *     combine with other values.
  *
- * Future Phase 40+ values (not recognized at Phase 39 ship):
+ * Future Phase 41+ values (not recognized at Phase 40 ship):
  *
  *   - per-curator extension preferences (DB-backed registry
  *     override).
@@ -70,24 +91,57 @@ export function getExtensionRegistry(): MarkdownExtensionRegistry {
 
   const provider = process.env["MARKDOWN_EXTENSIONS"] ?? "";
 
-  switch (provider) {
-    case "":
-    case "default":
+  if (provider === "" || provider === "default") {
+    registryInstance = new DefaultExtensionRegistry();
+    return registryInstance;
+  }
+
+  const parts = provider
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+
+  if (parts.length === 0) {
+    throw new Error(
+      `Invalid MARKDOWN_EXTENSIONS value: "${provider}" parsed to empty list ` +
+        `after splitting on commas + trimming. Use "default" (or unset) for ` +
+        `the default registry; otherwise one or more recognized non-default ` +
+        `values comma-separated (e.g., "wikilinks", "tables", or "wikilinks,tables").`,
+    );
+  }
+
+  if (parts.includes("default")) {
+    throw new Error(
+      `Invalid MARKDOWN_EXTENSIONS value: "${provider}". The "default" value ` +
+        `cannot be combined with other extensions; use it alone or unset the ` +
+        `env-var entirely.`,
+    );
+  }
+
+  const seen = new Set<string>();
+  for (const part of parts) {
+    if (seen.has(part)) {
+      throw new Error(
+        `Invalid MARKDOWN_EXTENSIONS value: "${provider}". Duplicate extension ` +
+          `"${part}" in the comma-separated list.`,
+      );
+    }
+    seen.add(part);
+  }
+
+  if (parts.length === 1) {
+    const part = parts[0];
+    if (part === undefined) {
       registryInstance = new DefaultExtensionRegistry();
       return registryInstance;
-    case "wikilinks":
-      registryInstance = new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES);
-      return registryInstance;
-    case "tables":
-      registryInstance = new TablesExtensionRegistry(PHASE_39_DEFAULT_ENABLED_SURFACES);
-      return registryInstance;
-    default:
-      throw new Error(
-        `Unknown MARKDOWN_EXTENSIONS value: "${provider}". ` +
-          `Recognized values at this build: "default" (default), "wikilinks", "tables". ` +
-          `Phase 40+ values will extend this list — see ADR-0018 D-G APPEND APPEND-D-Q.`,
-      );
+    }
+    registryInstance = buildSingleConsumerRegistry(part);
+    return registryInstance;
   }
+
+  const components = parts.map((part) => buildSingleConsumerRegistry(part));
+  registryInstance = new CompositeExtensionRegistry(components);
+  return registryInstance;
 }
 
 /**

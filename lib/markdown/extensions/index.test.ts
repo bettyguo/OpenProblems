@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import { CompositeExtensionRegistry } from "./composite";
 import { __resetRegistryForTests, DefaultExtensionRegistry, getExtensionRegistry } from "./index";
 import { TablesExtensionRegistry } from "./tables";
 import { WikilinkExtensionRegistry } from "./wikilinks";
@@ -87,6 +88,59 @@ describe("getExtensionRegistry (factory) — env-var dispatch", () => {
   it("error message lists all recognized values including 'tables' Phase 39", () => {
     process.env["MARKDOWN_EXTENSIONS"] = "unknown";
     expect(() => getExtensionRegistry()).toThrow(/tables/);
+  });
+
+  it("returns CompositeExtensionRegistry when MARKDOWN_EXTENSIONS is 'wikilinks,tables' Phase 40", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "wikilinks,tables";
+    expect(getExtensionRegistry()).toBeInstanceOf(CompositeExtensionRegistry);
+  });
+
+  it("returns CompositeExtensionRegistry when MARKDOWN_EXTENSIONS is 'tables,wikilinks' (order-independent)", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "tables,wikilinks";
+    expect(getExtensionRegistry()).toBeInstanceOf(CompositeExtensionRegistry);
+  });
+
+  it("composite dispatch enables wikilinks on actionRationale AND tables on reviewNotes simultaneously", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "wikilinks,tables";
+    const r = getExtensionRegistry();
+    expect(r.getExtensions("actionRationale").rehypePlugins).toBeDefined();
+    expect(r.getExtensions("reviewNotes").schemaOverrides).toBeDefined();
+    expect(r.getExtensions("bio")).toEqual({});
+    expect(r.getExtensions("rationale")).toEqual({});
+  });
+
+  it("multi-value parsing tolerates whitespace around commas", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "wikilinks , tables";
+    expect(getExtensionRegistry()).toBeInstanceOf(CompositeExtensionRegistry);
+  });
+
+  it("single-value comma-form returns the direct registry (no composite wrapping)", () => {
+    // "wikilinks," → ["wikilinks"] after filter; should return
+    // WikilinkExtensionRegistry directly, not a 1-component composite.
+    process.env["MARKDOWN_EXTENSIONS"] = "wikilinks,";
+    expect(getExtensionRegistry()).toBeInstanceOf(WikilinkExtensionRegistry);
+  });
+
+  it("throws when 'default' is combined with other values", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "default,wikilinks";
+    expect(() => getExtensionRegistry()).toThrow(/cannot be combined/);
+  });
+
+  it("throws when duplicate extensions appear in the list", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "wikilinks,wikilinks";
+    expect(() => getExtensionRegistry()).toThrow(/Duplicate extension/);
+  });
+
+  it("throws when an unknown extension appears in a multi-value list", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "wikilinks,unknownext";
+    expect(() => getExtensionRegistry()).toThrow(/unknownext/);
+  });
+
+  it("composite cache survives across calls (singleton)", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "wikilinks,tables";
+    const a = getExtensionRegistry();
+    const b = getExtensionRegistry();
+    expect(a).toBe(b);
   });
 
   it("__resetRegistryForTests clears the singleton so subsequent calls re-read env", () => {
