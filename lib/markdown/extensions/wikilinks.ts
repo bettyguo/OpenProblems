@@ -80,22 +80,35 @@ export const rehypeResolveWikilinks: Plugin<[], Root> = () => (tree) => {
 /**
  * `MarkdownExtensionRegistry` implementation that enables the
  * wikilink-resolution rehype plugin on a curator-specified set
- * of surfaces. Phase-38 default enables `actionRationale` only
- * (the surface where existing content evidence demands
- * resolution — 16 `[[problem-slug]]` occurrences across rating-
- * action YAMLs at Phase-38 ship).
+ * of surfaces.
  *
- * For non-enabled surfaces returns an empty extension set
- * `{}` (= `DefaultExtensionRegistry` behavior). This per-surface
- * differentiation is the framework's central value: the same
- * registry instance simultaneously enables wikilinks on
- * `actionRationale` AND preserves Phase-18/27/29 baseline on
- * `bio` + `reviewNotes` + `rationale`.
+ * **Phase-42 default** (since Unit 42.1):
+ * `PHASE_38_DEFAULT_ENABLED_SURFACES` = `Set(["bio",
+ * "reviewNotes", "rationale", "actionRationale"])` — all 4
+ * wired markdown surfaces enabled. Closes Phase-38 ADR-0018
+ * APPEND-D-L item 1 ("Cross-surface wikilink expansion") at 4-
+ * phase carryover; demand-signal-first relaxation noted in
+ * Phase-42 ADR-0018 D-G APPEND.
  *
- * Phase 39+ may expand the enabled set if cross-surface
- * wikilink content emerges (zero current content evidence in
- * the other three surfaces); the expansion is a constructor-
- * arg change with zero plugin or registry rework.
+ * **Phase-38 default** (Unit 38.1 ship through Phase-41 close):
+ * was `Set(["actionRationale"])` — single-surface scope. 16
+ * `[[problem-slug]]` occurrences across rating-action YAMLs
+ * were the demand-signal that motivated the initial single-
+ * surface scope; Phase 42 generalizes to all 4 surfaces under
+ * the audit-trail-preserving constant-name discipline
+ * (`PHASE_38_DEFAULT_ENABLED_SURFACES` retains its name to
+ * encode WHEN it was introduced; the value evolves Phase 42).
+ *
+ * For non-enabled surfaces (none at Phase 42 default; future
+ * curator constructs may pass a narrower set) returns an empty
+ * extension set `{}` (= `DefaultExtensionRegistry` behavior).
+ * Per-surface differentiation remains the framework's central
+ * value — the class is generic over the enabled set.
+ *
+ * Phase 43+ may add cross-entity wikilinks (`[[paper-id]]` /
+ * `[[author-slug]]` / `[[institution-slug]]`) via plugin
+ * parameterization (Phase-38 APPEND-D-L items 3 + 6); the
+ * expansion is a plugin-option change (NOT a registry rework).
  */
 export class WikilinkExtensionRegistry implements MarkdownExtensionRegistry {
   private readonly enabledSurfaces: ReadonlySet<MarkdownSurface>;
@@ -113,17 +126,31 @@ export class WikilinkExtensionRegistry implements MarkdownExtensionRegistry {
 }
 
 /**
- * Phase-38 default-enabled-surfaces for `WikilinkExtensionRegistry`
- * per ADR-0018 D-G APPEND Phase-38 EXTENDED block. Only
- * `actionRationale` is enabled at Phase 38 ship; the three
- * other markdown surfaces (`bio` + `reviewNotes` + `rationale`)
- * continue to receive the empty extension set. Phase 39+ may
- * expand if cross-surface demand surfaces (no current content
- * evidence outside actionRationale).
+ * Default-enabled-surfaces for `WikilinkExtensionRegistry` per
+ * ADR-0018 D-G APPEND Phase-42 EXTENDED block (Unit 42.1).
+ *
+ * **Phase 42 ship** — all 4 wired markdown surfaces enabled.
+ * Closes Phase-38 APPEND-D-L item 1 ("Cross-surface wikilink
+ * expansion") at 4-phase carryover; second prep-/APPEND-doc-
+ * level deferral closed by a later phase (first was Phase-40
+ * closure of Phase-38-prep D-11).
+ *
+ * **Phase 38 → 41 ship** (historical record) — was
+ * `Set(["actionRationale"])`. The constant's NAME preserves
+ * audit trail (Phase 38 = introduction phase); the VALUE
+ * evolves Phase 42 per the prep-doc D-8 "keep Phase-38 name"
+ * lean. Surface enumeration follows `MarkdownSurface` type-
+ * union order in `./types.ts` per prep-doc D-9 lean.
  *
  * Imported by the factory dispatch arm `MARKDOWN_EXTENSIONS=wikilinks`
- * in `./index.ts` (Phase 38 Unit 38.2).
+ * in `./index.ts` — Phase 42 expansion flows through the
+ * dispatch arm unchanged (constructor-arg-only change; zero
+ * plugin / registry / factory rework per the property each
+ * Phase 38/39/41 consumer documented).
  */
 export const PHASE_38_DEFAULT_ENABLED_SURFACES: ReadonlySet<MarkdownSurface> = new Set([
+  "bio",
+  "reviewNotes",
+  "rationale",
   "actionRationale",
 ]);

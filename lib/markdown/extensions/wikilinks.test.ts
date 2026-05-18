@@ -122,11 +122,16 @@ describe("WikilinkExtensionRegistry — class behavior", () => {
     expect(r.getExtensions("reviewNotes")).toEqual({});
   });
 
-  it("exposes PHASE_38_DEFAULT_ENABLED_SURFACES = Set(['actionRationale'])", () => {
+  it("exposes PHASE_38_DEFAULT_ENABLED_SURFACES = Set of all 4 surfaces (Phase 42 expansion)", () => {
+    // Phase 38 ship: Set(["actionRationale"]). Phase 42 expansion: all 4
+    // surfaces per ADR-0018 APPEND-D-L item 1 closure (cross-surface
+    // wikilink expansion). Constant NAME preserved (Phase 38 = introduction
+    // phase encoded in name); VALUE evolved Phase 42 per prep-doc D-8
+    // "keep Phase-38 name" lean.
+    expect(PHASE_38_DEFAULT_ENABLED_SURFACES.has("bio")).toBe(true);
+    expect(PHASE_38_DEFAULT_ENABLED_SURFACES.has("reviewNotes")).toBe(true);
+    expect(PHASE_38_DEFAULT_ENABLED_SURFACES.has("rationale")).toBe(true);
     expect(PHASE_38_DEFAULT_ENABLED_SURFACES.has("actionRationale")).toBe(true);
-    expect(PHASE_38_DEFAULT_ENABLED_SURFACES.has("bio")).toBe(false);
-    expect(PHASE_38_DEFAULT_ENABLED_SURFACES.has("reviewNotes")).toBe(false);
-    expect(PHASE_38_DEFAULT_ENABLED_SURFACES.has("rationale")).toBe(false);
-    expect(PHASE_38_DEFAULT_ENABLED_SURFACES.size).toBe(1);
+    expect(PHASE_38_DEFAULT_ENABLED_SURFACES.size).toBe(4);
   });
 });

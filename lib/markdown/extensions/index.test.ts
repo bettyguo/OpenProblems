@@ -61,13 +61,17 @@ describe("getExtensionRegistry (factory) — env-var dispatch", () => {
     expect(r.getExtensions("actionRationale")).toEqual({});
   });
 
-  it("WikilinkExtensionRegistry dispatch enables wikilinks on actionRationale only Phase 38", () => {
+  it("WikilinkExtensionRegistry dispatch enables wikilinks on ALL 4 surfaces Phase 42 (was actionRationale-only Phase 38-41)", () => {
+    // Phase 38 ship through Phase-41 close: Set(["actionRationale"]).
+    // Phase 42 ship (Unit 42.1): all 4 surfaces enabled per
+    // PHASE_38_DEFAULT_ENABLED_SURFACES expansion (closes ADR-0018
+    // APPEND-D-L item 1 at 4-phase carryover).
     process.env["MARKDOWN_EXTENSIONS"] = "wikilinks";
     const r = getExtensionRegistry();
+    expect(r.getExtensions("bio").rehypePlugins).toBeDefined();
+    expect(r.getExtensions("reviewNotes").rehypePlugins).toBeDefined();
+    expect(r.getExtensions("rationale").rehypePlugins).toBeDefined();
     expect(r.getExtensions("actionRationale").rehypePlugins).toBeDefined();
-    expect(r.getExtensions("bio")).toEqual({});
-    expect(r.getExtensions("reviewNotes")).toEqual({});
-    expect(r.getExtensions("rationale")).toEqual({});
   });
 
   it("TablesExtensionRegistry dispatch enables tables on reviewNotes only Phase 39", () => {
@@ -120,13 +124,22 @@ describe("getExtensionRegistry (factory) — env-var dispatch", () => {
     expect(getExtensionRegistry()).toBeInstanceOf(CompositeExtensionRegistry);
   });
 
-  it("composite dispatch enables wikilinks on actionRationale AND tables on reviewNotes simultaneously", () => {
+  it("composite dispatch enables wikilinks on all 4 + tables on reviewNotes (Phase 42 wikilinks expansion)", () => {
+    // Phase 42 expansion: wikilinks now enabled on all 4 surfaces (was
+    // actionRationale-only Phase 38-41). Under `wikilinks,tables`:
+    //   - bio: wikilinks(rehypePlugins) only.
+    //   - reviewNotes: wikilinks(rehypePlugins) + tables(schemaOverrides);
+    //     **first canonical same-surface different-slot composition** under
+    //     default dispatch (conflict-free per APPEND-D-R).
+    //   - rationale: wikilinks(rehypePlugins) only.
+    //   - actionRationale: wikilinks(rehypePlugins) only.
     process.env["MARKDOWN_EXTENSIONS"] = "wikilinks,tables";
     const r = getExtensionRegistry();
-    expect(r.getExtensions("actionRationale").rehypePlugins).toBeDefined();
+    expect(r.getExtensions("bio").rehypePlugins).toBeDefined();
+    expect(r.getExtensions("reviewNotes").rehypePlugins).toBeDefined();
     expect(r.getExtensions("reviewNotes").schemaOverrides).toBeDefined();
-    expect(r.getExtensions("bio")).toEqual({});
-    expect(r.getExtensions("rationale")).toEqual({});
+    expect(r.getExtensions("rationale").rehypePlugins).toBeDefined();
+    expect(r.getExtensions("actionRationale").rehypePlugins).toBeDefined();
   });
 
   it("multi-value parsing tolerates whitespace around commas", () => {
@@ -178,14 +191,21 @@ describe("getExtensionRegistry (factory) — env-var dispatch", () => {
     expect(getExtensionRegistry()).toBeInstanceOf(CompositeExtensionRegistry);
   });
 
-  it("3-way composite enables all three consumers on respective surfaces simultaneously", () => {
+  it("3-way composite enables all three consumers on respective surfaces (Phase 42: all 4 surfaces now covered)", () => {
+    // Phase 42 expansion: wikilinks now enabled on all 4 surfaces.
+    // Under 3-way `wikilinks,tables,arxiv`:
+    //   - bio: wikilinks(rehypePlugins). **4-of-4 surface coverage achieved.**
+    //   - reviewNotes: wikilinks(rehypePlugins) + tables(schemaOverrides).
+    //   - rationale: wikilinks(rehypePlugins) + arxiv(remarkPlugins).
+    //   - actionRationale: wikilinks(rehypePlugins).
     process.env["MARKDOWN_EXTENSIONS"] = "wikilinks,tables,arxiv";
     const r = getExtensionRegistry();
-    expect(r.getExtensions("actionRationale").rehypePlugins).toBeDefined();
+    expect(r.getExtensions("bio").rehypePlugins).toBeDefined();
+    expect(r.getExtensions("reviewNotes").rehypePlugins).toBeDefined();
     expect(r.getExtensions("reviewNotes").schemaOverrides).toBeDefined();
+    expect(r.getExtensions("rationale").rehypePlugins).toBeDefined();
     expect(r.getExtensions("rationale").remarkPlugins).toBeDefined();
-    // `bio` remains un-enabled-for-any-consumer at Phase 41 ship
-    expect(r.getExtensions("bio")).toEqual({});
+    expect(r.getExtensions("actionRationale").rehypePlugins).toBeDefined();
   });
 
   it("3-way composite ordering does not affect outcome (order-independent for disjoint case)", () => {

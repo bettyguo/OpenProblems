@@ -1150,6 +1150,117 @@ scope cap):
   Couples to a UI thread (hover-card component + cross-
   collection lookup). Phase 42+.
 
+**EXTENDED Phase 42 Unit 42.1** — **first cross-surface
+expansion of a Phase-37-framework consumer**: wikilinks
+expand from `actionRationale`-only to ALL 4 markdown surfaces
+via constructor-arg change in `PHASE_38_DEFAULT_ENABLED_SURFACES`
+(value `Set(["actionRationale"])` → `Set(["bio", "reviewNotes",
+"rationale", "actionRationale"])`; constant NAME preserved per
+prep-doc D-8 audit-trail discipline). **Closes APPEND-D-L item
+1** ("Cross-surface wikilink expansion — bio + reviewNotes +
+rationale wikilinks; demand-signal-first; constructor-arg
+change with zero plugin or registry rework") at **4-phase
+carryover** (Phase 38 → 42); second prep-/APPEND-doc-level
+deferral closed by a later phase (first was Phase-40 closure
+of Phase-38-prep D-11 multi-value composition deferral).
+**Validates "constructor-arg-only with zero plugin/registry
+rework" property** each Phase 38/39/41 consumer documented.
+**First "all 4 markdown surfaces enabled by ≥1 consumer"
+state** in project history — pre-Phase-42 only 3 surfaces
+had any consumer (Phase 38 + 39 + 41 enabled one surface
+each, disjoint); Phase 42 closes the `bio` gap (wikilinks
+becomes the first consumer to enable `bio`). **Ninth APPEND
+on ADR-0018 D-G** — extends the **first-ADR-D-clause-with-
+most-APPENDs record** from 8 → 9.
+
+**APPEND-D-Z wikilinks default-enabled-surfaces expansion
+shape** — `PHASE_38_DEFAULT_ENABLED_SURFACES`'s value
+evolves from `Set(["actionRationale"])` (Phase 38 ship through
+Phase-41 close) to `Set(["bio", "reviewNotes", "rationale",
+"actionRationale"])` (Phase 42 ship). The constant's NAME
+preserves the introduction-phase audit trail (Phase 38 = WHEN
+the wikilinks consumer first shipped); the VALUE evolves
+Phase 42 to reflect demand-signal-relaxed cross-surface ship.
+
+Surface enumeration follows `MarkdownSurface` type-union
+order from `./types.ts`: `bio, reviewNotes, rationale,
+actionRationale` (chronological introduction order; Phase 17
++ 18 + 27 + 29 respectively). Per prep-doc D-9 lean.
+
+**No demand-signal change**: zero `[[problem-slug]]`
+occurrences exist in `users.bio` / `ratingChallenges.reviewNotes`
+/ `ratingChallenges.rationale` columns at Phase-42 ship
+(curator user-prose surfaces are empty in the current dev
+environment). Phase 42 expansion is **architectural property
+validation** ("constructor-arg-only with zero plugin/registry
+rework") rather than demand-signal-driven content rendering.
+Demand-signal-first discipline relaxed for the property-
+validation case per Phase-41-gate rank-1 candidate framing.
+
+The `WikilinkExtensionRegistry` class + `rehypeResolveWikilinks`
+plugin + factory dispatch arm `MARKDOWN_EXTENSIONS=wikilinks`
+all remain **UNCHANGED** Phase 42. The expansion is purely a
+constant-value change with cascading test updates; no plugin
+rework, no class rework, no factory rework. **Validates the
+zero-rework-cross-surface-expansion property** Phase 38 +
+39 + 41 each promised in their respective APPENDs.
+
+**Composition matrix expanded Phase 42** under
+`CompositeExtensionRegistry`:
+
+| Composition | Same-surface different-slot | Result |
+|---|---|---|
+| `wikilinks` alone (Phase 42 default) | wikilinks rehype on all 4 surfaces; alone | conflict-free trivially |
+| `wikilinks,tables` | **reviewNotes**: wikilinks rehype + tables schema | **conflict-free** (distinct slots) |
+| `wikilinks,arxiv` | **rationale**: wikilinks rehype + arxiv remark | **conflict-free** (distinct slots) |
+| `wikilinks,tables,arxiv` (3-way default Phase 42) | reviewNotes: w+t; rationale: w+a; bio: w; actionRationale: w | **conflict-free** (each surface has at most one consumer per slot) |
+
+**First canonical same-surface different-slot composition
+case under default dispatch** — Phase 41's 3-way example was
+disjoint-surface; Phase 42 expansion creates the first
+SAME-surface multi-consumer dispatch where two consumers
+contribute to the same surface but via distinct slots. The
+APPEND-D-R "at most one component per slot per surface" rule
+still applies (no slot-overlap on any surface for any of the
+above compositions); the framework's conflict-free property
+holds end-to-end.
+
+**Phase 43+ deferrals** (Phase-42 cross-surface-expansion
+scope cap):
+
+- **Tables cross-surface expansion** to bio + rationale +
+  actionRationale — analogous Phase-43 expansion candidate;
+  zero current content evidence; demand-signal-first per
+  APPEND-D-Q item 1; mirrors Phase-42 constant-value change
+  pattern.
+- **Arxiv cross-surface expansion** to bio + reviewNotes +
+  actionRationale — analogous Phase-44+ expansion candidate;
+  zero current content evidence; demand-signal-first per
+  APPEND-D-Y item 1; mirrors Phase-42 pattern.
+- **Multi-anchor wikilink alias syntax** `[[slug|display-
+  text]]` — APPEND-D-L item 2 deferral carries to Phase 43+.
+- **Cross-entity wikilinks** (`[[paper-id]]` / `[[author-
+  slug]]` / `[[institution-slug]]`) — APPEND-D-L item 3
+  deferral carries to Phase 43+; requires entity-type
+  disambiguation in syntax (current `[a-z0-9-]+` matches all
+  three) + plugin parameterization.
+- **`<a class="wikilink">` styling** — APPEND-D-L item 4
+  deferral carries to Phase 43+; couples with `schemaOverride`
+  for `class` attribute on `<a>`.
+- **404 handling for unresolved wikilinks** — APPEND-D-L
+  item 5 deferral carries to Phase 43+; build-time
+  validation against `content/problems/` directory + render-
+  time fallback to literal text for unresolved slugs.
+- **Plugin parameterization for wikilink-href-builder** —
+  APPEND-D-L item 6 deferral carries to Phase 43+;
+  parameterizes `/problems/${slug}` path construction via
+  plugin options.
+
+**Single-letter alphabet wrap deferral**: Phase 42 APPEND-D-Z
+consumes the last single-letter slot (A through Z = 26
+letters); Phase 43+ APPEND letters wrap to two-letter form
+(D-AA, D-AB, ...) per prep-doc D-4 Option β.
+
 ### D-H. Phase 18+ deferrals
 
 Phase 17 ships MINIMAL markdown surface. Deferred to Phase 18+:
