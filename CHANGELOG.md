@@ -2470,6 +2470,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 40 — Community-adjacent surfaces (**thirty-first NON-§13 phase**: multi-value `MARKDOWN_EXTENSIONS=wikilinks,tables` composition via new `CompositeExtensionRegistry` infrastructure; closes Phase-38-prep D-11 deferral + Phase-39 mutual-exclusivity wrinkle; enables wikilinks + tables to coexist; anticipated 4-5 units; 35th "Continue" override invoked)
 
+#### Unit 40.1 — `lib/markdown/extensions/composite.ts` (`CompositeExtensionRegistry`) + 13 tests + ADR-0018 D-G APPEND Phase-40 composition block (818/70; 65th consecutive 103 kB unit; first multi-consumer composition infrastructure; first explicit conflict-error inside a registry class)
+
+- Second Phase-40 unit; ships the composition infrastructure + tests + ADR-0018 D-G APPEND. Factory wiring deferred to Unit 40.2.
+- **2 new files** under `lib/markdown/extensions/`: `composite.ts` (`CompositeExtensionRegistry` class) + `composite.test.ts` (13 tests covering composition rules + Phase 38+39 conflict-free case + conflict-error semantics).
+- **`CompositeExtensionRegistry` class** wraps a `ReadonlyArray<MarkdownExtensionRegistry>` of components; `getExtensions(surface)` walks all components and merges per-surface extension sets per APPEND-D-R rules:
+  - `remarkPlugins` CONCATENATED across components (registration order preserved).
+  - `rehypePlugins` CONCATENATED across components (registration order preserved).
+  - `schemaOverrides` **AT-MOST-ONE-PER-SURFACE**; throws on conflict with clear message naming both component indices + the surface + cross-link to APPEND-D-C override-replace semantics.
+- **First explicit conflict-error within a registry class** in project history. The throw is the loud-failure analog to `getExtensionRegistry()` throw-on-unknown (Phase-37 APPEND-D-E); under APPEND-D-C override-replace semantics, two components both providing schemaOverrides cannot be safely merged — explicit throw surfaces misconfiguration loudly at first call.
+- **Phase 38+39 composition is conflict-free** (canonical Phase-40 case): wikilinks uses `rehypePlugins` only on `actionRationale`; tables uses `schemaOverrides` only on `reviewNotes`; the two consumers' enabled surfaces are disjoint AND each consumer uses a distinct slot. `CompositeExtensionRegistry([wikilinks, tables])` produces: `actionRationale` gets wikilinks; `reviewNotes` gets tables; `bio` + `rationale` get nothing. **Composition order does not affect the outcome** — verified by test.
+- **13 tests** verify composition end-to-end: empty components → empty for all surfaces; single-component mirror; remarkPlugins concat in order; rehypePlugins concat in order; single-component schemaOverrides pass-through; **conflict throws with surface + both component indices + APPEND-D-C reference**; per-surface conflict isolation (surfaces where only one component provides schemaOverrides don't throw); combined plugin types + schemaOverrides from different components; empty-set components contribute nothing; Phase 38+39 canonical composition case end-to-end; composition order independence for disjoint-surface case.
+- **ADR-0018 D-G APPEND**: new `EXTENDED Phase 40 Unit 40.1` block with 4 sub-decisions: APPEND-D-R composition rules table; APPEND-D-S Phase 38+39 conflict-free composition example; APPEND-D-T Phase 41+ deferrals (resolvable conflicts; order-dependent composition; weighted composition; composition introspection API). **7th APPEND on ADR-0018 D-G** — extends the **first-ADR-D-clause-with-most-APPENDs record** from 6 → 7 (Phase 18 + 27 + 29 + 37 + 38 + 39 + **40**).
+- **Path A** executed: no new ADR; ADR-0018 D-G APPEND only. **24 ADRs UNCHANGED**.
+- **Tests**: 805 → **818** (+13 tests); test files 69 → 70 (+1 file `composite.test.ts`).
+- **Zero behavioral change Day 1**: factory dispatch arms remain single-value at Unit 40.1 ship (`MARKDOWN_EXTENSIONS=wikilinks` OR `tables` OR default; comma-separated values still hit the `default` throw arm). Multi-value parsing + composition wiring is Unit 40.2 scope. Existing tests pass verbatim.
+- **No client-bundle delta**: server-only; First Load JS shared chunk **UNCHANGED at 103 kB** (**65th consecutive 103 kB unit**).
+- **Zero new runtime dependencies**: composite.ts uses only types from already-imported `rehype-sanitize` + `unified` + `./types`.
+- **Zero new env vars / migrations / i18n keys** at Unit 40.1; multi-value env-var parsing is Unit 40.2.
+- **Framework's "zero-rework consumption" property validated for the third extension type** (composition infrastructure): Unit 40.1 added 0 lines to `extensions/index.ts`; NO edits to `default.ts` / `types.ts` / `buildProcessor()` / `wikilinks.ts` / `tables.ts` / 4 lazy markdown helpers. Composite is a peer of the consumer registries, not a wrapper around them.
+- **Parallel-curator awareness**: NEW files `composite.ts` + `composite.test.ts` (parallel-safe); ADR-0018 APPENDed. Working tree clean at unit start (HEAD `80f458f`).
+- Smoke gates: `pnpm typecheck` (passes); `pnpm test` (818/70 passes; +13 / +1 vs Unit 40.0 baseline); `pnpm audit-content` (0 errors / 6 warnings; Q32 baseline unchanged).
+- THINK artifact: `docs/thinking/40.1-composite-registry.md`.
+
 #### Unit 40.0 — Phase 40 prep (multi-value `MARKDOWN_EXTENSIONS` composition + `CompositeExtensionRegistry`; closes Phase-38-prep D-11 deferral; 35th "Continue" override; **thirty-first NON-§13 phase**)
 
 - First Phase-40 unit; docs-only. Opens Phase 40 (**thirty-first NON-§13 phase**). **§13 ledger CLOSED** at Unit 9.9 (carried unchanged through Phases 10-39).

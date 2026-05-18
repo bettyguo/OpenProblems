@@ -940,6 +940,76 @@ scope cap):
   40+ if cross-surface tables emerge with different
   requirements.
 
+**EXTENDED Phase 40 Unit 40.1** — **multi-consumer composition
+infrastructure** via new `lib/markdown/extensions/composite.ts`
+module: `CompositeExtensionRegistry` wraps a
+`ReadonlyArray<MarkdownExtensionRegistry>` of component
+registries; `getExtensions(surface)` walks all components and
+merges their per-surface extension sets per APPEND-D-R
+composition rules. **Closes Phase-38-prep D-11 deferral**
+(multi-value `MARKDOWN_EXTENSIONS` composition) **AND
+Phase-39 mutual-exclusivity wrinkle** (Phase 38 + 39 dispatch
+arms were alternatives, not composable). **First multi-
+consumer composition infrastructure** under Phase-37 framework.
+**Seventh APPEND on ADR-0018 D-G** — extends the **first-ADR-
+D-clause-with-most-APPENDs record** from 6 → 7. **First
+explicit conflict-error within a registry class** in project
+history (the composite throws on schemaOverrides conflict;
+mirrors `getExtensionRegistry()` throw-on-unknown discipline).
+
+**APPEND-D-R composition rules**:
+
+| Slot | Composition semantics | Order |
+|---|---|---|
+| `remarkPlugins` | Concatenated across all components | Component registration order |
+| `rehypePlugins` | Concatenated across all components | Component registration order |
+| `schemaOverrides` | **At most one component per surface**; throws on conflict | N/A |
+
+The `schemaOverrides` conflict-error is the loud-failure
+analog to `getExtensionRegistry()` throw-on-unknown
+(Phase-37 APPEND-D-E discipline): under APPEND-D-C
+override-replace semantics two components both providing
+`schemaOverrides.tagNames` (or any field) cannot be safely
+merged — the framework explicitly rejects deep-merge.
+Throwing on conflict surfaces the misconfiguration loudly
+at first call rather than silently dropping one component's
+override.
+
+**APPEND-D-S Phase 38+39 composition is conflict-free**:
+wikilinks uses `rehypePlugins` only on `actionRationale`
+(via `WikilinkExtensionRegistry(Set(["actionRationale"]))`);
+tables uses `schemaOverrides` only on `reviewNotes` (via
+`TablesExtensionRegistry(Set(["reviewNotes"]))`); the two
+consumers' enabled surfaces are disjoint AND each consumer
+uses a single distinct slot. Composing them via
+`CompositeExtensionRegistry([wikilinks, tables])` produces:
+`actionRationale` gets wikilinks; `reviewNotes` gets tables;
+`bio` + `rationale` get nothing. Composition order does NOT
+affect the outcome (both orderings produce the same result
+for any surface) — verified by test.
+
+**APPEND-D-T Phase 41+ deferrals** (Phase-40 composition
+scope cap):
+
+- **Resolvable schemaOverrides conflicts** — Phase 40 throws
+  on any conflict; Phase 41+ could implement field-level
+  resolution (e.g., union of `tagNames` arrays if neither
+  component replaces the base; deep-merge for `attributes`
+  per-tag arrays). Each resolution rule needs explicit
+  documentation + tests + XSS audit. Demand-signal-first;
+  zero current need.
+- **Order-dependent composition** — Phase 40 composition is
+  order-independent for the disjoint-surface Phase-38+39 case;
+  not guaranteed in general. Future overlapping consumers
+  may require an explicit precedence parameter.
+- **Weighted composition** — registries with weighted
+  precedence for cases where order is ambiguous (e.g., one
+  consumer marked "base" and another marked "override").
+- **Composition introspection API** — given a composite,
+  enumerate which component contributed each plugin or
+  schema-override for debugging. Phase 41+ if debugging
+  composition becomes a recurring task.
+
 ### D-H. Phase 18+ deferrals
 
 Phase 17 ships MINIMAL markdown surface. Deferred to Phase 18+:
