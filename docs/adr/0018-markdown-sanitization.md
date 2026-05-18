@@ -544,6 +544,46 @@ couple with Q72 family (sibling-divergence candidates) into a
 single "markdown evolution" ADR-0021-candidate scope if either
 surfaces demand.
 
+**RESOLVED Phase 38 Units 38.1 + 38.2** — Class B.14 (rating-
+action rationale wikilink resolution) **structurally CLOSES**
+via Phase-37 framework consumption: new
+`lib/markdown/extensions/wikilinks.ts` ships the
+`rehypeResolveWikilinks` plugin + `WikilinkExtensionRegistry`
+class (Unit 38.1; 15 plugin-level + registry tests); new
+`MARKDOWN_EXTENSIONS=wikilinks` env-var dispatch arm in
+`getExtensionRegistry()` wires it through the Phase-37 factory
+(Unit 38.2; 9 dispatch tests + 9 end-to-end actionRationale
+render tests). All three Phase-30+-promotion gates documented
+above are satisfied:
+
+1. **Demand signal**: 16 `[[problem-slug]]` occurrences across
+   rating-action YAMLs at Phase-38 ship — every concrete
+   instance references a slug in `content/problems/`.
+2. **Cross-surface scope decision**: single-surface scope
+   Phase 38 (`actionRationale` ONLY); `bio` + `reviewNotes` +
+   `rationale` continue to receive empty extension set per
+   `WikilinkExtensionRegistry`'s default-deny. Cross-surface
+   expansion Phase 39+ if demand surfaces (zero current
+   evidence outside actionRationale).
+3. **ADR-0018 D-G amendment shape**: APPEND-not-EDIT (mirrors
+   Phase 27 + 29 + 37 APPENDs); Phase-38 EXTENDED block above
+   adds APPEND-D-H through APPEND-D-L documenting plugin shape
+   + XSS-safety boundary + URL convention + per-surface
+   activation + Phase-39+ deferrals.
+
+The Q72-family coupling speculated in this paragraph's last
+sentence ("could couple with Q72 family ... into a single
+'markdown evolution' ADR-0021-candidate scope") DID NOT
+materialize — Q72 closed independently Phase 37 Unit 37.3 via
+the Phase-37 schema-divergence framework, and B.14 closed
+independently Phase 38 Units 38.1 + 38.2 via the Phase-37
+framework's `rehypePlugins` consumption. Both used the SAME
+framework (Phase-37 `MarkdownExtensionRegistry`) but as
+separate consumers; the speculated single "markdown evolution"
+scope was not needed. **9+ phase B.14 carryover** (Phase 29 →
+Phase 38; second-longest B-class carryover in project history
+after B.15 item 1 22+ phase Phase-30 closure of Q5 punt).
+
 **EXTENDED Phase 37 Unit 37.1** — Q72 markdown schema-divergence
 **framework realized** via new `lib/markdown/extensions/` module
 (`types.ts` + `default.ts` + `index.ts` + 2 test files; 5 files
