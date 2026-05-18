@@ -10,6 +10,7 @@ import {
   type MarkdownExtensionSet,
   type MarkdownSurface,
 } from "./extensions";
+import { ArxivExtensionRegistry } from "./extensions/arxiv";
 import { CompositeExtensionRegistry } from "./extensions/composite";
 import { TablesExtensionRegistry } from "./extensions/tables";
 import { WikilinkExtensionRegistry } from "./extensions/wikilinks";
@@ -785,5 +786,179 @@ describe("Phase-40 composite consumer — end-to-end wikilinks + tables coexiste
     );
     expect(html).not.toContain("javascript:");
     expect(html).toContain('href="/problems/scalable-oversight"');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-41 — end-to-end arXiv ID auto-link via ArxivExtensionRegistry + the
+// Phase-37 framework's `remarkPlugins` slot. Verifies that arxiv autolinks
+// render correctly through the FULL `unified` pipeline (parse → gfm →
+// remark-arxiv → remark-rehype → demote → sanitize → strip-unsafe-hrefs →
+// stringify) on the `rationale` surface ONLY; bio + reviewNotes +
+// actionRationale stay unaffected (Phase-17 baseline preserved — `arxiv:NNNN.NNNNN`
+// renders as literal text on those surfaces).
+//
+// `ArxivExtensionRegistry` is the THIRD concrete Phase-37-framework
+// consumer; **completes 3-of-3 slot demonstration via real consumer**
+// (Phase 38 wikilinks exercised rehypePlugins; Phase 39 tables exercised
+// schemaOverrides; Phase 41 arxiv exercises remarkPlugins). End-to-end
+// tests install the registry directly via __setRegistryForTests; env-var
+// dispatch behavior is tested in `extensions/index.test.ts`.
+// ---------------------------------------------------------------------------
+
+describe("Phase-41 arxiv consumer — end-to-end via ArxivExtensionRegistry", () => {
+  beforeEach(() => {
+    __setRegistryForTests(new ArxivExtensionRegistry(new Set(["rationale"])));
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it('renders arxiv:NNNN.NNNNN as <a href="https://arxiv.org/abs/..."> in rationale', () => {
+    expect(renderRationaleMarkdown("see arxiv:1909.03004 for the methodology")).toBe(
+      '<p>see <a href="https://arxiv.org/abs/1909.03004">arxiv:1909.03004</a> for the methodology</p>',
+    );
+  });
+
+  it("preserves version suffix in rationale (e.g., v3)", () => {
+    expect(renderRationaleMarkdown("see arxiv:2024.01234v3 for details")).toBe(
+      '<p>see <a href="https://arxiv.org/abs/2024.01234v3">arxiv:2024.01234v3</a> for details</p>',
+    );
+  });
+
+  it("case-insensitive prefix matches in rationale; display preserves source casing", () => {
+    expect(renderRationaleMarkdown("cited as ArXiv:2024.12345")).toBe(
+      '<p>cited as <a href="https://arxiv.org/abs/2024.12345">ArXiv:2024.12345</a></p>',
+    );
+  });
+
+  it("renders multiple arxiv refs in one rationale paragraph", () => {
+    const html = renderRationaleMarkdown("compare arxiv:1909.03004 with arxiv:2024.01234");
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+    expect(html).toContain('href="https://arxiv.org/abs/2024.01234"');
+  });
+
+  it("arxiv href passes rehypeStripUnsafeHrefs naturally (absolute https://)", () => {
+    // Unlike Phase-38 wikilinks (which emit RELATIVE URLs and rely on
+    // post-strip plugin-order), arxiv autolinks emit ABSOLUTE https:// URLs
+    // that pass `rehypeStripUnsafeHrefs` allow-list naturally. This test
+    // asserts the design difference per ADR-0018 D-G APPEND-D-V.
+    const html = renderRationaleMarkdown("see arxiv:1909.03004 here");
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+  });
+
+  it("bio surface unaffected by arxiv extension (registry default-deny on non-enabled)", () => {
+    expect(renderBioMarkdown("see arxiv:1909.03004 here")).toBe("<p>see arxiv:1909.03004 here</p>");
+  });
+
+  it("reviewNotes surface unaffected by arxiv extension", () => {
+    expect(renderReviewNotesMarkdown("see arxiv:1909.03004 here")).toBe(
+      "<p>see arxiv:1909.03004 here</p>",
+    );
+  });
+
+  it("actionRationale surface unaffected by arxiv extension", () => {
+    expect(renderActionRationaleMarkdown("see arxiv:1909.03004 here")).toBe(
+      "<p>see arxiv:1909.03004 here</p>",
+    );
+  });
+
+  it("XSS defense survives extension (javascript: stripped; arxiv still resolves)", () => {
+    const html = renderRationaleMarkdown("[bad](javascript:alert(1)) and see arxiv:1909.03004");
+    expect(html).not.toContain("javascript:alert");
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+  });
+
+  it("renders arxiv inside emphasized text (nested element preservation)", () => {
+    expect(renderRationaleMarkdown("**arxiv:1909.03004** establishes the result")).toBe(
+      '<p><strong><a href="https://arxiv.org/abs/1909.03004">arxiv:1909.03004</a></strong> establishes the result</p>',
+    );
+  });
+
+  it("non-matching pattern (3-digit suffix) falls through as literal text", () => {
+    expect(renderRationaleMarkdown("arxiv:1909.030 is too short")).toBe(
+      "<p>arxiv:1909.030 is too short</p>",
+    );
+  });
+
+  it("non-matching pattern (older category-prefixed) falls through as literal text", () => {
+    expect(renderRationaleMarkdown("arxiv:math/0211159 is older style")).toBe(
+      "<p>arxiv:math/0211159 is older style</p>",
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-41 — end-to-end 3-way composite consumer rendering via
+// CompositeExtensionRegistry([wikilinks, tables, arxiv]). Verifies that
+// wikilinks + tables + arxiv coexist on their respective surfaces
+// (actionRationale + reviewNotes + rationale) AND don't bleed into each
+// other's surfaces. **First 3-way composition feasibility** — validates
+// the Phase-40 composition infrastructure's "arbitrary disjoint-surface
+// multi-consumer composition" claim with a 3-way real-consumer case.
+// ---------------------------------------------------------------------------
+
+describe("Phase-41 3-way composite consumer — wikilinks + tables + arxiv coexistence", () => {
+  beforeEach(() => {
+    const wikilinks = new WikilinkExtensionRegistry(new Set(["actionRationale"]));
+    const tables = new TablesExtensionRegistry(new Set(["reviewNotes"]));
+    const arxiv = new ArxivExtensionRegistry(new Set(["rationale"]));
+    __setRegistryForTests(new CompositeExtensionRegistry([wikilinks, tables, arxiv]));
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it("wikilinks resolve on actionRationale under 3-way composite", () => {
+    expect(renderActionRationaleMarkdown("see [[scalable-oversight]] here")).toBe(
+      '<p>see <a href="/problems/scalable-oversight">scalable-oversight</a> here</p>',
+    );
+  });
+
+  it("tables render on reviewNotes under 3-way composite", () => {
+    const html = renderReviewNotesMarkdown("| A | B |\n|---|---|\n| 1 | 2 |") ?? "";
+    expect(html).toContain("<table>");
+    expect(html).toContain("<th>A</th>");
+  });
+
+  it("arxiv autolinks resolve on rationale under 3-way composite", () => {
+    expect(renderRationaleMarkdown("cited as arxiv:1909.03004 for the result")).toBe(
+      '<p>cited as <a href="https://arxiv.org/abs/1909.03004">arxiv:1909.03004</a> for the result</p>',
+    );
+  });
+
+  it("arxiv does NOT resolve on actionRationale under 3-way composite (scope respected)", () => {
+    expect(renderActionRationaleMarkdown("see arxiv:1909.03004 here")).toBe(
+      "<p>see arxiv:1909.03004 here</p>",
+    );
+  });
+
+  it("wikilinks do NOT resolve on rationale under 3-way composite (scope respected)", () => {
+    expect(renderRationaleMarkdown("see [[scalable-oversight]] here")).toBe(
+      "<p>see [[scalable-oversight]] here</p>",
+    );
+  });
+
+  it("tables do NOT render on rationale under 3-way composite (scope respected)", () => {
+    const html = renderRationaleMarkdown("| A |\n|---|\n| 1 |");
+    expect(html).not.toContain("<table");
+  });
+
+  it("bio surface unaffected by any of the three consumers under 3-way composite", () => {
+    expect(renderBioMarkdown("see [[scalable-oversight]] and arxiv:1909.03004 here")).toBe(
+      "<p>see [[scalable-oversight]] and arxiv:1909.03004 here</p>",
+    );
+  });
+
+  it("3-way composite preserves XSS defenses on rationale (javascript: still stripped)", () => {
+    const html = renderRationaleMarkdown("[bad](javascript:alert(1)) and see arxiv:1909.03004");
+    expect(html).not.toContain("javascript:alert");
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
   });
 });

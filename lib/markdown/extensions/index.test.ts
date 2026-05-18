@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import { ArxivExtensionRegistry } from "./arxiv";
 import { CompositeExtensionRegistry } from "./composite";
 import { __resetRegistryForTests, DefaultExtensionRegistry, getExtensionRegistry } from "./index";
 import { TablesExtensionRegistry } from "./tables";
@@ -46,6 +47,20 @@ describe("getExtensionRegistry (factory) — env-var dispatch", () => {
     expect(getExtensionRegistry()).toBeInstanceOf(TablesExtensionRegistry);
   });
 
+  it("returns ArxivExtensionRegistry when MARKDOWN_EXTENSIONS is 'arxiv' Phase 41", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "arxiv";
+    expect(getExtensionRegistry()).toBeInstanceOf(ArxivExtensionRegistry);
+  });
+
+  it("ArxivExtensionRegistry dispatch enables arxiv on rationale only Phase 41", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "arxiv";
+    const r = getExtensionRegistry();
+    expect(r.getExtensions("rationale").remarkPlugins).toBeDefined();
+    expect(r.getExtensions("bio")).toEqual({});
+    expect(r.getExtensions("reviewNotes")).toEqual({});
+    expect(r.getExtensions("actionRationale")).toEqual({});
+  });
+
   it("WikilinkExtensionRegistry dispatch enables wikilinks on actionRationale only Phase 38", () => {
     process.env["MARKDOWN_EXTENSIONS"] = "wikilinks";
     const r = getExtensionRegistry();
@@ -88,6 +103,11 @@ describe("getExtensionRegistry (factory) — env-var dispatch", () => {
   it("error message lists all recognized values including 'tables' Phase 39", () => {
     process.env["MARKDOWN_EXTENSIONS"] = "unknown";
     expect(() => getExtensionRegistry()).toThrow(/tables/);
+  });
+
+  it("error message lists 'arxiv' Phase 41", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "unknown";
+    expect(() => getExtensionRegistry()).toThrow(/arxiv/);
   });
 
   it("returns CompositeExtensionRegistry when MARKDOWN_EXTENSIONS is 'wikilinks,tables' Phase 40", () => {
@@ -141,6 +161,36 @@ describe("getExtensionRegistry (factory) — env-var dispatch", () => {
     const a = getExtensionRegistry();
     const b = getExtensionRegistry();
     expect(a).toBe(b);
+  });
+
+  it("returns CompositeExtensionRegistry for 'wikilinks,arxiv' Phase 41 pair", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "wikilinks,arxiv";
+    expect(getExtensionRegistry()).toBeInstanceOf(CompositeExtensionRegistry);
+  });
+
+  it("returns CompositeExtensionRegistry for 'tables,arxiv' Phase 41 pair", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "tables,arxiv";
+    expect(getExtensionRegistry()).toBeInstanceOf(CompositeExtensionRegistry);
+  });
+
+  it("returns CompositeExtensionRegistry for 'wikilinks,tables,arxiv' (first 3-way Phase 41)", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "wikilinks,tables,arxiv";
+    expect(getExtensionRegistry()).toBeInstanceOf(CompositeExtensionRegistry);
+  });
+
+  it("3-way composite enables all three consumers on respective surfaces simultaneously", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "wikilinks,tables,arxiv";
+    const r = getExtensionRegistry();
+    expect(r.getExtensions("actionRationale").rehypePlugins).toBeDefined();
+    expect(r.getExtensions("reviewNotes").schemaOverrides).toBeDefined();
+    expect(r.getExtensions("rationale").remarkPlugins).toBeDefined();
+    // `bio` remains un-enabled-for-any-consumer at Phase 41 ship
+    expect(r.getExtensions("bio")).toEqual({});
+  });
+
+  it("3-way composite ordering does not affect outcome (order-independent for disjoint case)", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "arxiv,tables,wikilinks";
+    expect(getExtensionRegistry()).toBeInstanceOf(CompositeExtensionRegistry);
   });
 
   it("__resetRegistryForTests clears the singleton so subsequent calls re-read env", () => {

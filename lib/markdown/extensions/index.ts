@@ -1,3 +1,4 @@
+import { ArxivExtensionRegistry, PHASE_41_DEFAULT_ENABLED_SURFACES } from "./arxiv";
 import { CompositeExtensionRegistry } from "./composite";
 import { DefaultExtensionRegistry } from "./default";
 import { PHASE_39_DEFAULT_ENABLED_SURFACES, TablesExtensionRegistry } from "./tables";
@@ -10,12 +11,14 @@ function buildSingleConsumerRegistry(name: string): MarkdownExtensionRegistry {
       return new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES);
     case "tables":
       return new TablesExtensionRegistry(PHASE_39_DEFAULT_ENABLED_SURFACES);
+    case "arxiv":
+      return new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES);
     default:
       throw new Error(
         `Unknown MARKDOWN_EXTENSIONS value: "${name}". ` +
-          `Recognized values at this build: "default" (default), "wikilinks", "tables", ` +
-          `or a comma-separated combination of non-default values (e.g., "wikilinks,tables"). ` +
-          `Phase 41+ values will extend this list — see ADR-0018 D-G APPEND APPEND-D-T.`,
+          `Recognized values at this build: "default" (default), "wikilinks", "tables", "arxiv", ` +
+          `or a comma-separated combination of non-default values (e.g., "wikilinks,tables,arxiv"). ` +
+          `Phase 42+ values will extend this list — see ADR-0018 D-G APPEND APPEND-D-Y.`,
       );
   }
 }
@@ -46,25 +49,34 @@ function buildSingleConsumerRegistry(name: string): MarkdownExtensionRegistry {
  *     (GFM tables enabled on `reviewNotes` only Phase 39; second
  *     concrete Phase-37-framework consumer; exercises the
  *     `schemaOverrides` slot per ADR-0018 D-G APPEND APPEND-D-N).
+ *   - `"arxiv"` → `ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES)`
+ *     (arXiv ID auto-link enabled on `rationale` only Phase 41;
+ *     third concrete Phase-37-framework consumer; exercises the
+ *     `remarkPlugins` slot per ADR-0018 D-G APPEND APPEND-D-U;
+ *     **completes 3-of-3 framework slot demonstration via real
+ *     consumer**).
  *
- *   - `"wikilinks,tables"` (or any comma-separated combination
- *     of recognized non-default values) → `CompositeExtensionRegistry`
- *     wrapping the listed component registries per ADR-0018
- *     D-G APPEND APPEND-D-R composition rules. Phase 40 enables
- *     multi-consumer dispatch — `wikilinks` and `tables` coexist
- *     on their respective surfaces (actionRationale + reviewNotes)
- *     without conflict because the consumers' enabled surfaces
- *     are disjoint AND they use distinct slots (rehypePlugins +
- *     schemaOverrides). Duplicates rejected; `"default"` cannot
- *     combine with other values.
+ *   - `"wikilinks,tables"` / `"wikilinks,arxiv"` / `"tables,arxiv"`
+ *     / `"wikilinks,tables,arxiv"` (or any comma-separated
+ *     combination of recognized non-default values) →
+ *     `CompositeExtensionRegistry` wrapping the listed component
+ *     registries per ADR-0018 D-G APPEND APPEND-D-R composition
+ *     rules. Phase 41 enables **3-way composition** —
+ *     `wikilinks` + `tables` + `arxiv` coexist on their respective
+ *     surfaces (actionRationale + reviewNotes + rationale) without
+ *     conflict because the consumers' enabled surfaces are
+ *     pairwise-disjoint AND they use distinct slots (rehypePlugins
+ *     + schemaOverrides + remarkPlugins). Duplicates rejected;
+ *     `"default"` cannot combine with other values.
  *
- * Future Phase 41+ values (not recognized at Phase 40 ship):
+ * Future Phase 42+ values (not recognized at Phase 41 ship):
  *
  *   - per-curator extension preferences (DB-backed registry
  *     override).
  *   - curator-facing extension-enable UI (`/curator/extensions`).
- *   - multi-value `MARKDOWN_EXTENSIONS=wikilinks,tables`
- *     composition of multiple framework consumers.
+ *   - additional concrete consumers (e.g., DOI auto-link as
+ *     sibling of arxiv in the `remarkPlugins` slot; @mention
+ *     resolution; footnotes; smart-quotes).
  *   - surface-list-as-env-var (e.g.,
  *     `MARKDOWN_EXTENSIONS_WIKILINKS_SURFACES=actionRationale,bio`).
  *
