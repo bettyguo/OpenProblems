@@ -12,6 +12,7 @@ import {
 } from "./extensions";
 import { ArxivExtensionRegistry, PHASE_41_DEFAULT_ENABLED_SURFACES } from "./extensions/arxiv";
 import { CompositeExtensionRegistry } from "./extensions/composite";
+import { DoiExtensionRegistry, PHASE_45_DEFAULT_ENABLED_SURFACES } from "./extensions/doi";
 import { PHASE_39_DEFAULT_ENABLED_SURFACES, TablesExtensionRegistry } from "./extensions/tables";
 import {
   PHASE_38_DEFAULT_ENABLED_SURFACES,
@@ -1442,5 +1443,299 @@ describe("Phase-44 all-3-slots-on-all-4-surfaces — maximal framework activatio
       // arxiv (remark slot active):
       expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-45 — end-to-end DOI consumer rendering via DoiExtensionRegistry.
+// Mirrors Phase-41 arxiv-end-to-end shape: PHASE_45_DEFAULT_ENABLED_SURFACES
+// = Set(["rationale"]) Phase 45 ship (demand-signal-first per arxiv-first-
+// ship precedent). DOIs render on rationale through the full sanitize
+// pipeline; bio + reviewNotes + actionRationale default-deny.
+// ---------------------------------------------------------------------------
+
+describe("Phase-45 doi default — rationale surface via PHASE_45_DEFAULT_ENABLED_SURFACES", () => {
+  beforeEach(() => {
+    __setRegistryForTests(new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES));
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it('renders doi:10.NNNN/xxx as <a href="https://doi.org/..."> in rationale', () => {
+    expect(renderRationaleMarkdown("see doi:10.1234/abc.def for the methodology")).toBe(
+      '<p>see <a href="https://doi.org/10.1234/abc.def">doi:10.1234/abc.def</a> for the methodology</p>',
+    );
+  });
+
+  it("case-insensitive `doi:` prefix in rationale; display preserves source casing", () => {
+    expect(renderRationaleMarkdown("cited as DOI:10.1234/abc")).toBe(
+      '<p>cited as <a href="https://doi.org/10.1234/abc">DOI:10.1234/abc</a></p>',
+    );
+  });
+
+  it("renders multiple DOI refs in one rationale paragraph", () => {
+    const html = renderRationaleMarkdown("compare doi:10.1234/abc with doi:10.5678/xyz");
+    expect(html).toContain('href="https://doi.org/10.1234/abc"');
+    expect(html).toContain('href="https://doi.org/10.5678/xyz"');
+  });
+
+  it("DOI href passes rehypeStripUnsafeHrefs naturally (absolute https://)", () => {
+    // Mirrors Phase-41 arxiv: DOIs emit absolute https://doi.org/ URLs
+    // that pass `rehypeStripUnsafeHrefs` allow-list without
+    // schemaOverrides. Per ADR-0018 D-G APPEND-D-AC.
+    const html = renderRationaleMarkdown("see doi:10.1234/abc here");
+    expect(html).toContain('href="https://doi.org/10.1234/abc"');
+  });
+
+  it("emits canonical doi.org host (NOT dx.doi.org legacy host) in rationale", () => {
+    const html = renderRationaleMarkdown("see doi:10.1234/abc");
+    expect(html).toContain('href="https://doi.org/');
+    expect(html).not.toContain('href="https://dx.doi.org/');
+  });
+
+  it("bio surface unaffected by DOI extension Phase 45 (registry default-deny on non-enabled)", () => {
+    expect(renderBioMarkdown("see doi:10.1234/abc here")).toBe("<p>see doi:10.1234/abc here</p>");
+  });
+
+  it("reviewNotes surface unaffected by DOI extension Phase 45", () => {
+    expect(renderReviewNotesMarkdown("see doi:10.1234/abc here")).toBe(
+      "<p>see doi:10.1234/abc here</p>",
+    );
+  });
+
+  it("actionRationale surface unaffected by DOI extension Phase 45", () => {
+    expect(renderActionRationaleMarkdown("see doi:10.1234/abc here")).toBe(
+      "<p>see doi:10.1234/abc here</p>",
+    );
+  });
+
+  it("XSS defense survives DOI extension (javascript: stripped; DOI still resolves)", () => {
+    const html = renderRationaleMarkdown("[bad](javascript:alert(1)) and see doi:10.1234/abc");
+    expect(html).not.toContain("javascript:alert");
+    expect(html).toContain('href="https://doi.org/10.1234/abc"');
+  });
+
+  it("renders DOI inside emphasized text (nested element preservation)", () => {
+    expect(renderRationaleMarkdown("**doi:10.1234/abc.def** establishes the result")).toBe(
+      '<p><strong><a href="https://doi.org/10.1234/abc.def">doi:10.1234/abc.def</a></strong> establishes the result</p>',
+    );
+  });
+
+  it("non-matching pattern (3-digit registrant) falls through as literal text in rationale", () => {
+    expect(renderRationaleMarkdown("doi:10.123/abc is too short")).toBe(
+      "<p>doi:10.123/abc is too short</p>",
+    );
+  });
+
+  it("non-matching pattern (bare DOI without doi: prefix) falls through as literal text", () => {
+    expect(renderRationaleMarkdown("10.1234/abc is bare DOI")).toBe(
+      "<p>10.1234/abc is bare DOI</p>",
+    );
+  });
+
+  it("trailing sentence-ending period truncates correctly in rationale", () => {
+    expect(renderRationaleMarkdown("cited as doi:10.1234/abc.")).toBe(
+      '<p>cited as <a href="https://doi.org/10.1234/abc">doi:10.1234/abc</a>.</p>',
+    );
+  });
+
+  it("embedded period in DOI suffix matches correctly (regex lookahead distinguishes)", () => {
+    expect(renderRationaleMarkdown("see doi:10.1234/abc.def.ghi end")).toBe(
+      '<p>see <a href="https://doi.org/10.1234/abc.def.ghi">doi:10.1234/abc.def.ghi</a> end</p>',
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-45 — end-to-end first-compositional-same-slot rendering via
+// CompositeExtensionRegistry([arxiv, doi]). **First "two plugins active in
+// the same slot on the same surface under default dispatch" state** in
+// project history. Verifies that `remarkPlugins` concatenation per
+// APPEND-D-R rule produces BOTH arxiv and DOI autolinks on shared-enabled
+// surfaces (rationale only Phase 45) AND that arxiv-only surfaces (bio +
+// reviewNotes + actionRationale, all expanded Phase 44) keep arxiv intact.
+// ---------------------------------------------------------------------------
+
+describe("Phase-45 first-same-slot composition under MARKDOWN_EXTENSIONS=arxiv,doi", () => {
+  beforeEach(() => {
+    // Phase-45 default: arxiv on all 4 surfaces (Phase-44 expansion);
+    // doi on rationale only (Phase-45 first-ship).
+    const arxiv = new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES);
+    const doi = new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES);
+    __setRegistryForTests(new CompositeExtensionRegistry([arxiv, doi]));
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it("rationale: BOTH arxiv and DOI render in the same paragraph (first same-slot composition)", () => {
+    // **First "two plugins active in the same slot on the same surface
+    // under default dispatch" state in project history.** Under
+    // `MARKDOWN_EXTENSIONS=arxiv,doi` Phase-45 default the remarkPlugins
+    // slot on rationale carries [remarkLinkArxivIds, remarkLinkDoiIds]
+    // per APPEND-D-R "concatenated across components in registration
+    // order" rule.
+    const html = renderRationaleMarkdown(
+      "see arxiv:1909.03004 and doi:10.1234/abc.def for context",
+    );
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+    expect(html).toContain('href="https://doi.org/10.1234/abc.def"');
+  });
+
+  it("rationale: arxiv-then-DOI ordering preserved in output text-flow", () => {
+    const html = renderRationaleMarkdown("arxiv:1909.03004 doi:10.1234/abc");
+    const arxivIdx = html.indexOf("arxiv.org");
+    const doiIdx = html.indexOf("doi.org");
+    expect(arxivIdx).toBeGreaterThan(-1);
+    expect(doiIdx).toBeGreaterThan(-1);
+    expect(arxivIdx).toBeLessThan(doiIdx);
+  });
+
+  it("rationale: DOI-then-arxiv ordering preserved in output text-flow", () => {
+    // Verifies plugin invocation order doesn't reorder output; each
+    // plugin scans the mdast tree and emits links in source order.
+    const html = renderRationaleMarkdown("doi:10.1234/abc arxiv:1909.03004");
+    const arxivIdx = html.indexOf("arxiv.org");
+    const doiIdx = html.indexOf("doi.org");
+    expect(arxivIdx).toBeGreaterThan(-1);
+    expect(doiIdx).toBeGreaterThan(-1);
+    expect(doiIdx).toBeLessThan(arxivIdx);
+  });
+
+  it("bio: arxiv renders (Phase-44 expansion) but DOI does NOT (Phase-45 rationale-only)", () => {
+    // Phase 44: arxiv expanded to all 4 surfaces.
+    // Phase 45: DOI ships rationale-only.
+    // Under `arxiv,doi` composite on bio: only arxiv plugin invoked
+    // (doi default-deny on bio). The remarkPlugins array for bio is
+    // [remarkLinkArxivIds] — 1-element, not 2.
+    const html = renderBioMarkdown("see arxiv:1909.03004 and doi:10.1234/abc here");
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+    expect(html).not.toContain("doi.org");
+    expect(html).toContain("doi:10.1234/abc"); // literal text preserved
+  });
+
+  it("reviewNotes: arxiv renders but DOI does NOT (Phase-45 rationale-only)", () => {
+    const html = renderReviewNotesMarkdown("compare arxiv:2024.01234 with doi:10.5678/xyz");
+    expect(html).toContain('href="https://arxiv.org/abs/2024.01234"');
+    expect(html).not.toContain("doi.org");
+    expect(html).toContain("doi:10.5678/xyz");
+  });
+
+  it("actionRationale: arxiv renders but DOI does NOT (Phase-45 rationale-only)", () => {
+    const html = renderActionRationaleMarkdown("see arxiv:1909.03004 and doi:10.1234/abc");
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+    expect(html).not.toContain("doi.org");
+    expect(html).toContain("doi:10.1234/abc");
+  });
+
+  it("XSS defenses survive first-same-slot composition on rationale", () => {
+    const html = renderRationaleMarkdown(
+      "[bad](javascript:alert(1)) and arxiv:1909.03004 and doi:10.1234/abc",
+    );
+    expect(html).not.toContain("javascript:alert");
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+    expect(html).toContain('href="https://doi.org/10.1234/abc"');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-45 — first 4-consumer composition under default dispatch via
+// CompositeExtensionRegistry([wikilinks, tables, arxiv, doi]) at their
+// respective Phase-45-defaults. wikilinks + tables + arxiv all 4 surfaces;
+// doi rationale only. **First "4-consumer composition under default
+// dispatch" state in project history.** rationale carries 4 consumers
+// across 3 slots ([arxiv, doi] in remarkPlugins); other 3 surfaces carry
+// 3 consumers (Phase-44 baseline).
+// ---------------------------------------------------------------------------
+
+describe("Phase-45 first-4-consumer composition — wikilinks,tables,arxiv,doi maximal default", () => {
+  beforeEach(() => {
+    const wikilinks = new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES);
+    const tables = new TablesExtensionRegistry(PHASE_39_DEFAULT_ENABLED_SURFACES);
+    const arxiv = new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES);
+    const doi = new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES);
+    __setRegistryForTests(new CompositeExtensionRegistry([wikilinks, tables, arxiv, doi]));
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it("rationale: 4 consumers active across 3 slots (wikilinks rehype + tables schema + [arxiv, doi] remark)", () => {
+    // **First "4-consumer composition under default dispatch" state.**
+    // rationale is the only surface where DOI participates Phase 45.
+    // Trailing period (not colon) separates DOI from table because the
+    // Crossref-spec DOI suffix character class allows `:` mid-suffix.
+    const md =
+      "see [[scalable-oversight]] arxiv:1909.03004 doi:10.1234/abc.\n\n| A | B |\n|---|---|\n| 1 | 2 |";
+    const html = renderRationaleMarkdown(md);
+    expect(html).toContain('href="/problems/scalable-oversight"'); // wikilinks rehype
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"'); // arxiv remark
+    expect(html).toContain('href="https://doi.org/10.1234/abc"'); // doi remark
+    expect(html).toContain("<table>"); // tables schema
+  });
+
+  it("bio: 3 consumers active (wikilinks + tables + arxiv); DOI inactive (rationale-only Phase 45)", () => {
+    const md =
+      "see [[hallucination-reduction]] arxiv:1909.03004 doi:10.1234/abc:\n\n| C |\n|---|\n| ok |";
+    const html = renderBioMarkdown(md) ?? "";
+    expect(html).toContain('href="/problems/hallucination-reduction"');
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+    expect(html).toContain("<table>");
+    expect(html).not.toContain("doi.org");
+  });
+
+  it("reviewNotes: 3 consumers active; DOI inactive", () => {
+    const md =
+      "see [[scalable-oversight]] arxiv:2024.12345 doi:10.5678/xyz:\n\n| Crit |\n|---|\n| ok |";
+    const html = renderReviewNotesMarkdown(md) ?? "";
+    expect(html).toContain('href="/problems/scalable-oversight"');
+    expect(html).toContain('href="https://arxiv.org/abs/2024.12345"');
+    expect(html).toContain("<table>");
+    expect(html).not.toContain("doi.org");
+  });
+
+  it("actionRationale: 3 consumers active; DOI inactive", () => {
+    const md =
+      "see [[scalable-oversight]] arxiv:1909.03004 doi:10.1234/abc:\n\n| Dim |\n|---|\n| s |";
+    const html = renderActionRationaleMarkdown(md);
+    expect(html).toContain('href="/problems/scalable-oversight"');
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+    expect(html).toContain("<table>");
+    expect(html).not.toContain("doi.org");
+  });
+
+  it("XSS defense survives 4-consumer composition on rationale (the only 4-consumer surface Phase 45)", () => {
+    // Trailing period (not colon) separator — Crossref allows `:` mid-
+    // DOI-suffix so we use a less ambiguous separator before the table.
+    const md =
+      "[bad](javascript:alert(1)) [[x]] arxiv:1909.03004 doi:10.1234/abc.\n\n| C |\n|---|\n| ok |";
+    const html = renderRationaleMarkdown(md);
+    expect(html).not.toContain("javascript:alert");
+    expect(html).toContain('href="/problems/x"');
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+    expect(html).toContain('href="https://doi.org/10.1234/abc"');
+    expect(html).toContain("<table>");
+  });
+
+  it("rationale-only DOI participation under 4-consumer default — first compositional same-slot", () => {
+    // Across the 4 surfaces only rationale exercises the same-slot
+    // composition (arxiv + doi both in remarkPlugins). Other surfaces
+    // remain at the Phase-44 baseline. This test asserts the asymmetry
+    // explicitly.
+    const md = "doi:10.1234/abc";
+    expect(renderRationaleMarkdown(md)).toContain('href="https://doi.org/10.1234/abc"');
+    expect(renderBioMarkdown(md) ?? "").not.toContain("doi.org");
+    expect(renderReviewNotesMarkdown(md) ?? "").not.toContain("doi.org");
+    expect(renderActionRationaleMarkdown(md)).not.toContain("doi.org");
   });
 });
