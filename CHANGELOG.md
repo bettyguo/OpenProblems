@@ -2470,6 +2470,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 46 — Community-adjacent surfaces (**thirty-seventh NON-§13 phase**: multi-anchor wikilink alias syntax `[[slug|display-text]]` via regex extension on existing `rehypeResolveWikilinks` plugin in `WikilinkExtensionRegistry`; **first plugin-regex-extension within an existing Phase-37-framework consumer** in project history; **first "display-text divergence from slug" rendering**; **first alias-syntax surface** in any framework consumer; closes ADR-0018 APPEND-D-L item 2 deferral at 8-phase carryover; APPEND-D-AD fourth two-letter slot; anticipated 5 units; 41st "Continue" override invoked)
 
+#### Unit 46.2 — end-to-end wikilink alias tests on all 4 surfaces + 4-way composition under Phase-45 default (14 NEW tests; 1012/72)
+
+- Third Phase-46 unit; code (test-only).
+- **MODIFIED `lib/markdown/index.test.ts`**: +**14 NEW end-to-end tests** in 2 new `describe` blocks appended at end-of-file (after Phase-45 first-4-consumer composition block):
+  1. **`describe("Phase-46 wikilink alias syntax — all 4 surfaces under default dispatch")`** (10 tests). Sets `__setRegistryForTests(new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES))`. Covers: alias renders on each of bio + reviewNotes + rationale + actionRationale (4 separate per-surface tests); backwards-compat — bare `[[slug]]` still renders identically on all 4 surfaces; aliased + non-aliased mix in same paragraph on rationale; alias display HTML-escapes via rehype-stringify text-node rendering (XSS safety for `<` and `&`); XSS defense survives alias on rationale (javascript: stripped + alias still resolves); empty alias `[[slug|]]` falls through as literal on all 4 surfaces.
+  2. **`describe("Phase-46 alias under Phase-45 4-way composite — wikilinks,tables,arxiv,doi")`** (4 tests). Sets `__setRegistryForTests(new CompositeExtensionRegistry([wikilinks, tables, arxiv, doi]))` at Phase-45 defaults. Covers: rationale 4-consumer surface — alias + arxiv + doi + tables all render together (the only 4-consumer surface Phase 45); bio 3-consumer surface — alias + arxiv + tables render; doi inactive (rationale-only Phase 45); XSS defenses survive Phase-46 alias under 4-way composite on rationale; Phase-45 baseline preserved — bare `[[slug]]` + arxiv on actionRationale (no alias used) continues to render unchanged.
+- **Architectural firsts**:
+  - **First end-to-end coverage of plugin-regex-extension-within-existing-consumer through the full sanitize pipeline**. Phase 38-45 end-to-end tests verified new-consumer + cross-surface-expansion semantics; Phase 46 puts regex evolution under end-to-end test pressure across all 4 surfaces + within the maximal 4-way composite.
+  - **First test demonstrating "alias backwards-compat through the full pipeline"** — same input `[[scalable-oversight]]` renders identically across all 4 surfaces, asserting the additive nature of the regex extension end-to-end.
+  - **First test asserting "regex extension preserves XSS line of defense"** — display text HTML-escape via rehype-stringify text-node rendering validated through full sanitize pipeline (bio + rationale).
+- **Smoke gates**:
+  - `pnpm validate-content` → 203 files unchanged.
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **1012 / 72 files** (+14 / 0 vs Unit 46.1: 10 NEW Phase-46-alias-default tests + 4 NEW Phase-46-under-4-way-composite tests = 14 total).
+  - `pnpm audit-content` → 0 errors / 6 warnings UNCHANGED (Q32 baseline; 43 consecutive phases).
+  - First Load JS = 103 kB UNCHANGED; Middleware = 160 kB UNCHANGED (test-only changes; plugin extension already counted in Unit 46.1).
+
 #### Unit 46.1 — `WIKILINK_PATTERN` regex extension + plugin body update + 13 NEW wikilinks.test.ts alias tests + ADR-0018 D-G APPEND-D-AD (first plugin-regex-extension within an existing consumer; first display-text divergence from slug; 13th D-G APPEND extends record 12 → 13)
 
 - Second Phase-46 unit; code+APPEND.

@@ -1739,3 +1739,177 @@ describe("Phase-45 first-4-consumer composition — wikilinks,tables,arxiv,doi m
     expect(renderActionRationaleMarkdown(md)).not.toContain("doi.org");
   });
 });
+
+// ---------------------------------------------------------------------------
+// Phase-46 — end-to-end wikilink alias syntax `[[slug|display-text]]` via
+// `rehypeResolveWikilinks` regex extension (Unit 46.1) on all 4 surfaces
+// under `MARKDOWN_EXTENSIONS=wikilinks` Phase-42 default + within the
+// 4-way `wikilinks,tables,arxiv,doi` Phase-45 default composite.
+//
+// First plugin-regex-extension within an existing framework consumer:
+// `WIKILINK_PATTERN` evolves from `/\[\[([a-z0-9-]+)\]\]/g` to
+// `/\[\[([a-z0-9-]+)(?:\|([^\]\n]+))?\]\]/g`. Display text becomes the
+// text-node content of the emitted <a>; HTML-special chars escape via
+// rehype-stringify text-node rendering (no new XSS surface).
+//
+// Closes ADR-0018 APPEND-D-L item 2 at 8-phase carryover (Phase 38 → 46;
+// longest APPEND-D-L item closure to date).
+// ---------------------------------------------------------------------------
+
+describe("Phase-46 wikilink alias syntax — all 4 surfaces under default dispatch", () => {
+  beforeEach(() => {
+    __setRegistryForTests(new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES));
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it("alias renders on bio: [[slug|display]] → <a href=/problems/slug>display</a>", () => {
+    expect(renderBioMarkdown("I work on [[scalable-oversight|the alignment frontier]]")).toBe(
+      '<p>I work on <a href="/problems/scalable-oversight">the alignment frontier</a></p>',
+    );
+  });
+
+  it("alias renders on reviewNotes: display divergence preserved through full pipeline", () => {
+    expect(
+      renderReviewNotesMarkdown("compare to [[hallucination-reduction|the truth problem]]"),
+    ).toBe('<p>compare to <a href="/problems/hallucination-reduction">the truth problem</a></p>');
+  });
+
+  it("alias renders on rationale: prose-style display preserved", () => {
+    expect(
+      renderRationaleMarkdown("see [[long-horizon-agent-reliability|this problem]] for context"),
+    ).toBe(
+      '<p>see <a href="/problems/long-horizon-agent-reliability">this problem</a> for context</p>',
+    );
+  });
+
+  it("alias renders on actionRationale: Phase-38 baseline surface preserves alias", () => {
+    expect(
+      renderActionRationaleMarkdown("upgrade reflects [[scalable-oversight|recent progress]]"),
+    ).toBe('<p>upgrade reflects <a href="/problems/scalable-oversight">recent progress</a></p>');
+  });
+
+  it("backwards-compat: bare [[slug]] still renders identically on all 4 surfaces", () => {
+    // Phase 46 regex evolution is purely additive; existing [[slug]] usage
+    // (16 occurrences across rating-action YAMLs at Phase 38 ship) renders
+    // unchanged.
+    const md = "[[scalable-oversight]]";
+    const expected = '<p><a href="/problems/scalable-oversight">scalable-oversight</a></p>';
+    expect(renderBioMarkdown(md)).toBe(expected);
+    expect(renderReviewNotesMarkdown(md)).toBe(expected);
+    expect(renderRationaleMarkdown(md)).toBe(expected);
+    expect(renderActionRationaleMarkdown(md)).toBe(expected);
+  });
+
+  it("aliased + non-aliased mix on rationale: both styles coexist in same paragraph", () => {
+    expect(
+      renderRationaleMarkdown(
+        "see [[scalable-oversight|here]] and the related [[hallucination-reduction]]",
+      ),
+    ).toBe(
+      '<p>see <a href="/problems/scalable-oversight">here</a> and the related ' +
+        '<a href="/problems/hallucination-reduction">hallucination-reduction</a></p>',
+    );
+  });
+
+  it("alias display HTML-escapes via rehype-stringify text-node rendering on rationale (XSS safety)", () => {
+    // `<` in display escapes to `&#x3C;`. The text-node escape is the
+    // line of defense for HTML-special chars in display text. No new
+    // XSS surface introduced by Phase-46 alias syntax.
+    const html = renderRationaleMarkdown("see [[a|x < y]] for math");
+    expect(html).toContain('<a href="/problems/a">x &#x3C; y</a>');
+  });
+
+  it("alias ampersand escapes on bio (text-node escape preserves XSS line of defense)", () => {
+    const html = renderBioMarkdown("[[a|Cats & dogs]]");
+    expect(html ?? "").toContain('<a href="/problems/a">Cats &#x26; dogs</a>');
+  });
+
+  it("XSS defenses survive alias on rationale (javascript: stripped; alias still resolves)", () => {
+    const html = renderRationaleMarkdown(
+      "[bad](javascript:alert(1)) and [[scalable-oversight|here]]",
+    );
+    expect(html).not.toContain("javascript:alert");
+    expect(html).toContain('<a href="/problems/scalable-oversight">here</a>');
+  });
+
+  it("empty alias [[slug|]] falls through as literal on all 4 surfaces (no match)", () => {
+    // Documented Phase-46 behavior: alias display class requires `+`
+    // (one-or-more); [[slug|]] does not satisfy and falls through as
+    // literal text. Phase 47+ refinement candidate.
+    const md = "[[scalable-oversight|]]";
+    expect(renderBioMarkdown(md)).toBe("<p>[[scalable-oversight|]]</p>");
+    expect(renderReviewNotesMarkdown(md)).toBe("<p>[[scalable-oversight|]]</p>");
+    expect(renderRationaleMarkdown(md)).toBe("<p>[[scalable-oversight|]]</p>");
+    expect(renderActionRationaleMarkdown(md)).toBe("<p>[[scalable-oversight|]]</p>");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-46 — alias syntax composes cleanly under the Phase-45 maximal
+// 4-consumer composition `wikilinks,tables,arxiv,doi`. Verifies that
+// regex-extension within wikilinks (alias support) coexists with the 3
+// other consumers + their respective slots; no slot-coverage regression.
+// ---------------------------------------------------------------------------
+
+describe("Phase-46 alias under Phase-45 4-way composite — wikilinks,tables,arxiv,doi", () => {
+  beforeEach(() => {
+    const wikilinks = new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES);
+    const tables = new TablesExtensionRegistry(PHASE_39_DEFAULT_ENABLED_SURFACES);
+    const arxiv = new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES);
+    const doi = new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES);
+    __setRegistryForTests(new CompositeExtensionRegistry([wikilinks, tables, arxiv, doi]));
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it("rationale: alias renders alongside arxiv + doi + tables in 4-consumer surface", () => {
+    // rationale is the only surface where DOI participates (Phase 45);
+    // also receives wikilinks (Phase 42) + tables (Phase 43) + arxiv
+    // (Phase 44) under the 4-way default. Adding alias syntax to
+    // wikilinks under this composite — all 4 consumers' outputs coexist.
+    const md =
+      "see [[scalable-oversight|here]] arxiv:1909.03004 doi:10.1234/abc.\n\n| A | B |\n|---|---|\n| 1 | 2 |";
+    const html = renderRationaleMarkdown(md);
+    expect(html).toContain('<a href="/problems/scalable-oversight">here</a>'); // wikilinks + alias
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"'); // arxiv
+    expect(html).toContain('href="https://doi.org/10.1234/abc"'); // doi
+    expect(html).toContain("<table>"); // tables
+  });
+
+  it("bio: alias renders alongside arxiv + tables (3-consumer surface; doi inactive Phase 45)", () => {
+    const md =
+      "I work on [[hallucination-reduction|truth in LLMs]] arxiv:2024.01234.\n\n| C |\n|---|\n| ok |";
+    const html = renderBioMarkdown(md) ?? "";
+    expect(html).toContain('<a href="/problems/hallucination-reduction">truth in LLMs</a>');
+    expect(html).toContain('href="https://arxiv.org/abs/2024.01234"');
+    expect(html).toContain("<table>");
+    expect(html).not.toContain("doi.org");
+  });
+
+  it("XSS defenses survive Phase-46 alias under 4-way composite on rationale", () => {
+    const md = "[bad](javascript:alert(1)) [[s|safe display]] arxiv:1909.03004 doi:10.1234/abc.";
+    const html = renderRationaleMarkdown(md);
+    expect(html).not.toContain("javascript:alert");
+    expect(html).toContain('<a href="/problems/s">safe display</a>');
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+    expect(html).toContain('href="https://doi.org/10.1234/abc"');
+  });
+
+  it("Phase-45 baseline preserved: bare [[slug]] + arxiv on actionRationale (no alias used)", () => {
+    // Verifies the 4-way composite still passes Phase-45-baseline tests
+    // when the curator doesn't use alias syntax — backwards-compat holds.
+    const md = "see [[scalable-oversight]] arxiv:1909.03004";
+    const html = renderActionRationaleMarkdown(md);
+    expect(html).toContain('<a href="/problems/scalable-oversight">scalable-oversight</a>');
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+  });
+});
