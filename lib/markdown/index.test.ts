@@ -13,7 +13,10 @@ import {
 import { ArxivExtensionRegistry } from "./extensions/arxiv";
 import { CompositeExtensionRegistry } from "./extensions/composite";
 import { TablesExtensionRegistry } from "./extensions/tables";
-import { WikilinkExtensionRegistry } from "./extensions/wikilinks";
+import {
+  PHASE_38_DEFAULT_ENABLED_SURFACES,
+  WikilinkExtensionRegistry,
+} from "./extensions/wikilinks";
 import {
   __resetMarkdownCachesForTests,
   renderActionRationaleMarkdown,
@@ -960,5 +963,158 @@ describe("Phase-41 3-way composite consumer — wikilinks + tables + arxiv coexi
     const html = renderRationaleMarkdown("[bad](javascript:alert(1)) and see arxiv:1909.03004");
     expect(html).not.toContain("javascript:alert");
     expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-42 — end-to-end wikilinks cross-surface expansion via the factory-
+// driven `PHASE_38_DEFAULT_ENABLED_SURFACES` constant (NOT manual constructor
+// args). Verifies that the Phase-42 default-enabled-surfaces expansion to
+// `Set(["bio", "reviewNotes", "rationale", "actionRationale"])` activates
+// wikilink resolution on ALL 4 surfaces end-to-end through the full
+// `unified` pipeline.
+//
+// The pre-Phase-42 end-to-end blocks use MANUAL constructor args
+// (`new WikilinkExtensionRegistry(new Set(["actionRationale"]))`) to test
+// the registry-class's per-surface scope-respect property; this block
+// installs the registry using the Phase-42 default constant directly,
+// validating the constructor-arg-only zero-rework expansion property
+// each Phase 38/39/41 consumer documented in its APPEND.
+//
+// First "all 4 markdown surfaces enabled by ≥1 consumer" state in project
+// history — Phase 42 closes the `bio` gap. Closes ADR-0018 APPEND-D-L item
+// 1 (Phase-38 deferral) at 4-phase carryover.
+// ---------------------------------------------------------------------------
+
+describe("Phase-42 wikilinks default — all 4 surfaces via PHASE_38_DEFAULT_ENABLED_SURFACES", () => {
+  beforeEach(() => {
+    __setRegistryForTests(new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES));
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it("wikilinks resolve on bio under Phase-42 default (newly-enabled surface)", () => {
+    expect(renderBioMarkdown("see [[scalable-oversight]] for my work")).toBe(
+      '<p>see <a href="/problems/scalable-oversight">scalable-oversight</a> for my work</p>',
+    );
+  });
+
+  it("wikilinks resolve on reviewNotes under Phase-42 default (newly-enabled surface)", () => {
+    expect(renderReviewNotesMarkdown("compare with [[hallucination-reduction]]")).toBe(
+      '<p>compare with <a href="/problems/hallucination-reduction">hallucination-reduction</a></p>',
+    );
+  });
+
+  it("wikilinks resolve on rationale under Phase-42 default (newly-enabled surface)", () => {
+    expect(renderRationaleMarkdown("see [[scalable-oversight]] for context")).toBe(
+      '<p>see <a href="/problems/scalable-oversight">scalable-oversight</a> for context</p>',
+    );
+  });
+
+  it("wikilinks resolve on actionRationale under Phase-42 default (Phase-38 baseline)", () => {
+    expect(renderActionRationaleMarkdown("see [[scalable-oversight]] here")).toBe(
+      '<p>see <a href="/problems/scalable-oversight">scalable-oversight</a> here</p>',
+    );
+  });
+
+  it("PHASE_38_DEFAULT_ENABLED_SURFACES contains all 4 surfaces Phase 42", () => {
+    expect(PHASE_38_DEFAULT_ENABLED_SURFACES.size).toBe(4);
+    expect(PHASE_38_DEFAULT_ENABLED_SURFACES.has("bio")).toBe(true);
+    expect(PHASE_38_DEFAULT_ENABLED_SURFACES.has("reviewNotes")).toBe(true);
+    expect(PHASE_38_DEFAULT_ENABLED_SURFACES.has("rationale")).toBe(true);
+    expect(PHASE_38_DEFAULT_ENABLED_SURFACES.has("actionRationale")).toBe(true);
+  });
+
+  it("XSS defenses survive Phase-42 expansion on bio (javascript: stripped; wikilinks resolve)", () => {
+    const html = renderBioMarkdown("[bad](javascript:alert(1)) and [[scalable-oversight]]");
+    expect(html).not.toContain("javascript:");
+    expect(html).toContain('href="/problems/scalable-oversight"');
+  });
+
+  it("XSS defenses survive Phase-42 expansion on reviewNotes (javascript: stripped)", () => {
+    const html = renderReviewNotesMarkdown("[bad](javascript:alert(1)) [[a-slug]]");
+    expect(html).not.toContain("javascript:");
+    expect(html).toContain('href="/problems/a-slug"');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-42 — end-to-end same-surface different-slot composition under
+// default dispatch. Verifies that Phase-42 wikilinks-on-all-4 +
+// tables-on-reviewNotes compose conflict-free on the `reviewNotes` surface
+// (wikilinks contributes `rehypePlugins`; tables contributes
+// `schemaOverrides`; distinct slots per APPEND-D-R).
+//
+// First canonical same-surface different-slot composition case under
+// default dispatch in project history — Phase 41's 3-way example was
+// disjoint-surface; Phase 42 expansion creates the first SAME-surface
+// multi-consumer dispatch where two consumers contribute to the same
+// surface but via distinct slots.
+// ---------------------------------------------------------------------------
+
+describe("Phase-42 same-surface different-slot composition under default dispatch", () => {
+  beforeEach(() => {
+    // Use Phase-42 default constants for both consumers (not manual
+    // single-surface args) to exercise the production composition path.
+    const wikilinks = new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES);
+    const tables = new TablesExtensionRegistry(new Set(["reviewNotes"]));
+    const arxiv = new ArxivExtensionRegistry(new Set(["rationale"]));
+    __setRegistryForTests(new CompositeExtensionRegistry([wikilinks, tables, arxiv]));
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it("reviewNotes: wikilinks resolve AND tables render under 3-way Phase-42 default", () => {
+    // Same-surface different-slot composition: wikilinks (rehypePlugins) +
+    // tables (schemaOverrides) on reviewNotes. Both consumers contribute
+    // to the same surface but via distinct slots; conflict-free per
+    // APPEND-D-R.
+    const md = "see [[scalable-oversight]] then:\n\n| A | B |\n|---|---|\n| 1 | 2 |";
+    const html = renderReviewNotesMarkdown(md) ?? "";
+    expect(html).toContain('href="/problems/scalable-oversight"');
+    expect(html).toContain("<table>");
+    expect(html).toContain("<th>A</th>");
+    expect(html).toContain("<td>1</td>");
+  });
+
+  it("rationale: wikilinks resolve AND arxiv resolve under 3-way Phase-42 default", () => {
+    // Same-surface different-slot composition: wikilinks (rehypePlugins) +
+    // arxiv (remarkPlugins) on rationale. Conflict-free per APPEND-D-R.
+    const md = "see [[scalable-oversight]] and arxiv:1909.03004";
+    const html = renderRationaleMarkdown(md);
+    expect(html).toContain('href="/problems/scalable-oversight"');
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+  });
+
+  it("bio: wikilinks resolve under 3-way Phase-42 default (newly-enabled surface)", () => {
+    // First 4-of-4 surface-coverage state: wikilinks now enabled on bio
+    // under Phase-42 default; no other consumer touches bio.
+    expect(renderBioMarkdown("see [[scalable-oversight]] for my work")).toBe(
+      '<p>see <a href="/problems/scalable-oversight">scalable-oversight</a> for my work</p>',
+    );
+  });
+
+  it("actionRationale: wikilinks resolve under 3-way Phase-42 default", () => {
+    // Phase-38 baseline: wikilinks on actionRationale. Carried verbatim
+    // under the Phase-42 expanded default.
+    expect(renderActionRationaleMarkdown("see [[hallucination-reduction]]")).toBe(
+      '<p>see <a href="/problems/hallucination-reduction">hallucination-reduction</a></p>',
+    );
+  });
+
+  it("XSS defenses survive same-surface different-slot composition on reviewNotes", () => {
+    const md = "[bad](javascript:alert(1))\n\n| A |\n|---|\n| [[a-slug]] |";
+    const html = renderReviewNotesMarkdown(md) ?? "";
+    expect(html).not.toContain("javascript:");
+    expect(html).toContain("<table>");
+    expect(html).toContain('href="/problems/a-slug"');
   });
 });
