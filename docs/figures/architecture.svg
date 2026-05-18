@@ -1,0 +1,183 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 820" role="img" aria-label="Architecture: Next.js 15 App Router · Velite content pipeline · Drizzle/Turso · NextAuth · Markdown extension framework" font-family="ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,sans-serif">
+  <title>LLM OpenProblems architecture</title>
+  <defs>
+    <linearGradient id="bg-arch" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="1" stop-color="#eef2f7"/>
+    </linearGradient>
+    <linearGradient id="layer-client" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#dbeafe"/><stop offset="1" stop-color="#bfdbfe"/>
+    </linearGradient>
+    <linearGradient id="layer-app" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ede9fe"/><stop offset="1" stop-color="#ddd6fe"/>
+    </linearGradient>
+    <linearGradient id="layer-lib" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fef3c7"/><stop offset="1" stop-color="#fde68a"/>
+    </linearGradient>
+    <linearGradient id="layer-store" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#d1fae5"/><stop offset="1" stop-color="#a7f3d0"/>
+    </linearGradient>
+    <linearGradient id="layer-ext" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fee2e2"/><stop offset="1" stop-color="#fecaca"/>
+    </linearGradient>
+    <marker id="arrow-arch" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="9" markerHeight="9" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <rect width="1280" height="820" fill="url(#bg-arch)"/>
+
+  <!-- title -->
+  <g transform="translate(40,36)">
+    <text x="0" y="0" fill="#0f172a" font-size="26" font-weight="800" letter-spacing="-0.3">System architecture</text>
+    <text x="0" y="22" fill="#475569" font-size="13">5 layers · file-first editorial state · DB-backed user state · server-only markdown · zero-DB through Phase&nbsp;3</text>
+    <text x="1240" y="-2" text-anchor="end" fill="#94a3b8" font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" letter-spacing="1.4">FIG · 1 / 7</text>
+    <text x="1240" y="18" text-anchor="end" fill="#94a3b8" font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" letter-spacing="1.4">PHASE 0 → 44 · HEAD a7e971b</text>
+  </g>
+
+  <!-- Layer 1: Client UI -->
+  <g transform="translate(40,90)">
+    <rect width="1200" height="120" rx="10" fill="url(#layer-client)" stroke="#1d4ed8" stroke-opacity="0.25"/>
+    <g transform="translate(20,16)">
+      <text x="0" y="14" fill="#1e3a8a" font-size="12" font-weight="700" letter-spacing="1.4" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">CLIENT UI · BROWSER</text>
+      <text x="0" y="32" fill="#1e293b" font-size="11">React 19 · Tailwind v4 · shadcn/ui · Storybook stories-as-browser-tests · D3 (ADR-0007 import policy)</text>
+    </g>
+    <!-- 6 boxes -->
+    <g transform="translate(20,56)" font-size="11">
+      <g><rect width="180" height="52" rx="6" fill="#ffffff" stroke="#1d4ed8" stroke-opacity="0.4"/><text x="90" y="22" text-anchor="middle" fill="#0f172a" font-weight="600">DomainMap (D3)</text><text x="90" y="38" text-anchor="middle" fill="#475569">force-directed</text></g>
+      <g transform="translate(192,0)"><rect width="180" height="52" rx="6" fill="#ffffff" stroke="#1d4ed8" stroke-opacity="0.4"/><text x="90" y="22" text-anchor="middle" fill="#0f172a" font-weight="600">RatingRadar</text><text x="90" y="38" text-anchor="middle" fill="#475569">5-axis polar</text></g>
+      <g transform="translate(384,0)"><rect width="180" height="52" rx="6" fill="#ffffff" stroke="#1d4ed8" stroke-opacity="0.4"/><text x="90" y="22" text-anchor="middle" fill="#0f172a" font-weight="600">Leaderboards</text><text x="90" y="38" text-anchor="middle" fill="#475569">⟨task, dataset, metric⟩</text></g>
+      <g transform="translate(576,0)"><rect width="180" height="52" rx="6" fill="#ffffff" stroke="#1d4ed8" stroke-opacity="0.4"/><text x="90" y="22" text-anchor="middle" fill="#0f172a" font-weight="600">Movers / Trending</text><text x="90" y="38" text-anchor="middle" fill="#475569">rating-action stream</text></g>
+      <g transform="translate(768,0)"><rect width="180" height="52" rx="6" fill="#ffffff" stroke="#1d4ed8" stroke-opacity="0.4"/><text x="90" y="22" text-anchor="middle" fill="#0f172a" font-weight="600">Profile · Watchlist</text><text x="90" y="38" text-anchor="middle" fill="#475569">user-facing</text></g>
+      <g transform="translate(960,0)"><rect width="180" height="52" rx="6" fill="#ffffff" stroke="#1d4ed8" stroke-opacity="0.4"/><text x="90" y="22" text-anchor="middle" fill="#0f172a" font-weight="600">Search palette</text><text x="90" y="38" text-anchor="middle" fill="#475569">⌘K · Flexsearch</text></g>
+    </g>
+  </g>
+
+  <!-- arrow client -> app -->
+  <g stroke="#475569" stroke-width="1.6" fill="none">
+    <line x1="640" y1="216" x2="640" y2="244" marker-end="url(#arrow-arch)"/>
+  </g>
+
+  <!-- Layer 2: App Router (Next.js 15) -->
+  <g transform="translate(40,250)">
+    <rect width="1200" height="120" rx="10" fill="url(#layer-app)" stroke="#6d28d9" stroke-opacity="0.25"/>
+    <g transform="translate(20,16)">
+      <text x="0" y="14" fill="#5b21b6" font-size="12" font-weight="700" letter-spacing="1.4" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">APP ROUTER · NEXT.JS 15 · REACT 19 SERVER COMPONENTS</text>
+      <text x="0" y="32" fill="#1e293b" font-size="11">/[locale]/{problems,papers,authors,institutions,ratings,trending,curator,…} · next-intl sub-paths · middleware 160 kB</text>
+    </g>
+    <g transform="translate(20,56)" font-size="11">
+      <g><rect width="200" height="52" rx="6" fill="#ffffff" stroke="#6d28d9" stroke-opacity="0.4"/><text x="100" y="22" text-anchor="middle" fill="#0f172a" font-weight="600">/[locale]/problems/[slug]</text><text x="100" y="38" text-anchor="middle" fill="#475569">RSC + ISR</text></g>
+      <g transform="translate(212,0)"><rect width="200" height="52" rx="6" fill="#ffffff" stroke="#6d28d9" stroke-opacity="0.4"/><text x="100" y="22" text-anchor="middle" fill="#0f172a" font-weight="600">/[locale]/curator/*</text><text x="100" y="38" text-anchor="middle" fill="#475569">env-var gated</text></g>
+      <g transform="translate(424,0)"><rect width="200" height="52" rx="6" fill="#ffffff" stroke="#6d28d9" stroke-opacity="0.4"/><text x="100" y="22" text-anchor="middle" fill="#0f172a" font-weight="600">/api/auth · /api/digest</text><text x="100" y="38" text-anchor="middle" fill="#475569">route handlers</text></g>
+      <g transform="translate(636,0)"><rect width="200" height="52" rx="6" fill="#ffffff" stroke="#6d28d9" stroke-opacity="0.4"/><text x="100" y="22" text-anchor="middle" fill="#0f172a" font-weight="600">/api/cron/*</text><text x="100" y="38" text-anchor="middle" fill="#475569">Vercel Cron + CRON_SECRET</text></g>
+      <g transform="translate(848,0)"><rect width="320" height="52" rx="6" fill="#ffffff" stroke="#6d28d9" stroke-opacity="0.4"/><text x="160" y="22" text-anchor="middle" fill="#0f172a" font-weight="600">middleware.ts · locale negotiation · auth probe</text><text x="160" y="38" text-anchor="middle" fill="#475569">160 kB UNCHANGED since Phase 12</text></g>
+    </g>
+  </g>
+
+  <!-- arrow app -> lib -->
+  <g stroke="#475569" stroke-width="1.6" fill="none">
+    <line x1="640" y1="376" x2="640" y2="404" marker-end="url(#arrow-arch)"/>
+  </g>
+
+  <!-- Layer 3: lib/ -->
+  <g transform="translate(40,410)">
+    <rect width="1200" height="160" rx="10" fill="url(#layer-lib)" stroke="#b45309" stroke-opacity="0.25"/>
+    <g transform="translate(20,16)">
+      <text x="0" y="14" fill="#92400e" font-size="12" font-weight="700" letter-spacing="1.4" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">LIB · SERVER-ONLY DOMAIN LAYER (TYPESCRIPT STRICT)</text>
+      <text x="0" y="32" fill="#1e293b" font-size="11">Zod 4 schemas · 4 XSS-audited markdown helpers · framework activation 12 / 12 component-surface-slot triples (Phase 44)</text>
+    </g>
+    <g transform="translate(20,56)" font-size="11">
+      <!-- row 1 -->
+      <g><rect width="280" height="40" rx="6" fill="#ffffff" stroke="#b45309" stroke-opacity="0.4"/><text x="14" y="17" fill="#0f172a" font-weight="600" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">lib/schemas/</text><text x="14" y="32" fill="#475569">Zod 4 source of truth (ADR-0003)</text></g>
+      <g transform="translate(292,0)"><rect width="280" height="40" rx="6" fill="#ffffff" stroke="#b45309" stroke-opacity="0.4"/><text x="14" y="17" fill="#0f172a" font-weight="600" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">lib/auth/</text><text x="14" y="32" fill="#475569">NextAuth v5 + DB sessions (ADR-0012/0020)</text></g>
+      <g transform="translate(584,0)"><rect width="280" height="40" rx="6" fill="#ffffff" stroke="#b45309" stroke-opacity="0.4"/><text x="14" y="17" fill="#0f172a" font-weight="600" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">lib/markdown/</text><text x="14" y="32" fill="#475569">unified + rehype-sanitize (ADR-0018)</text></g>
+      <g transform="translate(876,0)"><rect width="280" height="40" rx="6" fill="#ffffff" stroke="#b45309" stroke-opacity="0.4"/><text x="14" y="17" fill="#0f172a" font-weight="600" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">lib/markdown/extensions/</text><text x="14" y="32" fill="#475569">Phase-37 framework (FIG&nbsp;4)</text></g>
+      <!-- row 2 -->
+      <g transform="translate(0,52)"><rect width="280" height="40" rx="6" fill="#ffffff" stroke="#b45309" stroke-opacity="0.4"/><text x="14" y="17" fill="#0f172a" font-weight="600" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">lib/moderation/</text><text x="14" y="32" fill="#475569">framework-only (ADR-0024); ADR-0025 TBD</text></g>
+      <g transform="translate(292,52)"><rect width="280" height="40" rx="6" fill="#ffffff" stroke="#b45309" stroke-opacity="0.4"/><text x="14" y="17" fill="#0f172a" font-weight="600" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">lib/email/</text><text x="14" y="32" fill="#475569">Resend + 3 templates + cron digest (ADR-0021/22)</text></g>
+      <g transform="translate(584,52)"><rect width="280" height="40" rx="6" fill="#ffffff" stroke="#b45309" stroke-opacity="0.4"/><text x="14" y="17" fill="#0f172a" font-weight="600" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">lib/storage/</text><text x="14" y="32" fill="#475569">putAvatar + sharp EXIF strip (ADR-0019)</text></g>
+      <g transform="translate(876,52)"><rect width="280" height="40" rx="6" fill="#ffffff" stroke="#b45309" stroke-opacity="0.4"/><text x="14" y="17" fill="#0f172a" font-weight="600" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">lib/i18n/</text><text x="14" y="32" fill="#475569">next-intl · 168 keys / locale · 2 locales</text></g>
+    </g>
+  </g>
+
+  <!-- arrows from lib → storage AND lib → external -->
+  <g stroke="#475569" stroke-width="1.6" fill="none">
+    <line x1="380" y1="576" x2="380" y2="604" marker-end="url(#arrow-arch)"/>
+    <line x1="900" y1="576" x2="900" y2="604" marker-end="url(#arrow-arch)"/>
+  </g>
+
+  <!-- Layer 4: Storage (left) -->
+  <g transform="translate(40,610)">
+    <rect width="600" height="180" rx="10" fill="url(#layer-store)" stroke="#047857" stroke-opacity="0.25"/>
+    <g transform="translate(20,16)">
+      <text x="0" y="14" fill="#065f46" font-size="12" font-weight="700" letter-spacing="1.4" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">STORAGE LAYER</text>
+      <text x="0" y="32" fill="#1e293b" font-size="11">file-first editorial · DB-backed user · blob-backed avatars · 9 migrations</text>
+    </g>
+    <g transform="translate(20,56)" font-size="11">
+      <g><rect width="180" height="106" rx="6" fill="#ffffff" stroke="#047857" stroke-opacity="0.4"/>
+        <text x="14" y="18" fill="#065f46" font-weight="700">content/ (file-first)</text>
+        <text x="14" y="36" fill="#475569">problems/ · papers/</text>
+        <text x="14" y="52" fill="#475569">authors/ · institutions/</text>
+        <text x="14" y="68" fill="#475569">methodology/ · taxonomy.yaml</text>
+        <text x="14" y="84" fill="#475569">ratings/ (immutable, ADR-0005)</text>
+        <text x="14" y="100" fill="#94a3b8" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="9">VELITE → .velite/</text>
+      </g>
+      <g transform="translate(192,0)"><rect width="180" height="106" rx="6" fill="#ffffff" stroke="#047857" stroke-opacity="0.4"/>
+        <text x="14" y="18" fill="#065f46" font-weight="700">Turso libSQL</text>
+        <text x="14" y="36" fill="#475569">user · account · session</text>
+        <text x="14" y="52" fill="#475569">verificationToken</text>
+        <text x="14" y="68" fill="#475569">watchlist · ratingChallenge</text>
+        <text x="14" y="84" fill="#475569">subscriber</text>
+        <text x="14" y="100" fill="#94a3b8" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="9">DRIZZLE · 9 MIGRATIONS</text>
+      </g>
+      <g transform="translate(384,0)"><rect width="180" height="106" rx="6" fill="#ffffff" stroke="#047857" stroke-opacity="0.4"/>
+        <text x="14" y="18" fill="#065f46" font-weight="700">Vercel Blob</text>
+        <text x="14" y="36" fill="#475569">user-uploaded avatars</text>
+        <text x="14" y="52" fill="#475569">sharp EXIF strip</text>
+        <text x="14" y="68" fill="#475569">WebP forward (P24)</text>
+        <text x="14" y="84" fill="#475569">orphan cleanup (P21)</text>
+        <text x="14" y="100" fill="#94a3b8" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="9">ADR-0017 / 0019</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- Layer 5: External (right) -->
+  <g transform="translate(660,610)">
+    <rect width="580" height="180" rx="10" fill="url(#layer-ext)" stroke="#b91c1c" stroke-opacity="0.25"/>
+    <g transform="translate(20,16)">
+      <text x="0" y="14" fill="#991b1b" font-size="12" font-weight="700" letter-spacing="1.4" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">EXTERNAL SYSTEMS</text>
+      <text x="0" y="32" fill="#1e293b" font-size="11">3rd-party APIs · gated via env contract in .env.example</text>
+    </g>
+    <g transform="translate(20,56)" font-size="11">
+      <g><rect width="172" height="106" rx="6" fill="#ffffff" stroke="#b91c1c" stroke-opacity="0.4"/>
+        <text x="14" y="18" fill="#991b1b" font-weight="700">GitHub + Google</text>
+        <text x="14" y="36" fill="#475569">OAuth providers</text>
+        <text x="14" y="52" fill="#475569">multi-provider (Phase 28)</text>
+        <text x="14" y="68" fill="#475569">Discussions (GraphQL)</text>
+        <text x="14" y="84" fill="#475569">Giscus iframe</text>
+        <text x="14" y="100" fill="#94a3b8" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="9">ADR-0010 / 0020</text>
+      </g>
+      <g transform="translate(184,0)"><rect width="172" height="106" rx="6" fill="#ffffff" stroke="#b91c1c" stroke-opacity="0.4"/>
+        <text x="14" y="18" fill="#991b1b" font-weight="700">Resend</text>
+        <text x="14" y="36" fill="#475569">transactional email</text>
+        <text x="14" y="52" fill="#475569">3 templates</text>
+        <text x="14" y="68" fill="#475569">weekly digest cron</text>
+        <text x="14" y="84" fill="#475569">verification + welcome</text>
+        <text x="14" y="100" fill="#94a3b8" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="9">ADR-0021 / 0022</text>
+      </g>
+      <g transform="translate(368,0)"><rect width="172" height="106" rx="6" fill="#ffffff" stroke="#b91c1c" stroke-opacity="0.4"/>
+        <text x="14" y="18" fill="#991b1b" font-weight="700">Anthropic + arXiv</text>
+        <text x="14" y="36" fill="#475569">ingest-arxiv CLI</text>
+        <text x="14" y="52" fill="#475569">extract-leaderboard CLI</text>
+        <text x="14" y="68" fill="#475569">human-in-the-loop</text>
+        <text x="14" y="84" fill="#475569">drafts → review → commit</text>
+        <text x="14" y="100" fill="#94a3b8" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="9">ADR-0008 / 0009</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- side gutter caption -->
+  <g transform="translate(1248,90)" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">
+    <text x="0" y="40" fill="#94a3b8" font-size="9" letter-spacing="1.4" transform="rotate(90)">DATA FLOW · TOP → BOTTOM</text>
+  </g>
+</svg>

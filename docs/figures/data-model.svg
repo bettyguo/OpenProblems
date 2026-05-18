@@ -1,0 +1,173 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" role="img" aria-label="Data model: Problem / Paper / Author and Institution with RatingAction immutable ledger" font-family="ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,sans-serif">
+  <title>Canonical data model</title>
+  <defs>
+    <linearGradient id="bg-dm" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f8fafc"/><stop offset="1" stop-color="#eef2f7"/>
+    </linearGradient>
+    <linearGradient id="ent-problem" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1e3a8a"/><stop offset="1" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <linearGradient id="ent-paper" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#065f46"/><stop offset="1" stop-color="#047857"/>
+    </linearGradient>
+    <linearGradient id="ent-author" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9a3412"/><stop offset="1" stop-color="#c2410c"/>
+    </linearGradient>
+    <linearGradient id="ent-rating" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7c2d12"/><stop offset="1" stop-color="#9a3412"/>
+    </linearGradient>
+    <marker id="arrow-dm" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="9" markerHeight="9" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#334155"/>
+    </marker>
+    <marker id="diamond-dm" viewBox="0 0 14 12" refX="2" refY="6" markerWidth="10" markerHeight="8" orient="auto">
+      <path d="M 7 0 L 14 6 L 7 12 L 0 6 z" fill="#ffffff" stroke="#334155" stroke-width="1.4"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="760" fill="url(#bg-dm)"/>
+
+  <!-- title -->
+  <g transform="translate(40,36)">
+    <text x="0" y="0" fill="#0f172a" font-size="26" font-weight="800" letter-spacing="-0.3">Canonical data model</text>
+    <text x="0" y="22" fill="#475569" font-size="13">Three first-class entities · one immutable rating-action ledger · cross-link audit gate (`pnpm audit-content`) enforces referential integrity</text>
+    <text x="1160" y="-2" text-anchor="end" fill="#94a3b8" font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" letter-spacing="1.4">FIG · 2 / 7</text>
+    <text x="1160" y="18" text-anchor="end" fill="#94a3b8" font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" letter-spacing="1.4">ADR-0003 / 0005 · ZOD AS SOURCE OF TRUTH</text>
+  </g>
+
+  <!-- Problem entity (left, top) -->
+  <g transform="translate(70,120)">
+    <rect width="320" height="220" rx="14" fill="url(#ent-problem)"/>
+    <text x="20" y="34" fill="#fbbf24" font-size="11" font-weight="700" letter-spacing="2.4" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">ENTITY · 1</text>
+    <text x="20" y="64" fill="#ffffff" font-size="26" font-weight="800">Problem</text>
+    <line x1="20" y1="76" x2="300" y2="76" stroke="#fbbf24" stroke-width="2"/>
+    <g transform="translate(20,98)" fill="#dbeafe" font-size="12" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">
+      <text y="0">slug · string (PK)</text>
+      <text y="20">title · string</text>
+      <text y="40">domains · TaxonomyNode[]</text>
+      <text y="60">summary · MDX</text>
+      <text y="80">leaderboards · Leaderboard[]</text>
+      <text y="100">ratings → Ratings (latest)</text>
+    </g>
+    <text x="20" y="208" fill="#fbbf24" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" letter-spacing="1.4">content/problems/&lt;slug&gt;/index.mdx</text>
+  </g>
+
+  <!-- Paper entity (right, top) -->
+  <g transform="translate(540,120)">
+    <rect width="320" height="220" rx="14" fill="url(#ent-paper)"/>
+    <text x="20" y="34" fill="#86efac" font-size="11" font-weight="700" letter-spacing="2.4" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">ENTITY · 2</text>
+    <text x="20" y="64" fill="#ffffff" font-size="26" font-weight="800">Paper</text>
+    <line x1="20" y1="76" x2="300" y2="76" stroke="#86efac" stroke-width="2"/>
+    <g transform="translate(20,98)" fill="#d1fae5" font-size="12" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">
+      <text y="0">slug · string (PK)</text>
+      <text y="20">title · arxivId · doi</text>
+      <text y="40">authors · Author[]</text>
+      <text y="60">institutions · Inst[]</text>
+      <text y="80">venue · year</text>
+      <text y="100">addresses → Problem[]</text>
+    </g>
+    <text x="20" y="208" fill="#86efac" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" letter-spacing="1.4">content/papers/&lt;slug&gt;.yaml</text>
+  </g>
+
+  <!-- Author/Institution entity (right, far-right top) -->
+  <g transform="translate(1010,40)">
+    <rect width="170" height="60" rx="10" fill="url(#ent-author)"/>
+    <text x="14" y="22" fill="#fed7aa" font-size="10" font-weight="700" letter-spacing="1.8" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">ENT · 3a</text>
+    <text x="14" y="44" fill="#ffffff" font-size="18" font-weight="800">Author</text>
+  </g>
+  <g transform="translate(1010,116)">
+    <rect width="170" height="60" rx="10" fill="url(#ent-author)"/>
+    <text x="14" y="22" fill="#fed7aa" font-size="10" font-weight="700" letter-spacing="1.8" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">ENT · 3b</text>
+    <text x="14" y="44" fill="#ffffff" font-size="18" font-weight="800">Institution</text>
+  </g>
+
+  <!-- relations problem ↔ paper -->
+  <g stroke="#334155" stroke-width="2" fill="none">
+    <path d="M 390 230 L 540 230" marker-end="url(#arrow-dm)" marker-start="url(#diamond-dm)"/>
+  </g>
+  <g font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">
+    <text x="430" y="220" fill="#334155" font-weight="600">addresses</text>
+    <text x="404" y="248" fill="#64748b">1..N</text>
+    <text x="514" y="248" fill="#64748b">N..M</text>
+  </g>
+
+  <!-- relations paper ↔ author -->
+  <g stroke="#334155" stroke-width="2" fill="none">
+    <path d="M 860 180 Q 940 130 1010 70" marker-end="url(#arrow-dm)"/>
+    <path d="M 860 230 L 1010 150" marker-end="url(#arrow-dm)"/>
+  </g>
+  <text x="908" y="135" font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#334155" font-weight="600">authored by</text>
+  <text x="908" y="222" font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#334155" font-weight="600">affiliated</text>
+
+  <!-- Rating dimensions side panel (left bottom) -->
+  <g transform="translate(70,396)">
+    <rect width="370" height="140" rx="12" fill="#ffffff" stroke="#cbd5e1"/>
+    <text x="16" y="26" fill="#0f172a" font-size="13" font-weight="700">Problem.ratings · 5 dimensions</text>
+    <g transform="translate(16,42)" font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">
+      <g><circle cx="6" cy="14" r="5" fill="#1d4ed8"/><text x="20" y="18" fill="#1e293b">difficulty · S | A | B | C | D | E</text></g>
+      <g transform="translate(0,18)"><circle cx="6" cy="14" r="5" fill="#10b981"/><text x="20" y="18" fill="#1e293b">saturation · number 0..100</text></g>
+      <g transform="translate(0,36)"><circle cx="6" cy="14" r="5" fill="#f59e0b"/><text x="20" y="18" fill="#1e293b">urgency · int 0..5</text></g>
+      <g transform="translate(0,54)"><circle cx="6" cy="14" r="5" fill="#a855f7"/><text x="20" y="18" fill="#1e293b">value · int 0..5</text></g>
+      <g transform="translate(0,72)"><circle cx="6" cy="14" r="5" fill="#ef4444"/><text x="20" y="18" fill="#1e293b">industryCall · int 0..5</text></g>
+    </g>
+  </g>
+
+  <!-- RatingAction (center bottom) -->
+  <g transform="translate(470,396)">
+    <rect width="380" height="280" rx="14" fill="url(#ent-rating)"/>
+    <text x="20" y="34" fill="#fbbf24" font-size="11" font-weight="700" letter-spacing="2.4" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">LEDGER · APPEND-ONLY</text>
+    <text x="20" y="64" fill="#ffffff" font-size="26" font-weight="800">RatingAction</text>
+    <line x1="20" y1="76" x2="360" y2="76" stroke="#fbbf24" stroke-width="2"/>
+    <g transform="translate(20,100)" fill="#fed7aa" font-size="12" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">
+      <text y="0">id · slug-NNN (immutable)</text>
+      <text y="20">problemSlug · → Problem</text>
+      <text y="40">dimension · D | S | U | V | IC</text>
+      <text y="60">from · prevValue</text>
+      <text y="80">to · newValue</text>
+      <text y="100">rationale · MDX</text>
+      <text y="120">curator · handle</text>
+      <text y="140">methodologyVersion · v1.0</text>
+      <text y="160">timestamp · ISO-8601</text>
+    </g>
+    <text x="20" y="266" fill="#fbbf24" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" letter-spacing="1.4">content/problems/&lt;slug&gt;/ratings/&lt;id&gt;.yaml</text>
+  </g>
+
+  <!-- Why immutable -->
+  <g transform="translate(890,396)">
+    <rect width="280" height="280" rx="12" fill="#ffffff" stroke="#cbd5e1"/>
+    <text x="16" y="26" fill="#0f172a" font-size="13" font-weight="700">Why immutable?</text>
+    <text x="16" y="50" fill="#475569" font-size="12">A rating is a published claim.</text>
+    <text x="16" y="68" fill="#475569" font-size="12">Editing rewrites history.</text>
+    <line x1="16" y1="84" x2="264" y2="84" stroke="#e2e8f0"/>
+    <text x="16" y="106" fill="#0f172a" font-size="12" font-weight="600">Enforced by ADR-0005:</text>
+    <g transform="translate(16,118)" font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#1e293b">
+      <text y="14">pre-commit hook</text>
+      <text y="32">blocks M / D / R / C on</text>
+      <text y="50">content/problems/*/ratings/</text>
+      <text y="68">— only net-new files pass</text>
+    </g>
+    <line x1="16" y1="202" x2="264" y2="202" stroke="#e2e8f0"/>
+    <text x="16" y="222" fill="#0f172a" font-size="12" font-weight="600">Corrections =</text>
+    <text x="16" y="240" fill="#1e293b" font-size="12">superseding action,</text>
+    <text x="16" y="258" fill="#1e293b" font-size="12">not in-place edit.</text>
+  </g>
+
+  <!-- relation problem → rating-action -->
+  <g stroke="#334155" stroke-width="2" fill="none">
+    <path d="M 230 340 L 230 386 L 470 386" marker-end="url(#arrow-dm)" marker-start="url(#diamond-dm)"/>
+  </g>
+  <text x="276" y="378" font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#334155" font-weight="600">emits 1..N</text>
+
+  <!-- bottom legend -->
+  <g transform="translate(40,704)" font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">
+    <text x="0" y="14" fill="#64748b" letter-spacing="1.4">SYMBOLS</text>
+    <g transform="translate(110,0)">
+      <path d="M 0 14 L 32 14" stroke="#334155" stroke-width="2" marker-end="url(#arrow-dm)"/>
+      <text x="44" y="18" fill="#1e293b">references / addresses</text>
+    </g>
+    <g transform="translate(330,0)">
+      <path d="M 0 14 L 32 14" stroke="#334155" stroke-width="2" marker-start="url(#diamond-dm)" marker-end="url(#arrow-dm)"/>
+      <text x="48" y="18" fill="#1e293b">composition / 1..N owner</text>
+    </g>
+    <text x="700" y="18" fill="#64748b">All cross-references audited by `pnpm audit-content` — 0 errors enforced in CI.</text>
+  </g>
+</svg>
