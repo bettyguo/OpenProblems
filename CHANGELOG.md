@@ -2470,6 +2470,106 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 38 — Community-adjacent surfaces (**twenty-ninth NON-§13 phase**: first concrete Phase-37-framework consumer — wikilink resolution on `actionRationale` surface via `rehypePlugins` extension + new `WikilinkExtensionRegistry` + first env-var dispatch arm `MARKDOWN_EXTENSIONS=wikilinks` beyond default in `getExtensionRegistry()`; closes Class B.14 at 9+ phase carryover via Phase-37 framework consumption; anticipated 4-5 units; 33rd "Continue" override invoked)
 
+#### Unit 38.4 — Phase 38 acceptance gate (Q72-framework-consumer realized via wikilinks-per-actionRationale; B.14 closed at 9+ phase carryover; 24 ADRs; 5 units; 784/68; ADR-0018 D-G = first D-clause with 5 APPENDs in project history; env-var count 13 → 14; 60th consecutive 103 kB unit; 34th "Continue" override opportunity at Phase 38 → 39 boundary)
+
+- Fifth and final Phase-38 unit; gate-only. Ships the Phase 38 acceptance gate per §12 cardinal rule + Phase-12-through-37 acceptance-gate patterns. **Phase 38 CLOSES at this unit's commit**. Phase 39 entry awaits explicit "Continue" override OR phase-39 thread direction.
+
+##### Phase 38 — what shipped (5 units)
+
+| Unit | Title | Type | Commit |
+|---|---|---|---|
+| 38.0 | Phase 38 prep | docs | `0c46b9a` |
+| 38.1 | Wikilinks plugin + `WikilinkExtensionRegistry` + ADR-0018 APPEND | code+APPEND | `6ca43f2` |
+| 38.2 | `MARKDOWN_EXTENSIONS=wikilinks` factory dispatch + end-to-end tests | code | `cc6d51a` |
+| 38.3 | Phase-38 hygiene + B.14 carryover resolution | docs | `975addb` |
+| 38.4 | Phase 38 acceptance gate (this unit) | gate | (this commit) |
+
+Total: **5 units** — mirrors Phase 35 + Phase 37 5-unit framework-only/framework-consumer shapes; no deferred units; no inserted units.
+
+##### Q72-framework consumer realized at HEAD `975addb`
+
+Phase-38-prep D-1 first-thread recommendation realized end-to-end:
+
+- `lib/markdown/extensions/wikilinks.ts` shipped (Unit 38.1): `rehypeResolveWikilinks` plugin + `WikilinkExtensionRegistry` class + `PHASE_38_DEFAULT_ENABLED_SURFACES` const + 15 plugin-level + registry tests.
+- `MARKDOWN_EXTENSIONS=wikilinks` env-var dispatch arm in `getExtensionRegistry()` (Unit 38.2; first non-default Phase-37-framework dispatch arm in project history).
+- 9 env-var-aware dispatch tests + 9 end-to-end actionRationale wikilink-rendering tests (Unit 38.2).
+- ADR-0018 D-G APPEND adds Phase-38 EXTENDED block with 5 sub-decisions APPEND-D-H through APPEND-D-L (Unit 38.1; +~95 lines).
+- B.14 carryover resolution at ADR-0018 D-G post-line-545 (Unit 38.3 APPEND-not-EDIT; 9+ phase B.14 carryover from Phase 29 → 38).
+
+##### Phase 37 → Phase 38 delta
+
+| Metric | Phase 37 close | Phase 38 close | Δ |
+|---|---|---|---|
+| Tests | 755 / 67 files | **784 / 68 files** | +29 / +1 |
+| ADRs | 24 | **24** | 0 |
+| ADR-0018 D-G APPEND count | 4 | **5** (project first) | +1 |
+| DB tables | 7 | 7 | 0 |
+| Migrations | 9 | 9 | 0 |
+| Env vars | 13 | **14** (`MARKDOWN_EXTENSIONS` added) | +1 |
+| i18n keys per locale | 168 | 168 | 0 |
+| Dynamic page+API routes | 13 | 13 | 0 |
+| First Load JS shared chunk | 103 kB | **103 kB** | 0 |
+| Middleware bundle | 160 kB | 160 kB | 0 |
+| OPEN_QUESTIONS top-level Q-count | 66 | **66** (28 resolved + 4 lean + 34 open) | 0 |
+| Phase-37+/Phase-38+ candidate count | 9 | **8** (B.14 removed) | −1 |
+| Runtime deps added | — | **0** | 0 |
+| `lib/markdown/extensions/` files | 5 | **7** (5 existing + wikilinks.ts + wikilinks.test.ts) | +2 |
+
+##### Architectural firsts in Phase 38 (14 enumerated)
+
+1. **First concrete Phase-37-framework consumer in project history** — Phase 37 shipped framework; Phase 38 ships first concrete consumer (wikilinks-per-actionRationale). Validates Phase-37 framework's "zero-rework consumption" property documented in APPEND-D-G — Unit 38.2 added 5 lines to `extensions/index.ts`; NO edits to `default.ts` / `types.ts` / `buildProcessor()` / 4 lazy markdown helpers.
+2. **First non-default Phase-37-framework env-var dispatch arm** — `MARKDOWN_EXTENSIONS=wikilinks` is the first non-default arm.
+3. **First env-var addition since Phase 35** (`MODERATION_PROVIDER` was the previous Phase 35; `MARKDOWN_EXTENSIONS` Phase 38; env-var count 13 → 14).
+4. **First post-sanitize HAST transformation that EMITS new elements** in the markdown pipeline (prior post-sanitize plugin `rehypeStripUnsafeHrefs` only strips; the wikilink plugin synthesizes `<a>` elements).
+5. **First framework-emitted relative URLs in markdown output** — wikilinks emit `/problems/{slug}` hrefs that bypass `rehypeStripUnsafeHrefs` via APPEND-D-D plugin-order-after-default discipline. **Validates the Phase-37 framework's design value** for relative-URL-emitting extensions.
+6. **Second consecutive Phase-37-framework-pattern phase** — Phase 37 framework + Phase 38 consumer = **first "framework + first consumer" 2-phase cluster** in project history.
+7. **First ADR D-clause with FIVE APPENDs** — ADR-0018 D-G now carries Phase 18 + 27 + 29 + 37 + **38** APPENDs. Phase 37 was the prior record-holder (4 APPENDs).
+8. **Fifth consecutive net-Q/candidate-decrease phase** — Phase 34 Q79 + 35 Q68 + 36 Q64 + 37 Q72 + **38 B.14** = **first 5-phase net-decrease streak in project history**.
+9. **First B-class-resolution-via-framework-consumption phase** — B.14 closes Phase 38 via Phase-37 framework. The Phase-37 framework is now the **first ADR D-clause framework with multiple Q/B-class closures across two distinct phases** (Q72 Phase 37 framework-as-realization + B.14 Phase 38 framework-as-consumer).
+10. **First "speculated-coupling-not-needed" closure in project history** — B.14's Phase-29 paragraph speculated B.14 + Q72-family could couple into a single "markdown evolution" ADR-0021-candidate scope; neither needed it. Both closed independently via the SAME Phase-37 framework as separate consumers.
+11. **9+ phase B.14 carryover** (Phase 29 → 38; second-longest B-class carryover after B.15 item 1's 22+ phase Phase-30 closure).
+12. **Eighth consecutive phase without new B category** (Phase 31 + 32 + 33 + 34 + 35 + 36 + 37 + **38** = first such 8-phase run in project history).
+13. **57th-through-60th consecutive 103 kB First Load JS units** in project history (Phase 9 Unit 9.5 → Phase 38 Unit 38.4 inclusive); zero client-bundle regression end-to-end across framework + first consumer.
+14. **Twenty-ninth NON-§13 phase** (§13 ledger CLOSED at Unit 9.9; carried unchanged through Phases 10-38).
+
+##### Phase 38 → Phase 39 entry conditions
+
+Per §12 cardinal rule: **Phase 39 entry requires explicit human sign-off**. This unit ships the Phase 38 close; Phase 39.0 prep awaits `"Continue"` override OR phase-39-thread direction.
+
+**Recommended Phase 39 first-thread candidates** (carried from Phase-38-prep + Phase-37-gate alternative-threads; refined by Phase-38-as-shipped):
+
+| Rank | Thread | Units | Tractability |
+|---|---|---|---|
+| 1 | Second concrete Phase-37-framework extension consumer (GFM tables per-reviewNotes via `schemaOverrides`, OR cross-surface wikilink expansion to bio + reviewNotes + rationale, OR `@mention` resolution) | 1-2 | Validates multi-consumer composition; needs scope decision |
+| 2 | ADR-0025 concrete content-moderation provider | 3-5 | Strongest patience signal; not autonomous-tractable |
+| 3 | Pre-commit typecheck hook addition | 1 | Closes Unit-36.1-surfaced gap; tiny |
+| 4 | Q78 digest-send analytics | 3-5 | Waits for Q77 production signal |
+| 5 | Account-deletion blob cleanup | 1-2 | Conditional on account-delete UI |
+| 6 | `safeAuth()` extraction | 1 | Still 4 copies; not at threshold |
+| 7 | Subscribe + `/profile` test backfill | 1-2 | Not user-visible value |
+| 8 | N. v2 methodology authoring | curator | Primary §1 (d) blocker |
+| 9 | Q79 Profile B / C | 2-3 each | Needs user-feedback signal |
+
+**Operational gates still pending** (6 UNCHANGED from Phase 37 close): Q54 (GitHub OAuth) + Q55 (Turso prod DB) + Q69 (Vercel Blob) + Q73 (Google OAuth) + Q75 (Resend domain) + Q77 (Cron secret). All curator-track.
+
+##### Anti-scope (Phase 39+ deferrals; carried forward)
+
+NOT cross-surface wikilink expansion (Phase 39+ if demand surfaces); NOT multi-anchor `[[slug|display]]` syntax (Phase 39+); NOT cross-entity wikilinks `[[paper-id]]` / `[[author-slug]]` / `[[institution-slug]]` (Phase 39+); NOT `<a class="wikilink">` styling (Phase 39+); NOT 404-validation of unresolved slugs (Phase 39+); NOT plugin parameterization (Phase 39+ cross-entity); NOT second concrete framework consumer (Phase 39+); NOT ADR-0025 concrete content-moderation provider (Phase 39+); NOT Q78 digest-send analytics (waits for Q77); NOT account-deletion blob cleanup (Phase 39+); NOT v2 methodology authoring (curator-track); all other Phase-30-through-37 deferrals carry forward.
+
+##### Smoke gates (Phase 38 close)
+
+- `pnpm typecheck` — strict; passes.
+- `pnpm test` — **784 / 68 files** passing.
+- `pnpm audit-content` — 0 errors / 6 warnings (Q32 baseline since Phase 2; **36 consecutive phases unchanged**).
+- First Load JS shared chunk — **103 kB UNCHANGED** end-to-end Phase 9 Unit 9.5 → Phase 38 Unit 38.4 (**60 consecutive units**).
+- Middleware bundle — **160 kB UNCHANGED** since Phase 12.
+
+##### Boundary statement
+
+**Phase 38 CLOSED after 5 units (38.0 prep + 38.1 plugin + 38.2 dispatch + 38.3 hygiene + 38.4 gate). First concrete Phase-37-framework consumer realized via wikilinks-per-actionRationale: `rehypeResolveWikilinks` plugin + `WikilinkExtensionRegistry` class + `MARKDOWN_EXTENSIONS=wikilinks` env-var dispatch arm + B.14 closure at 9+ phase carryover (second-longest B-class carryover). Twenty-ninth NON-§13 phase. Second consecutive Phase-37-framework-pattern phase (first "framework + first consumer" 2-phase cluster in project history). Fifth consecutive net-Q/candidate-decrease phase (Q79 + Q68 + Q64 + Q72 + B.14 = first 5-phase streak). Eighth consecutive phase without new B category. ADR-0018 D-G now carries 5 APPENDs (project first). 784 tests across 68 vitest files (+29 / +1 vs Phase 37). 24 ADRs UNCHANGED. 7 DB tables UNCHANGED. 9 migrations UNCHANGED. 14 env vars (+1 `MARKDOWN_EXTENSIONS`). 168 i18n keys per locale UNCHANGED. First Load JS 103 kB UNCHANGED (60 consecutive units). Middleware 160 kB UNCHANGED. OPEN_QUESTIONS top-level Q-count 66 UNCHANGED. Phase-38+ candidate count 9 → 8 (B.14 removed). Zero new ADRs / migrations / i18n keys / operational gates / runtime deps. Phase 39 entry requires explicit human sign-off per §12.**
+
+- THINK artifact: `docs/thinking/38.4-phase-38-acceptance-gate.md`.
+
 #### Unit 38.3 — Phase-38 hygiene + Class B.14 carryover resolution in ADR-0018 D-G REALIZED-Phase-29 block (9+ phase B.14 carryover; second-longest B-class carryover in project history; Phase-37+ candidate count 9 → 8; fifth consecutive net-Q/candidate-decrease phase; 59th consecutive 103 kB unit)
 
 - Fourth Phase-38 unit; docs-only hygiene. Mirrors Phase-37 Unit 37.3 + Phase-36 Unit 36.3 + Phase-35 Unit 35.3 hygiene shapes.
