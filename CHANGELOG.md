@@ -2468,7 +2468,112 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **Phase-8 scope drift**: HTML shell migration **dropped from scope mid-flight** at Unit 8.1 (parallel session preserved existing `app/layout.tsx`-owns-`<html>` structure with a "this change was intentional" system reminder). Surfaced into Unit 8.4 territory, then deferred indefinitely. No scope additions. Parallel-curator coordination at unprecedented intensity (Unit 8.1 mid-flight file deletions; Unit 8.6 FR content authored by parallel session).
 - THINK artifact: `docs/thinking/8.9-phase-8-acceptance-gate.md`.
 
-### Phase 46 — Community-adjacent surfaces (**thirty-seventh NON-§13 phase**: multi-anchor wikilink alias syntax `[[slug|display-text]]` via regex extension on existing `rehypeResolveWikilinks` plugin in `WikilinkExtensionRegistry`; **first plugin-regex-extension within an existing Phase-37-framework consumer** in project history; **first "display-text divergence from slug" rendering**; **first alias-syntax surface** in any framework consumer; closes ADR-0018 APPEND-D-L item 2 deferral at 8-phase carryover; APPEND-D-AD fourth two-letter slot; anticipated 5 units; 41st "Continue" override invoked)
+### Phase 46 — Community-adjacent surfaces (**thirty-seventh NON-§13 phase**: multi-anchor wikilink alias syntax `[[slug|display-text]]` via regex extension on existing `rehypeResolveWikilinks` plugin in `WikilinkExtensionRegistry`; **first plugin-regex-extension within an existing Phase-37-framework consumer** in project history; **first "display-text divergence from slug" rendering**; **first alias-syntax surface** in any framework consumer; closes ADR-0018 APPEND-D-L item 2 deferral at 8-phase carryover; APPEND-D-AD fourth two-letter slot; 5 numbered units; 41st "Continue" override invoked; **CLOSED**)
+
+#### Unit 46.4 — Phase 46 acceptance gate (first plugin-regex-extension within an existing consumer; first display-text divergence; first alias-syntax surface; D-AD; 1012/72; 92nd consecutive 103 kB unit; 42nd "Continue" override opportunity at Phase 46 → 47 boundary)
+
+- Fifth and final Phase-46 numbered unit; gate-only. **Phase 46 CLOSES at this unit's commit**. Phase 47 entry awaits explicit "Continue" override per §12.
+- THINK artifact: `docs/thinking/46.4-phase-46-acceptance-gate.md` (Phase-45 → 46 delta complete; 12 architectural firsts enumerated; Phase-47 entry conditions documented with 10 ranked candidate threads).
+
+##### Phase 46 — what shipped (5 numbered units)
+
+| Unit | Title | Type | Commit |
+|---|---|---|---|
+| 46.0 | Phase 46 prep | docs | `fc4135c` |
+| 46.1 | `WIKILINK_PATTERN` regex extension + plugin body + 13 NEW alias tests + ADR-0018 D-G APPEND-D-AD | code+APPEND | `b50966e` |
+| 46.2 | 14 NEW end-to-end alias tests on all 4 surfaces + 4-way composition | code | `a8ddcf2` |
+| 46.3 | Phase-46 hygiene + APPEND-D-L item 2 closure documentation | docs | `af84dc0` |
+| 46.4 | Phase 46 acceptance gate (this unit) | gate | (this commit) |
+
+Total: **5 numbered units (46.0 through 46.4)**. Mirrors Phase 35 + 37 + 38 + 39 + 40 + 41 + 42 + 43 + 44 + 45 5-unit framework shapes exactly.
+
+##### First plugin-regex-extension within an existing consumer + first display-text divergence at HEAD `af84dc0`
+
+Phase-46-prep D-1 first-thread recommendation realized end-to-end:
+
+- `WIKILINK_PATTERN` regex evolved in-place from `/\[\[([a-z0-9-]+)\]\]/g` to `/\[\[([a-z0-9-]+)(?:\|([^\]\n]+))?\]\]/g`. Slug capture group unchanged (APPEND-D-I XSS-safety contract preserved); new optional alias capture group added.
+- `rehypeResolveWikilinks` plugin body updated to emit `<a href="/problems/{slug}">{display ?? slug}</a>`. `href` always points to slug-route; only displayed anchor text varies.
+- `WikilinkExtensionRegistry` class + factory dispatch arm + `PHASE_38_DEFAULT_ENABLED_SURFACES` constant **UNCHANGED**.
+- **13 NEW tests** in `wikilinks.test.ts` covering plugin-level alias behavior (Unit 46.1).
+- **14 NEW end-to-end tests** in `lib/markdown/index.test.ts` covering alias rendering on all 4 surfaces under `MARKDOWN_EXTENSIONS=wikilinks` Phase-42 default + alias under 4-way `wikilinks,tables,arxiv,doi` Phase-45 default composite (Unit 46.2).
+- ADR-0018 D-G APPEND adds Phase-46 EXTENDED block + **APPEND-D-AD** (Unit 46.1; fourth two-letter APPEND letter after Phase-43 D-AA + Phase-44 D-AB + Phase-45 D-AC).
+- ADR-0018 APPEND-D-L item 2 deferral CLOSED at **8-phase carryover** (Phase 38 → Phase 46; Unit 46.3 documents). **Longest APPEND-D-L item closure to date** (item 1 closed Phase 42 at 4-phase gap).
+- **First plugin-regex-extension within an existing Phase-37-framework consumer** in project history. Introduces a **fifth phase-shape pattern** to the framework alongside new-consumer phases (38/39/41/45), composition-infrastructure phase (40), cross-surface-expansion phases (42/43/44), and acceptance-gate phases.
+- **First "display-text divergence from slug" rendering** in any framework consumer.
+- **First alias-syntax surface** in any framework consumer.
+- **Backwards-compatibility discipline established**: regex extension is purely additive; every existing `[[slug]]` match preserved verbatim. Sets the regex-extension-must-be-backwards-compatible precedent for Phase 47+ regex evolutions.
+
+##### Phase 45 → Phase 46 delta
+
+| Metric | Phase 45 close | Phase 46 close | Δ |
+|---|---|---|---|
+| Tests | 985 / 72 files | **1012 / 72 files** | +27 / 0 |
+| ADRs | 24 | **24** | 0 |
+| ADR-0018 D-G APPEND count | 12 | **13** (project record extends; fourth two-letter slot D-AD in use) | +1 |
+| DB tables | 7 | 7 | 0 |
+| Migrations | 9 | 9 | 0 |
+| Env vars | 14 | 14 | 0 |
+| `MARKDOWN_EXTENSIONS` single-value arms | 5 | 5 | 0 |
+| i18n keys per locale | 168 | 168 | 0 |
+| First Load JS shared chunk | 103 kB | **103 kB** | 0 |
+| Middleware bundle | 160 kB | 160 kB | 0 |
+| OPEN_QUESTIONS top-level Q-count | 66 | **66** | 0 |
+| Phase-37+ candidate count | 8 | **8** | 0 |
+| Runtime deps added | — | **0** | 0 |
+| `lib/markdown/extensions/` files | 15 | 15 | 0 |
+| **Phase-37-framework concrete consumers** | **4** | **4** | 0 |
+| **Plugin-regex-extension realizations** | **0** | **1 (wikilinks alias)** | **+1** |
+| **Phase-shape patterns in framework** | **4** | **5 (+plugin-regex-extension)** | **+1** |
+
+##### Architectural firsts in Phase 46 (12 enumerated)
+
+1. **First plugin-regex-extension within an existing Phase-37-framework consumer** in project history. **First in-place regex evolution** for any framework consumer.
+2. **First "display-text divergence from slug" rendering** in any framework consumer.
+3. **First alias-syntax surface** in any framework consumer. Sets pattern for Phase 47+ alias extensions.
+4. **APPEND-D-L item 2 deferral CLOSED at 8-phase carryover** (Phase 38 → 46). **Longest APPEND-D-L item closure to date**.
+5. **Fifth prep-/APPEND-doc-level deferral closed by a later phase** — APPEND-deferral closure cadence sustained 5 phases.
+6. **Second non-cross-surface-expansion APPEND-deferral closure** in the cadence.
+7. **Thirteenth APPEND on ADR-0018 D-G** — extends first-ADR-D-clause-with-most-APPENDs record 12 → 13.
+8. **Fourth two-letter APPEND letter D-AD** (Excel-spreadsheet column convention sustained).
+9. **First "framework + 4 consumers + composition + 3 expansions + same-slot composition + alias syntax" 10-phase cluster** in project history (Phase 37-46).
+10. **16th consecutive phase without new B category** — first 16-phase run (extends Phase-45 record 15 → 16).
+11. **89th-through-92nd consecutive 103 kB First Load JS units**.
+12. **Thirty-seventh NON-§13 phase**.
+
+##### Phase 46 → Phase 47 entry conditions
+
+Per §12, Phase 47 entry requires **explicit human sign-off**.
+
+**Recommended Phase 47 first-thread candidates** (10 ranked; see `docs/thinking/46.4-phase-46-acceptance-gate.md` "Phase 46 → Phase 47 entry conditions" table for full tractability + units breakdown):
+
+1. **Alias syntax in arxiv consumer** (`arxiv:NNNN.NNNNN|display`; APPEND-D-Y item 5) — 1-2 units; mirrors Phase-46 wikilinks alias regex-extension verbatim on the arxiv plugin.
+2. **Alias syntax in doi consumer** (`doi:10.NNNN/xxx|display`) — 1-2 units; mirrors arxiv item 5 + Phase-46 wikilinks alias verbatim on the doi plugin.
+3. **Older-style category-prefixed arxiv IDs** (APPEND-D-Y item 2) — 1-2 units; regex extension; second realization of the Phase-46 phase-shape pattern.
+4. **Table-specific attributes** (`colspan` / `rowspan` / `scope`; APPEND-D-Q item 3) — 1-2 units; XSS-audit-required.
+5. **DOI cross-surface expansion** — 1-2 units; **fourth realization of "constructor-arg-only zero-rework expansion"** property.
+6. **Cross-entity wikilinks** (APPEND-D-L item 3) — 2-3 units; entity-type disambiguation + plugin parameterization.
+7. **`<a class="wikilink">` styling** (APPEND-D-L item 4) — 1-2 units; first single-consumer-multi-slot case.
+8. **404 handling for unresolved wikilinks** (APPEND-D-L item 5) — 2-3 units; build-time validation.
+9. **PubMed PMID sibling consumer** — 2-3 units; fifth concrete consumer.
+10. **ADR-0025 concrete content-moderation provider** — 3-5 units; strongest patience signal; NOT autonomous-tractable.
+
+**Operational gates still pending** (6 UNCHANGED): Q54 + Q55 + Q69 + Q73 + Q75 + Q77.
+
+##### Smoke gates
+
+- `pnpm typecheck` — passes.
+- `pnpm test` — **1012 / 72 files**.
+- `pnpm audit-content` — 0 errors / 6 warnings (43 consecutive phases at Q32 baseline).
+- First Load JS — **103 kB UNCHANGED** (92 consecutive units).
+- Middleware — **160 kB UNCHANGED**.
+
+##### Anti-scope (Phase 47+ deferrals carried forward)
+
+NOT alias syntax in arxiv consumer (Phase 47+ rank 1); NOT alias syntax in doi consumer (Phase 47+ rank 2); NOT older-style category-prefixed arxiv IDs (Phase 47+ rank 3); NOT bare arxiv / DOI IDs without prefix (Phase 47+); NOT cross-entity wikilinks (Phase 47+ rank 6); NOT `<a class="wikilink">` styling (Phase 47+ rank 7); NOT 404 handling (Phase 47+ rank 8); NOT plugin parameterization (Phase 47+); NOT auto-trim of alias display whitespace (Phase 47+); NOT empty-alias-as-slug-fallback (Phase 47+ refinement); NOT DOI cross-surface expansion (Phase 47+ rank 5); NOT paper-card hover-preview (Phase 47+); NOT table-specific attributes (Phase 47+ rank 4); NOT `<caption>` element (Phase 47+); NOT surface-specific table schemas (Phase 47+); NOT `@mention` resolution (Phase 47+); NOT PubMed PMID consumer (Phase 47+ rank 9); NOT a 3rd-or-later `remarkPlugins` consumer (Phase 47+); NOT a 2nd `rehypePlugins` consumer beyond wikilinks (Phase 47+); NOT a 2nd `schemaOverrides` consumer beyond tables (Phase 47+); NOT ADR-0025 concrete moderation provider; NOT Q78/Q79/v2 methodology/pre-commit typecheck/safeAuth/test backfill/account-deletion (each deferred); all Phase-30-through-45 deferrals carry forward.
+
+##### Boundary statement
+
+**Phase 46 CLOSED at this commit after 5 numbered units. First plugin-regex-extension within an existing Phase-37-framework consumer realized: wikilink alias syntax `[[slug|display-text]]` via in-place regex extension on `rehypeResolveWikilinks`. Introduces a fifth phase-shape pattern to the framework (alongside new-consumer, composition-infrastructure, cross-surface-expansion, and acceptance-gate phases). First "display-text divergence from slug" rendering; first alias-syntax surface in any framework consumer. Closes ADR-0018 APPEND-D-L item 2 deferral at 8-phase carryover (Phase 38 → 46; longest APPEND-D-L item closure to date). APPEND-deferral closure cadence sustained 5 phases (Phase 42 + 43 + 44 + 45 + 46). Second non-cross-surface-expansion APPEND-deferral closure. Thirteenth APPEND on ADR-0018 D-G (record extends 12 → 13). Fourth two-letter APPEND letter D-AD. Thirty-seventh NON-§13 phase. First "framework + 4 consumers + composition + 3 expansions + same-slot composition + alias syntax" 10-phase cluster (Phase 37-46). 16th consecutive phase without new B category (first 16-phase run; extends 15 → 16). Backwards-compatibility discipline established: regex extension is purely additive — every existing `[[slug]]` match preserved verbatim. XSS line of defense preserved: display text becomes text-node content; rehype-stringify escapes HTML-special chars automatically; no new XSS surface. 1012 tests across 72 vitest files (+27/0 vs Phase 45). 24 ADRs UNCHANGED. 7 DB tables UNCHANGED. 9 migrations UNCHANGED. 14 env vars UNCHANGED. 168 i18n keys per locale UNCHANGED. First Load JS 103 kB UNCHANGED (92 consecutive units). Middleware 160 kB UNCHANGED. OPEN_QUESTIONS top-level Q-count 66 UNCHANGED. Phase-37+ candidate count 8 UNCHANGED. `MARKDOWN_EXTENSIONS` recognized single-value arms 5 UNCHANGED. Zero new ADRs / migrations / i18n keys / env vars / operational gates / runtime deps / files. Phase 47 entry requires explicit human sign-off per §12.**
 
 #### Unit 46.3 — Phase-46 hygiene + ADR-0018 APPEND-D-L item 2 closure documentation + first plugin-regex-extension (Q-tally UNCHANGED at 66; Phase-37+ candidate count UNCHANGED at 8; 16-phase no-new-B-category streak EXTENDS to Phase 46; 91st consecutive 103 kB unit)
 
