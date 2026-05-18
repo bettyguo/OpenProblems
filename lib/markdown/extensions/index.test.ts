@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { __resetRegistryForTests, DefaultExtensionRegistry, getExtensionRegistry } from "./index";
+import { TablesExtensionRegistry } from "./tables";
 import { WikilinkExtensionRegistry } from "./wikilinks";
 
 const ORIGINAL_PROVIDER = process.env["MARKDOWN_EXTENSIONS"];
@@ -39,6 +40,11 @@ describe("getExtensionRegistry (factory) — env-var dispatch", () => {
     expect(getExtensionRegistry()).toBeInstanceOf(WikilinkExtensionRegistry);
   });
 
+  it("returns TablesExtensionRegistry when MARKDOWN_EXTENSIONS is 'tables' Phase 39", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "tables";
+    expect(getExtensionRegistry()).toBeInstanceOf(TablesExtensionRegistry);
+  });
+
   it("WikilinkExtensionRegistry dispatch enables wikilinks on actionRationale only Phase 38", () => {
     process.env["MARKDOWN_EXTENSIONS"] = "wikilinks";
     const r = getExtensionRegistry();
@@ -46,6 +52,15 @@ describe("getExtensionRegistry (factory) — env-var dispatch", () => {
     expect(r.getExtensions("bio")).toEqual({});
     expect(r.getExtensions("reviewNotes")).toEqual({});
     expect(r.getExtensions("rationale")).toEqual({});
+  });
+
+  it("TablesExtensionRegistry dispatch enables tables on reviewNotes only Phase 39", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "tables";
+    const r = getExtensionRegistry();
+    expect(r.getExtensions("reviewNotes").schemaOverrides).toBeDefined();
+    expect(r.getExtensions("bio")).toEqual({});
+    expect(r.getExtensions("rationale")).toEqual({});
+    expect(r.getExtensions("actionRationale")).toEqual({});
   });
 
   it("caches the singleton across calls within the same env (default dispatch)", () => {
@@ -67,6 +82,11 @@ describe("getExtensionRegistry (factory) — env-var dispatch", () => {
     expect(() => getExtensionRegistry()).toThrow(/Unknown MARKDOWN_EXTENSIONS/);
     expect(() => getExtensionRegistry()).toThrow(/wikilinkx/);
     expect(() => getExtensionRegistry()).toThrow(/wikilinks/);
+  });
+
+  it("error message lists all recognized values including 'tables' Phase 39", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "unknown";
+    expect(() => getExtensionRegistry()).toThrow(/tables/);
   });
 
   it("__resetRegistryForTests clears the singleton so subsequent calls re-read env", () => {

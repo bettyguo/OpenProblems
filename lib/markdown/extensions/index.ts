@@ -1,4 +1,5 @@
 import { DefaultExtensionRegistry } from "./default";
+import { PHASE_39_DEFAULT_ENABLED_SURFACES, TablesExtensionRegistry } from "./tables";
 import type { MarkdownExtensionRegistry } from "./types";
 import { PHASE_38_DEFAULT_ENABLED_SURFACES, WikilinkExtensionRegistry } from "./wikilinks";
 
@@ -24,8 +25,19 @@ import { PHASE_38_DEFAULT_ENABLED_SURFACES, WikilinkExtensionRegistry } from "./
  *     (wikilinks enabled on `actionRationale` only Phase 38; the
  *     three other surfaces continue to receive empty extension
  *     sets via `WikilinkExtensionRegistry`'s default-deny).
+ *   - `"tables"` → `TablesExtensionRegistry(PHASE_39_DEFAULT_ENABLED_SURFACES)`
+ *     (GFM tables enabled on `reviewNotes` only Phase 39; second
+ *     concrete Phase-37-framework consumer; exercises the
+ *     `schemaOverrides` slot per ADR-0018 D-G APPEND APPEND-D-N).
  *
- * Future Phase 39+ values (not recognized at Phase 38 ship):
+ * Phase 39 mutually-exclusive dispatch: operator picks `"wikilinks"`
+ * OR `"tables"` OR the default — NOT a composition of both.
+ * Multi-value `MARKDOWN_EXTENSIONS=wikilinks,tables` composition
+ * deferred to Phase 40+ per Phase-38-prep D-11 deferral; requires
+ * a `CompositeExtensionRegistry` that merges per-surface
+ * extension sets from multiple component registries.
+ *
+ * Future Phase 40+ values (not recognized at Phase 39 ship):
  *
  *   - per-curator extension preferences (DB-backed registry
  *     override).
@@ -66,11 +78,14 @@ export function getExtensionRegistry(): MarkdownExtensionRegistry {
     case "wikilinks":
       registryInstance = new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES);
       return registryInstance;
+    case "tables":
+      registryInstance = new TablesExtensionRegistry(PHASE_39_DEFAULT_ENABLED_SURFACES);
+      return registryInstance;
     default:
       throw new Error(
         `Unknown MARKDOWN_EXTENSIONS value: "${provider}". ` +
-          `Recognized values at this build: "default" (default), "wikilinks". ` +
-          `Phase 39+ values will extend this list — see ADR-0018 D-G APPEND APPEND-D-L.`,
+          `Recognized values at this build: "default" (default), "wikilinks", "tables". ` +
+          `Phase 40+ values will extend this list — see ADR-0018 D-G APPEND APPEND-D-Q.`,
       );
   }
 }
