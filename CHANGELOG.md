@@ -2468,7 +2468,113 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **Phase-8 scope drift**: HTML shell migration **dropped from scope mid-flight** at Unit 8.1 (parallel session preserved existing `app/layout.tsx`-owns-`<html>` structure with a "this change was intentional" system reminder). Surfaced into Unit 8.4 territory, then deferred indefinitely. No scope additions. Parallel-curator coordination at unprecedented intensity (Unit 8.1 mid-flight file deletions; Unit 8.6 FR content authored by parallel session).
 - THINK artifact: `docs/thinking/8.9-phase-8-acceptance-gate.md`.
 
-### Phase 45 — Community-adjacent surfaces (**thirty-sixth NON-§13 phase**: fourth concrete Phase-37-framework consumer — DOI auto-link on `rationale` surface via `remarkPlugins` slot + new `DoiExtensionRegistry` + fourth single-value dispatch arm `MARKDOWN_EXTENSIONS=doi`; **first compositional same-slot case** in project history — two consumers both contributing to `remarkPlugins` under composition; APPEND-D-R "concatenated across components in registration order" rule becomes live with two real consumers; mirrors Phase-41 arxiv first-consumer ship shape; closes ADR-0018 APPEND-D-Y item 4 deferral at 4-phase carryover; APPEND-D-AC third two-letter slot; anticipated 5 units; 40th "Continue" override invoked)
+### Phase 45 — Community-adjacent surfaces (**thirty-sixth NON-§13 phase**: fourth concrete Phase-37-framework consumer — DOI auto-link on `rationale` surface via `remarkPlugins` slot + new `DoiExtensionRegistry` + fourth single-value dispatch arm `MARKDOWN_EXTENSIONS=doi`; **first compositional same-slot case** in project history — two consumers both contributing to `remarkPlugins` under composition; APPEND-D-R "concatenated across components in registration order" rule becomes live with two real consumers; mirrors Phase-41 arxiv first-consumer ship shape; closes ADR-0018 APPEND-D-Y item 4 deferral at 4-phase carryover; APPEND-D-AC third two-letter slot; 5 numbered units + 2 parallel-session sub-units; 40th "Continue" override invoked; **CLOSED**)
+
+#### Unit 45.4 — Phase 45 acceptance gate (fourth concrete consumer; first compositional same-slot case; D-AC; 985/72; 88th consecutive 103 kB unit; 41st "Continue" override opportunity at Phase 45 → 46 boundary)
+
+- Fifth and final Phase-45 numbered unit; gate-only. **Phase 45 CLOSES at this unit's commit**. Phase 46 entry awaits explicit "Continue" override per §12.
+- THINK artifact: `docs/thinking/45.4-phase-45-acceptance-gate.md` (Phase-44 → 45 delta complete; 12 architectural firsts enumerated; Phase-46 entry conditions documented with 10 ranked candidate threads).
+
+##### Phase 45 — what shipped (5 numbered units + 2 parallel-session sub-units)
+
+| Unit | Title | Type | Commit |
+|---|---|---|---|
+| 45.0 | Phase 45 prep | docs | `808e8d9` |
+| 45.0a | README + 7 figures hero overhaul | docs (parallel session) | `7098cb2` |
+| 45.1 | `lib/markdown/extensions/doi.ts` + `doi.test.ts` + factory `MARKDOWN_EXTENSIONS=doi` + ADR-0018 D-G APPEND-D-AC | code+APPEND | `32f2b18` |
+| 45.1a | Figures polish + GitHub Pages-ready gallery | docs (parallel session) | (parallel commit) |
+| 45.2 | 27 NEW end-to-end DOI + first same-slot + first 4-consumer composition tests | code | `d44be53` |
+| 45.3 | Phase-45 hygiene + APPEND-D-Y item 4 closure documentation | docs | `fd60a75` |
+| 45.4 | Phase 45 acceptance gate (this unit) | gate | (this commit) |
+
+Total: **5 numbered units (45.0 through 45.4)** + 2 parallel-session docs-only sub-units (45.0a + 45.1a). Mirrors Phase 35 + 37 + 38 + 39 + 40 + 41 + 42 + 43 + 44 5-unit framework shapes exactly for the numbered sequence.
+
+##### Fourth concrete Phase-37-framework consumer realized + first compositional same-slot case at HEAD `fd60a75`
+
+Phase-45-prep D-1 first-thread recommendation realized end-to-end:
+
+- New file `lib/markdown/extensions/doi.ts` ships `remarkLinkDoiIds()` function-declaration plugin + `DoiExtensionRegistry` class + `PHASE_45_DEFAULT_ENABLED_SURFACES = Set(["rationale"])`.
+- New file `lib/markdown/extensions/doi.test.ts` ships **28 tests** covering Crossref-spec regex correctness + class behavior + canonical doi.org host emission (NOT dx.doi.org legacy).
+- `lib/markdown/extensions/index.ts` factory gains `case "doi"` arm; throw-error-message recognized-values list updated; JSDoc dispatch-arm-list updated calling out first compositional same-slot case Phase 45.
+- `lib/markdown/extensions/index.test.ts` gains **9 dispatch + composition tests** including the **first same-slot composition test** (`arxiv,doi` → `[remarkLinkArxivIds, remarkLinkDoiIds]` in `remarkPlugins` on rationale).
+- `lib/markdown/index.test.ts` gains **27 end-to-end tests** across 3 new describe blocks (Phase-45 doi default + Phase-45 first-same-slot composition + Phase-45 first-4-consumer composition).
+- ADR-0018 D-G APPEND adds Phase-45 EXTENDED block + **APPEND-D-AC** (Unit 45.1; third two-letter APPEND letter after Phase-43 D-AA + Phase-44 D-AB).
+- ADR-0018 APPEND-D-Y item 4 deferral CLOSED at **4-phase carryover** (Phase 41 → Phase 45; Unit 45.3 documents).
+- **First compositional same-slot case in project history**: under `MARKDOWN_EXTENSIONS=arxiv,doi` Phase-45 default the `remarkPlugins` slot on `rationale` carries `[remarkLinkArxivIds, remarkLinkDoiIds]` per APPEND-D-R "concatenated across components in registration order" rule.
+- **First "two plugins active in the same slot on the same surface under default dispatch" state** in project history.
+- **First "4-consumer composition under default dispatch" state** via `MARKDOWN_EXTENSIONS=wikilinks,tables,arxiv,doi`: `rationale` carries 4 consumers across 3 slots; other 3 surfaces preserve the Phase-44 3-consumer baseline.
+
+##### Phase 44 → Phase 45 delta
+
+| Metric | Phase 44 close | Phase 45 close | Δ |
+|---|---|---|---|
+| Tests | 921 / 71 files | **985 / 72 files** | +64 / +1 |
+| ADRs | 24 | **24** | 0 |
+| ADR-0018 D-G APPEND count | 11 | **12** (project record extends; third two-letter slot D-AC in use) | +1 |
+| DB tables | 7 | 7 | 0 |
+| Migrations | 9 | 9 | 0 |
+| Env vars | 14 | 14 | 0 |
+| `MARKDOWN_EXTENSIONS` single-value arms | 4 | **5** (+`doi`) | **+1** |
+| i18n keys per locale | 168 | 168 | 0 |
+| First Load JS shared chunk | 103 kB | **103 kB** | 0 |
+| Middleware bundle | 160 kB | 160 kB | 0 |
+| OPEN_QUESTIONS top-level Q-count | 66 | **66** | 0 |
+| Phase-37+ candidate count | 8 | **8** | 0 |
+| Runtime deps added | — | **0** | 0 |
+| `lib/markdown/extensions/` files | 13 | **15** | **+2** (`doi.ts` + `doi.test.ts`) |
+| **Phase-37-framework concrete consumers** | **3** | **4 (+`DoiExtensionRegistry`)** | **+1** |
+| **Slots with ≥2 consumers under default dispatch** | **0** | **1 (`remarkPlugins`: arxiv + doi)** | **+1** |
+| **Component-surface-slot triples active under maximal default dispatch** | **12 (3 × 4 × 3)** | **13 (12 + second-consumer-on-rationale-remark)** | **+1** |
+
+##### Architectural firsts in Phase 45 (12 enumerated)
+
+1. **Fourth concrete Phase-37-framework consumer** — `DoiExtensionRegistry` joins wikilinks + tables + arxiv. **First second-consumer in any single framework slot**: DOI joins arxiv in `remarkPlugins`; other 2 slots remain singleton.
+2. **First compositional same-slot case in project history**. APPEND-D-R concatenation rule for `remarkPlugins` becomes live with two real consumers (previously trivially satisfied).
+3. **First "two plugins active in the same slot on the same surface under default dispatch" state**.
+4. **First "4-consumer composition under default dispatch" state** via `wikilinks,tables,arxiv,doi`. Pre-Phase-45 max was 3-consumer (Phase-44).
+5. **APPEND-D-Y item 4 deferral CLOSED at 4-phase carryover** (Phase 41 → 45; mirrors Phase 38→42 + 39→43 gaps). **First non-cross-surface-expansion APPEND-deferral closure** in the cadence.
+6. **APPEND-deferral closure cadence sustained 4 phases** (Phase 42 + 43 + 44 + 45).
+7. **Twelfth APPEND on ADR-0018 D-G** — extends first-ADR-D-clause-with-most-APPENDs record 11 → 12.
+8. **Third two-letter APPEND letter D-AC** (Excel-spreadsheet column convention sustained).
+9. **First "framework + 4 consumers + composition + 3 expansions + same-slot composition" 9-phase cluster** in project history (Phase 37-45).
+10. **15th consecutive phase without new B category** — Phase 31-45 = first 15-phase run (extends Phase-44 record 14 → 15).
+11. **85th-through-88th consecutive 103 kB First Load JS units** (4 of 5 numbered units increment; Unit 45.0 prep doesn't).
+12. **Fifth `MARKDOWN_EXTENSIONS` recognized single-value arm**: `default` / `wikilinks` / `tables` / `arxiv` / **`doi`**. **First env-var-recognized value addition since Phase 41**.
+
+##### Phase 45 → Phase 46 entry conditions
+
+Per §12, Phase 46 entry requires **explicit human sign-off**.
+
+**Recommended Phase 46 first-thread candidates** (10 ranked; see `docs/thinking/45.4-phase-45-acceptance-gate.md` "Phase 45 → Phase 46 entry conditions" table for full tractability + units breakdown):
+
+1. **Multi-anchor wikilink alias syntax** `[[slug|display-text]]` (APPEND-D-L item 2) — 1-2 units; plugin regex extension.
+2. **Cross-entity wikilinks** (`[[paper-id]]` / `[[author-slug]]` / `[[institution-slug]]`; APPEND-D-L item 3) — 2-3 units.
+3. **Table-specific attributes** (`colspan` / `rowspan` / `scope`; APPEND-D-Q item 3) — 1-2 units; XSS-audit-required.
+4. **`<a class="wikilink">` styling** (APPEND-D-L item 4) — 1-2 units; first single-consumer-multi-slot case.
+5. **404 handling for unresolved wikilinks** (APPEND-D-L item 5) — 2-3 units; build-time validation.
+6. **DOI cross-surface expansion** to bio + reviewNotes + actionRationale — 1-2 units; **fourth realization of "constructor-arg-only zero-rework expansion"** property.
+7. **PubMed PMID sibling consumer** (`pubmed:` / `pmid:`) — 2-3 units; fifth concrete consumer; second second-consumer-in-`remarkPlugins`.
+8. **Older-style category-prefixed arxiv IDs** (APPEND-D-Y item 2) — 1-2 units; regex extension.
+9. **ADR-0025 concrete content-moderation provider** — 3-5 units; strongest patience signal; NOT autonomous-tractable.
+10. **Q78 / Q79 / N. v2 methodology / safeAuth / test backfill / account-delete / pre-commit typecheck** — various; each deferred.
+
+**Operational gates still pending** (6 UNCHANGED): Q54 + Q55 + Q69 + Q73 + Q75 + Q77.
+
+##### Smoke gates
+
+- `pnpm typecheck` — passes.
+- `pnpm test` — **985 / 72 files**.
+- `pnpm audit-content` — 0 errors / 6 warnings (43 consecutive phases at Q32 baseline).
+- First Load JS — **103 kB UNCHANGED** (88 consecutive units).
+- Middleware — **160 kB UNCHANGED**.
+
+##### Anti-scope (Phase 46+ deferrals carried forward)
+
+NOT DOI cross-surface expansion (Phase 46+ rank 6); NOT DOI display-text alias; NOT bare DOIs without `doi:` prefix; NOT dx.doi.org legacy host; NOT stricter trailing-lookahead; NOT older-style arxiv IDs (Phase 46+ rank 8); NOT bare arxiv IDs; NOT arxiv display-text alias; NOT paper-card hover-preview; NOT multi-anchor wikilink alias (rank 1); NOT cross-entity wikilinks (rank 2); NOT plugin parameterization; NOT `<a class="wikilink">` styling (rank 4); NOT 404 handling (rank 5); NOT table-specific attributes (rank 3); NOT `<caption>` element; NOT surface-specific table schemas; NOT `@mention` resolution; NOT PubMed PMID consumer (rank 7); NOT a 3rd-or-later `remarkPlugins` consumer; NOT a 2nd `rehypePlugins` consumer beyond wikilinks; NOT a 2nd `schemaOverrides` consumer beyond tables; NOT ADR-0025 concrete moderation provider; NOT Q78/Q79/v2 methodology/pre-commit typecheck/safeAuth/test backfill/account-deletion (each deferred); all Phase-30-through-44 deferrals carry forward.
+
+##### Boundary statement
+
+**Phase 45 CLOSED at this commit after 5 numbered units + 2 parallel-session docs-only sub-units. Fourth concrete Phase-37-framework consumer realized: DOI auto-link via new `DoiExtensionRegistry` joining wikilinks + tables + arxiv. First second-consumer in any single framework slot — DOI joins arxiv in `remarkPlugins`; mirrors Phase-41 arxiv first-consumer ship shape verbatim. Closes ADR-0018 APPEND-D-Y item 4 deferral at 4-phase carryover (Phase 41 → 45). First non-cross-surface-expansion APPEND-deferral closure in the Phase 42-43-44-45 cadence. APPEND-deferral closure cadence sustained 4 phases. First compositional same-slot case in project history — APPEND-D-R concatenation rule for `remarkPlugins` becomes live with two real consumers. First "two plugins active in the same slot on the same surface under default dispatch" state. First "4-consumer composition under default dispatch" state via `wikilinks,tables,arxiv,doi`. Twelfth APPEND on ADR-0018 D-G (record extends 11 → 12). Third two-letter APPEND letter D-AC. Thirty-sixth NON-§13 phase. First "framework + 4 consumers + composition + 3 expansions + same-slot composition" 9-phase cluster (Phase 37-45). 15th consecutive phase without new B category (first 15-phase run; extends 14 → 15). 985 tests across 72 vitest files (+64/+1 vs Phase 44). 24 ADRs UNCHANGED. 7 DB tables UNCHANGED. 9 migrations UNCHANGED. 14 env vars UNCHANGED. 168 i18n keys per locale UNCHANGED. First Load JS 103 kB UNCHANGED (88 consecutive units). Middleware 160 kB UNCHANGED. OPEN_QUESTIONS top-level Q-count 66 UNCHANGED. Phase-37+ candidate count 8 UNCHANGED. Fifth `MARKDOWN_EXTENSIONS` recognized single-value arm — first env-var-recognized value addition since Phase 41. Zero new ADRs / migrations / i18n keys / env vars / operational gates / runtime deps. Phase 46 entry requires explicit human sign-off per §12.**
 
 #### Unit 45.3 — Phase-45 hygiene + ADR-0018 APPEND-D-Y item 4 closure documentation + first compositional same-slot case (Q-tally UNCHANGED at 66; Phase-37+ candidate count UNCHANGED at 8; 15-phase no-new-B-category streak EXTENDS to Phase 45; 87th consecutive 103 kB unit)
 
