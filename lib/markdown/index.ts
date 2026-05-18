@@ -6,8 +6,11 @@ import remarkRehype from "remark-rehype";
 import { unified } from "unified";
 import { visit } from "unist-util-visit";
 import type { Element, Root } from "hast";
-import type { Plugin } from "unified";
+import type { Options as Schema } from "rehype-sanitize";
+import type { Plugin, PluggableList } from "unified";
 
+import { getExtensionRegistry } from "./extensions";
+import type { MarkdownSurface } from "./extensions";
 import {
   actionRationaleSchema,
   bioSchema,
@@ -56,7 +59,7 @@ export function renderBioMarkdown(text: string | null): string | null {
   const trimmed = text.trim();
   if (trimmed.length === 0) return null;
 
-  const file = bioProcessor.processSync(trimmed);
+  const file = getBioProcessor().processSync(trimmed);
   const html = String(file).trim();
   return html.length === 0 ? null : html;
 }
@@ -96,7 +99,7 @@ export function renderReviewNotesMarkdown(text: string | null): string | null {
   const trimmed = text.trim();
   if (trimmed.length === 0) return null;
 
-  const file = reviewNotesProcessor.processSync(trimmed);
+  const file = getReviewNotesProcessor().processSync(trimmed);
   const html = String(file).trim();
   return html.length === 0 ? null : html;
 }
@@ -161,57 +164,113 @@ const rehypeStripUnsafeHrefs: Plugin<[], Root> = () => (tree) => {
 };
 
 /**
- * Singleton `unified` processor instance for `renderBioMarkdown`.
- * Build cost is amortized across requests (server-side cache
- * across the module's lifetime).
+ * Builds a `unified` processor for the given markdown surface per
+ * ADR-0018 D-G APPEND (Phase 37 Unit 37.2). Reads
+ * `getExtensionRegistry().getExtensions(surface)` once at build
+ * time and folds the surface's extensions into the pipeline per
+ * APPEND-D-C (override-replace schema semantics: caller-supplied
+ * complete replacement for any field they override; framework
+ * does NOT deep-merge) + APPEND-D-D (extension plugins fold
+ * AFTER the default plugins; sanitization baseline established
+ * first; extensions are post-processing).
  *
- * Renamed from anonymous `processor` per Unit 18.0 D-8 refactor to
- * disambiguate against `reviewNotesProcessor` (Phase 18). Zero
- * behavior change.
+ * Pipeline shape:
+ *   1. `remark-parse` — markdown → MDAST.
+ *   2. `remark-gfm` — GFM extensions.
+ *   3. `extensions.remarkPlugins` (post-default per APPEND-D-D).
+ *   4. `remark-rehype` with `allowDangerousHtml: false` — MDAST
+ *      → HAST; raw HTML in source stripped here.
+ *   5. `rehypeDemoteHeadings` — D-C heading demotion.
+ *   6. `rehype-sanitize` with the surface schema
+ *      `{ ...baseSchema, ...(extensions.schemaOverrides ?? {}) }`
+ *      — defense-in-depth allow-list.
+ *   7. `rehypeStripUnsafeHrefs` — D-D defense-in-depth.
+ *   8. `extensions.rehypePlugins` (post-default per APPEND-D-D;
+ *      runs AFTER `rehype-sanitize` so extension-generated nodes
+ *      enter the post-sanitize tree under explicit caller intent;
+ *      future `rehype-wikilink` example documented in APPEND-D-D).
+ *   9. `rehype-stringify` — HAST → HTML string.
+ *
+ * Build cost is amortized via the lazy getters
+ * (`getBioProcessor()` + 3 siblings) below; first-call cost is
+ * paid on the first render of each surface in a given process,
+ * then the cached singleton is returned.
  */
-const bioProcessor = unified()
-  .use(remarkParse)
-  .use(remarkGfm)
-  .use(remarkRehype, { allowDangerousHtml: false })
-  .use(rehypeDemoteHeadings)
-  .use(rehypeSanitize, bioSchema)
-  .use(rehypeStripUnsafeHrefs)
-  .use(rehypeStringify);
+function buildProcessor(surface: MarkdownSurface, baseSchema: Schema) {
+  const extensions = getExtensionRegistry().getExtensions(surface);
+  const schema: Schema = {
+    ...baseSchema,
+    ...(extensions.schemaOverrides ?? {}),
+  };
+  const remarkExtensions: PluggableList = [...(extensions.remarkPlugins ?? [])];
+  const rehypeExtensions: PluggableList = [...(extensions.rehypePlugins ?? [])];
+  return unified()
+    .use(remarkParse)
+    .use(remarkGfm)
+    .use(remarkExtensions)
+    .use(remarkRehype, { allowDangerousHtml: false })
+    .use(rehypeDemoteHeadings)
+    .use(rehypeSanitize, schema)
+    .use(rehypeStripUnsafeHrefs)
+    .use(rehypeExtensions)
+    .use(rehypeStringify);
+}
+
+type BuiltProcessor = ReturnType<typeof buildProcessor>;
 
 /**
- * Singleton `unified` processor instance for
- * `renderReviewNotesMarkdown` per ADR-0018 D-G inheritance contract
- * (Phase 18). Identical pipeline shape to `bioProcessor`; uses
- * `reviewNotesSchema` (currently identical to `bioSchema` Phase-18
- * per Unit 18.0 D-3 scope-cap discipline). Separate instance keeps
- * the schema audit boundary explicit per surface.
+ * Lazy-built singleton `unified` processor instance for
+ * `renderBioMarkdown`. Build cost is amortized across requests
+ * (server-side cache across the module's lifetime); first call
+ * pays the `unified()` chain build cost + the
+ * `getExtensionRegistry()` read.
+ *
+ * Renamed-and-promoted-to-lazy from the Phase-17 module-level
+ * `const bioProcessor = unified()...` per Unit 37.2: the lazy
+ * shape lets tests swap the registry (via
+ * `__setRegistryForTests` in `./extensions`) then call
+ * `__resetMarkdownCachesForTests` to force a fresh build that
+ * picks up the swapped extensions. Zero behavioral change
+ * Day 1 with `DefaultExtensionRegistry` returning empty
+ * extension sets.
  */
-const reviewNotesProcessor = unified()
-  .use(remarkParse)
-  .use(remarkGfm)
-  .use(remarkRehype, { allowDangerousHtml: false })
-  .use(rehypeDemoteHeadings)
-  .use(rehypeSanitize, reviewNotesSchema)
-  .use(rehypeStripUnsafeHrefs)
-  .use(rehypeStringify);
+let bioProcessor: BuiltProcessor | null = null;
+function getBioProcessor(): BuiltProcessor {
+  if (bioProcessor) return bioProcessor;
+  bioProcessor = buildProcessor("bio", bioSchema);
+  return bioProcessor;
+}
 
 /**
- * Singleton `unified` processor instance for
+ * Lazy-built singleton `unified` processor instance for
+ * `renderReviewNotesMarkdown` per ADR-0018 D-G inheritance
+ * contract (Phase 18; promoted to lazy Phase 37 Unit 37.2 for
+ * extension-framework integration). Uses `reviewNotesSchema`
+ * (currently identical to `bioSchema` Phase-18 per Unit 18.0
+ * D-3 scope-cap discipline). Separate cache keeps the schema
+ * audit boundary explicit per surface.
+ */
+let reviewNotesProcessor: BuiltProcessor | null = null;
+function getReviewNotesProcessor(): BuiltProcessor {
+  if (reviewNotesProcessor) return reviewNotesProcessor;
+  reviewNotesProcessor = buildProcessor("reviewNotes", reviewNotesSchema);
+  return reviewNotesProcessor;
+}
+
+/**
+ * Lazy-built singleton `unified` processor instance for
  * `renderRationaleMarkdown` per ADR-0018 D-G inheritance contract
  * (Phase 27 — **third sibling processor** after `bioProcessor`
- * Phase-17 + `reviewNotesProcessor` Phase-18). Identical pipeline
- * shape; uses `rationaleSchema` (currently identical to `bioSchema`
- * Phase-27 per ADR-0018 D-G scope-cap discipline). Separate
- * instance keeps the schema audit boundary explicit per surface.
+ * Phase-17 + `reviewNotesProcessor` Phase-18; promoted to lazy
+ * Phase 37 Unit 37.2). Uses `rationaleSchema` (currently identical
+ * to `bioSchema` Phase-27 per ADR-0018 D-G scope-cap discipline).
  */
-const rationaleProcessor = unified()
-  .use(remarkParse)
-  .use(remarkGfm)
-  .use(remarkRehype, { allowDangerousHtml: false })
-  .use(rehypeDemoteHeadings)
-  .use(rehypeSanitize, rationaleSchema)
-  .use(rehypeStripUnsafeHrefs)
-  .use(rehypeStringify);
+let rationaleProcessor: BuiltProcessor | null = null;
+function getRationaleProcessor(): BuiltProcessor {
+  if (rationaleProcessor) return rationaleProcessor;
+  rationaleProcessor = buildProcessor("rationale", rationaleSchema);
+  return rationaleProcessor;
+}
 
 /**
  * Server-side markdown rendering pipeline for
@@ -247,28 +306,49 @@ const rationaleProcessor = unified()
  *   schema guarantees).
  */
 export function renderRationaleMarkdown(text: string): string {
-  const file = rationaleProcessor.processSync(text);
+  const file = getRationaleProcessor().processSync(text);
   return String(file).trim();
 }
 
 /**
- * Singleton `unified` processor instance for
+ * Lazy-built singleton `unified` processor instance for
  * `renderActionRationaleMarkdown` per ADR-0018 D-G inheritance
  * contract (Phase 29 — **fourth sibling processor** after
  * `bioProcessor` Phase-17 + `reviewNotesProcessor` Phase-18 +
- * `rationaleProcessor` Phase-27). Identical pipeline shape; uses
- * `actionRationaleSchema` (currently identical to `bioSchema`
- * Phase-29 per ADR-0018 D-G scope-cap discipline). Separate
- * instance keeps the schema audit boundary explicit per surface.
+ * `rationaleProcessor` Phase-27; promoted to lazy Phase 37 Unit
+ * 37.2). Uses `actionRationaleSchema` (currently identical to
+ * `bioSchema` Phase-29 per ADR-0018 D-G scope-cap discipline).
  */
-const actionRationaleProcessor = unified()
-  .use(remarkParse)
-  .use(remarkGfm)
-  .use(remarkRehype, { allowDangerousHtml: false })
-  .use(rehypeDemoteHeadings)
-  .use(rehypeSanitize, actionRationaleSchema)
-  .use(rehypeStripUnsafeHrefs)
-  .use(rehypeStringify);
+let actionRationaleProcessor: BuiltProcessor | null = null;
+function getActionRationaleProcessor(): BuiltProcessor {
+  if (actionRationaleProcessor) return actionRationaleProcessor;
+  actionRationaleProcessor = buildProcessor("actionRationale", actionRationaleSchema);
+  return actionRationaleProcessor;
+}
+
+/**
+ * Test-only reset hook for the four lazily-built processor
+ * singletons per
+ * [ADR-0018](../../docs/adr/0018-markdown-sanitization.md) D-G
+ * APPEND (Phase 37 Unit 37.2). Clears all four caches so the
+ * next call to a `render*` helper rebuilds the processor
+ * against the active registry (typically swapped via
+ * `__setRegistryForTests` in `./extensions`).
+ *
+ * Vitest tests verifying the framework-integration path should
+ * call this hook in `beforeEach`/`afterEach` alongside
+ * `__resetRegistryForTests` to guarantee per-suite isolation.
+ *
+ * Not exported via a "test-only" runtime convention because
+ * Phase 37 has no test/index runtime split; callers in
+ * production code should not invoke this.
+ */
+export function __resetMarkdownCachesForTests(): void {
+  bioProcessor = null;
+  reviewNotesProcessor = null;
+  rationaleProcessor = null;
+  actionRationaleProcessor = null;
+}
 
 /**
  * Server-side markdown rendering pipeline for rating-action
@@ -313,6 +393,6 @@ const actionRationaleProcessor = unified()
  * @returns Sanitized HTML string.
  */
 export function renderActionRationaleMarkdown(text: string): string {
-  const file = actionRationaleProcessor.processSync(text);
+  const file = getActionRationaleProcessor().processSync(text);
   return String(file).trim();
 }

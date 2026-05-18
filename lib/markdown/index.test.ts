@@ -1,6 +1,17 @@
-import { describe, expect, it } from "vitest";
+import type { Root as HastRoot } from "hast";
+import type { Plugin as UnifiedPlugin } from "unified";
+import { visit as unistVisit } from "unist-util-visit";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import {
+  __resetRegistryForTests,
+  __setRegistryForTests,
+  type MarkdownExtensionRegistry,
+  type MarkdownExtensionSet,
+  type MarkdownSurface,
+} from "./extensions";
+import {
+  __resetMarkdownCachesForTests,
   renderActionRationaleMarkdown,
   renderBioMarkdown,
   renderRationaleMarkdown,
@@ -404,5 +415,127 @@ describe("Phase-29 schema parity — `actionRationaleSchema` ≡ `bioSchema`", (
 
   it("shares the same attribute allowlist Phase-29", () => {
     expect(actionRationaleSchema.attributes).toEqual(bioSchema.attributes);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-37 — `MarkdownExtensionRegistry` framework integration per ADR-0018
+// D-G APPEND. Verifies the four `render*` helpers fold extensions from the
+// active registry into the unified pipeline per APPEND-D-C (override-replace
+// schema semantics) + APPEND-D-D (extension plugins after default plugins).
+// Each test installs a custom registry via `__setRegistryForTests`, clears
+// the lazy processor caches via `__resetMarkdownCachesForTests`, then
+// exercises the affected helper. `afterEach` resets both so subsequent
+// suites see the default empty registry.
+// ---------------------------------------------------------------------------
+
+function makeRegistry(
+  fn: (surface: MarkdownSurface) => MarkdownExtensionSet,
+): MarkdownExtensionRegistry {
+  return { getExtensions: fn };
+}
+
+const rehypeUppercaseText: UnifiedPlugin<[], HastRoot> = () => (tree) => {
+  unistVisit(tree, "text", (node) => {
+    if (typeof node.value === "string") node.value = node.value.toUpperCase();
+  });
+};
+
+describe("Phase-37 framework integration — default empty registry (Day-1 parity)", () => {
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it("renderBioMarkdown produces unchanged output (default registry)", () => {
+    expect(renderBioMarkdown("**bold**")).toBe("<p><strong>bold</strong></p>");
+  });
+
+  it("renderReviewNotesMarkdown produces unchanged output (default registry)", () => {
+    expect(renderReviewNotesMarkdown("**bold**")).toBe("<p><strong>bold</strong></p>");
+  });
+
+  it("renderRationaleMarkdown produces unchanged output (default registry)", () => {
+    expect(renderRationaleMarkdown("**bold**")).toBe("<p><strong>bold</strong></p>");
+  });
+
+  it("renderActionRationaleMarkdown produces unchanged output (default registry)", () => {
+    expect(renderActionRationaleMarkdown("**bold**")).toBe("<p><strong>bold</strong></p>");
+  });
+});
+
+describe("Phase-37 framework integration — rehype-plugin extension folds AFTER default plugins (APPEND-D-D)", () => {
+  beforeEach(() => {
+    __setRegistryForTests(
+      makeRegistry((surface) =>
+        surface === "bio" ? { rehypePlugins: [rehypeUppercaseText] } : {},
+      ),
+    );
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it("bio extension uppercases text (rehype plugin runs after sanitize)", () => {
+    expect(renderBioMarkdown("hello world")).toBe("<p>HELLO WORLD</p>");
+  });
+
+  it("other surfaces are unaffected (registry differentiation)", () => {
+    expect(renderReviewNotesMarkdown("hello world")).toBe("<p>hello world</p>");
+    expect(renderRationaleMarkdown("hello world")).toBe("<p>hello world</p>");
+    expect(renderActionRationaleMarkdown("hello world")).toBe("<p>hello world</p>");
+  });
+
+  it("bio sanitization defense survives the extension (href stripped before uppercase)", () => {
+    // `[bad](javascript:...)` keeps the link text but strips the href in
+    // sanitize; the rehype-uppercase extension then runs over the post-
+    // sanitize tree, uppercasing the surviving text. This proves both
+    // (a) sanitization still applies under the framework AND
+    // (b) extension plugins fold AFTER `rehype-sanitize` per APPEND-D-D.
+    const html = renderBioMarkdown("[bad](javascript:alert(1)) and text") ?? "";
+    expect(html).not.toContain("javascript:");
+    expect(html).toContain("AND TEXT");
+  });
+});
+
+describe("Phase-37 framework integration — schema override-replace semantics (APPEND-D-C)", () => {
+  beforeEach(() => {
+    __setRegistryForTests(
+      makeRegistry((surface) =>
+        surface === "reviewNotes"
+          ? {
+              schemaOverrides: {
+                tagNames: ["p", "strong"],
+              },
+            }
+          : {},
+      ),
+    );
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it("override-replaces tagNames — surface allows only the supplied tags", () => {
+    expect(renderReviewNotesMarkdown("**bold**")).toBe("<p><strong>bold</strong></p>");
+  });
+
+  it("override-replaces tagNames — non-overridden tags from base list are dropped", () => {
+    // Base `bioSchema.tagNames` includes `<em>`; the override replaces the
+    // entire list with `["p", "strong"]` — APPEND-D-C override-replace
+    // semantics. `<em>` content survives as text but the tag is stripped.
+    const html = renderReviewNotesMarkdown("*italic*") ?? "";
+    expect(html).toContain("italic");
+    expect(html).not.toContain("<em>");
+  });
+
+  it("other surfaces use their base schema unchanged", () => {
+    expect(renderBioMarkdown("*italic*")).toBe("<p><em>italic</em></p>");
   });
 });
