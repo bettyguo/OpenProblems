@@ -96,28 +96,45 @@ export const GFM_TABLE_SCHEMA_OVERRIDES: Partial<Schema> = {
 /**
  * `MarkdownExtensionRegistry` implementation that enables GFM
  * tables on a curator-specified set of surfaces via
- * `schemaOverrides`. Phase-39 default enables `reviewNotes` only
- * (4000-char curator review notes field is the natural surface
- * for tabular COI comparisons / multi-criterion scoring /
- * structured editorial reasoning per Phase-12 ADR-0014).
+ * `schemaOverrides`.
  *
- * For non-enabled surfaces returns an empty extension set —
- * Phase-18/27/29 baseline preserved on `bio` + `rationale` +
- * `actionRationale`. **Per-surface differentiation** is the
- * framework's central value: the same registry instance
- * simultaneously enables tables on `reviewNotes` AND preserves
- * baseline on the three other surfaces.
+ * **Phase-43 default** (since Unit 43.1):
+ * `PHASE_39_DEFAULT_ENABLED_SURFACES` = `Set(["bio",
+ * "reviewNotes", "rationale", "actionRationale"])` — all 4
+ * wired markdown surfaces enabled. Closes Phase-39 ADR-0018
+ * APPEND-D-Q item 2 ("Cross-surface table expansion") at 4-
+ * phase carryover; demand-signal-first relaxation noted in
+ * Phase-43 ADR-0018 D-G APPEND (mirrors Phase-42 wikilinks
+ * expansion pattern).
  *
- * Mutually exclusive with `WikilinkExtensionRegistry` Phase 39
- * — `getExtensionRegistry()` dispatch arms `wikilinks` and
- * `tables` are alternatives, not composable Phase 39. Multi-
- * value composition deferred to Phase 40+ per Phase-38-prep
- * D-11 deferral.
+ * **Phase-39 default** (Unit 39.1 ship through Phase-42 close):
+ * was `Set(["reviewNotes"])` — single-surface scope (4000-char
+ * curator review notes field as natural surface for tabular
+ * COI comparisons / multi-criterion scoring / structured
+ * editorial reasoning per Phase-12 ADR-0014). Phase 43
+ * generalizes to all 4 surfaces under the audit-trail-preserving
+ * constant-name discipline (`PHASE_39_DEFAULT_ENABLED_SURFACES`
+ * retains its name to encode WHEN it was introduced; VALUE
+ * evolves Phase 43).
  *
- * Phase 40+ may expand the enabled set if cross-surface table
- * demand surfaces (zero current content evidence on any
- * surface; Phase-39-prep flagged demand-signal-first weakness
- * as trade-off).
+ * For non-enabled surfaces (none at Phase 43 default; future
+ * curator constructs may pass a narrower set) returns an empty
+ * extension set — Phase-18/27/29 baseline preserved on
+ * non-enabled surfaces. Per-surface differentiation remains
+ * the framework's central value — the class is generic over
+ * the enabled set.
+ *
+ * Composes cleanly with `WikilinkExtensionRegistry` (Phase 42
+ * default all-4) under `CompositeExtensionRegistry`: tables's
+ * `schemaOverrides` slot + wikilinks's `rehypePlugins` slot
+ * are distinct; conflict-free on every surface per APPEND-D-R.
+ * Composes with `ArxivExtensionRegistry` similarly (arxiv's
+ * `remarkPlugins` slot is also distinct).
+ *
+ * Phase 44+ may add table-specific attributes (`colspan` /
+ * `rowspan` / `scope`; APPEND-D-Q item 3) via schemaOverride
+ * extension; surface-specific table schemas (APPEND-D-Q item
+ * 6) via per-surface enabled-set differentiation.
  */
 export class TablesExtensionRegistry implements MarkdownExtensionRegistry {
   private readonly enabledSurfaces: ReadonlySet<MarkdownSurface>;
@@ -135,16 +152,37 @@ export class TablesExtensionRegistry implements MarkdownExtensionRegistry {
 }
 
 /**
- * Phase-39 default-enabled-surfaces for `TablesExtensionRegistry`
- * per ADR-0018 D-G APPEND Phase-39 EXTENDED block. Only
- * `reviewNotes` is enabled at Phase 39 ship; the three other
- * markdown surfaces (`bio` + `rationale` + `actionRationale`)
- * continue to receive the empty extension set. Phase 40+ may
- * expand if cross-surface demand surfaces.
+ * Default-enabled-surfaces for `TablesExtensionRegistry` per
+ * ADR-0018 D-G APPEND Phase-43 EXTENDED block (Unit 43.1).
+ *
+ * **Phase 43 ship** — all 4 wired markdown surfaces enabled.
+ * Closes Phase-39 APPEND-D-Q item 2 ("Cross-surface table
+ * expansion") at 4-phase carryover; second prep-/APPEND-doc-
+ * level deferral closed by a later phase via value-only change
+ * (first was Phase-42 closure of APPEND-D-L item 1 wikilinks
+ * cross-surface expansion). Establishes per-phase APPEND-
+ * deferral closure cadence: one APPEND-deferral resolved per
+ * phase, oldest first.
+ *
+ * **Phase 39 → 42 ship** (historical record) — was
+ * `Set(["reviewNotes"])`. The constant's NAME preserves the
+ * introduction-phase audit trail (Phase 39 = WHEN the tables
+ * consumer first shipped); the VALUE evolves Phase 43 to
+ * reflect demand-signal-relaxed cross-surface ship. Surface
+ * enumeration follows `MarkdownSurface` type-union order from
+ * `./types.ts`: `bio, reviewNotes, rationale, actionRationale`
+ * (mirrors Phase-42 D-9 precedent).
  *
  * Imported by the factory dispatch arm `MARKDOWN_EXTENSIONS=tables`
- * in `./index.ts` (Phase 39 Unit 39.2).
+ * in `./index.ts` — Phase 43 expansion flows through the
+ * dispatch arm unchanged (constructor-arg-only change; zero
+ * plugin / registry / factory rework per the property each
+ * Phase 38/39/41 consumer documented; second-consumer
+ * realization of the property after Phase-42 wikilinks).
  */
 export const PHASE_39_DEFAULT_ENABLED_SURFACES: ReadonlySet<MarkdownSurface> = new Set([
+  "bio",
   "reviewNotes",
+  "rationale",
+  "actionRationale",
 ]);

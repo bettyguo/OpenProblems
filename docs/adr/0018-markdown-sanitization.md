@@ -1261,6 +1261,130 @@ consumes the last single-letter slot (A through Z = 26
 letters); Phase 43+ APPEND letters wrap to two-letter form
 (D-AA, D-AB, ...) per prep-doc D-4 Option β.
 
+**EXTENDED Phase 43 Unit 43.1** — **second cross-surface
+expansion of a Phase-37-framework consumer**: tables expand
+from `reviewNotes`-only to ALL 4 markdown surfaces via
+constructor-arg change in `PHASE_39_DEFAULT_ENABLED_SURFACES`
+(value `Set(["reviewNotes"])` → `Set(["bio", "reviewNotes",
+"rationale", "actionRationale"])`; constant NAME preserved per
+Phase-42 D-8 audit-trail precedent). **Mirrors Phase-42
+wikilinks expansion pattern verbatim**. **Closes APPEND-D-Q
+item 2** ("Cross-surface table expansion — bio + rationale +
+actionRationale could enable tables; demand-signal-first;
+constructor-arg change with zero plugin or registry rework")
+at **4-phase carryover** (Phase 39 → 43; mirrors Phase 38 → 42
+gap). **Second prep-/APPEND-doc-level deferral closed by value-
+only change in a later phase** — establishes the **APPEND-
+deferral closure cadence**: one APPEND-deferral resolved per
+phase, oldest first. **First two-letter APPEND letter in
+ADR-0018 D-G** — APPEND-D-AA (after Phase-42 APPEND-D-Z
+consumed the last single-letter slot); validates Phase-42-
+prep D-4 Option β alphabet-wrap convention with Excel-
+spreadsheet column lettering. **Tenth APPEND on ADR-0018
+D-G** — extends the **first-ADR-D-clause-with-most-APPENDs
+record** from 9 → 10.
+
+**APPEND-D-AA tables default-enabled-surfaces expansion
+shape** — `PHASE_39_DEFAULT_ENABLED_SURFACES`'s value
+evolves from `Set(["reviewNotes"])` (Phase 39 ship through
+Phase-42 close) to `Set(["bio", "reviewNotes", "rationale",
+"actionRationale"])` (Phase 43 ship). Surface enumeration
+follows `MarkdownSurface` type-union order from `./types.ts`:
+`bio, reviewNotes, rationale, actionRationale` (mirrors
+Phase-42 D-9 precedent).
+
+**First "schemaOverrides on bio + rationale + actionRationale"
+production state**: pre-Phase-43, those three surfaces had
+base allow-list only (Phase 18/27/29 ship; no
+`schemaOverrides` ever applied). Post-Phase-43, all three
+surfaces get the tables-augmented allow-list via tables's
+`schemaOverrides` (the 6 GFM table tags + `align` attribute
+on `<th>`/`<td>`). **First `schemaOverrides`-on-bio surface**
+in project history.
+
+**No demand-signal change**: zero GFM-table content exists in
+`users.bio` / `ratingChallenges.rationale` / `RatingAction
+actionRationale` columns at Phase-43 ship (mirrors Phase-42
+demand-signal-relaxed framing). Phase 43 expansion is
+**architectural property validation** ("constructor-arg-only
+zero-rework expansion" for a second consumer) rather than
+demand-signal-driven; the property each Phase 38/39/41
+consumer documented now has TWO real-consumer-expansion
+realizations (Phase 42 wikilinks + Phase 43 tables).
+
+The `TablesExtensionRegistry` class + `GFM_TABLE_SCHEMA_OVERRIDES`
+constant + factory dispatch arm `MARKDOWN_EXTENSIONS=tables`
+all remain **UNCHANGED** Phase 43. The expansion is purely a
+constant-value change with cascading test updates. **Validates
+the zero-rework-cross-surface-expansion property for the
+SECOND consumer** (Phase 42 was the first; Phase 43 is the
+second; Phase 44+ may apply analogously to arxiv).
+
+**Composition matrix expanded Phase 43** under
+`CompositeExtensionRegistry`:
+
+| Surface | `wikilinks,tables` (Phase 43 default) | `wikilinks,tables,arxiv` (3-way Phase 43 default) |
+|---|---|---|
+| `bio` | wikilinks(rehype) + tables(schema) | wikilinks(rehype) + tables(schema) |
+| `reviewNotes` | wikilinks(rehype) + tables(schema) | wikilinks(rehype) + tables(schema) |
+| `rationale` | wikilinks(rehype) + tables(schema) | wikilinks(rehype) + tables(schema) + arxiv(remark) |
+| `actionRationale` | wikilinks(rehype) + tables(schema) | wikilinks(rehype) + tables(schema) |
+
+**First "all 4 surfaces with same-surface different-slot
+composition" state under default dispatch** in project
+history. Pre-Phase-43: only `reviewNotes` had wikilinks
+(rehype, Phase 42 expansion) + tables (schema, Phase 39
+default) co-rendering. Post-Phase-43: **all 4 surfaces co-
+render with wikilinks + tables**.
+
+**First "all 3 slots on the same surface" case**: under 3-way
+`wikilinks,tables,arxiv` Phase-43 default, the `rationale`
+surface receives wikilinks (rehypePlugins) + tables
+(schemaOverrides) + arxiv (remarkPlugins) — all three
+framework slots active on a single surface simultaneously,
+conflict-free per APPEND-D-R (one component per slot).
+Validates the **maximal multi-consumer per-surface
+composition** the framework supports.
+
+**APPEND letter-sequence naming**: Excel-spreadsheet column
+convention — single letters A through Z (26); then two-letter
+AA, AB, AC, ... AZ (26); then BA, BB, BC, ... etc. Phase 43
+ships D-AA; Phase 44+ would ship D-AB if a single APPEND
+suffices; D-AB through D-AZ would carry phases 44-69 in
+single-APPEND increments. Phase-43 first to use the two-
+letter form.
+
+**Phase 44+ deferrals** (Phase-43 tables-consumer scope cap):
+
+- **Arxiv cross-surface expansion** to bio + reviewNotes +
+  actionRationale — analogous Phase-44+ expansion candidate
+  (Phase 42 wikilinks; Phase 43 tables; Phase 44 arxiv would
+  complete the all-three-consumers-on-all-4-surfaces state);
+  APPEND-D-Y item 1 deferral; mirrors Phase-42/43 constructor-
+  arg-only change pattern.
+- **Table-specific attributes** (`colspan` / `rowspan` /
+  `scope`) — APPEND-D-Q item 3 deferral carries forward;
+  Phase 44+ if demand. Requires XSS audit (numeric-only
+  restriction for `colspan`/`rowspan`; literal-only restriction
+  for `scope`).
+- **`<caption>` element** — APPEND-D-Q item 4 deferral;
+  Phase 44+ if non-GFM extension surfaces.
+- **Surface-specific table schemas** — APPEND-D-Q item 6
+  deferral; Phase 44+ if cross-surface tables emerge with
+  different requirements (e.g., bio with no colspan;
+  reviewNotes with full table feature set). Implementation
+  shape: TablesExtensionRegistry constructor accepts a
+  `Map<MarkdownSurface, Partial<Schema>>` instead of a flat
+  `ReadonlySet<MarkdownSurface>`.
+- **Multi-anchor wikilink alias syntax** (APPEND-D-L item 2)
+  — carries forward to Phase 44+.
+- **Cross-entity wikilinks** (APPEND-D-L item 3) — carries
+  forward to Phase 44+.
+- **DOI sibling consumer** (APPEND-D-Y item 4) — Phase 44+;
+  first compositional same-slot case.
+- **`@mention` consumer** (APPEND-D-Y item 7) — Phase 44+;
+  conditional on Q73 gate.
+
 ### D-H. Phase 18+ deferrals
 
 Phase 17 ships MINIMAL markdown surface. Deferred to Phase 18+:

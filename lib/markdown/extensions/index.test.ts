@@ -74,13 +74,18 @@ describe("getExtensionRegistry (factory) — env-var dispatch", () => {
     expect(r.getExtensions("actionRationale").rehypePlugins).toBeDefined();
   });
 
-  it("TablesExtensionRegistry dispatch enables tables on reviewNotes only Phase 39", () => {
+  it("TablesExtensionRegistry dispatch enables tables on ALL 4 surfaces Phase 43 (was reviewNotes-only Phase 39-42)", () => {
+    // Phase 39 ship through Phase-42 close: Set(["reviewNotes"]). Phase 43
+    // ship (Unit 43.1): all 4 surfaces enabled per
+    // PHASE_39_DEFAULT_ENABLED_SURFACES expansion (closes ADR-0018
+    // APPEND-D-Q item 2 at 4-phase carryover; mirrors Phase-42 wikilinks
+    // pattern verbatim).
     process.env["MARKDOWN_EXTENSIONS"] = "tables";
     const r = getExtensionRegistry();
+    expect(r.getExtensions("bio").schemaOverrides).toBeDefined();
     expect(r.getExtensions("reviewNotes").schemaOverrides).toBeDefined();
-    expect(r.getExtensions("bio")).toEqual({});
-    expect(r.getExtensions("rationale")).toEqual({});
-    expect(r.getExtensions("actionRationale")).toEqual({});
+    expect(r.getExtensions("rationale").schemaOverrides).toBeDefined();
+    expect(r.getExtensions("actionRationale").schemaOverrides).toBeDefined();
   });
 
   it("caches the singleton across calls within the same env (default dispatch)", () => {
@@ -124,22 +129,23 @@ describe("getExtensionRegistry (factory) — env-var dispatch", () => {
     expect(getExtensionRegistry()).toBeInstanceOf(CompositeExtensionRegistry);
   });
 
-  it("composite dispatch enables wikilinks on all 4 + tables on reviewNotes (Phase 42 wikilinks expansion)", () => {
-    // Phase 42 expansion: wikilinks now enabled on all 4 surfaces (was
-    // actionRationale-only Phase 38-41). Under `wikilinks,tables`:
-    //   - bio: wikilinks(rehypePlugins) only.
-    //   - reviewNotes: wikilinks(rehypePlugins) + tables(schemaOverrides);
-    //     **first canonical same-surface different-slot composition** under
-    //     default dispatch (conflict-free per APPEND-D-R).
-    //   - rationale: wikilinks(rehypePlugins) only.
-    //   - actionRationale: wikilinks(rehypePlugins) only.
+  it("composite dispatch enables wikilinks + tables on all 4 surfaces (Phase 43 tables expansion)", () => {
+    // Phase 42: wikilinks expanded to all 4 surfaces.
+    // Phase 43: tables expanded to all 4 surfaces.
+    // Under `wikilinks,tables` Phase-43 default: every surface gets
+    // wikilinks(rehypePlugins) + tables(schemaOverrides) — first "all 4
+    // surfaces with same-surface different-slot composition" state under
+    // default dispatch (conflict-free per APPEND-D-R; distinct slots).
     process.env["MARKDOWN_EXTENSIONS"] = "wikilinks,tables";
     const r = getExtensionRegistry();
     expect(r.getExtensions("bio").rehypePlugins).toBeDefined();
+    expect(r.getExtensions("bio").schemaOverrides).toBeDefined();
     expect(r.getExtensions("reviewNotes").rehypePlugins).toBeDefined();
     expect(r.getExtensions("reviewNotes").schemaOverrides).toBeDefined();
     expect(r.getExtensions("rationale").rehypePlugins).toBeDefined();
+    expect(r.getExtensions("rationale").schemaOverrides).toBeDefined();
     expect(r.getExtensions("actionRationale").rehypePlugins).toBeDefined();
+    expect(r.getExtensions("actionRationale").schemaOverrides).toBeDefined();
   });
 
   it("multi-value parsing tolerates whitespace around commas", () => {
@@ -191,21 +197,28 @@ describe("getExtensionRegistry (factory) — env-var dispatch", () => {
     expect(getExtensionRegistry()).toBeInstanceOf(CompositeExtensionRegistry);
   });
 
-  it("3-way composite enables all three consumers on respective surfaces (Phase 42: all 4 surfaces now covered)", () => {
-    // Phase 42 expansion: wikilinks now enabled on all 4 surfaces.
-    // Under 3-way `wikilinks,tables,arxiv`:
-    //   - bio: wikilinks(rehypePlugins). **4-of-4 surface coverage achieved.**
+  it("3-way composite enables all three consumers on all 4 surfaces (Phase 43: tables expansion)", () => {
+    // Phase 42 expansion: wikilinks → all 4 surfaces.
+    // Phase 43 expansion: tables → all 4 surfaces.
+    // arxiv: rationale-only (Phase 41; un-expanded Phase 43; Phase 44+
+    // candidate for analogous cross-surface expansion).
+    // Under 3-way `wikilinks,tables,arxiv` Phase-43 default:
+    //   - bio: wikilinks(rehypePlugins) + tables(schemaOverrides).
     //   - reviewNotes: wikilinks(rehypePlugins) + tables(schemaOverrides).
-    //   - rationale: wikilinks(rehypePlugins) + arxiv(remarkPlugins).
-    //   - actionRationale: wikilinks(rehypePlugins).
+    //   - rationale: wikilinks(rehypePlugins) + tables(schemaOverrides)
+    //     + arxiv(remarkPlugins). First all-3-slots-on-same-surface case.
+    //   - actionRationale: wikilinks(rehypePlugins) + tables(schemaOverrides).
     process.env["MARKDOWN_EXTENSIONS"] = "wikilinks,tables,arxiv";
     const r = getExtensionRegistry();
     expect(r.getExtensions("bio").rehypePlugins).toBeDefined();
+    expect(r.getExtensions("bio").schemaOverrides).toBeDefined();
     expect(r.getExtensions("reviewNotes").rehypePlugins).toBeDefined();
     expect(r.getExtensions("reviewNotes").schemaOverrides).toBeDefined();
     expect(r.getExtensions("rationale").rehypePlugins).toBeDefined();
+    expect(r.getExtensions("rationale").schemaOverrides).toBeDefined();
     expect(r.getExtensions("rationale").remarkPlugins).toBeDefined();
     expect(r.getExtensions("actionRationale").rehypePlugins).toBeDefined();
+    expect(r.getExtensions("actionRationale").schemaOverrides).toBeDefined();
   });
 
   it("3-way composite ordering does not affect outcome (order-independent for disjoint case)", () => {
