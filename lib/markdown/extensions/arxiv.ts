@@ -116,36 +116,52 @@ export function remarkLinkArxivIds() {
 /**
  * `MarkdownExtensionRegistry` implementation that enables the
  * arxiv-autolink remark plugin on a curator-specified set of
- * surfaces. Phase-41 default enables `rationale` only (the
- * Phase-27 challenge-resolution-rationale surface — natural
- * locus for curator paper-citation prose explaining a rating
- * adjudication).
+ * surfaces.
  *
- * For non-enabled surfaces returns an empty extension set
- * (= `DefaultExtensionRegistry` behavior). **Per-surface
- * differentiation** is the framework's central value: the same
- * registry instance simultaneously enables arxiv autolinks on
- * `rationale` AND preserves baseline on `bio` + `reviewNotes` +
- * `actionRationale`.
+ * **Phase-44 default** (since Unit 44.1):
+ * `PHASE_41_DEFAULT_ENABLED_SURFACES` = `Set(["bio",
+ * "reviewNotes", "rationale", "actionRationale"])` — all 4
+ * wired markdown surfaces enabled. Closes Phase-41 ADR-0018
+ * APPEND-D-Y item 1 ("Cross-surface arxiv expansion") at 3-
+ * phase carryover; **third real-consumer-expansion realization**
+ * of the "constructor-arg-only zero-rework expansion" property
+ * (Phase 42 wikilinks first; Phase 43 tables second; Phase 44
+ * arxiv third). **Completes the per-consumer expansion arc**:
+ * all 3 Phase-37-framework consumers ship default-enabled on
+ * all 4 surfaces.
  *
- * Composes cleanly with Phase 38 `WikilinkExtensionRegistry` and
- * Phase 39 `TablesExtensionRegistry` under
- * `CompositeExtensionRegistry` (Phase 40 infrastructure):
+ * **Phase-41 default** (Unit 41.1 ship through Phase-43 close):
+ * was `Set(["rationale"])` — single-surface scope (Phase-27
+ * challenge-resolution-rationale surface as the natural locus
+ * for curator paper-citation prose). Phase 44 generalizes to
+ * all 4 surfaces under the audit-trail-preserving constant-name
+ * discipline (Phase 41 = introduction phase encoded in name;
+ * VALUE evolves Phase 44).
  *
- *   - vs wikilinks: distinct slots (remark vs rehype) AND
- *     distinct surfaces (rationale vs actionRationale).
- *   - vs tables: distinct slots (remark vs schema) AND distinct
- *     surfaces (rationale vs reviewNotes).
+ * For non-enabled surfaces (none at Phase 44 default; future
+ * curator constructs may pass a narrower set) returns an empty
+ * extension set. Per-surface differentiation remains the
+ * framework's central value — the class is generic over the
+ * enabled set.
  *
- * `MARKDOWN_EXTENSIONS=wikilinks,tables,arxiv` becomes a valid
- * env-var value Phase 41 — **first 3-way composition feasibility**
- * under the Phase-40 composition infrastructure.
+ * Composes cleanly with Phase 38 `WikilinkExtensionRegistry`
+ * (Phase 42 default all-4) and Phase 39 `TablesExtensionRegistry`
+ * (Phase 43 default all-4) under `CompositeExtensionRegistry`:
  *
- * Phase 42+ may expand the enabled set if cross-surface paper-
- * citation prose surfaces (zero current content evidence in
- * user-prose columns); the expansion is a constructor-arg
- * change with zero plugin or registry rework — same property
- * Phase 38 + 39 documented.
+ *   - vs wikilinks: distinct slots (remark vs rehype);
+ *     conflict-free on every surface.
+ *   - vs tables: distinct slots (remark vs schema); conflict-
+ *     free on every surface.
+ *
+ * `MARKDOWN_EXTENSIONS=wikilinks,tables,arxiv` Phase-44 default
+ * produces **all 3 framework slots active on all 4 surfaces**
+ * — maximal multi-consumer all-surfaces composition.
+ *
+ * Phase 45+ may add older-style category-prefixed arxiv IDs
+ * (APPEND-D-Y item 2), bare arxiv IDs without prefix (item 3),
+ * DOI sibling consumer (item 4; first compositional same-slot
+ * case), display-text alias syntax (item 5), or paper-card
+ * hover-preview (item 6).
  */
 export class ArxivExtensionRegistry implements MarkdownExtensionRegistry {
   private readonly enabledSurfaces: ReadonlySet<MarkdownSurface>;
@@ -163,16 +179,37 @@ export class ArxivExtensionRegistry implements MarkdownExtensionRegistry {
 }
 
 /**
- * Phase-41 default-enabled-surfaces for `ArxivExtensionRegistry`
- * per ADR-0018 D-G APPEND Phase-41 EXTENDED block. Only
- * `rationale` is enabled at Phase 41 ship; the three other
- * markdown surfaces (`bio` + `reviewNotes` + `actionRationale`)
- * continue to receive the empty extension set. Phase 42+ may
- * expand if cross-surface paper-citation prose surfaces.
+ * Default-enabled-surfaces for `ArxivExtensionRegistry` per
+ * ADR-0018 D-G APPEND Phase-44 EXTENDED block (Unit 44.1).
+ *
+ * **Phase 44 ship** — all 4 wired markdown surfaces enabled.
+ * Closes Phase-41 APPEND-D-Y item 1 ("Cross-surface arxiv
+ * expansion") at 3-phase carryover. **Third prep-/APPEND-doc-
+ * level deferral closed by value-only change** (Phase 42 closed
+ * D-L item 1; Phase 43 closed D-Q item 2; Phase 44 closes D-Y
+ * item 1). **Completes the per-consumer expansion arc**: all
+ * 3 Phase-37-framework consumers ship default-enabled on all 4
+ * surfaces.
+ *
+ * **Phase 41 → 43 ship** (historical record) — was
+ * `Set(["rationale"])`. The constant's NAME preserves the
+ * introduction-phase audit trail (Phase 41 = WHEN the arxiv
+ * consumer first shipped); the VALUE evolves Phase 44 per the
+ * Phase-42 D-8 + Phase-43 D-8 precedent. Surface enumeration
+ * follows `MarkdownSurface` type-union order per Phase-42 D-9
+ * + Phase-43 D-9 precedent.
  *
  * Imported by the factory dispatch arm `MARKDOWN_EXTENSIONS=arxiv`
- * in `./index.ts` (Phase 41 Unit 41.2).
+ * in `./index.ts` — Phase 44 expansion flows through the
+ * dispatch arm unchanged (constructor-arg-only change; zero
+ * plugin / registry / factory rework per the property each
+ * Phase 38/39/41 consumer documented). Third-consumer
+ * realization of the property after Phase-42 wikilinks +
+ * Phase-43 tables.
  */
 export const PHASE_41_DEFAULT_ENABLED_SURFACES: ReadonlySet<MarkdownSurface> = new Set([
+  "bio",
+  "reviewNotes",
   "rationale",
+  "actionRationale",
 ]);

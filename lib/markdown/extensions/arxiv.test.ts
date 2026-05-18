@@ -158,11 +158,18 @@ describe("ArxivExtensionRegistry — class behavior", () => {
     expect(r.getExtensions("reviewNotes")).toEqual({});
   });
 
-  it("exposes PHASE_41_DEFAULT_ENABLED_SURFACES = Set(['rationale'])", () => {
+  it("exposes PHASE_41_DEFAULT_ENABLED_SURFACES = Set of all 4 surfaces (Phase 44 expansion)", () => {
+    // Phase 41 ship through Phase-43 close: Set(["rationale"]). Phase 44
+    // expansion: all 4 surfaces per ADR-0018 APPEND-D-Y item 1 closure
+    // (cross-surface arxiv expansion; completes per-consumer expansion
+    // arc — third real-consumer-expansion realization after Phase-42
+    // wikilinks and Phase-43 tables). Constant NAME preserved per Phase-42
+    // D-8 precedent (Phase 41 = introduction phase encoded in name; VALUE
+    // evolves Phase 44).
+    expect(PHASE_41_DEFAULT_ENABLED_SURFACES.has("bio")).toBe(true);
+    expect(PHASE_41_DEFAULT_ENABLED_SURFACES.has("reviewNotes")).toBe(true);
     expect(PHASE_41_DEFAULT_ENABLED_SURFACES.has("rationale")).toBe(true);
-    expect(PHASE_41_DEFAULT_ENABLED_SURFACES.has("bio")).toBe(false);
-    expect(PHASE_41_DEFAULT_ENABLED_SURFACES.has("reviewNotes")).toBe(false);
-    expect(PHASE_41_DEFAULT_ENABLED_SURFACES.has("actionRationale")).toBe(false);
-    expect(PHASE_41_DEFAULT_ENABLED_SURFACES.size).toBe(1);
+    expect(PHASE_41_DEFAULT_ENABLED_SURFACES.has("actionRationale")).toBe(true);
+    expect(PHASE_41_DEFAULT_ENABLED_SURFACES.size).toBe(4);
   });
 });

@@ -52,13 +52,19 @@ describe("getExtensionRegistry (factory) — env-var dispatch", () => {
     expect(getExtensionRegistry()).toBeInstanceOf(ArxivExtensionRegistry);
   });
 
-  it("ArxivExtensionRegistry dispatch enables arxiv on rationale only Phase 41", () => {
+  it("ArxivExtensionRegistry dispatch enables arxiv on ALL 4 surfaces Phase 44 (was rationale-only Phase 41-43)", () => {
+    // Phase 41 ship through Phase-43 close: Set(["rationale"]). Phase 44
+    // ship (Unit 44.1): all 4 surfaces enabled per
+    // PHASE_41_DEFAULT_ENABLED_SURFACES expansion (closes ADR-0018
+    // APPEND-D-Y item 1 at 3-phase carryover; third real-consumer-
+    // expansion realization after Phase-42 wikilinks and Phase-43 tables;
+    // completes per-consumer expansion arc).
     process.env["MARKDOWN_EXTENSIONS"] = "arxiv";
     const r = getExtensionRegistry();
+    expect(r.getExtensions("bio").remarkPlugins).toBeDefined();
+    expect(r.getExtensions("reviewNotes").remarkPlugins).toBeDefined();
     expect(r.getExtensions("rationale").remarkPlugins).toBeDefined();
-    expect(r.getExtensions("bio")).toEqual({});
-    expect(r.getExtensions("reviewNotes")).toEqual({});
-    expect(r.getExtensions("actionRationale")).toEqual({});
+    expect(r.getExtensions("actionRationale").remarkPlugins).toBeDefined();
   });
 
   it("WikilinkExtensionRegistry dispatch enables wikilinks on ALL 4 surfaces Phase 42 (was actionRationale-only Phase 38-41)", () => {
@@ -197,28 +203,34 @@ describe("getExtensionRegistry (factory) — env-var dispatch", () => {
     expect(getExtensionRegistry()).toBeInstanceOf(CompositeExtensionRegistry);
   });
 
-  it("3-way composite enables all three consumers on all 4 surfaces (Phase 43: tables expansion)", () => {
+  it("3-way composite enables ALL 3 SLOTS on ALL 4 SURFACES (Phase 44: arxiv expansion completes the arc)", () => {
     // Phase 42 expansion: wikilinks → all 4 surfaces.
     // Phase 43 expansion: tables → all 4 surfaces.
-    // arxiv: rationale-only (Phase 41; un-expanded Phase 43; Phase 44+
-    // candidate for analogous cross-surface expansion).
-    // Under 3-way `wikilinks,tables,arxiv` Phase-43 default:
-    //   - bio: wikilinks(rehypePlugins) + tables(schemaOverrides).
-    //   - reviewNotes: wikilinks(rehypePlugins) + tables(schemaOverrides).
-    //   - rationale: wikilinks(rehypePlugins) + tables(schemaOverrides)
-    //     + arxiv(remarkPlugins). First all-3-slots-on-same-surface case.
-    //   - actionRationale: wikilinks(rehypePlugins) + tables(schemaOverrides).
+    // Phase 44 expansion: arxiv → all 4 surfaces (completes the
+    // per-consumer expansion arc).
+    // Under 3-way `wikilinks,tables,arxiv` Phase-44 default: every surface
+    // has wikilinks(rehypePlugins) + tables(schemaOverrides) + arxiv(remarkPlugins)
+    // — all 3 framework slots simultaneously active on all 4 surfaces.
+    // **First "all 3 framework slots on all 4 surfaces under default
+    // dispatch" state in project history.** Maximal multi-consumer
+    // all-surfaces composition. Conflict-free per APPEND-D-R because each
+    // surface has at most one component per slot (3 distinct slots × 4
+    // surfaces × 3 consumers = 12 component-surface-slot triples all
+    // distinct).
     process.env["MARKDOWN_EXTENSIONS"] = "wikilinks,tables,arxiv";
     const r = getExtensionRegistry();
     expect(r.getExtensions("bio").rehypePlugins).toBeDefined();
     expect(r.getExtensions("bio").schemaOverrides).toBeDefined();
+    expect(r.getExtensions("bio").remarkPlugins).toBeDefined();
     expect(r.getExtensions("reviewNotes").rehypePlugins).toBeDefined();
     expect(r.getExtensions("reviewNotes").schemaOverrides).toBeDefined();
+    expect(r.getExtensions("reviewNotes").remarkPlugins).toBeDefined();
     expect(r.getExtensions("rationale").rehypePlugins).toBeDefined();
     expect(r.getExtensions("rationale").schemaOverrides).toBeDefined();
     expect(r.getExtensions("rationale").remarkPlugins).toBeDefined();
     expect(r.getExtensions("actionRationale").rehypePlugins).toBeDefined();
     expect(r.getExtensions("actionRationale").schemaOverrides).toBeDefined();
+    expect(r.getExtensions("actionRationale").remarkPlugins).toBeDefined();
   });
 
   it("3-way composite ordering does not affect outcome (order-independent for disjoint case)", () => {

@@ -1385,6 +1385,122 @@ letter form.
 - **`@mention` consumer** (APPEND-D-Y item 7) — Phase 44+;
   conditional on Q73 gate.
 
+**EXTENDED Phase 44 Unit 44.1** — **third cross-surface
+expansion of a Phase-37-framework consumer**: arxiv expands
+from `rationale`-only to ALL 4 markdown surfaces via
+constructor-arg change in `PHASE_41_DEFAULT_ENABLED_SURFACES`
+(value `Set(["rationale"])` → `Set(["bio", "reviewNotes",
+"rationale", "actionRationale"])`; constant NAME preserved per
+Phase-42 D-8 audit-trail precedent). **Mirrors Phase-42 +
+Phase-43 expansion patterns verbatim**. **Completes the per-
+consumer expansion arc** — all 3 Phase-37-framework consumers
+(wikilinks Phase 42 + tables Phase 43 + arxiv Phase 44) now
+ship default-enabled on all 4 surfaces. **Third real-consumer-
+expansion realization** of the "constructor-arg-only zero-
+rework expansion" property documented in each Phase 38/39/41
+consumer's APPEND.
+
+**Closes APPEND-D-Y item 1** ("Cross-surface arxiv expansion:
+bio + reviewNotes + actionRationale autolinks; demand-signal-
+first; Phase 42+ constructor-arg change with zero plugin or
+registry rework") at **3-phase carryover** (Phase 41 → Phase
+44). Third prep-/APPEND-doc-level deferral closed by value-
+only change in a later phase (Phase 42 → 38 at 4-phase gap;
+Phase 43 → 39 at 4-phase gap; Phase 44 → 41 at 3-phase gap;
+the 3-phase gap is faster because APPEND-D-Y was created 2
+phases later than D-Q; the per-phase cadence is the same).
+
+**Second two-letter APPEND letter D-AB** (after Phase-43 D-AA).
+Excel-spreadsheet column convention continues — D-AC + D-AD
++ ... + D-AZ would carry Phase 45+ at this cadence.
+
+**Eleventh APPEND on ADR-0018 D-G** — extends the **first-
+ADR-D-clause-with-most-APPENDs record** from 10 → 11.
+
+**APPEND-D-AB arxiv default-enabled-surfaces expansion shape**
+— `PHASE_41_DEFAULT_ENABLED_SURFACES`'s value evolves from
+`Set(["rationale"])` (Phase 41 ship through Phase-43 close) to
+`Set(["bio", "reviewNotes", "rationale", "actionRationale"])`
+(Phase 44 ship). Surface enumeration follows `MarkdownSurface`
+type-union order per Phase-42 D-9 + Phase-43 D-9 precedent.
+Constant name preserved.
+
+**No demand-signal change**: zero `arxiv:<id>` content exists
+in `users.bio` / `ratingChallenges.reviewNotes` / `RatingAction
+actionRationale` columns at Phase-44 ship (mirrors Phase-42 +
+43 demand-signal-relaxed framing). Phase 44 expansion is
+**architectural property validation** ("constructor-arg-only
+zero-rework expansion" for a third consumer; pattern matured).
+
+The `ArxivExtensionRegistry` class + `remarkLinkArxivIds`
+plugin + factory dispatch arm `MARKDOWN_EXTENSIONS=arxiv` all
+remain **UNCHANGED** Phase 44. The expansion is purely a
+constant-value change with cascading test updates. **Third
+realization of the constructor-arg-only zero-rework expansion
+property** validates the framework's stability — plugin + class
++ factory code unchanged since respective Phase 37/38/39/40/41
+ship commits.
+
+**Composition matrix at Phase-44 default** under
+`CompositeExtensionRegistry`:
+
+| Surface | `wikilinks,tables,arxiv` (Phase 44 3-way default) |
+|---|---|
+| `bio` | wikilinks(rehype) + tables(schema) + arxiv(remark) |
+| `reviewNotes` | wikilinks(rehype) + tables(schema) + arxiv(remark) |
+| `rationale` | wikilinks(rehype) + tables(schema) + arxiv(remark) |
+| `actionRationale` | wikilinks(rehype) + tables(schema) + arxiv(remark) |
+
+**First "all 3 framework slots on all 4 surfaces under default
+dispatch" state in project history** — **maximal multi-
+consumer all-surfaces composition**. Pre-Phase-44: only
+`rationale` had all 3 slots active under 3-way default (Phase
+43 achievement). Post-Phase-44: ALL 4 surfaces have all 3
+slots active. Conflict-free per APPEND-D-R "at most one
+component per slot per surface" rule (each surface has exactly
+one component contributing each of the 3 slots; 3 distinct
+slots × 4 surfaces × 3 consumers = 12 component-surface-slot
+triples, all distinct).
+
+**Full framework activation state**: all 3 consumers + all 4
+surfaces + all 3 slots active under default dispatch. The
+framework's **maximal default-enabling configuration** is
+reached at Phase 44 ship — no further default-enabling-of-
+existing-consumers is possible. Phase 45+ candidates must
+necessarily explore: (a) consumer behavior (alias syntax;
+cross-entity); (b) schema behavior (table-attributes; class-
+styling); (c) validation (404-handling); OR (d) new consumers
+(DOI; @mention).
+
+**Phase 45+ deferrals** (Phase-44 arxiv-consumer scope cap):
+
+- **Older-style category-prefixed arxiv IDs** (APPEND-D-Y
+  item 2) — Phase 45+ if curator content surfaces.
+- **Bare arxiv IDs without prefix** (APPEND-D-Y item 3) —
+  Phase 45+ if stricter context-aware match warranted.
+- **DOI sibling consumer** (APPEND-D-Y item 4) — Phase 45+;
+  **first compositional same-slot case** in project history
+  (two consumers both using `remarkPlugins`). APPEND-D-R
+  rules for plugin concatenation within slot become live.
+- **arxiv display-text alias syntax** `[[arxiv:NNNN.NNNNN|display]]`
+  (APPEND-D-Y item 5) — Phase 45+.
+- **Paper-card hover-preview** (APPEND-D-Y item 6) — Phase
+  45+ couples to UI thread.
+- **Multi-anchor wikilink alias `[[slug|display]]`** (APPEND-
+  D-L item 2) — Phase 45+.
+- **Cross-entity wikilinks** (APPEND-D-L item 3) — Phase 45+.
+- **`<a class="wikilink">` styling** (APPEND-D-L item 4) —
+  Phase 45+.
+- **404 handling for unresolved wikilinks** (APPEND-D-L
+  item 5) — Phase 45+.
+- **Plugin parameterization for wikilink-href-builder** —
+  Phase 45+.
+- **Table-specific attributes** (`colspan` / `rowspan` /
+  `scope`; APPEND-D-Q item 3) — Phase 45+.
+- **`<caption>` element** (APPEND-D-Q item 4) — Phase 45+.
+- **Surface-specific table schemas** (APPEND-D-Q item 6) —
+  Phase 45+ via constructor-arg-as-map change.
+
 ### D-H. Phase 18+ deferrals
 
 Phase 17 ships MINIMAL markdown surface. Deferred to Phase 18+:
