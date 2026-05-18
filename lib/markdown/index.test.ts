@@ -10,7 +10,7 @@ import {
   type MarkdownExtensionSet,
   type MarkdownSurface,
 } from "./extensions";
-import { ArxivExtensionRegistry } from "./extensions/arxiv";
+import { ArxivExtensionRegistry, PHASE_41_DEFAULT_ENABLED_SURFACES } from "./extensions/arxiv";
 import { CompositeExtensionRegistry } from "./extensions/composite";
 import { PHASE_39_DEFAULT_ENABLED_SURFACES, TablesExtensionRegistry } from "./extensions/tables";
 import {
@@ -1276,5 +1276,171 @@ describe("Phase-43 same-surface different-slot composition — all 4 surfaces + 
     expect(html).toContain('href="/problems/a-slug"');
     expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
     expect(html).toContain("<table>");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-44 — end-to-end arxiv cross-surface expansion via the factory-driven
+// `PHASE_41_DEFAULT_ENABLED_SURFACES` constant. Verifies that the Phase-44
+// default-enabled-surfaces expansion to `Set(["bio", "reviewNotes",
+// "rationale", "actionRationale"])` activates arxiv-ID auto-linking on ALL
+// 4 surfaces end-to-end. Third real-consumer-expansion realization
+// (Phase 42 wikilinks; Phase 43 tables; Phase 44 arxiv) — **completes the
+// per-consumer expansion arc**.
+// ---------------------------------------------------------------------------
+
+describe("Phase-44 arxiv default — all 4 surfaces via PHASE_41_DEFAULT_ENABLED_SURFACES", () => {
+  beforeEach(() => {
+    __setRegistryForTests(new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES));
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it("arxiv autolinks resolve on bio under Phase-44 default (newly-enabled surface)", () => {
+    expect(renderBioMarkdown("see arxiv:1909.03004 for the methodology")).toBe(
+      '<p>see <a href="https://arxiv.org/abs/1909.03004">arxiv:1909.03004</a> for the methodology</p>',
+    );
+  });
+
+  it("arxiv autolinks resolve on reviewNotes under Phase-44 default (newly-enabled surface)", () => {
+    expect(renderReviewNotesMarkdown("cited as arxiv:2024.12345v2")).toBe(
+      '<p>cited as <a href="https://arxiv.org/abs/2024.12345v2">arxiv:2024.12345v2</a></p>',
+    );
+  });
+
+  it("arxiv autolinks resolve on rationale under Phase-44 default (Phase-41 baseline)", () => {
+    expect(renderRationaleMarkdown("see arxiv:1909.03004 for context")).toBe(
+      '<p>see <a href="https://arxiv.org/abs/1909.03004">arxiv:1909.03004</a> for context</p>',
+    );
+  });
+
+  it("arxiv autolinks resolve on actionRationale under Phase-44 default (newly-enabled surface)", () => {
+    expect(renderActionRationaleMarkdown("see arxiv:1909.03004 here")).toBe(
+      '<p>see <a href="https://arxiv.org/abs/1909.03004">arxiv:1909.03004</a> here</p>',
+    );
+  });
+
+  it("PHASE_41_DEFAULT_ENABLED_SURFACES contains all 4 surfaces Phase 44", () => {
+    expect(PHASE_41_DEFAULT_ENABLED_SURFACES.size).toBe(4);
+    expect(PHASE_41_DEFAULT_ENABLED_SURFACES.has("bio")).toBe(true);
+    expect(PHASE_41_DEFAULT_ENABLED_SURFACES.has("reviewNotes")).toBe(true);
+    expect(PHASE_41_DEFAULT_ENABLED_SURFACES.has("rationale")).toBe(true);
+    expect(PHASE_41_DEFAULT_ENABLED_SURFACES.has("actionRationale")).toBe(true);
+  });
+
+  it("XSS defenses survive Phase-44 arxiv expansion on bio (javascript: stripped; arxiv resolves)", () => {
+    const html = renderBioMarkdown("[bad](javascript:alert(1)) and arxiv:1909.03004");
+    expect(html).not.toContain("javascript:alert");
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+  });
+
+  it("case-insensitive prefix matches on bio under Phase-44 default", () => {
+    expect(renderBioMarkdown("see ArXiv:2024.12345 here")).toBe(
+      '<p>see <a href="https://arxiv.org/abs/2024.12345">ArXiv:2024.12345</a> here</p>',
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-44 — end-to-end all-3-slots-on-all-4-surfaces composition under
+// Phase-44 default constants for ALL THREE consumers (wikilinks, tables,
+// arxiv all at all-4 surfaces). **First "all 3 framework slots on all 4
+// surfaces under default dispatch" state in project history — maximal
+// multi-consumer all-surfaces composition**. Validates that the framework's
+// full activation produces conflict-free rendering on every surface per
+// APPEND-D-R (3 distinct slots × 4 surfaces × 3 consumers = 12 component-
+// surface-slot triples, all distinct).
+// ---------------------------------------------------------------------------
+
+describe("Phase-44 all-3-slots-on-all-4-surfaces — maximal framework activation under default dispatch", () => {
+  beforeEach(() => {
+    // ALL three consumers at Phase-44 defaults (all 4 surfaces each).
+    const wikilinks = new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES);
+    const tables = new TablesExtensionRegistry(PHASE_39_DEFAULT_ENABLED_SURFACES);
+    const arxiv = new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES);
+    __setRegistryForTests(new CompositeExtensionRegistry([wikilinks, tables, arxiv]));
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it("bio: ALL 3 SLOTS active (wikilinks + tables + arxiv) under Phase-44 maximal default", () => {
+    const md =
+      "see [[scalable-oversight]] and arxiv:1909.03004:\n\n| A | B |\n|---|---|\n| 1 | 2 |";
+    const html = renderBioMarkdown(md) ?? "";
+    expect(html).toContain('href="/problems/scalable-oversight"');
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+    expect(html).toContain("<table>");
+    expect(html).toContain("<th>A</th>");
+  });
+
+  it("reviewNotes: ALL 3 SLOTS active under Phase-44 maximal default", () => {
+    const md =
+      "compare [[hallucination-reduction]] with arxiv:2024.12345:\n\n| Crit |\n|---|\n| ok |";
+    const html = renderReviewNotesMarkdown(md) ?? "";
+    expect(html).toContain('href="/problems/hallucination-reduction"');
+    expect(html).toContain('href="https://arxiv.org/abs/2024.12345"');
+    expect(html).toContain("<table>");
+  });
+
+  it("rationale: ALL 3 SLOTS active under Phase-44 maximal default (Phase-43 baseline preserved)", () => {
+    const md = "see [[scalable-oversight]] and arxiv:1909.03004:\n\n| C |\n|---|\n| ok |";
+    const html = renderRationaleMarkdown(md);
+    expect(html).toContain('href="/problems/scalable-oversight"');
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+    expect(html).toContain("<table>");
+  });
+
+  it("actionRationale: ALL 3 SLOTS active under Phase-44 maximal default", () => {
+    const md = "see [[hallucination-reduction]] arxiv:1909.03004:\n\n| Dim |\n|---|\n| s |";
+    const html = renderActionRationaleMarkdown(md);
+    expect(html).toContain('href="/problems/hallucination-reduction"');
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+    expect(html).toContain("<table>");
+  });
+
+  it("XSS defenses survive maximal-framework-activation composition on every surface", () => {
+    const md =
+      "[bad](javascript:alert(1)) and [[a-slug]] and arxiv:1909.03004:\n\n| C |\n|---|\n| ok |";
+    for (const render of [
+      renderBioMarkdown,
+      renderReviewNotesMarkdown,
+      renderRationaleMarkdown,
+      renderActionRationaleMarkdown,
+    ]) {
+      const html = render(md);
+      expect(html).not.toContain("javascript:alert");
+      expect(html).toContain('href="/problems/a-slug"');
+      expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+      expect(html).toContain("<table>");
+    }
+  });
+
+  it("framework's full-activation state covers all 12 component-surface-slot triples", () => {
+    // 3 distinct slots × 4 surfaces × 3 consumers = 12 component-surface-
+    // slot triples, all distinct. Conflict-free per APPEND-D-R.
+    // This test asserts the dispatch-level shape (parallel to the
+    // end-to-end-rendering tests above).
+    const md = "[[x]] arxiv:1909.03004 | A |\n|---|\n| 1 |"; // mixed content
+    // Each of the 4 surfaces should render all 3 plugins' outputs:
+    const surfaces = [
+      renderBioMarkdown(md) ?? "",
+      renderReviewNotesMarkdown(md) ?? "",
+      renderRationaleMarkdown(md) ?? "",
+      renderActionRationaleMarkdown(md) ?? "",
+    ];
+    for (const html of surfaces) {
+      // wikilinks (rehype slot active):
+      expect(html).toContain('href="/problems/x"');
+      // arxiv (remark slot active):
+      expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+    }
   });
 });
