@@ -2470,6 +2470,109 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 43 — Community-adjacent surfaces (**thirty-fourth NON-§13 phase**: second cross-surface expansion of a Phase-37-framework consumer — tables expand from `reviewNotes`-only to all 4 markdown surfaces via constructor-arg change in `PHASE_39_DEFAULT_ENABLED_SURFACES`; mirrors Phase 42 wikilinks-expansion pattern verbatim; closes ADR-0018 APPEND-D-Q item 2 deferral at 4-phase carryover; first two-letter APPEND letter wrap (APPEND-D-AA after D-Z consumption Phase 42); first "all 4 surfaces with same-surface different-slot composition" state under default dispatch; anticipated 4-5 units; 38th "Continue" override invoked)
 
+#### Unit 43.4 — Phase 43 acceptance gate (second cross-surface expansion realized; first two-letter APPEND letter D-AA; first "all 3 slots on same surface" case; 24 ADRs; 5 units; 908/71; ADR-0018 D-G extends to 10 APPENDs; 80th consecutive 103 kB unit; 39th "Continue" override opportunity at Phase 43 → 44 boundary)
+
+- Fifth and final Phase-43 unit; gate-only. **Phase 43 CLOSES at this unit's commit**. Phase 44 entry awaits explicit "Continue" override.
+
+##### Phase 43 — what shipped (5 units)
+
+| Unit | Title | Type | Commit |
+|---|---|---|---|
+| 43.0 | Phase 43 prep | docs | `d38c74e` |
+| 43.1 | `PHASE_39_DEFAULT_ENABLED_SURFACES` → 4 surfaces + tests + APPEND-D-AA | code+APPEND | `fee034e` |
+| 43.2 | 13 NEW factory-dispatch + 3-slots-on-same-surface tests | code | `d875803` |
+| 43.3 | Phase-43 hygiene + APPEND-D-Q item 2 closure | docs | `3132107` |
+| 43.4 | Phase 43 acceptance gate (this unit) | gate | (this commit) |
+
+Total: **5 units** — mirrors Phase 35 + 37 + 38 + 39 + 40 + 41 + 42 5-unit framework shapes exactly.
+
+##### Second cross-surface expansion realized at HEAD `3132107`
+
+Phase-43-prep D-1 first-thread recommendation realized end-to-end:
+
+- `PHASE_39_DEFAULT_ENABLED_SURFACES` value evolved from `Set(["reviewNotes"])` (Phase 39 ship through Phase-42 close) to `Set(["bio", "reviewNotes", "rationale", "actionRationale"])` (Phase 43 ship; Unit 43.1). Constant NAME preserved per Phase-42 D-8 audit-trail precedent.
+- 3 existing test assertions updated in `tables.test.ts` + `extensions/index.test.ts` (Unit 43.1).
+- 13 NEW factory-dispatch + 3-slots-on-same-surface end-to-end tests in `lib/markdown/index.test.ts` (Unit 43.2; 7 Phase-43 tables-default tests + 6 Phase-43 same-surface composition tests including the **first "all 3 framework slots on same surface" case**).
+- ADR-0018 D-G APPEND adds Phase-43 EXTENDED block + **APPEND-D-AA** (Unit 43.1; **first two-letter APPEND letter** in project history).
+- ADR-0018 APPEND-D-Q item 2 deferral CLOSED at **4-phase carryover** (Phase 39 → Phase 43; Unit 43.3 documents).
+- **APPEND-deferral closure cadence pattern established** (oldest-first at one-deferral-per-phase): Phase 42 closed Phase-38 APPEND-D-L item 1; Phase 43 closed Phase-39 APPEND-D-Q item 2.
+- First "schemaOverrides on bio + rationale + actionRationale" production state achieved (Unit 43.1 ship).
+- Second "constructor-arg-only zero-rework expansion" property realization (Phase 42 was first; Phase 43 is second).
+- First "all 4 surfaces with same-surface different-slot composition" state under default dispatch validated end-to-end (Unit 43.2).
+- First "all 3 framework slots on same surface" case validated end-to-end (Unit 43.2; rationale under 3-way Phase-43 default).
+
+##### Phase 42 → Phase 43 delta
+
+| Metric | Phase 42 close | Phase 43 close | Δ |
+|---|---|---|---|
+| Tests | 895 / 71 files | **908 / 71 files** | +13 / 0 |
+| ADRs | 24 | **24** | 0 |
+| ADR-0018 D-G APPEND count | 9 | **10** (project record extends; first two-letter slot D-AA in use) | +1 |
+| DB tables | 7 | 7 | 0 |
+| Migrations | 9 | 9 | 0 |
+| Env vars | 14 | 14 | 0 |
+| `MARKDOWN_EXTENSIONS` single-value arms | 4 | 4 | 0 |
+| i18n keys per locale | 168 | 168 | 0 |
+| First Load JS shared chunk | 103 kB | **103 kB** | 0 |
+| Middleware bundle | 160 kB | 160 kB | 0 |
+| OPEN_QUESTIONS top-level Q-count | 66 | **66** | 0 |
+| Phase-37+ candidate count | 8 | **8** | 0 |
+| Runtime deps added | — | **0** | 0 |
+| `lib/markdown/extensions/` files | 13 | 13 | 0 |
+| Tables default-enabled surfaces | 1 (`reviewNotes`) | **4 (all)** | +3 |
+| Consumers exercising cross-surface expansion | 1 (wikilinks) | **2 (+tables)** | +1 |
+| Surfaces with same-surface different-slot composition under default | 1 (`reviewNotes`) | **4 (all)** | +3 |
+| Surfaces with all 3 framework slots active under 3-way default | 0 | **1 (`rationale`)** | +1 |
+
+##### Architectural firsts in Phase 43 (12 enumerated)
+
+1. **Second cross-surface expansion of a Phase-37-framework consumer** — tables → all 4 surfaces; mirrors Phase-42 wikilinks pattern verbatim.
+2. **First two-letter APPEND letter in ADR-0018 D-G**: APPEND-D-AA (after Phase-42 D-Z consumed the last single-letter slot). Excel-spreadsheet column convention.
+3. **First "schemaOverrides on bio + rationale + actionRationale" production state** in project history. First `schemaOverrides`-on-bio surface.
+4. **First "all 4 surfaces with same-surface different-slot composition" state under default dispatch** in project history. Pre-Phase-43 only `reviewNotes`; post-Phase-43 ALL 4 surfaces co-render wikilinks + tables.
+5. **First "all 3 framework slots on same surface" case validated end-to-end** — under 3-way `wikilinks,tables,arxiv` Phase-43 default, `rationale` surface receives all 3 slots simultaneously active; conflict-free per APPEND-D-R; **maximal multi-consumer per-surface composition**.
+6. **ADR-0018 APPEND-D-Q item 2 deferral CLOSED at 4-phase carryover** (Phase 39 → Phase 43). Second prep-/APPEND-doc-level deferral closed by value-only change in a later phase.
+7. **Tenth APPEND on ADR-0018 D-G** — extends the **first-ADR-D-clause-with-most-APPENDs record** from 9 → 10 (Phase 18 + 27 + 29 + 37 + 38 + 39 + 40 + 41 + 42 + **43**).
+8. **First "framework + 3 consumers + composition + 2 expansions" 7-phase cluster** in project history (Phase 37-43). Seven-phase architectural arc.
+9. **13th consecutive phase without new B category** — Phase 31-43 = **first 13-phase run** in project history (extends Phase-42 record from 12 → 13).
+10. **77th-through-80th consecutive 103 kB First Load JS units** (4 of 5 Phase-43 units incremented; Unit 43.0 prep did not increment per phase-prep precedent).
+11. **Thirty-fourth NON-§13 phase** (§13 ledger CLOSED at Unit 9.9; carried unchanged through Phases 10-43).
+12. **APPEND-deferral closure cadence pattern established**: one APPEND-deferral resolved per phase, oldest first. Phase 42 closed Phase-38 D-L item 1; Phase 43 closed Phase-39 D-Q item 2; Phase 44+ candidate at this cadence: Phase-41 D-Y item 1 (arxiv cross-surface expansion; 3-phase gap).
+
+##### Phase 43 → Phase 44 entry conditions
+
+Per §12 cardinal rule: **Phase 44 entry requires explicit human sign-off**. This unit ships the Phase 43 close; Phase 44.0 prep awaits `"Continue"` override OR phase-44-thread direction.
+
+**Recommended Phase 44 first-thread candidates** (9 ranked):
+
+| Rank | Thread | Units | Tractability |
+|---|---|---|---|
+| 1 | **Arxiv cross-surface expansion** (analogous Phase-44 candidate to Phase-42 + Phase-43; completes the per-consumer expansion arc — all 3 consumers expanded to all 4 surfaces; closes APPEND-D-Y item 1 at 3-phase gap) | 1-2 | Autonomous-tractable; mirrors Phase-42/43 pattern; **third realization of constructor-arg-only zero-rework expansion property**; completes "framework + 3 consumers + composition + 3 expansions" 8-phase cluster |
+| 2 | **DOI sibling consumer** in `remarkPlugins` slot — first compositional same-slot case (two consumers both using `remarkPlugins`) | 2-3 | Autonomous-tractable; first time framework needs 2 plugins in same slot under composition |
+| 3 | **Multi-anchor wikilink alias `[[slug\|display-text]]`** (APPEND-D-L item 2) | 1-2 | Autonomous-tractable; plugin regex extension |
+| 4 | **Cross-entity wikilinks** (`[[paper-id]]` / `[[author-slug]]`; APPEND-D-L item 3) | 2-3 | Requires entity-type disambiguation + plugin parameterization |
+| 5 | **Table-specific attributes** (`colspan` / `rowspan` / `scope`; APPEND-D-Q item 3) | 1-2 | XSS-audit-required; schema-override extension |
+| 6 | **ADR-0025 concrete content-moderation provider** | 3-5 | Strongest patience signal; not autonomous-tractable |
+| 7 | **`@mention` resolution consumer** | 2-3 | Conditional on Q73 gate |
+| 8 | **Pre-commit typecheck hook** | 1 | Tiny |
+| 9 | **Q78 / Q79 / N. v2 methodology / safeAuth / test backfill / account-delete** | various | Each deferred per prior rationale |
+
+**Operational gates still pending** (6 UNCHANGED): Q54 + Q55 + Q69 + Q73 + Q75 + Q77.
+
+##### Smoke gates
+
+- `pnpm typecheck` — passes.
+- `pnpm test` — **908 / 71 files**.
+- `pnpm audit-content` — 0 errors / 6 warnings (41 consecutive phases at Q32 baseline).
+- First Load JS — **103 kB UNCHANGED** (80 consecutive units).
+- Middleware — **160 kB UNCHANGED**.
+
+##### Boundary statement
+
+**Phase 43 CLOSED at HEAD `<this-unit>` after 5 units (43.0 prep + 43.1 `PHASE_39_DEFAULT_ENABLED_SURFACES` expansion + APPEND-D-AA + 43.2 13 NEW factory-dispatch + 3-slots-on-same-surface tests + 43.3 hygiene + 43.4 gate). Second cross-surface expansion of a Phase-37-framework consumer realized: tables expand from `reviewNotes`-only to all 4 markdown surfaces via constructor-arg value-only change in `PHASE_39_DEFAULT_ENABLED_SURFACES`; mirrors Phase-42 wikilinks pattern verbatim. Closes ADR-0018 APPEND-D-Q item 2 deferral at 4-phase carryover (second prep-/APPEND-doc-level deferral closed by value-only change in a later phase; both 4-phase gaps; **APPEND-deferral closure cadence pattern established**: oldest-first at one-deferral-per-phase). **First two-letter APPEND letter D-AA** in project history. **First "schemaOverrides on bio + rationale + actionRationale" production state** in project history. **First "all 4 surfaces with same-surface different-slot composition" state under default dispatch**. **First "all 3 framework slots on same surface" case validated end-to-end** (rationale under 3-way Phase-43 default; maximal multi-consumer per-surface composition). Thirty-fourth NON-§13 phase. First "framework + 3 consumers + composition + 2 expansions" 7-phase cluster. Tenth APPEND on ADR-0018 D-G (project record extends 9 → 10). 13th consecutive phase without new B category (first 13-phase run). 908 tests across 71 vitest files (+13 / 0 vs Phase 42). 24 ADRs UNCHANGED. 7 DB tables UNCHANGED. 9 migrations UNCHANGED. 14 env vars UNCHANGED. 168 i18n keys per locale UNCHANGED. First Load JS 103 kB UNCHANGED (80 consecutive units). Middleware 160 kB UNCHANGED. OPEN_QUESTIONS top-level Q-count 66 UNCHANGED. Phase-37+ candidate count 8 UNCHANGED. Zero new ADRs / migrations / i18n keys / env vars / operational gates / runtime deps / files. Phase 44 entry requires explicit human sign-off per §12.**
+
+- THINK artifact: `docs/thinking/43.4-phase-43-acceptance-gate.md`.
+
 #### Unit 43.3 — Phase-43 hygiene + ADR-0018 APPEND-D-Q item 2 closure documentation + APPEND-deferral closure cadence pattern (Q-tally UNCHANGED at 66; Phase-37+ candidate count UNCHANGED at 8; 13-phase no-new-B-category streak EXTENDS to Phase 43; 79th consecutive 103 kB unit)
 
 - Fourth Phase-43 unit; docs-only hygiene. Mirrors Phase 38 + 39 + 40 + 41 + 42 hygiene shapes (no source/no test/no ADR changes; tracks Q/B/candidate status carryover + documents Phase-43 architectural milestones + establishes APPEND-deferral closure cadence pattern).
