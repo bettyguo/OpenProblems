@@ -150,7 +150,14 @@
     "image_remove_aria_label": "Revenir à l'avatar GitHub",
     "image_current_label": "Photo actuelle",
     "image_success_message": "Photo de profil mise à jour.",
-    "image_remove_success_message": "Avatar GitHub restauré."
+    "image_remove_success_message": "Avatar GitHub restauré.",
+    "privacy_aria_label": "Visibilité du profil",
+    "privacy_heading": "Visibilité du profil",
+    "privacy_label": "Rendre mon profil public",
+    "privacy_description": "Décoché, votre page /u/{login} renvoie une erreur 404 — votre liste de suivi, vos évaluations et votre bio sont masquées aux autres utilisateurs.",
+    "privacy_public_status": "Votre profil est actuellement public.",
+    "privacy_private_status": "Votre profil est actuellement privé.",
+    "privacy_save_button": "Enregistrer la visibilité"
   },
   "public_profile": {
     "aria_label": "Profil public de @{login}",

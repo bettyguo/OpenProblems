@@ -150,7 +150,14 @@
     "image_remove_aria_label": "Revert to GitHub avatar",
     "image_current_label": "Current picture",
     "image_success_message": "Profile picture updated.",
-    "image_remove_success_message": "Reverted to GitHub avatar."
+    "image_remove_success_message": "Reverted to GitHub avatar.",
+    "privacy_aria_label": "Profile visibility",
+    "privacy_heading": "Profile visibility",
+    "privacy_label": "Make my profile public",
+    "privacy_description": "When unchecked, your /u/{login} page returns a 404 — your watchlist, ratings, and bio are hidden from other users.",
+    "privacy_public_status": "Your profile is currently public.",
+    "privacy_private_status": "Your profile is currently private.",
+    "privacy_save_button": "Save visibility"
   },
   "public_profile": {
     "aria_label": "Public profile of @{login}",

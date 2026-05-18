@@ -34,6 +34,7 @@ import {
   clearProfileImage,
   MAX_BIO_CHARS,
   MAX_DISPLAY_NAME_CHARS,
+  setProfilePublic,
   updateProfile,
   updateProfileImage,
 } from "@/lib/users";
@@ -129,6 +130,7 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
       displayName: users.displayName,
       bio: users.bio,
       imageOverride: users.imageOverride,
+      profilePublic: users.profilePublic,
     })
     .from(users)
     .where(eq(users.id, userId))
@@ -140,6 +142,10 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
   // GitHub-derived session.user.image → null (placeholder rendered
   // inside the field component when null).
   const currentAvatar = userRow?.imageOverride ?? session.user.image ?? null;
+  // Phase-36 Q64 per-user privacy opt-out per ADR-0015 D-A APPEND.
+  // Defaults to true (public) when the row hasn't loaded yet (e.g.,
+  // first sign-in before the auth callback wrote to the user table).
+  const currentProfilePublic = userRow?.profilePublic ?? true;
 
   const watchedSlugs = await getWatchedSlugs(userId);
   const watched = watchedSlugs
@@ -218,6 +224,26 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
     await clearProfileImage(actionSession.user.id);
     revalidatePath(`/[locale]/profile`, "page");
     redirect(`/${locale}/profile?saved=image-cleared`);
+  };
+
+  // Phase-36 Q64 per-user privacy opt-out per ADR-0015 D-A APPEND.
+  // Submit-on-change toggle; no confirmation modal per Phase-36-prep
+  // D-11 (toggle reversible; single-click; no destructive action).
+  // Checkbox's checked state becomes the new profilePublic value:
+  // checked = "Make my profile public" = true; unchecked = opted-out
+  // = false. FormData's missing-checkbox-value sentinel converts to
+  // false correctly.
+  const updateProfilePrivacyAction = async (formData: FormData) => {
+    "use server";
+    const actionSession = await auth();
+    if (!actionSession?.user?.id) {
+      redirect(`/api/auth/signin/github?callbackUrl=/${locale}/profile`);
+    }
+    const isPublic = formData.get("isPublic") === "on";
+    await setProfilePublic(actionSession.user.id, isPublic);
+    revalidatePath(`/[locale]/profile`, "page");
+    revalidatePath(`/[locale]/u/[handle]`, "page");
+    redirect(`/${locale}/profile?saved=privacy`);
   };
 
   const withdrawChallengeAction = async (formData: FormData) => {
@@ -458,6 +484,35 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
             </button>
           </form>
         )}
+      </section>
+
+      <section aria-label={tE("privacy_aria_label")} className="mt-12">
+        <h2 className="font-serif text-xl font-semibold tracking-tight">{tE("privacy_heading")}</h2>
+        <p className="text-muted-foreground mt-2 text-sm">
+          {currentProfilePublic ? tE("privacy_public_status") : tE("privacy_private_status")}
+        </p>
+        <form action={updateProfilePrivacyAction} className="mt-4">
+          <label className="inline-flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              name="isPublic"
+              defaultChecked={currentProfilePublic}
+              className="border-border focus-visible:ring-ring h-4 w-4 rounded focus-visible:ring-2 focus-visible:outline-none"
+            />
+            <span>{tE("privacy_label")}</span>
+          </label>
+          <p className="text-muted-foreground mt-2 text-xs">{tE("privacy_description")}</p>
+          <button
+            type="submit"
+            className={cn(
+              "border-border bg-background text-foreground mt-3 inline-flex h-9 items-center justify-center rounded-md border px-3 text-xs font-medium",
+              "hover:bg-muted focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none",
+              "transition-colors",
+            )}
+          >
+            {tE("privacy_save_button")}
+          </button>
+        </form>
       </section>
 
       <section aria-label={t("watching_aria_label")} className="mt-12">
