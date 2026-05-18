@@ -1010,6 +1010,146 @@ scope cap):
   schema-override for debugging. Phase 41+ if debugging
   composition becomes a recurring task.
 
+**EXTENDED Phase 41 Unit 41.1** — **third concrete Phase-37-
+framework consumer**: arXiv ID auto-link on `rationale` surface
+via `remarkPlugins` slot + new `ArxivExtensionRegistry`.
+**Completes 3-of-3 framework slot demonstration via real
+consumer**: Phase 38 wikilinks exercised `rehypePlugins`;
+Phase 39 tables exercised `schemaOverrides`; Phase 41 arxiv
+closes the cycle by exercising the third optional slot
+`remarkPlugins`. **First mdast-level synthesis-emitting remark
+plugin** in project history (`remark-gfm` is a syntax-parser;
+arxiv autolinks splice new `link` nodes from inside pre-existing
+`text` nodes via regex pattern match). **First absolute-URL
+emission** by a framework extension (wikilinks emit relative
+`/problems/<slug>`; tables emit no URLs; arxiv emits
+`https://arxiv.org/abs/<id>`). **First `rationale`-surface
+extension** — after Phase 41 ship, only `bio` remains
+un-enabled-for-any-consumer among the four wired surfaces.
+**First 3-way composition feasibility** —
+`MARKDOWN_EXTENSIONS=wikilinks,tables,arxiv` becomes a valid
+env-var value Phase 41 (3 distinct slots × 3 disjoint surfaces;
+conflict-free under APPEND-D-R rules). **Eighth APPEND on
+ADR-0018 D-G** — extends the **first-ADR-D-clause-with-most-
+APPENDs record** from 7 → 8.
+
+**APPEND-D-U arxiv plugin shape** —
+`lib/markdown/extensions/arxiv.ts` exports `remarkLinkArxivIds`
+mdast plugin walking `text` nodes with the pattern
+`/\barxiv:(\d{4}\.\d{4,5})(v\d+)?\b/gi` (case-insensitive
+prefix; word-boundary anchors prevent mid-word matches;
+modern post-2007 arXiv-ID format only). Each match
+splice-replaces the `text` node with a sequence
+`[Text?, Link, Text?]` (leading + trailing text preserved). The
+emitted `Link` node has `url: https://arxiv.org/abs/<id>[<version>]`
+and `children: [{ type: "text", value: <verbatim-match> }]` —
+source casing of the `arxiv:` prefix and any version suffix
+preserved in the visible link text. The plugin folds at the
+remark stage AFTER `remark-parse` + `remark-gfm` per the
+Phase-37 framework's APPEND-D-D plugin-order-after-default
+discipline; emitted `link` nodes flow through the standard
+`remark-rehype` mdast→hast bridge.
+
+**APPEND-D-V XSS-safety boundary** — the arxiv plugin
+synthesizes `<a href="https://arxiv.org/abs/...">` elements that
+must pass the existing Phase-17 sanitization audit boundary.
+Three safety properties combine:
+
+1. **Regex IS validation** (mirrors Phase-38 APPEND-D-I
+   wikilink discipline): `\d{4}\.\d{4,5}(v\d+)?` is restrictive
+   — only digits + literal dot + optional `v<digits>` suffix.
+   No path traversal, no query string, no fragment, no
+   protocol injection — the plugin emits a URL constructed
+   from regex captures, never from arbitrary input.
+2. **Absolute URL with `https:` scheme**: the emitted href
+   begins `https://arxiv.org/abs/` verbatim. The `https:`
+   scheme is in `bioSchema.protocols.href` allow-list; the
+   `arxiv.org` domain is a fixed string. `rehypeStripUnsafeHrefs`
+   passes `https://` URLs unchanged (it strips only
+   `javascript:` / `data:` / `file:` / relative URLs).
+3. **`<a>` + `href` allow-listed Phase-17**: the emitted
+   element + attribute already pass the base sanitize schema
+   verbatim — **NO `schemaOverrides` required** for arxiv
+   autolinks. This is the first framework consumer to require
+   ZERO sanitize-schema cooperation; wikilinks needed plugin-
+   order discipline (after `rehypeStripUnsafeHrefs`); tables
+   needed `schemaOverrides` for new tag-names.
+
+The plugin emits no other element types and no other
+attributes; the audit surface is the `Link` node's `url`
+field, which is constructed from regex captures only.
+
+**APPEND-D-W URL-emission convention** — Phase 41 ships
+`arxiv:<id>[<version>]` → `<a href="https://arxiv.org/abs/<id>[<version>]">arxiv:<id>[<version>]</a>`.
+Version suffix preserved verbatim in both href and visible
+text (a curator citing `arxiv:2024.01234v3` is intentionally
+pinning to revision v3; arXiv resolves the versioned URL to
+that revision). The display text preserves source casing of
+the prefix (`arxiv:` vs `ArXiv:` vs `ARXIV:`) so curator-
+authored prose retains its stylistic intent; the href is
+case-normalized (the prefix becomes lowercase in the URL
+fragment is irrelevant — arxiv.org URLs do not include the
+prefix, only the ID).
+
+**APPEND-D-X `ArxivExtensionRegistry` per-surface enabling +
+3-way composition** —
+`ArxivExtensionRegistry(new Set(["rationale"]))` ships Phase
+41 default-enabled-on-`rationale`-only. The other three
+markdown surfaces (`bio` + `reviewNotes` + `actionRationale`)
+receive empty extension sets per `ArxivExtensionRegistry`'s
+`getExtensions` default-deny. **3-way composition matrix**
+under Phase-40 `CompositeExtensionRegistry`:
+
+| Composition | Slot overlap | Surface overlap | Conflict |
+|---|---|---|---|
+| `arxiv,wikilinks` | none (remark vs rehype) | none (rationale vs actionRationale) | none |
+| `arxiv,tables` | none (remark vs schema) | none (rationale vs reviewNotes) | none |
+| `arxiv,wikilinks,tables` | none (3 distinct slots) | none (3 disjoint surfaces) | none |
+
+All three pairs / triples are conflict-free under APPEND-D-R
+composition rules: the three Phase-41-resident consumers
+occupy DISTINCT slots AND DISTINCT surfaces. The 3-way
+`MARKDOWN_EXTENSIONS=wikilinks,tables,arxiv` env-var value
+flows through Phase-40 multi-value parsing + composite-
+registry wrapping with zero rework — **first 3-way composition
+feasibility** validates the "arbitrary disjoint-surface multi-
+consumer composition" claim from Phase-40 boundary statement.
+
+**APPEND-D-Y Phase 42+ deferrals** (Phase-41 arxiv-consumer
+scope cap):
+
+- **Cross-surface arxiv expansion**: bio + reviewNotes +
+  actionRationale autolinks. No current content evidence in
+  user-prose columns; demand-signal-first; Phase 42+
+  constructor-arg change with zero plugin or registry rework
+  (the property Phase 38 + 39 + 41 each documented).
+- **Older-style category-prefixed arXiv IDs**: pre-2007
+  `<archive>/<id>` format (`arxiv:math/0211159`,
+  `arxiv:cs.AI/0501001`). None encountered in the project's
+  existing paper-evidence URLs; the modern-format-only
+  Phase-41 regex deliberately rejects them. Phase 42+ if
+  curator content surfaces older citations.
+- **Bare arXiv IDs without `arxiv:` prefix** (e.g., raw
+  `2024.01234` floating in prose): ambiguous with floating
+  decimals + version strings + dates. The `arxiv:` prefix is
+  the disambiguator; Phase 41 ships prefix-required only.
+  Phase 42+ if a stricter context-aware match (e.g., inside
+  parenthetical citation prose) becomes warranted.
+- **DOI auto-linking** (`doi:10.<reg>/<id>` →
+  `https://doi.org/10.<reg>/<id>`): naturally a sibling
+  consumer in the same Phase-37 framework slot
+  (`remarkPlugins`) — composes cleanly with arxiv via
+  `CompositeExtensionRegistry`. Phase 42+ if curator content
+  surfaces DOI citations.
+- **arXiv ID display-text alias syntax** (e.g.,
+  `[[arxiv:NNNN.NNNNN|Smith et al. 2024]]`): GitHub-wiki-
+  flavor alias syntax. No current content evidence; Phase 42+.
+- **Paper-card hover-preview**: client-side enhancement
+  showing title + authors from the matching
+  `content/papers/<id>.yaml` Velite entry on link hover.
+  Couples to a UI thread (hover-card component + cross-
+  collection lookup). Phase 42+.
+
 ### D-H. Phase 18+ deferrals
 
 Phase 17 ships MINIMAL markdown surface. Deferred to Phase 18+:
