@@ -2470,6 +2470,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 47 — Community-adjacent surfaces (**thirty-eighth NON-§13 phase**: arxiv alias syntax `[[arxiv:NNNN.NNNNN|display]]` via regex extension on existing `remarkLinkArxivIds` plugin in `ArxivExtensionRegistry`; **second realization of the Phase-46 plugin-regex-extension phase-shape pattern**; **first plugin-regex-extension on a `remarkPlugins` consumer** in project history; **first dual-form regex** in the framework (bracketed + bare alternation); closes ADR-0018 APPEND-D-Y item 5 deferral at 6-phase carryover; APPEND-D-AE fifth two-letter slot; anticipated 5 units; 42nd "Continue" override invoked)
 
+#### Unit 47.2 — end-to-end arxiv alias tests on all 4 surfaces + first dual-alias surface under 4-way composite (14 NEW tests; 1038/72)
+
+- Third Phase-47 unit; code (test-only).
+- **MODIFIED `lib/markdown/index.test.ts`**: +**14 NEW end-to-end tests** in 2 new `describe` blocks appended at end-of-file (after Phase-46 alias-under-4-way-composite block):
+  1. **`describe("Phase-47 arxiv alias syntax — all 4 surfaces under default dispatch")`** (10 tests). Sets `__setRegistryForTests(new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES))`. Covers: alias renders on each of bio + reviewNotes + rationale + actionRationale (4 separate per-surface tests through full sanitize pipeline); backwards-compat — bare `arxiv:NNNN.NNNNN` still renders identically on all 4 surfaces; bracketed without alias renders verbatim arxiv ref (brackets stripped); aliased + bare arxiv coexist in same paragraph; alias display HTML-escapes via text-node rendering (XSS safety for `&`); XSS defense survives alias (javascript: stripped + alias resolves); case-insensitive bracketed prefix preserves source casing of alias.
+  2. **`describe("Phase-47 arxiv alias under Phase-45 4-way composite — wikilinks,tables,arxiv,doi")`** (4 tests). Sets `__setRegistryForTests(new CompositeExtensionRegistry([wikilinks, tables, arxiv, doi]))` at Phase-45 defaults. Covers: **first dual-alias surface in the framework** — rationale carries BOTH wikilinks alias (Phase 46) + arxiv alias (Phase 47) simultaneously under default dispatch; bio 3-consumer surface with arxiv alias + wikilinks alias + tables (doi inactive); backwards-compat under 4-way composite (no alias used — Phase-41 + Phase-38 baselines preserved); XSS defenses survive Phase-47 arxiv alias under 4-way composite on rationale.
+- **Architectural firsts**:
+  - **First end-to-end test coverage of plugin-regex-extension on a `remarkPlugins` consumer through the full sanitize pipeline**. Phase 46 covered the `rehypePlugins` analog; Phase 47 puts the `remarkPlugins` analog under end-to-end test pressure across all 4 surfaces + within the maximal 4-way composite.
+  - **First "dual-alias surface" assertion** in project history. Pre-Phase-47 each consumer had at most one alias capability; Phase 47 brings wikilinks alias (Phase 46) + arxiv alias (Phase 47) onto the same surface (rationale under 4-way default) simultaneously.
+  - **First test demonstrating "dual-form regex backwards-compat through full pipeline"** — bare `arxiv:NNNN.NNNNN` renders identically on all 4 surfaces post-Phase-47, asserting the additive nature of the dual-form regex evolution end-to-end.
+- **Smoke gates**:
+  - `pnpm validate-content` → 203 files unchanged.
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **1038 / 72 files** (+14 / 0 vs Unit 47.1: 10 NEW Phase-47-arxiv-alias-default tests + 4 NEW Phase-47-under-4-way-composite tests = 14 total).
+  - `pnpm audit-content` → 0 errors / 6 warnings UNCHANGED (Q32 baseline; 43 consecutive phases).
+  - First Load JS = 103 kB UNCHANGED; Middleware = 160 kB UNCHANGED (test-only changes).
+
 #### Unit 47.1 — `ARXIV_PATTERN` dual-form regex (bracketed + bare) + plugin body update + 12 NEW arxiv.test.ts alias tests + ADR-0018 D-G APPEND-D-AE (first plugin-regex-extension on a `remarkPlugins` consumer; first dual-form regex; 14th D-G APPEND extends record 13 → 14)
 
 - Second Phase-47 unit; code+APPEND.
