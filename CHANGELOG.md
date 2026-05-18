@@ -2470,6 +2470,109 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 41 — Community-adjacent surfaces (**thirty-second NON-§13 phase**: third concrete Phase-37-framework consumer — arXiv ID auto-link on `rationale` surface via `remarkPlugins` slot + new `ArxivExtensionRegistry` + third single-value dispatch arm `MARKDOWN_EXTENSIONS=arxiv`; completes 3-of-3 framework slot demonstration via real consumer; first 3-way composition feasibility; anticipated 5 units; 36th "Continue" override invoked)
 
+#### Unit 41.4 — Phase 41 acceptance gate (third concrete framework consumer realized; 3-of-3 slot demonstration COMPLETE; first 3-way composition feasibility validated end-to-end; 24 ADRs; 5 units; 883/71; ADR-0018 D-G extends to 8 APPENDs; 72nd consecutive 103 kB unit; 37th "Continue" override opportunity at Phase 41 → 42 boundary)
+
+- Fifth and final Phase-41 unit; gate-only. **Phase 41 CLOSES at this unit's commit**. Phase 42 entry awaits explicit "Continue" override.
+
+##### Phase 41 — what shipped (5 units)
+
+| Unit | Title | Type | Commit |
+|---|---|---|---|
+| 41.0 | Phase 41 prep | docs | `237b0f1` |
+| 41.1 | `arxiv.ts` consumer + ADR-0018 D-G APPEND + `@types/mdast` | code+APPEND | `c19f68d` |
+| 41.2 | `MARKDOWN_EXTENSIONS=arxiv` dispatch + 3-way composition tests | code | `6bf0ade` |
+| 41.3 | Phase-41 hygiene + 3-of-3-slot-demonstration milestone | docs | `e63efcc` |
+| 41.4 | Phase 41 acceptance gate (this unit) | gate | (this commit) |
+
+Total: **5 units** — mirrors Phase 35 + 37 + 38 + 39 + 40 5-unit framework shapes exactly.
+
+##### Third concrete framework consumer realized at HEAD `e63efcc`
+
+Phase-41-prep D-1 first-thread recommendation realized end-to-end:
+
+- `lib/markdown/extensions/arxiv.ts` shipped (Unit 41.1): `remarkLinkArxivIds` plugin + `ArxivExtensionRegistry` class + `PHASE_41_DEFAULT_ENABLED_SURFACES = Set(["rationale"])` + 22 plugin + registry tests.
+- `MARKDOWN_EXTENSIONS=arxiv` factory dispatch arm in `getExtensionRegistry()` (Unit 41.2; third single-value arm after `wikilinks` + `tables`).
+- 8 env-var-aware dispatch tests + 12 end-to-end `rationale` surface tests + 8 3-way composition end-to-end tests (Unit 41.2).
+- ADR-0018 D-G APPEND adds Phase-41 EXTENDED block (Unit 41.1; APPEND-D-U plugin shape + D-V XSS-safety + D-W URL-emission + D-X registry-per-surface + 3-way composition matrix + D-Y Phase-42+ deferrals).
+- `@types/mdast@^4.0.4` added to dependencies (Unit 41.1; mirrors `@types/hast` Phase-17 convention; types-only; zero bundle impact).
+- **3-of-3 framework slot demonstration via real consumer COMPLETE** (Unit 41.3 documents): Phase 38 `rehypePlugins` + Phase 39 `schemaOverrides` + Phase 41 `remarkPlugins`.
+
+##### Phase 40 → Phase 41 delta
+
+| Metric | Phase 40 close | Phase 41 close | Δ |
+|---|---|---|---|
+| Tests | 833 / 70 files | **883 / 71 files** | +50 / +1 |
+| ADRs | 24 | **24** | 0 |
+| ADR-0018 D-G APPEND count | 7 | **8** (project record extends) | +1 |
+| DB tables | 7 | 7 | 0 |
+| Migrations | 9 | 9 | 0 |
+| Env vars | 14 | 14 (`MARKDOWN_EXTENSIONS` gains `arxiv` recognized value; variable count unchanged) | 0 |
+| `MARKDOWN_EXTENSIONS` single-value arms | 3 | **4 (+arxiv)** | +1 |
+| i18n keys per locale | 168 | 168 | 0 |
+| Dynamic page+API routes | 13 | 13 | 0 |
+| First Load JS shared chunk | 103 kB | **103 kB** | 0 |
+| Middleware bundle | 160 kB | 160 kB | 0 |
+| OPEN_QUESTIONS top-level Q-count | 66 | **66** | 0 |
+| Phase-37+ candidate count | 8 | **8** | 0 |
+| Runtime deps added | — | **1 (`@types/mdast`; types-only)** | +1 |
+| `lib/markdown/extensions/` files | 11 | **13** (+arxiv.ts + arxiv.test.ts) | +2 |
+| Phase-37-framework concrete consumers | 2 | **3** (+ArxivExtensionRegistry) | +1 |
+| Framework slots exercised by real consumer | 2 of 3 | **3 of 3 (+`remarkPlugins`)** | +1 |
+| Markdown surfaces enabled by ≥1 consumer | 2 of 4 | **3 of 4 (+`rationale`)** | +1 |
+| Multi-value composition arity | 2-way | **3-way** | +1 |
+
+##### Architectural firsts in Phase 41 (13 enumerated)
+
+1. **Third concrete Phase-37-framework consumer** — `ArxivExtensionRegistry`; **completes 3-of-3 framework slot demonstration via real consumer**.
+2. **First mdast-level synthesis-emitting remark plugin** in project history — `remark-gfm` is a syntax-parser hook; arxiv autolinks splice new `link` nodes from inside pre-existing `text` nodes via regex pattern match.
+3. **First absolute-URL emission** by a framework extension — wikilinks emit relative; tables emit none; arxiv emits absolute `https://arxiv.org/abs/<id>`. First framework consumer requiring ZERO sanitize-schema cooperation.
+4. **First content-aligned framework extension** — project mission is "open AI research problems platform"; paper-citation auto-linking is mission-aligned (vs format-oriented wikilinks navigation + tables formatting).
+5. **First `rationale`-surface extension** — Phase-27 surface gains an extension; only `bio` remains un-enabled-for-any-consumer after Phase 41 ship.
+6. **First 3-way composition feasibility VALIDATED end-to-end** — `MARKDOWN_EXTENSIONS=wikilinks,tables,arxiv` flows through Phase-40 multi-value parsing + composite-registry wrapping with zero rework; 3 distinct slots × 3 disjoint surfaces × standard composition pathway = conflict-free; validated by 8 3-way composition end-to-end tests through full markdown pipeline.
+7. **Eighth APPEND on ADR-0018 D-G** — extends **first-ADR-D-clause-with-most-APPENDs record** from 7 → 8 (Phase 18 + 27 + 29 + 37 + 38 + 39 + 40 + **41**).
+8. **First "framework + 3 consumers + composition" 5-phase cluster** in project history (Phase 37 + 38 + 39 + 40 + 41). Five-phase architectural arc: framework definition (37) + consumer (38) + consumer (39) + composition (40) + third consumer realizing 3-of-3 slot coverage + 3-way composition (41).
+9. **Third single-value dispatch arm** in `getExtensionRegistry()` — `arxiv` after `wikilinks` + `tables`.
+10. **First new `@types/*` package since Phase 17 base** — `@types/mdast@^4.0.4` added at Unit 41.1.
+11. **11th consecutive phase without new B category** — Phase 31-41 = **first 11-phase run** in project history (extends Phase-40 10-phase record).
+12. **69th-through-72nd consecutive 103 kB First Load JS units** in project history (4 of 5 Phase-41 units incremented the streak; Unit 41.0 prep did not increment per phase-prep precedent).
+13. **Thirty-second NON-§13 phase** (§13 ledger CLOSED at Unit 9.9; carried unchanged through Phases 10-41).
+
+##### Phase 41 → Phase 42 entry conditions
+
+Per §12 cardinal rule: **Phase 42 entry requires explicit human sign-off**. This unit ships the Phase 41 close; Phase 42.0 prep awaits `"Continue"` override OR phase-42-thread direction.
+
+**Recommended Phase 42 first-thread candidates** (11 ranked):
+
+| Rank | Thread | Units | Tractability |
+|---|---|---|---|
+| 1 | Cross-surface expansion of an existing consumer (constructor-arg-only) | 1-2 each | Autonomous-tractable; demand-signal-first weak; validates Phase-38/39/41 "constructor-arg-only expansion" promise |
+| 2 | DOI sibling consumer in `remarkPlugins` slot — composes with arxiv | 2-3 | Autonomous-tractable; pure framework-consumer realization; first compositional same-slot case Phase 42 |
+| 3 | ADR-0025 concrete content-moderation provider | 3-5 | Strongest patience signal; NOT autonomous-tractable |
+| 4 | `@mention` resolution consumer in `remarkPlugins` slot | 2-3 | Conditional on curator-profile route + schema-username binding (Q73 gate) |
+| 5 | Pre-commit typecheck hook | 1 | Closes Unit-36.1 gap; tiny |
+| 6 | Q78 digest-send analytics | 3-5 | Waits for Q77 |
+| 7 | Account-deletion blob cleanup | 1-2 | Conditional on UI |
+| 8 | `safeAuth()` extraction | 1 | Still 4 copies |
+| 9 | Subscribe + `/profile` test backfill | 1-2 | Not user-visible |
+| 10 | N. v2 methodology authoring | curator | §1 (d) blocker |
+| 11 | Q79 Profile B / C | 2-3 each | Needs user-feedback |
+
+**Operational gates still pending** (6 UNCHANGED): Q54 + Q55 + Q69 + Q73 + Q75 + Q77.
+
+##### Smoke gates
+
+- `pnpm typecheck` — passes.
+- `pnpm test` — **883 / 71 files**.
+- `pnpm audit-content` — 0 errors / 6 warnings (39 consecutive phases at Q32 baseline).
+- First Load JS — **103 kB UNCHANGED** (72 consecutive units).
+- Middleware — **160 kB UNCHANGED**.
+
+##### Boundary statement
+
+**Phase 41 CLOSED at HEAD `<this-unit>` after 5 units (41.0 prep + 41.1 `arxiv.ts` consumer + 41.2 dispatch + 3-way composition tests + 41.3 hygiene + 41.4 gate). Third concrete Phase-37-framework consumer realized: `ArxivExtensionRegistry` exercising the `remarkPlugins` slot on `rationale` surface; **3-of-3 framework slot demonstration via real consumer COMPLETE** (Phase 38 + 39 + 41 exercise all three optional slots via real consumers). First 3-way composition feasibility VALIDATED end-to-end via `MARKDOWN_EXTENSIONS=wikilinks,tables,arxiv` through the full markdown pipeline. Fourth surface enabled (`rationale`); only `bio` remains un-enabled-for-any-consumer. Thirty-second NON-§13 phase. First "framework + 3 consumers + composition" 5-phase cluster in project history. First mdast-level synthesis-emitting remark plugin. First absolute-URL emission by framework extension. First content-aligned framework extension. First `rationale`-surface extension. First new `@types/*` package since Phase 17 base (`@types/mdast` types-only; zero bundle impact). Eighth APPEND on ADR-0018 D-G (project record). Eleventh consecutive phase without new B category (first 11-phase run). 883 tests across 71 vitest files (+50 / +1 vs Phase 40). 24 ADRs UNCHANGED. 7 DB tables UNCHANGED. 9 migrations UNCHANGED. 14 env vars UNCHANGED (`MARKDOWN_EXTENSIONS` gains `arxiv` recognized value; variable count same). 168 i18n keys per locale UNCHANGED. First Load JS 103 kB UNCHANGED (72 consecutive units). Middleware 160 kB UNCHANGED. OPEN_QUESTIONS top-level Q-count 66 UNCHANGED. Phase-37+ candidate count 8 UNCHANGED. Zero new ADRs / migrations / i18n keys / operational gates. One types-only dep added (`@types/mdast`). Phase 42 entry requires explicit human sign-off per §12.**
+
+- THINK artifact: `docs/thinking/41.4-phase-41-acceptance-gate.md`.
+
 #### Unit 41.3 — Phase-41 hygiene + 3-of-3-framework-slot-demonstration milestone documentation (Q-tally UNCHANGED at 66; Phase-37+ candidate count UNCHANGED at 8; 11-phase no-new-B-category streak EXTENDS to Phase 41; 71st consecutive 103 kB unit)
 
 - Fourth Phase-41 unit; docs-only hygiene. Mirrors Phase-38 + 39 + 40 hygiene shapes (no source/no test/no ADR changes; tracks Q/B/candidate status carryover + documents Phase-41 architectural milestone).
