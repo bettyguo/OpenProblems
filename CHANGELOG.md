@@ -2468,6 +2468,78 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **Phase-8 scope drift**: HTML shell migration **dropped from scope mid-flight** at Unit 8.1 (parallel session preserved existing `app/layout.tsx`-owns-`<html>` structure with a "this change was intentional" system reminder). Surfaced into Unit 8.4 territory, then deferred indefinitely. No scope additions. Parallel-curator coordination at unprecedented intensity (Unit 8.1 mid-flight file deletions; Unit 8.6 FR content authored by parallel session).
 - THINK artifact: `docs/thinking/8.9-phase-8-acceptance-gate.md`.
 
+### Phase 35 — Community-adjacent surfaces (**twenty-sixth NON-§13 phase**: Q68 expansion content moderation as framework-only ADR-0024 candidate with `NoopModerator` default + extension-point integration across bio-write + avatar-upload + rating-challenge-text + subscribe-email surfaces — closes **12+ phase Q68 carryover = strongest non-just-surfaced patience signal**; **first framework-only ADR in project history without same-ADR provider commitment**; **first multi-surface extension-point wiring from a single ADR**; **first "demand-signal-first concern dissolved by zero-cost-default framework" pattern**; first ADR-shipping phase since Phase 33; anticipated 4-5 units; 30th "Continue" override invoked)
+
+#### Pre-Phase-35 housekeeping (2026-05-17)
+
+Two docs-only commits between Phase 34 close (HEAD `b52cdda`) and
+Phase 35 open. NOT phase units; standalone artifacts surfaced at
+Phase-34 close.
+
+- **`docs/release-readiness-audit.md` (NEW)** — standalone one-off
+  analysis at HEAD `b52cdda` decomposing v1 release-readiness across
+  three interpretations (MVR / §1 12-month vision / architecturally
+  complete) and landing on **~75% headline** (~10% deploy/ops gates
+  + ~10% curator content + methodology paper + ~5% architectural
+  backlog). Surfaces one confirmed content gap (`docs/methodology/
+  coi.md` missing per §8.6 pointer) and quantifies operational gates,
+  methodology authoring, and architectural backlog remaining.
+  Commit `38067fc`.
+- **`docs/methodology/coi.md` (NEW; ~200 lines)** — fills the
+  `MASTER_PROMPT.md §8.6` pointer gap surfaced by the audit.
+  Contributor/curator-facing operational COI policy covering: who is
+  bound (curators / reviewers / submitters / LLM-drafted content);
+  definitions (problem / current top-5 / 24-mo collaborator /
+  authoring); enforcement tiers (hard-block self-review + soft-warn
+  primary-curator + attestation 24-mo check per ADR-0014 D-C);
+  recusal mechanism (recusal rating-action YAML format); self-
+  disclosure obligations (`affiliations_note:` in `content/authors/`);
+  LLM-drafted-content angle (ADR-0008 D-F); audit-trail mechanics
+  (ADR-0005 immutability); v1.0 revision policy. Cross-refs
+  MASTER_PROMPT.md §8.6, content/methodology/v1.mdx §6, ADR-0004 /
+  0005 / 0008 / 0009 / 0012 / 0014, OPEN_QUESTIONS Q7 / Q35 / Q74.
+  Companion to the user-facing summary at `/methodology/v1.0.0`.
+  Commit `1be1a2d`.
+
+#### Unit 35.0 — Phase 35 prep (Q68 expansion content moderation as framework-only ADR-0024 with `NoopModerator` default; 30th "Continue" override; **twenty-sixth NON-§13 phase**; first framework-only ADR + first multi-surface extension-point wiring + first demand-signal-dissolution pattern anticipated)
+
+- First Phase-35 unit; docs-only. Opens Phase 35 (**twenty-sixth NON-§13 phase**). Mirrors Phase-12 through Phase-34 phase-prep patterns. **§13 ledger CLOSED** at Unit 9.9 (carried unchanged through Phases 10-34).
+- **Phase 35 sign-off granted via "Continue" override** in the unit-rhythm rhythm (**thirtieth invocation** of this pattern). §12 cardinal rule satisfied; first-thread D-1 recommendation overridable into Unit 35.1.
+- **Recommended thread: Q68 expansion content moderation as framework-only ADR-0024 with `NoopModerator` default** (D-1). Closes **Q68 expansion at 12+ phase carryover — strongest non-just-surfaced patience signal** (originally deferred Phase 15 → ADR-0016 D-B; re-expanded Phase 17 ADR-0017 D-H → uploaded images; re-expanded Phase 19/20 ADR-0019 D-F → transcoded images; carried unchanged through every Phase 21-34 acceptance-gate boundary statement). **Framework-only strategy** ("ship Q68 framework as architectural commitment now without external API" per Phase-34 gate option (b)): defines `ContentModerator` interface + ships `NoopModerator` default + wires extension points into FOUR existing surfaces simultaneously (bio-write + avatar-upload + rating-challenge-text + subscribe-email) — without committing to OpenAI moderation / Perspective / regex-wordlist provider. Provider commitment becomes Phase-36+ operational-API-gate parallel to Q73 / Q75 / Q77.
+- **Demand-signal-first concern resolution**: Q68 was deferred 12+ phases on "no users yet → no abuse signals → no demand." The framework-only-with-no-op default dissolves this: zero API cost, zero latency, zero false-positive rate; shipping the framework now does NOT pre-pay for unobserved abuse. Pre-positions the extension points so the future provider swap-in is a single env-var change + one new file per provider, not a multi-surface refactor.
+- **ADR-0024 framework shape anticipated** (D-3 in prep; ships Unit 35.1):
+  - **Interface** = `ContentModerator` in `lib/moderation/types.ts` with `moderateText(text, ctx) → ModerationResult` + `moderateImage(buffer, ctx) → ModerationResult`; `ModerationResult` = `{ ok: true } | { ok: false; reasons[]; severity: "block" | "warn" }`.
+  - **Default provider** = `NoopModerator` in `lib/moderation/noop.ts`; both methods return `{ ok: true }` synchronously-wrapped-in-promise.
+  - **Factory** = `getModerator()` in `lib/moderation/index.ts`; reads `MODERATION_PROVIDER` env (default `noop`); singleton-cached.
+  - **Integration points** (Unit 35.2 wires all four; each single-line `await getModerator().moderate*(…)` + 422 refusal-handling): `users.bio` write path + avatar upload pipeline (between `.rotate()` and `.toBuffer()` per ADR-0019 D-F inheritance contract) + rating-challenge `rationale:` text submission + subscribe-email submission.
+  - **Env var** = `MODERATION_PROVIDER` (12 → 13 env vars; default `noop`; documented future values `openai` / `perspective` / `regex-wordlist`).
+  - **Phase 36+ deferrals**: concrete provider implementations; persistent moderation-decision audit log + new table + migration; per-user appeal mechanism; bulk-rescan of historical content (reuses Phase-20 backfill pattern flagged in Q68 expansion documentation); moderation-policy versioning; per-surface severity-threshold tuning.
+- **Tradeoffs flagged**: passing on seven thread alternatives, each deferred for stronger demand-signal-first or sequencing concerns:
+  - **B. Q78 digest-send analytics** (tightest 1-phase Q-carryover) — still waits for first-week production cron signal from Q77 (still pending operationally). Phase 36+ once Q77 operational.
+  - **D. Markdown evolution ADR** (Q72 + Phase-29 B.14 wikilink couple) — no curator demand signal. Phase 36+.
+  - **G. Q64 per-user privacy opt-out** (15+ phase carryover; longest open architectural Q) — same "no users yet" deferral; no equivalent zero-cost-default posture (opt-out flag without UI is half-shipped). Phase 36+ if framework-only-pattern proves cleanly extensible from Phase 35 ADR-0024 precedent.
+  - **L. Account-deletion blob cleanup** (Phase-16 carryover) — exercises Phase-33 ADR-0023 D-D cascade; conditional on account-delete UI (none yet). Phase 36+.
+  - **N. v2 methodology authoring** — per release-readiness audit §2.9 = primary blocker for §1 (d) success metric; curator-track-heavy; requires human direction. Phase 36+.
+  - **Q79 Profile B full-edit / Profile C analytics** — Phase 34 just resolved Profile A; B + C need user-feedback signal to order.
+  - **J-other / K-other / M / B.15 item 5** — various follow-ons each deferred per existing rationale.
+- **DB-migration trigger (D-2)**: **0 new migrations** anticipated. Framework-only ADR with extension-point integration touches code surfaces only — no schema change. §5.7 trigger (a) FIRED Unit 9.6 carried; trigger (b) cold Phase 35. Persistent moderation-decision audit log deferred Phase 36+ (would fire trigger (b) when shipped).
+- **Anticipated unit breakdown** (5 units; mirrors Phase 30 5-unit-foundation-ADR-with-multi-surface-integration shape):
+  | Unit | Title | Type |
+  |---|---|---|
+  | 35.0 | **Phase 35 prep** (this unit) | docs |
+  | 35.1 | **ADR-0024 framework-only content moderation** + `lib/moderation/` (types + noop + factory + tests) | code+ADR |
+  | 35.2 | Extension-point integration into bio-write + avatar-upload + rating-challenge + subscribe surfaces + per-surface tests + `.env.example` update | code |
+  | 35.3 | Phase-35 hygiene + ADR-0016 D-B / ADR-0017 D-H / ADR-0019 D-F / ADR-0021 APPEND notes (framework-only realization) + OPEN_QUESTIONS Q68 expansion status flip + Q68-sibling Q66 / Q70 framework-only-pattern advisory cross-refs | docs |
+  | 35.4 | **Phase 35 acceptance gate** | gate |
+- **Phase-35-blocking decisions resolved in this prep** (D-1 through D-8): D-1 (Q68 expansion framework-only with no-op default; 5 units; new ADR-0024); D-2 (0 migrations); D-3 (ADR-0024 interface + factory + noop shape); D-4 (four integration surfaces enumerated); D-5 (env var `MODERATION_PROVIDER` default `noop`); D-6 (test surface ~+10-14 tests across +4-5 files); D-7 (Phase 36+ deferrals enumerated); D-8 (parallel-curator collision risk MEDIUM on Unit 35.2 multi-surface wiring).
+- **Phase-35-blocking decisions deferred to per-unit implementation** (D-9 through D-13): D-9 (single `ContentModerator` interface vs split text/image: single lean); D-10 (severity field shape: `block | warn` two-state lean); D-11 (per-surface refusal UX: generic lean for Phase 35); D-12 (rating-challenge surface: `rationale:` only lean); D-13 (subscribe-email integration: skip-entirely lean with no-op default).
+- **Architectural firsts anticipated in Phase 35**: **first framework-only ADR in project history** (ADR-0024 commits to interface without provider in same ADR; establishes playbook for Q66 / Q70 / future framework-first decisions); **first multi-surface extension-point wiring from a single ADR** (four surfaces wired simultaneously vs accreted-via-copy pattern of `safeAuth()`); **first Q-carryover resolution at 12+ phase age** in project history (Q64 still open at 15+ phases; Q68 closing at 12+ phases = closing longest closeable signal first); **first "demand-signal-first concern dissolved by zero-cost-default framework" pattern** in project history; **twenty-sixth NON-§13 phase**; **first ADR-shipping phase since Phase 33** (alternating no-new-ADR-with-new-ADR pattern: Phase 32 no-new → Phase 33 new → Phase 34 no-new → Phase 35 new); **`lib/moderation/` new directory** = third deferred-provider-pattern dir after `lib/email/` + `lib/cron/` but first with no-op default rather than committed provider; **first 13-env-var milestone** (12 → 13; `MODERATION_PROVIDER` added with `noop` default); **46th+ consecutive 103 kB First Load JS unit** carries forward (pure server-side work; zero client-bundle impact).
+- **Open questions newly surfacing** anticipated: 0 new opens. **Q68 expansion status flip from `open` to `resolved` (framework-only with no-op default pinned)** scheduled for Unit 35.3 hygiene with resolution note documenting: pinned framework-only ADR + four surfaces wired; deferred-to-Phase-36+ provider commitment + audit log + appeal + bulk-rescan + policy versioning + severity calibration; sibling-Q cross-refs to Q66 + Q70 pointing to framework-only pattern as proven playbook. Matches Phase-30 Q67 + Phase-15 Q63 + Phase-34 Q79 status-flip-with-deferred-sub-threads precedent.
+- **Alternative threads documented** (overridable into Unit 35.1): B. Q78 digest-send analytics; D. Markdown evolution ADR; G. Q64 per-user privacy opt-out; L. Account-deletion blob cleanup; N. v2 methodology authoring; Q79 Profile B / Profile C; J-other. Account-merge UI; K-other. Third+ provider expansion; M. SiteHeader avatar pill; B.15 item 5. Subscribe-endpoint rate limiting.
+- **Parallel-curator awareness**: this unit docs-only, no collision. Phase 35 collision risk: 35.1 NEW `lib/moderation/` directory + NEW `docs/adr/0024-content-moderation.md` (parallel-safe; new files); **35.2 MEDIUM collision** on multiple modified route files simultaneously (profile-update + transcode + rating-challenges + subscribe + i18n + `.env.example`) — parallel session should yield if overlap; 35.3 / 35.4 docs hygiene + gate parallel-safe.
+- Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings (Q32 baseline since Phase 2; unchanged through every Phase 3-34 unit + the two pre-Phase-35 housekeeping docs commits); typecheck / test / build untouched since no source files modified.
+- THINK artifact: `docs/thinking/35.0-phase-35-prep.md`.
+
 ### Phase 34 — Community-adjacent surfaces (**twenty-fifth NON-§13 phase**: Q79 Profile A "manage my subscriptions" read-only widget on `/[locale]/profile` — closes ADR-0023 D-H first-row deferral at **0-phase Q-carryover — tightest possible Q-carryover in project history**; **subscriber-list-email arc extends Phase 30 → 31 → 32 → 33 → 34 = 5-phase complete-feature-with-UX arc** — first such arc in project history; second NO-NEW-ADR phase in 3 phases; second 4-unit no-new-ADR phase since Phase 29; first UX-only follow-on phase to an architectural ADR)
 
 #### Unit 34.3 — Phase 34 acceptance gate (Q79 Profile A read-only widget realized; **23 ADRs**; 4 units; closes ADR-0023 D-H first-row deferral at 0-phase Q-carryover — tightest possible deferral-to-realization gap in project history; **subscriber-list-email arc extends Phase 30 → 31 → 32 → 33 → 34 = 5-phase complete-feature-with-UX arc** — first such arc in project history; first UX-only follow-on phase to an architectural ADR; second NO-NEW-ADR phase in 3 phases; first 2-phase Q-status-flip streak; 30th "Continue" override opportunity at Phase 34 → 35 boundary)
