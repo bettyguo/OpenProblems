@@ -2470,6 +2470,108 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 40 — Community-adjacent surfaces (**thirty-first NON-§13 phase**: multi-value `MARKDOWN_EXTENSIONS=wikilinks,tables` composition via new `CompositeExtensionRegistry` infrastructure; closes Phase-38-prep D-11 deferral + Phase-39 mutual-exclusivity wrinkle; enables wikilinks + tables to coexist; anticipated 4-5 units; 35th "Continue" override invoked)
 
+#### Unit 40.4 — Phase 40 acceptance gate (multi-consumer composition infrastructure realized; CompositeExtensionRegistry; Phase-38-prep D-11 closure; 24 ADRs; 5 units; 833/70; ADR-0018 D-G extends to 7 APPENDs; 68th consecutive 103 kB unit; 36th "Continue" override opportunity at Phase 40 → 41 boundary)
+
+- Fifth and final Phase-40 unit; gate-only. **Phase 40 CLOSES at this unit's commit**. Phase 41 entry awaits explicit "Continue" override.
+
+##### Phase 40 — what shipped (5 units)
+
+| Unit | Title | Type | Commit |
+|---|---|---|---|
+| 40.0 | Phase 40 prep | docs | `80f458f` |
+| 40.1 | CompositeExtensionRegistry + ADR-0018 D-G APPEND | code+APPEND | `0bca3cb` |
+| 40.2 | Multi-value MARKDOWN_EXTENSIONS dispatch + end-to-end tests | code | `a13049a` |
+| 40.3 | Phase-40 hygiene + D-11 closure | docs | `dcc2241` |
+| 40.4 | Phase 40 acceptance gate (this unit) | gate | (this commit) |
+
+Total: **5 units** — mirrors Phase 35 + 37 + 38 + 39 5-unit framework shapes.
+
+##### Multi-consumer composition realized at HEAD `dcc2241`
+
+Phase-40-prep D-1 first-thread recommendation realized end-to-end:
+
+- `lib/markdown/extensions/composite.ts` shipped (Unit 40.1): `CompositeExtensionRegistry` class + 13 plugin-level tests covering composition rules + Phase 38+39 conflict-free canonical case + conflict-error semantics + order-independence verification.
+- Multi-value env-var parsing in `getExtensionRegistry()` (Unit 40.2): comma-separated values with throw-on-misconfiguration validation; single-value short-circuit preserved; composite-only for ≥2 components.
+- 10 dispatch tests + 6 end-to-end composed-render tests (Unit 40.2) verifying wikilinks + tables coexist on respective surfaces under `MARKDOWN_EXTENSIONS=wikilinks,tables`.
+- ADR-0018 D-G APPEND adds Phase-40 EXTENDED block (Unit 40.1; APPEND-D-R composition rules + D-S Phase-38+39 conflict-free example + D-T Phase-41+ deferrals).
+- **Phase-38-prep D-11 deferral CLOSED** (Unit 40.3 hygiene): first Phase-N-onwards prep-doc deferral resolved by phase-(N+M); 2-phase gap from intent (Phase-38) to realization (Phase-40).
+
+##### Phase 39 → Phase 40 delta
+
+| Metric | Phase 39 close | Phase 40 close | Δ |
+|---|---|---|---|
+| Tests | 805 / 69 files | **833 / 70 files** | +28 / +1 |
+| ADRs | 24 | **24** | 0 |
+| ADR-0018 D-G APPEND count | 6 | **7** (project record extends) | +1 |
+| DB tables | 7 | 7 | 0 |
+| Migrations | 9 | 9 | 0 |
+| Env vars | 14 | 14 (multi-value SHAPE added on `MARKDOWN_EXTENSIONS`; variable unchanged) | 0 |
+| `MARKDOWN_EXTENSIONS` value space | 3 single values | **3 single + composition shape `(value,value,...)`** | +composition shape |
+| i18n keys per locale | 168 | 168 | 0 |
+| Dynamic page+API routes | 13 | 13 | 0 |
+| First Load JS shared chunk | 103 kB | **103 kB** | 0 |
+| Middleware bundle | 160 kB | 160 kB | 0 |
+| OPEN_QUESTIONS top-level Q-count | 66 | **66** | 0 |
+| Phase-37+ candidate count | 8 | **8** | 0 |
+| Runtime deps added | — | **0** | 0 |
+| `lib/markdown/extensions/` files | 9 | **11** (+composite.ts + composite.test.ts) | +2 |
+| Phase-37-framework concrete consumers | 2 | 2 (no new consumer Phase 40; composition infrastructure added) | 0 |
+| Composition infrastructure | none | **`CompositeExtensionRegistry`** | NEW |
+
+##### Architectural firsts in Phase 40 (12 enumerated)
+
+1. **First multi-consumer composition infrastructure** under the Phase-37 framework — `CompositeExtensionRegistry`.
+2. **First multi-value env-var parsing** in `getExtensionRegistry()` (Phase 38 + 39 used single-value switch dispatch only).
+3. **First framework-infrastructure phase since Phase 37** — Phase 38 + 39 were consumer-shipping phases; Phase 40 is meta-architectural.
+4. **Seventh APPEND on ADR-0018 D-G** — extends the **first-ADR-D-clause-with-most-APPENDs record** from 6 → 7.
+5. **First "framework + 2 consumers + composition" 4-phase cluster** in project history (Phase 37 + 38 + 39 + 40).
+6. **First explicit conflict-error within a registry class** in project history — `CompositeExtensionRegistry` throws on schemaOverrides conflict (loud-failure analog to `getExtensionRegistry()` throw-on-unknown).
+7. **First comma-separated env-var anywhere in the project** — Phase-35 `MODERATION_PROVIDER` + Phase-38 `MARKDOWN_EXTENSIONS` were single-value-only.
+8. **First end-to-end composed-consumer test** in project history — verifies wikilinks + tables coexist on respective surfaces through the full markdown pipeline.
+9. **Phase-38-prep D-11 deferral CLOSED** — first Phase-N-onwards prep-doc deferral explicitly resolved by a phase-(N+M) (2-phase gap: Phase 38 → 40).
+10. **10th consecutive phase without new B category** — Phase 31 + 32 + 33 + 34 + 35 + 36 + 37 + 38 + 39 + **40** = **first 10-phase run** in project history.
+11. **65th-through-68th consecutive 103 kB First Load JS units** in project history (Phase 9 Unit 9.5 → Phase 40 Unit 40.4 inclusive).
+12. **Thirty-first NON-§13 phase** (§13 ledger CLOSED at Unit 9.9; carried unchanged through Phases 10-40).
+
+##### Phase 40 → Phase 41 entry conditions
+
+Per §12 cardinal rule: **Phase 41 entry requires explicit human sign-off**. This unit ships the Phase 40 close; Phase 41.0 prep awaits `"Continue"` override OR phase-41-thread direction.
+
+**Recommended Phase 41 first-thread candidates**:
+
+| Rank | Thread | Units | Tractability |
+|---|---|---|---|
+| 1 | Third concrete Phase-37-framework consumer exercising `remarkPlugins` slot (3-of-3 demonstration; e.g., `@mention` resolution) | 2-3 | Completes framework's 3-slot demonstration via real consumer |
+| 2 | Cross-surface expansion of existing consumers (constructor-arg change) | 1-2 each | Zero plugin/registry rework; demand-signal-first weak |
+| 3 | ADR-0025 concrete content-moderation provider | 3-5 | Strongest patience signal; not autonomous-tractable |
+| 4 | Pre-commit typecheck hook | 1 | Closes Unit-36.1 gap; tiny |
+| 5 | Q78 digest-send analytics | 3-5 | Waits for Q77 |
+| 6 | Account-deletion blob cleanup | 1-2 | Conditional on UI |
+| 7 | `safeAuth()` extraction | 1 | Still 4 copies |
+| 8 | Subscribe + `/profile` test backfill | 1-2 | Not user-visible |
+| 9 | N. v2 methodology authoring | curator | §1 (d) blocker |
+| 10 | Q79 Profile B / C | 2-3 each | Needs user-feedback |
+
+**Operational gates still pending** (6 UNCHANGED from Phase 39 close): Q54 + Q55 + Q69 + Q73 + Q75 + Q77.
+
+##### Anti-scope (Phase 41+ deferrals; carried forward)
+
+NOT third concrete framework consumer (Phase 41+); NOT `remarkPlugins` slot real consumer (Phase 41+); NOT cross-surface wikilink/table expansion (Phase 41+); NOT resolvable schemaOverrides conflicts (Phase 41+); NOT order-dependent composition (Phase 41+); NOT weighted composition (Phase 41+); NOT composition introspection API (Phase 41+); NOT ADR-0025 concrete moderation provider; NOT Q78 / Q79 / v2 methodology / pre-commit typecheck / safeAuth / test backfill / account-deletion (each deferred per prior rationale); all Phase-30-through-39 deferrals carry forward.
+
+##### Smoke gates (Phase 40 close)
+
+- `pnpm typecheck` — strict; passes.
+- `pnpm test` — **833 / 70 files** passing.
+- `pnpm audit-content` — 0 errors / 6 warnings (Q32 baseline since Phase 2; **38 consecutive phases unchanged**).
+- First Load JS shared chunk — **103 kB UNCHANGED** end-to-end Phase 9 Unit 9.5 → Phase 40 Unit 40.4 (**68 consecutive units**).
+- Middleware bundle — **160 kB UNCHANGED** since Phase 12.
+
+##### Boundary statement
+
+**Phase 40 CLOSED after 5 units (40.0 prep + 40.1 CompositeExtensionRegistry + 40.2 multi-value dispatch + 40.3 hygiene + 40.4 gate). Multi-consumer composition infrastructure realized: `CompositeExtensionRegistry` + `MARKDOWN_EXTENSIONS=wikilinks,tables` multi-value dispatch + end-to-end coexistence tests. Phase-38-prep D-11 deferral CLOSED (first Phase-N-onwards prep-doc deferral resolved by phase-(N+M)). Thirty-first NON-§13 phase. First "framework + 2 consumers + composition" 4-phase cluster in project history. First multi-consumer composition infrastructure. First multi-value env-var parsing under the framework. First comma-separated env-var in the project. First end-to-end composed-consumer test. First explicit conflict-error within a registry class. Seventh APPEND on ADR-0018 D-G (project record). Tenth consecutive phase without new B category (first 10-phase run). 833 tests across 70 vitest files (+28 / +1 vs Phase 39). 24 ADRs UNCHANGED. 7 DB tables UNCHANGED. 9 migrations UNCHANGED. 14 env vars UNCHANGED. 168 i18n keys per locale UNCHANGED. First Load JS 103 kB UNCHANGED (68 consecutive units). Middleware 160 kB UNCHANGED. OPEN_QUESTIONS top-level Q-count 66 UNCHANGED. Phase-37+ candidate count 8 UNCHANGED. Zero new ADRs / migrations / i18n keys / operational gates / runtime deps. Phase 41 entry requires explicit human sign-off per §12.**
+
+- THINK artifact: `docs/thinking/40.4-phase-40-acceptance-gate.md`.
+
 #### Unit 40.3 — Phase-40 hygiene + composition pattern reconciliation + Phase-38-prep D-11 closure documentation (Q-tally UNCHANGED at 66; Phase-37+ candidate count UNCHANGED at 8; 10-phase no-new-B-category streak EXTENDS to Phase 40; 67th consecutive 103 kB unit)
 
 - Fourth Phase-40 unit; docs-only hygiene. Mirrors Phase-39 hygiene shape (also no-source-edits; no specific Q/B-class closure of a top-level item).
