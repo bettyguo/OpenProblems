@@ -11,12 +11,29 @@ import type { MarkdownExtensionRegistry, MarkdownExtensionSet, MarkdownSurface }
  * consumer; closes Class B.14 at 9+ phase carryover).
  *
  * Walks the post-sanitize HAST tree, finds text-node substrings
- * matching the kebab-case `[[slug]]` pattern, and splice-replaces
- * each match with an `<a href="/problems/{slug}">{slug}</a>`
+ * matching the kebab-case `[[slug]]` pattern (optionally with
+ * `|display-text` alias suffix), and splice-replaces each match
+ * with an `<a href="/problems/{slug}">{display ?? slug}</a>`
  * element node. Slug regex `[a-z0-9-]+` is restrictive by
  * design — the regex IS the validation per APPEND-D-I XSS-
  * safety contract. Anything not matching falls through as
  * literal text.
+ *
+ * **Phase 46 alias-syntax extension** (since Unit 46.1; closes
+ * ADR-0018 APPEND-D-L item 2 at 8-phase carryover): the regex
+ * gains an optional non-capturing group `(?:\|([^\]\n]+))?`
+ * matching `|display-text` after the slug. Display character
+ * class excludes `]` (terminator) and `\n` (paragraph-break
+ * boundary). When alias present, the emitted `<a>` element's
+ * text content is the display string; when absent (or empty
+ * after `|`), the text content falls back to the slug. The
+ * `href` always points to `/problems/{slug}` — only the
+ * displayed anchor text varies. Display text becomes the
+ * text-node content of `<a>` (NOT injected HTML); rehype-
+ * stringify's text-node escaping handles HTML-special
+ * characters (e.g., `&` → `&amp;`) automatically. **No new XSS
+ * surface** introduced — the text-node escape is the line of
+ * defense.
  *
  * Folds AFTER the default `rehype-sanitize` +
  * `rehypeStripUnsafeHrefs` steps per Phase-37 framework's
@@ -32,7 +49,7 @@ import type { MarkdownExtensionRegistry, MarkdownExtensionSet, MarkdownSurface }
  * invariant.
  */
 
-const WIKILINK_PATTERN = /\[\[([a-z0-9-]+)\]\]/g;
+const WIKILINK_PATTERN = /\[\[([a-z0-9-]+)(?:\|([^\]\n]+))?\]\]/g;
 
 export const rehypeResolveWikilinks: Plugin<[], Root> = () => (tree) => {
   visit(tree, "text", (node, index, parent) => {
@@ -50,17 +67,24 @@ export const rehypeResolveWikilinks: Plugin<[], Root> = () => (tree) => {
     while ((match = WIKILINK_PATTERN.exec(text)) !== null) {
       const matchStart = match.index;
       const slug = match[1];
+      const alias = match[2];
       if (slug === undefined) continue;
 
       if (matchStart > cursor) {
         newNodes.push({ type: "text", value: text.slice(cursor, matchStart) });
       }
 
+      // Display falls back to slug when alias absent. Empty alias
+      // `[[slug|]]` cannot match (display class is `+`, requiring
+      // at least one char); curator-authored whitespace in alias
+      // preserved verbatim (no auto-trim Phase 46).
+      const display = alias ?? slug;
+
       newNodes.push({
         type: "element",
         tagName: "a",
         properties: { href: `/problems/${slug}` },
-        children: [{ type: "text", value: slug }],
+        children: [{ type: "text", value: display }],
       });
 
       cursor = matchStart + match[0].length;

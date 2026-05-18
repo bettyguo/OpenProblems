@@ -2470,6 +2470,43 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 46 — Community-adjacent surfaces (**thirty-seventh NON-§13 phase**: multi-anchor wikilink alias syntax `[[slug|display-text]]` via regex extension on existing `rehypeResolveWikilinks` plugin in `WikilinkExtensionRegistry`; **first plugin-regex-extension within an existing Phase-37-framework consumer** in project history; **first "display-text divergence from slug" rendering**; **first alias-syntax surface** in any framework consumer; closes ADR-0018 APPEND-D-L item 2 deferral at 8-phase carryover; APPEND-D-AD fourth two-letter slot; anticipated 5 units; 41st "Continue" override invoked)
 
+#### Unit 46.1 — `WIKILINK_PATTERN` regex extension + plugin body update + 13 NEW wikilinks.test.ts alias tests + ADR-0018 D-G APPEND-D-AD (first plugin-regex-extension within an existing consumer; first display-text divergence from slug; 13th D-G APPEND extends record 12 → 13)
+
+- Second Phase-46 unit; code+APPEND.
+- **MODIFIED `lib/markdown/extensions/wikilinks.ts`**: in-place regex extension on `WIKILINK_PATTERN` + plugin body update.
+  - Regex evolved: `/\[\[([a-z0-9-]+)\]\]/g` → `/\[\[([a-z0-9-]+)(?:\|([^\]\n]+))?\]\]/g`. Group 1 = slug (unchanged `[a-z0-9-]+`; APPEND-D-I XSS-safety contract preserved); Group 2 = optional display text (`[^\]\n]+`; any non-`]` non-newline chars; one or more). Non-capturing outer group `(?:...)?` makes alias clause fully optional — **backwards-compatible**: every existing `[[slug]]` match preserved with group 2 undefined.
+  - Plugin body adds `const alias = match[2]` + `const display = alias ?? slug`; emits `<a href="/problems/${slug}">{display}</a>`. `href` always points at slug-route; only displayed anchor text varies.
+  - JSDoc updated with Phase-46 EXTENDED block documenting alias syntax + XSS audit (display becomes text-node content; rehype-stringify's text-node escaping handles HTML-special chars automatically; no new XSS surface).
+- **MODIFIED `lib/markdown/extensions/wikilinks.test.ts`**: +**13 NEW alias tests** appended to the existing `describe("rehypeResolveWikilinks — plugin behavior", ...)` block:
+  - `[[slug|display]]` resolves to `<a href="/problems/slug">display</a>`.
+  - Backwards-compat: bare `[[slug]]` still renders identically.
+  - Multi-word display preserves internal spaces.
+  - Aliased + non-aliased wikilinks coexist in same paragraph.
+  - Empty alias `[[slug|]]` does NOT match (display class requires `+`; falls through as literal text). Documented behavior; Phase 47+ refinement candidate.
+  - Display with HTML-special chars escapes via rehype text-node rendering (XSS safety): `[[a|<script>alert(1)</script>]]` emits `&#x3C;script&#x3E;...`, NOT injected HTML.
+  - Ampersand in display HTML-escapes: `[[a|Cats & dogs]]` → `<a href="/problems/a">Cats &#x26; dogs</a>`.
+  - Alias nested in bold: `**[[s|alias]]**` → `<strong><a>alias</a></strong>`.
+  - Uppercase slug rejects (APPEND-D-I preserved); falls through as literal.
+  - Alias containing pipe `[[a|left|right]]` includes second pipe in display (display class includes `|`).
+  - Alias preserves leading/trailing whitespace verbatim (D-10 prep-doc decision).
+  - Newline in alias rejects (display class excludes `\n`); falls through as literal.
+  - Complex slug + multi-word display (real-world example).
+- **MODIFIED `docs/adr/0018-markdown-sanitization.md`**: **APPEND-D-AD** added (fourth two-letter slot after Phase-43 D-AA + Phase-44 D-AB + Phase-45 D-AC; **13th APPEND on D-G** extending the first-ADR-D-clause-with-most-APPENDs record 12 → 13). New block documents: (1) first plugin-regex-extension within an existing consumer in project history; (2) closure of APPEND-D-L item 2 deferral at 8-phase carryover (Phase 38 → 46; longest APPEND-D-L item closure to date); (3) fifth prep-/APPEND-doc-level deferral closed by a later phase (cadence sustained 5 phases); (4) second non-cross-surface-expansion APPEND-deferral closure; (5) regex evolution before/after; (6) plugin body update; (7) backwards-compatibility statement; (8) empty-alias + whitespace + XSS audit explicit; (9) no env-var change; (10) Phase 47+ deferrals (cross-entity wikilinks; `<a class>` styling; 404 handling; plugin parameterization; auto-trim; empty-alias-fallback; arxiv/doi alias syntax; older-style arxiv IDs; bare IDs; DOI cross-surface expansion; paper-card hover-preview; table-attributes; `<caption>`; surface-specific schemas; PubMed PMID; 3rd-or-later remark consumer; 2nd rehype/schema consumers).
+- **Architectural firsts**:
+  - **First plugin-regex-extension within an existing Phase-37-framework consumer** in project history. Phase 38/39/41/45 were new-consumer phases; Phase 42/43/44 were value-only cross-surface-expansion phases; Phase 46 is the first to modify the regex of an existing plugin in-place.
+  - **First "display-text divergence from slug" rendering** in any framework consumer.
+  - **First alias-syntax surface** in any framework consumer. Sets pattern for future Phase 47+ alias extensions (arxiv item 5; new doi item).
+  - **First "regex backwards-compatibility preserved through extension"** discipline documented: every existing `[[slug]]` match preserved verbatim with group 2 undefined; alias clause is purely additive.
+  - **First "display-text XSS audit via text-node escape"** — text-node content cannot escape its text-node context; rehype-stringify handles HTML-special chars automatically.
+  - **13th APPEND on ADR-0018 D-G**: extends project record 12 → 13.
+  - **Fourth two-letter APPEND letter D-AD**: Excel-spreadsheet column convention sustained.
+- **Smoke gates**:
+  - `pnpm validate-content` → 203 files unchanged.
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **998 / 72 files** (+13 / 0 vs Unit 46.0: 13 NEW `wikilinks.test.ts` alias tests).
+  - `pnpm audit-content` → 0 errors / 6 warnings UNCHANGED (Q32 baseline).
+  - First Load JS = 103 kB UNCHANGED (server-only plugin extension; zero client-bundle delta); Middleware = 160 kB UNCHANGED.
+
 #### Unit 46.0 — Phase 46 prep (multi-anchor wikilink alias syntax; first plugin-regex-extension within an existing consumer; D-1 D-AD; anticipated 5 units; 41st "Continue" override invoked)
 
 - First Phase-46 unit; docs-only. Drafted `docs/thinking/46.0-phase-46-prep.md` (Phase-45 → 46 baseline at HEAD `728d54e` + parallel `1b673b3`; D-1 first-thread recommendation; D-3 alias regex shape — `WIKILINK_PATTERN` evolves from `/\[\[([a-z0-9-]+)\]\]/g` to `/\[\[([a-z0-9-]+)(?:\|([^\]\n]+))?\]\]/g` with non-capturing optional alias group; plugin body update emits `<a href="/problems/{slug}">{display ?? slug}</a>`; Phase 47+ deferrals; provisional 5-unit breakdown; per-unit decisions D-8..D-13 lean-noted; alternative threads overridable into Unit 46.1; 12 anticipated architectural firsts).

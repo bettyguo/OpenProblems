@@ -1684,6 +1684,166 @@ surfaces — `rationale` only Phase 45).
   component per surface" throw-on-conflict rule for
   `schemaOverrides`.
 
+**EXTENDED Phase 46 Unit 46.1** — **first plugin-regex-extension
+within an existing Phase-37-framework consumer in project
+history**: multi-anchor wikilink alias syntax `[[slug|display-
+text]]` via in-place regex extension on `rehypeResolveWikilinks`
+in `WikilinkExtensionRegistry`. **First "display-text divergence
+from slug" rendering** in any framework consumer. **First alias-
+syntax surface** in any framework consumer — sets pattern for
+future Phase 47+ alias extensions in arxiv (APPEND-D-Y item 5)
++ doi (new Phase-46 deferral).
+
+**Closes APPEND-D-L item 2** ("Multi-anchor wikilink alias
+syntax `[[slug|display-text]]` GitHub-wiki-flavor alias syntax.
+No current content evidence; Phase 39+ if signal demands;
+plugin-option-extension shape.") at **8-phase carryover**
+(Phase 38 → Phase 46). **Longest APPEND-D-L item closure to
+date** (item 1 closed Phase 42 at 4-phase gap; item 2 closes
+Phase 46 at 8-phase gap; items 3-6 carry forward).
+
+**Fifth prep-/APPEND-doc-level deferral closed by a later
+phase**: Phase 42 → 38 D-L item 1; Phase 43 → 39 D-Q item 2;
+Phase 44 → 41 D-Y item 1; Phase 45 → 41 D-Y item 4; Phase 46
+→ 38 D-L item 2. **APPEND-deferral closure cadence sustained 5
+phases**. **Second non-cross-surface-expansion APPEND-deferral
+closure** in the cadence (Phase 45 was first; Phase 46 is
+second). Pattern: cross-surface-expansion closures exhausted
+Phase 42-44; sibling-consumer-introduction (Phase 45) +
+regex-extension-within-existing-consumer (Phase 46) closures
+start Phase 45-46.
+
+**Thirteenth APPEND on ADR-0018 D-G** — extends the **first-
+ADR-D-clause-with-most-APPENDs record** from 12 → 13
+(Phase 18 + 27 + 29 + 37 + 38 + 39 + 40 + 41 + 42 + 43 + 44 +
+45 + **46**).
+
+**Fourth two-letter APPEND letter D-AD** (after Phase-43 D-AA
++ Phase-44 D-AB + Phase-45 D-AC). Excel-spreadsheet column
+convention sustained — D-AE + D-AF + ... + D-AZ would carry
+Phase 47+ at this cadence.
+
+**APPEND-D-AD wikilink alias regex shape**:
+
+```ts
+// Before (Phase 38 ship through Phase-45 close):
+const WIKILINK_PATTERN = /\[\[([a-z0-9-]+)\]\]/g;
+
+// After (Phase 46 ship):
+const WIKILINK_PATTERN = /\[\[([a-z0-9-]+)(?:\|([^\]\n]+))?\]\]/g;
+```
+
+- Group 1 = slug (unchanged `[a-z0-9-]+`; APPEND-D-I XSS-
+  safety contract preserved — slug regex IS the validation).
+- Group 2 = optional display text (`[^\]\n]+`; any non-`]`
+  non-newline chars; one or more). Excludes `]` (terminator)
+  and `\n` (paragraph-break boundary).
+- Non-capturing outer group `(?:...)? ` makes the alias clause
+  fully optional. **Backwards-compatible**: every existing
+  `[[slug]]` occurrence matches identically with group 2
+  undefined.
+
+**Plugin body update**:
+
+```ts
+const slug = match[1];
+const alias = match[2];  // NEW: may be undefined
+
+newNodes.push({
+  type: "element",
+  tagName: "a",
+  properties: { href: `/problems/${slug}` },
+  // Display falls back to slug when alias undefined.
+  children: [{ type: "text", value: alias ?? slug }],
+});
+```
+
+The `href` always points to `/problems/{slug}` — **only the
+displayed anchor text varies**. Display text becomes the
+text-node content of `<a>` (NOT injected HTML); rehype-
+stringify's text-node escaping handles HTML-special
+characters (e.g., `&` → `&amp;`, `<` → `&#x3C;`) automatically.
+**No new XSS surface** introduced — the text-node escape is
+the line of defense.
+
+**Empty alias `[[slug|]]` behavior**: regex's display class
+requires `+` (one or more chars). Empty `[[slug|]]` does not
+satisfy; the whole pattern fails to match; the literal text
+passes through unchanged. Phase 46 ship documented behavior;
+Phase 47+ refinement candidate (curator content may motivate
+empty-alias-as-slug-fallback semantics with regex `*`
+quantifier + `||` fallback).
+
+**Whitespace handling**: alias-internal whitespace preserved
+verbatim Phase 46 (no auto-trim). Curator-authored
+`[[a|  spaced  ]]` emits `<a href="/problems/a">  spaced  </a>`.
+Phase 47+ refinement candidate if demand-signal surfaces.
+
+**XSS audit Phase 46**: display text becomes mdast/hast text-
+node `value`. Text-node serialization in `rehype-stringify`
+escapes `&`, `<`, `>`, `"`, `'` per HTML5 spec. Test
+"display with HTML-special chars escapes via rehype text-node
+rendering (XSS safety)" asserts `[[a|<script>alert(1)</script>]]`
+emits `&#x3C;script&#x3E;...` (NOT `<script>...`). Display is
+purely cosmetic text-content; cannot escape its text-node
+context. **No new XSS surface introduced beyond Phase-17
+sanitize-line-of-defense**.
+
+**No env-var change Phase 46**: alias is plugin-internal regex
+evolution. `MARKDOWN_EXTENSIONS=wikilinks` (Phase-42 default-
+all-4) automatically picks up alias syntax. Composition matrix
+unchanged (`wikilinks,tables,arxiv,doi` 4-way Phase-45 default
+continues to work; wikilinks plugin handles `[[slug]]` +
+`[[slug|display]]` both).
+
+**Phase 47+ deferrals** (Phase-46 alias-syntax scope cap):
+
+- **Cross-entity wikilinks** (`[[paper-id|display]]` /
+  `[[author-slug|display]]` / `[[institution-slug|display]]`;
+  APPEND-D-L item 3 carries forward) — Phase 47+; requires
+  entity-type disambiguation + plugin parameterization
+  (APPEND-D-L item 6).
+- **`<a class="wikilink">` styling** (APPEND-D-L item 4
+  carries) — Phase 47+; couples with `schemaOverride` for
+  `class` attribute on `<a>`.
+- **404 handling for unresolved wikilinks** (APPEND-D-L item
+  5 carries) — Phase 47+; build-time validation + render-time
+  fallback.
+- **Plugin parameterization for wikilink-href-builder** (APPEND-
+  D-L item 6 carries) — Phase 47+; would make `/problems/${slug}`
+  configurable per-consumer.
+- **Auto-trim of alias display whitespace** — new Phase-46
+  deferral; Phase 47+ if curator content surfaces edge cases.
+- **Empty-alias-as-slug-fallback** `[[slug|]]` → `<a>slug</a>`
+  — new Phase-46 deferral; Phase 47+ refinement candidate
+  (change regex `+` → `*` + plugin `??` → `||`).
+- **Alias syntax in arxiv consumer** (`arxiv:NNNN.NNNNN|display`;
+  APPEND-D-Y item 5 carries) — Phase 47+ analogous extension.
+- **Alias syntax in doi consumer** (`doi:10.NNNN/xxx|display`;
+  new Phase-46 deferral mirroring arxiv item 5) — Phase 47+.
+- **Older-style category-prefixed arxiv IDs** (APPEND-D-Y item
+  2 carries) — Phase 47+.
+- **Bare arxiv / DOI IDs without prefix** (APPEND-D-Y item 3
+  + new Phase-45 deferral carry) — Phase 47+.
+- **DOI cross-surface expansion** (new Phase-45 APPEND-D-AC
+  deferral) — Phase ~49 at 4-phase-gap cadence.
+- **Paper-card hover-preview** (APPEND-D-Y item 6 carries) —
+  Phase 47+.
+- **Table-specific attributes** (`colspan` / `rowspan` /
+  `scope`; APPEND-D-Q item 3 carries) — Phase 47+.
+- **`<caption>` element** (APPEND-D-Q item 4 carries) — Phase
+  47+.
+- **Surface-specific table schemas** (APPEND-D-Q item 6
+  carries) — Phase 47+ via constructor-arg-as-map change.
+- **PubMed PMID sibling consumer** (new Phase-45 deferral
+  carries) — Phase 47+.
+- **3rd-or-later `remarkPlugins` consumer** beyond arxiv +
+  doi — Phase 47+.
+- **2nd `rehypePlugins` consumer** beyond wikilinks — Phase
+  47+.
+- **2nd `schemaOverrides` consumer** beyond tables — Phase
+  47+.
+
 ### D-H. Phase 18+ deferrals
 
 Phase 17 ships MINIMAL markdown surface. Deferred to Phase 18+:
