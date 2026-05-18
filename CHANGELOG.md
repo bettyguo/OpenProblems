@@ -2470,6 +2470,106 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 37 — Community-adjacent surfaces (**twenty-eighth NON-§13 phase**: Q72 markdown schema-divergence framework as ADR-0018 D-G framework-only-pattern reuse from Phase 35 — `MarkdownExtensionRegistry` + per-surface schema/plugin overrides + no-extensions-default integrated into all 4 markdown surfaces (bio + reviewNotes + rationale + actionRationale per Unit 37.1 path correction); closes Q72 at 8+ phase carryover via framework-only-ADR-pattern reuse from Phase 35 ADR-0024 precedent; anticipated 4-5 units; 32nd "Continue" override invoked)
 
+#### Unit 37.4 — Phase 37 acceptance gate (Q72 markdown schema-divergence framework realized; 24 ADRs; 5 units; 755/67; 4th consecutive longest-Q-closure phase; 11 ADR D-clauses with APPENDs; ADR-0018 D-G = first D-clause with 4 APPENDs; 56th consecutive 103 kB unit; 33rd "Continue" override opportunity at Phase 37 → 38 boundary)
+
+- Fifth and final Phase-37 unit; gate-only. Ships the Phase 37 acceptance gate per §12 cardinal rule + Phase-12-through-36 acceptance-gate patterns. **Phase 37 CLOSES at this unit's commit**. Phase 38 entry awaits explicit "Continue" override OR phase-38 thread direction.
+
+##### Phase 37 — what shipped (5 units)
+
+| Unit | Title | Type | Commit |
+|---|---|---|---|
+| 37.0 | Phase 37 prep | docs | `ea72a0f` |
+| 37.1 | `lib/markdown/extensions/` framework + ADR-0018 D-G APPEND | code+APPEND | `55e7ba9` |
+| 37.2 | Registry integration in 4 markdown helpers + 10 tests | code | `6ca6fdf` |
+| 37.3 | Phase-37 hygiene + Q72 sub-bullet resolution | docs | `1908f53` |
+| 37.4 | Phase 37 acceptance gate (this unit) | gate | (this commit) |
+
+Total: **5 units** — mirrors Phase-35 5-unit framework-only shape; no deferred units; no inserted units.
+
+##### Q72 markdown schema-divergence framework — REALIZED at HEAD `1908f53`
+
+Phase-37-prep D-1 first-thread recommendation realized end-to-end:
+
+- `lib/markdown/extensions/` framework module (5 files; Phase-35 `lib/moderation/` shape verbatim).
+- `MarkdownExtensionRegistry` + `MarkdownExtensionSet` + `MarkdownSurface` types over **4 surfaces** (bio + reviewNotes + rationale + actionRationale — Unit 37.1 path correction from prep doc's 3-surface anticipation).
+- `getExtensionRegistry()` lazy-singleton factory + `__resetRegistryForTests` + `__setRegistryForTests` test hooks.
+- 4 lazy processor caches in `lib/markdown/index.ts` + `buildProcessor()` helper folding extensions per APPEND-D-C override-replace semantics + APPEND-D-D plugin-order-after-default + `__resetMarkdownCachesForTests()` hook.
+- ADR-0018 D-G APPEND documents framework + 7 sub-decisions (APPEND-D-A through APPEND-D-G; +~95 lines).
+- 10 new framework-integration tests (Unit 37.2; default-empty parity for all 4 surfaces + rehype-plugin-after-default-plugins + schema-override-replace semantics).
+- Q72 sub-bullet resolution at OPEN_QUESTIONS.md line 573 (Unit 37.3 APPEND-not-EDIT).
+
+##### Phase 36 → Phase 37 delta
+
+| Metric | Phase 36 close | Phase 37 close | Δ |
+|---|---|---|---|
+| Tests | 736 / 65 files | **755 / 67 files** | +19 / +2 |
+| ADRs | 24 | **24** | 0 |
+| ADR D-clauses with APPENDs | 10 | **11** (ADR-0018 D-G now has **4 APPENDs** — project first) | +1 |
+| DB tables | 7 | 7 | 0 |
+| Migrations | 9 | 9 | 0 |
+| Env vars | 13 | 13 | 0 |
+| i18n keys per locale | 168 | 168 | 0 |
+| Dynamic page+API routes | 13 | 13 | 0 |
+| First Load JS shared chunk | 103 kB | **103 kB** | 0 |
+| Middleware bundle | 160 kB | 160 kB | 0 |
+| OPEN_QUESTIONS top-level Q-count | 66 | **66** (28 resolved + 4 lean + 34 open) | 0 |
+| Phase-37+ candidate count | 10 | **9** (Q72 framework removed) | −1 |
+| Runtime deps added | — | **0** | 0 |
+| `lib/markdown/` files | 3 | **8** (3 existing + 5 new `extensions/`) | +5 |
+
+##### Architectural firsts in Phase 37 (12 enumerated)
+
+1. **First framework-only-ADR pattern reuse in a new domain** — Phase 35 framework-only via ADR-0024 in content-moderation domain; Phase 37 in markdown-rendering domain. Phase-37-prep D-1 rationale 1 realized.
+2. **First ADR D-clause with FOUR APPENDs in project history** — ADR-0018 D-G carries Phase 18 reviewNotes + Phase 27 rationale + Phase 29 actionRationale + **Phase 37 framework** APPENDs.
+3. **Fourth consecutive longest-Q-closure phase** (Q79 Phase 34 + Q68 Phase 35 + Q64 Phase 36 + Q72 Phase 37 = **first 4-phase longest-Q-closure streak in project history**).
+4. **Twenty-eighth NON-§13 phase** (§13 ledger CLOSED at Unit 9.9; carried unchanged through Phases 10-37).
+5. **Second no-new-ADR phase in 2 phases** (Phase 36 + 37 = first 2-phase no-new-ADR streak since Phase 26+27 = 11-phase gap; extends alternating-pattern to 6 phases: 32 → 33 → 34 → 35 → 36 → **37**).
+6. **Fourth consecutive net-Q-decrease phase** (Phase 34 + 35 + 36 + 37 = first 4-phase net-decrease streak in project history; Phase-37+ candidate count 10 → 9).
+7. **Seventh consecutive phase without new B category** (Phase 31 + 32 + 33 + 34 + 35 + 36 + 37 = first such 7-phase run).
+8. **First lazy-processor-singleton pattern in `lib/markdown/`** — Phase 17 through Phase 29 used module-level `const xxxProcessor = unified()...` eager singletons; Unit 37.2 converts to lazy getter pattern for registry-swappability.
+9. **Second consecutive sub-bullet-only Q-resolution** (Phase 36 Q64 + Phase 37 Q72; never before two in a row in project history).
+10. **18-phase Q72-surfaced-to-framework-realized carryover** (Phase 18 → Phase 37; second-longest Q-family carryover after Q68 expansion's 22+ phase Phase-35 closure).
+11. **First "framework-only resolution" of a sibling-divergence Q-family** — Q72 family's 3 sibling-divergence candidates (reviewNotesSchema + rationaleSchema + actionRationaleSchema divergence from bioSchema) all collapse to a single framework-consumption pattern Phase-38+.
+12. **53rd-through-56th consecutive 103 kB First Load JS units in project history** (Phase 9 Unit 9.5 → Phase 37 Unit 37.4 inclusive); zero client-bundle regression end-to-end across the entire `lib/markdown/extensions/` framework realization.
+
+##### Phase 37 → Phase 38 entry conditions
+
+Per §12 cardinal rule: **Phase 38 entry requires explicit human sign-off**. This unit ships the Phase 37 close; Phase 38.0 prep awaits `"Continue"` override OR phase-38-thread direction.
+
+**Recommended Phase 38 first-thread candidates** (carried from Phase-37-prep alternative-threads; refined by Phase-37-as-shipped):
+
+| Rank | Thread | Units | Tractability |
+|---|---|---|---|
+| 1 | First concrete Phase-37-framework extension consumer (e.g., GFM tables per-reviewNotes via `schemaOverrides`, OR wikilinks per-bio via `rehypePlugins`) | 1-2 | Tightest Phase-37-framework validation; needs scope decision on which extension first |
+| 2 | ADR-0025 concrete content-moderation provider | 3-5 | Strongest patience signal post-Q72; needs curator content authorship OR operational unblock |
+| 3 | Pre-commit typecheck hook addition | 1 | Closes Unit-36.1-surfaced gap; tiny |
+| 4 | Q78 digest-send analytics | 3-5 | Waits for Q77 production signal |
+| 5 | Account-deletion blob cleanup | 1-2 | Conditional on account-delete UI (none exists) |
+| 6 | `safeAuth()` extraction | 1 | Still 4 copies; not at 5+ threshold |
+| 7 | Subscribe + `/profile` test backfill | 1-2 | Not user-visible value |
+| 8 | N. v2 methodology authoring | curator | Curator-track-heavy; primary §1 (d) blocker |
+| 9 | Q79 Profile B / C | 2-3 each | Needs user-feedback signal |
+
+**Operational gates still pending** (6 UNCHANGED from Phase 36 close): Q54 (GitHub OAuth) + Q55 (Turso prod DB) + Q69 (Vercel Blob) + Q73 (Google OAuth) + Q75 (Resend domain) + Q77 (Cron secret). All curator-track; all block production deploy but NOT phase work.
+
+##### Anti-scope (Phase 38+ deferrals; carried forward)
+
+NOT concrete extension implementations (wikilinks / GFM tables / GFM footnotes / images / @mentions / tel-URLs / `<a title>` / syntax highlighting / configurable schema per-user — all Phase 38+ one-off additions per ADR-0018 D-G APPEND F-list); NOT per-curator extension preferences (Phase 38+ DB-backed override); NOT curator-facing extension-enable UI (Phase 38+); NOT live preview in edit form (Phase 38+ caveat: breaks 103 kB invariant); NOT ADR-0025 concrete content-moderation provider (Phase 38+); NOT Q78 digest-send analytics (waits for Q77); NOT account-deletion blob cleanup (Phase 38+); NOT v2 methodology authoring (curator-track-heavy); all other Phase-30-through-36 deferrals carry forward.
+
+##### Smoke gates (Phase 37 close)
+
+- `pnpm typecheck` — strict; passes.
+- `pnpm test` — **755 / 67 files** passing.
+- `pnpm audit-content` — 0 errors / 6 warnings (Q32 baseline since Phase 2; **35 consecutive phases unchanged**).
+- First Load JS shared chunk — **103 kB UNCHANGED** end-to-end Phase 9 Unit 9.5 → Phase 37 Unit 37.4 (**56 consecutive units**).
+- Middleware bundle — **160 kB UNCHANGED** since Phase 12.
+
+##### Boundary statement
+
+**Phase 37 CLOSED after 5 units (37.0 prep + 37.1 framework + 37.2 integration + 37.3 hygiene + 37.4 gate). Q72 markdown schema-divergence framework realized via ADR-0018 D-G framework-only-pattern reuse from Phase 35 ADR-0024. Twenty-eighth NON-§13 phase. Fourth consecutive longest-Q-closure phase (Q79 + Q68 + Q64 + Q72). Eleventh APPEND-pattern ADR D-clause cluster; first ADR D-clause with 4 APPENDs (ADR-0018 D-G). 755 tests across 67 vitest files (+19 / +2 vs Phase 36). 24 ADRs UNCHANGED. 7 DB tables UNCHANGED. 9 migrations UNCHANGED. 13 env vars UNCHANGED. 168 i18n keys per locale UNCHANGED. First Load JS 103 kB UNCHANGED (56 consecutive units). Middleware 160 kB UNCHANGED. OPEN_QUESTIONS top-level Q-count 66 UNCHANGED. Phase-37+ candidate count 10 → 9 (4th consecutive net-Q-decrease phase). Zero new runtime deps / env vars / ADRs / migrations / i18n keys / operational gates. Phase 38 entry requires explicit human sign-off per §12.**
+
+- THINK artifact: `docs/thinking/37.4-phase-37-acceptance-gate.md`.
+
 #### Unit 37.3 — Phase-37 hygiene + Q72 sub-bullet resolution at line 573 of OPEN_QUESTIONS.md (sub-bullet-only resolution; same shape as Q64 Phase 36; 18-phase Q72 carryover; 4th consecutive net-Q-decrease phase; Phase-37+ candidate count 10 → 9; 55th consecutive 103 kB unit)
 
 - Fourth Phase-37 unit; docs-only hygiene. Mirrors Phase-35 Unit 35.3 + Phase-36 Unit 36.3 hygiene shapes.
