@@ -12,6 +12,13 @@ vi.mock("@/lib/storage", () => ({
   delAvatar: vi.fn(),
 }));
 
+vi.mock("@/lib/moderation", () => ({
+  getModerator: vi.fn(() => ({
+    moderateText: vi.fn(async () => ({ ok: true })),
+    moderateImage: vi.fn(async () => ({ ok: true })),
+  })),
+}));
+
 vi.mock("#site/content", () => ({
   problems: [
     { slug: "alpha", editorial: { primary_curator: "bettyguo", last_curated: "2026-05-14" } },
@@ -23,6 +30,7 @@ vi.mock("#site/content", () => ({
 
 const { db } = await import("@/lib/db");
 const { delAvatar, putAvatar } = await import("@/lib/storage");
+const { getModerator } = await import("@/lib/moderation");
 const {
   clearProfileImage,
   getCuratorOfRecordSlugs,
@@ -586,5 +594,57 @@ describe("PublicProfile shape extension (Unit 16.3 — imageOverride)", () => {
     expect(profile?.imageOverride).toBe(
       "https://store.public.blob.vercel-storage.com/avatars/u-1-9.jpg",
     );
+  });
+});
+
+describe("Content moderation integration (ADR-0024 D-D)", () => {
+  beforeEach(() => {
+    vi.mocked(db.select).mockReset();
+    vi.mocked(db.update).mockReset();
+    vi.mocked(putAvatar).mockReset();
+    vi.mocked(delAvatar).mockReset();
+    vi.mocked(getModerator).mockReset();
+    vi.mocked(getModerator).mockReturnValue({
+      moderateText: vi.fn(async () => ({ ok: true })),
+      moderateImage: vi.fn(async () => ({ ok: true })),
+    });
+  });
+
+  it("updateProfile returns the moderation reason when bio is blocked (ADR-0024 D-D bio surface)", async () => {
+    vi.mocked(getModerator).mockReturnValue({
+      moderateText: vi.fn(async () => ({
+        ok: false,
+        severity: "block",
+        reasons: ["bio policy violation"],
+      })),
+      moderateImage: vi.fn(async () => ({ ok: true })),
+    });
+    vi.mocked(db.update).mockReturnValue({
+      set: vi.fn().mockReturnThis(),
+      where: vi.fn().mockResolvedValue(undefined),
+    } as never);
+
+    const err = await updateProfile("u-1", { bio: "some text that the mocked moderator blocks" });
+    expect(err).toBe("bio policy violation");
+    expect(db.update).not.toHaveBeenCalled();
+  });
+
+  it("updateProfileImage returns the moderation reason when avatar is blocked (ADR-0024 D-D avatar surface)", async () => {
+    vi.mocked(getModerator).mockReturnValue({
+      moderateText: vi.fn(async () => ({ ok: true })),
+      moderateImage: vi.fn(async () => ({
+        ok: false,
+        severity: "block",
+        reasons: ["image policy violation"],
+      })),
+    });
+    // Valid PNG magic bytes so the upstream MIME / size / magic checks
+    // all pass and execution reaches the moderation gate.
+    const pngHeader = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0]);
+    const file = new File([pngHeader], "avatar.png", { type: "image/png" });
+
+    const err = await updateProfileImage("u-1", file);
+    expect(err).toBe("image policy violation");
+    expect(putAvatar).not.toHaveBeenCalled();
   });
 });

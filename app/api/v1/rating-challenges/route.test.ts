@@ -12,9 +12,16 @@ vi.mock("@/lib/rating-challenges", async (importOriginal) => {
     submitChallenge: vi.fn(),
   };
 });
+vi.mock("@/lib/moderation", () => ({
+  getModerator: vi.fn(() => ({
+    moderateText: vi.fn(async () => ({ ok: true })),
+    moderateImage: vi.fn(async () => ({ ok: true })),
+  })),
+}));
 
 const { auth } = await import("@/lib/auth");
 const { submitChallenge } = await import("@/lib/rating-challenges");
+const { getModerator } = await import("@/lib/moderation");
 const { POST } = await import("./route");
 
 const realSlug = problems[0]!.slug;
@@ -169,6 +176,31 @@ describe("POST /api/v1/rating-challenges", () => {
         }),
       );
       expect(res.status).toBe(201);
+    });
+
+    it("returns 422 moderation-refused on rationale block (ADR-0024 D-D rating-challenge surface)", async () => {
+      vi.mocked(getModerator).mockReturnValueOnce({
+        moderateText: vi.fn(async () => ({
+          ok: false,
+          severity: "block",
+          reasons: ["rationale policy violation"],
+        })),
+        moderateImage: vi.fn(async () => ({ ok: true })),
+      });
+      const res = await POST(
+        makeReq({
+          problemSlug: realSlug,
+          dimension: "saturation",
+          proposedValue: "42",
+          rationale: validRationale,
+        }),
+      );
+      expect(res.status).toBe(422);
+      const body = await res.json();
+      expect(body.error).toBe("moderation-refused");
+      expect(body.field).toBe("rationale");
+      expect(body.message).toBe("rationale policy violation");
+      expect(submitChallenge).not.toHaveBeenCalled();
     });
   });
 });

@@ -4,6 +4,7 @@ import { problems } from "#site/content";
 
 import { db } from "@/lib/db";
 import { ratingChallenges, users, watchlist } from "@/lib/db/schema";
+import { getModerator } from "@/lib/moderation";
 import { delAvatar, putAvatar } from "@/lib/storage";
 
 /**
@@ -278,6 +279,21 @@ export async function updateProfile(
   // No-op when no fields supplied — caller may invoke with empty input.
   if (Object.keys(set).length === 0) return null;
 
+  // Content moderation per ADR-0024 D-D bio surface. Default Phase 35
+  // = NoopModerator → `{ ok: true }`. Future providers (Phase 36+
+  // operational-API-gate) refuse on policy violation. Only the bio
+  // text is moderated; displayName is short-form and excluded per
+  // ADR-0024 D-12 lean.
+  if (typeof set.bio === "string" && set.bio.length > 0) {
+    const decision = await getModerator().moderateText(set.bio, {
+      surface: "bio",
+      userIdOrEmail: userId,
+    });
+    if (!decision.ok && decision.severity === "block") {
+      return decision.reasons[0] ?? "Bio refused by content moderation.";
+    }
+  }
+
   await db.update(users).set(set).where(eq(users.id, userId));
   return null;
 }
@@ -407,6 +423,22 @@ export async function updateProfileImage(userId: string, file: File): Promise<st
   }
   if (!(await magicBytesMatchMime(file, file.type))) {
     return "Image file contents do not match its declared format.";
+  }
+
+  // Content moderation per ADR-0024 D-D avatar surface. Default Phase
+  // 35 = NoopModerator → `{ ok: true }`. Future providers (Phase 36+
+  // operational-API-gate) refuse on policy violation. The moderation
+  // call sits BEFORE the Vercel Blob upload so a refused image never
+  // touches paid-storage. Buffer is read once for moderation; putAvatar
+  // does its own read for the sharp pipeline (double-read is cheap on
+  // the 2 MB cap and avoids refactoring the storage layer in Phase 35).
+  const imageBuffer = Buffer.from(await file.arrayBuffer());
+  const imageDecision = await getModerator().moderateImage(imageBuffer, {
+    surface: "avatar",
+    userIdOrEmail: userId,
+  });
+  if (!imageDecision.ok && imageDecision.severity === "block") {
+    return imageDecision.reasons[0] ?? "Image refused by content moderation.";
   }
 
   const [existing] = await db

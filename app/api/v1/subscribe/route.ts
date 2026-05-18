@@ -3,6 +3,7 @@ import { taxonomy } from "#site/content";
 import { auth } from "@/lib/auth";
 import { sendEmail } from "@/lib/email";
 import { renderVerificationEmail } from "@/lib/email/templates/verification";
+import { getModerator } from "@/lib/moderation";
 import {
   canonicalizeEmail,
   createOrRefreshPendingSubscription,
@@ -76,6 +77,27 @@ export async function POST(req: Request): Promise<Response> {
   const email = canonicalizeEmail(emailRaw);
   if (!validateEmail(email)) {
     return badRequest("email", "Invalid email address.");
+  }
+
+  // Content moderation per ADR-0024 D-D subscribe surface + D-13
+  // lean (moderate email-as-text; noop default makes this costless;
+  // future regex-wordlist provider may refuse slur-containing emails).
+  // 422 distinguishes moderation refusal from the 400 validation-
+  // failure shape. Email is the actor identity here (subscribe surface
+  // is the only one where the actor may not be signed in).
+  const moderationDecision = await getModerator().moderateText(email, {
+    surface: "subscribe",
+    userIdOrEmail: email,
+  });
+  if (!moderationDecision.ok && moderationDecision.severity === "block") {
+    return Response.json(
+      {
+        error: "moderation-refused",
+        field: "email",
+        message: moderationDecision.reasons[0] ?? "Email refused by content moderation.",
+      },
+      { status: 422 },
+    );
   }
 
   const domainsRaw = Array.isArray(body.domains) ? body.domains : [];

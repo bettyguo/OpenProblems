@@ -1,6 +1,7 @@
 import { problems } from "#site/content";
 
 import { auth } from "@/lib/auth";
+import { getModerator } from "@/lib/moderation";
 import {
   DIMENSIONS,
   isValidDimension,
@@ -48,6 +49,10 @@ function badRequest(field: string, message: string): Response {
   return Response.json({ error: "bad-request", field, message }, { status: 400 });
 }
 
+function moderationRefused(field: string, message: string): Response {
+  return Response.json({ error: "moderation-refused", field, message }, { status: 422 });
+}
+
 export async function POST(req: Request): Promise<Response> {
   const session = await auth();
   if (!session?.user?.id) return unauthenticated();
@@ -80,6 +85,22 @@ export async function POST(req: Request): Promise<Response> {
   const rationaleError = validateRationale(rationale);
   if (rationaleError) {
     return badRequest("rationale", rationaleError);
+  }
+
+  // Content moderation per ADR-0024 D-D rating-challenge surface +
+  // D-12 lean (rationale only; other fields are short-form). Default
+  // Phase 35 = NoopModerator → `{ ok: true }`. Future providers refuse
+  // on policy violation; 422 distinguishes moderation refusal from the
+  // 400 validation-failure shape.
+  const moderationDecision = await getModerator().moderateText(rationale, {
+    surface: "rating-challenge",
+    userIdOrEmail: session.user.id,
+  });
+  if (!moderationDecision.ok && moderationDecision.severity === "block") {
+    return moderationRefused(
+      "rationale",
+      moderationDecision.reasons[0] ?? "Rationale refused by content moderation.",
+    );
   }
 
   const { id } = await submitChallenge({
