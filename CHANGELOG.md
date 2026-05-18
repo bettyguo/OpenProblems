@@ -2470,6 +2470,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 39 — Community-adjacent surfaces (**thirtieth NON-§13 phase**: second concrete Phase-37-framework consumer — GFM tables on `reviewNotes` surface via `schemaOverrides` slot + new `TablesExtensionRegistry` + second non-default env-var dispatch arm `MARKDOWN_EXTENSIONS=tables`; validates the framework slot Phase 38 did NOT exercise; first "framework + 2 consumers" 3-phase cluster in project history; anticipated 4-5 units; 34th "Continue" override invoked)
 
+#### Unit 39.3 — Phase-39 hygiene + framework-multi-consumer pattern reconciliation + Q-status carry-forward (Q-tally UNCHANGED at 66; Phase-37+ candidate count UNCHANGED at 8; 5-phase net-decrease streak ENDS at Phase 38; 9-phase no-new-B-category streak EXTENDS to Phase 39; 63rd consecutive 103 kB unit)
+
+- Fourth Phase-39 unit; docs-only hygiene. Mirrors Phase-32 hygiene (no-new-Q-closure phase) more than Phase-37 + 38 hygiene shapes (each closed a specific Q or B). **Unique among Phase-34-through-39 hygiene shapes**: Phase 39 ships the second concrete framework consumer WITHOUT closing any specific Q/B-class carryover.
+- **Top-level Q-tally UNCHANGED at 66** (28 resolved + 4 lean + 34 open). No Q-class resolution Phase 39 — tables-per-reviewNotes was an alternative-thread choice from Phase-37-gate, not a candidate-list entry.
+- **Phase-37+ candidate count UNCHANGED at 8**. Tables wasn't on the candidate list (Phase-38-gate candidates were: ADR-0025 + cross-surface wikilinks/tables/@mentions [as a single bucket] + pre-commit typecheck hook + Q78 + account-deletion + safeAuth + test backfill + v2 methodology + Q79). Phase 39's tables choice was within the "second concrete framework consumer" bucket — picking a specific extension within an existing candidate doesn't decrement the candidate count.
+- **5-phase net-Q/candidate-decrease streak ENDS at Phase 38** (was Phase 34 + 35 + 36 + 37 + 38 = first 5-phase streak in project history). Phase 39 = 0 net decrease; documented as expected outcome of choosing a non-Q-closing alternative thread. **First phase since Phase 33 to NOT decrement the candidate count**.
+- **9-phase no-new-B-category streak EXTENDS to Phase 39** (Phase 31 + 32 + 33 + 34 + 35 + 36 + 37 + 38 + **39** = first such 9-phase run in project history). Phase 39 surfaces no new ambiguities; the multi-consumer pattern is established not surface-new.
+- **Multi-consumer milestone realized**: Phase-37 framework now has **2 concrete consumers** (`WikilinkExtensionRegistry` Phase 38 + `TablesExtensionRegistry` Phase 39) exercising **2 of 3 framework slots** (`rehypePlugins` + `schemaOverrides`). Only `remarkPlugins` remains as Phase 40+ deferral. **"Framework + 2 consumers" 3-phase cluster** complete (Phase 37 framework + Phase 38 first consumer + Phase 39 second consumer = first such 3-phase architectural cluster in project history).
+- **No source files modified**: tables-consumer wiring shipped Units 39.1 + 39.2; this unit is hygiene-only.
+- **No OPEN_QUESTIONS.md edits**: no Q-status change to document; no new ambiguities to surface.
+- **No ADR edits**: ADR-0018 D-G already extended Unit 39.1 with the Phase-39 APPEND.
+- **No new tests**: 805/69 UNCHANGED.
+- **No client-bundle delta**: First Load JS shared chunk UNCHANGED at 103 kB (**63rd consecutive 103 kB unit**).
+- **Parallel-curator awareness**: docs-only commit; no collision. Working tree at HEAD `e1d2e98` clean at unit start.
+- Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings UNCHANGED (Q32 baseline since Phase 2; unchanged through every Phase 3-39 unit); typecheck / test / build untouched.
+- THINK artifact: `docs/thinking/39.3-phase-39-hygiene.md`.
+
 #### Unit 39.2 — Factory dispatch arm `MARKDOWN_EXTENSIONS=tables` in `getExtensionRegistry()` + 3 env-var-aware tests + 8 end-to-end reviewNotes tables rendering tests (805/69; 62nd consecutive 103 kB unit; second non-default Phase-37-framework dispatch arm; first multi-non-default-arm env-var under the framework)
 
 - Third Phase-39 unit; wires the Unit-39.1 `TablesExtensionRegistry` into `getExtensionRegistry()` as the **second non-default env-var dispatch arm** under the Phase-37 framework. `MARKDOWN_EXTENSIONS=tables` joins `MARKDOWN_EXTENSIONS=wikilinks`; both alternatives to the default. **First multi-non-default-arm env-var** in the framework dispatch.
