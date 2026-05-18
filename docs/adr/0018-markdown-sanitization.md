@@ -842,6 +842,104 @@ scope cap):
   cross-entity expansion would parameterize via plugin options
   (`{ buildHref: (slug) => string }`).
 
+**EXTENDED Phase 39 Unit 39.1** — second concrete Phase-37-
+framework consumer: **GFM tables on `reviewNotes` surface**
+via the framework's `schemaOverrides` slot + new
+`lib/markdown/extensions/tables.ts` module (~70 lines + ~11
+tests covering allow-list content + override-replace contract
++ registry class). Validates the **framework slot Phase 38
+did NOT exercise** — Phase 38 wikilinks consumer used only
+`rehypePlugins`; after Phase 39 the framework has 2 real
+consumers exercising 2 of 3 slots; only `remarkPlugins`
+remains as Phase-40+ deferral. **First "framework + 2
+consumers" 3-phase cluster in project history** (Phase 37
+framework + Phase 38 wikilinks + Phase 39 tables).
+
+**APPEND-D-M tables consumer shape** —
+`TablesExtensionRegistry` takes `ReadonlySet<MarkdownSurface>`
+constructor arg; `getExtensions(surface)` returns
+`{ schemaOverrides: GFM_TABLE_SCHEMA_OVERRIDES }` for
+enabled surfaces, `{}` otherwise. Phase-39 default =
+`PHASE_39_DEFAULT_ENABLED_SURFACES = new Set(["reviewNotes"])`
+— the 4000-char curator review notes field (Phase-12
+ADR-0014) is the natural surface for tabular COI
+comparisons / multi-criterion scoring / structured editorial
+reasoning. **`remark-gfm` already parses tables** (Phase-17
+pipeline); they were STRIPPED at sanitize because `<table>`
+was not in the Phase-17 base allow-list. Phase 39 adds the
+tags through `schemaOverrides` — **no new runtime dep, no
+new remark plugin, no plugin-order concerns**.
+
+**APPEND-D-N first real-consumer exercise of APPEND-D-C
+override-replace semantics** — `GFM_TABLE_SCHEMA_OVERRIDES`
+supplies the FULL Phase-17 base `tagNames` allow-list
+verbatim PLUS 6 new table tags (`<table>`, `<thead>`,
+`<tbody>`, `<tr>`, `<th>`, `<td>`); same shape for
+`attributes` (full base verbatim PLUS new `th` / `td`
+entries). **First real-consumer exercise** of the framework's
+documented "callers supply complete replacement; no deep-
+merge" contract. Phase 37 + 38 only tested override-replace
+with synthetic test extensions (Unit 37.2's reviewNotes
+`tagNames: ["p", "strong"]` test); Phase 39 makes it a
+production contract realization. **Divergence-detector test
+pattern**: `tables.test.ts` asserts that every entry in
+`bioSchema.tagNames` appears in `GFM_TABLE_SCHEMA_OVERRIDES.tagNames`,
+so a future ADR-0018 D-B base allow-list expansion that
+omits this override surfaces as a test failure.
+
+**APPEND-D-O XSS-audit boundary for tables** — 6 table tags
+added are well-understood HTML semantic structure with no
+XSS-vector-by-name concerns. `align` attribute on
+`<th>` / `<td>` is **value-restricted to `"left" | "center" |
+"right"`** via the `[attrName, ...allowedValues]` tuple form;
+any other `align` value (including injected JavaScript) is
+stripped by `rehype-sanitize`. No `<style>` / `<script>` /
+`onclick` / `class` attributes added; the sanitization audit
+boundary remains the same surface size for tables as for the
+Phase-17 base.
+
+**APPEND-D-P factory dispatch arm** = `MARKDOWN_EXTENSIONS=tables`
+joins `MARKDOWN_EXTENSIONS=wikilinks` as the second non-
+default dispatch arm in `getExtensionRegistry()` (Unit 39.2).
+**Mutually exclusive Phase 39** — operator picks ONE
+extension OR the default; multi-value composition
+`MARKDOWN_EXTENSIONS=wikilinks,tables` deferred to Phase 40+
+per Phase-38-prep D-11 deferral. Would require a
+`CompositeExtensionRegistry` that merges per-surface
+extension sets from multiple component registries; premature
+absent operational need for both extensions simultaneously.
+
+**APPEND-D-Q Phase 40+ deferrals** (Phase-39 tables-consumer
+scope cap):
+
+- **Multi-value `MARKDOWN_EXTENSIONS=wikilinks,tables` env-var
+  composition** — first composition demand emerges when both
+  consumers' surfaces are needed simultaneously; Phase 40+
+  if signal.
+- **Cross-surface table expansion** — bio + rationale +
+  actionRationale could enable tables; demand-signal-first;
+  constructor-arg change with zero plugin or registry
+  rework.
+- **Table-specific attributes** — `colspan` / `rowspan` /
+  `scope` on `<th>` / `<td>` for accessibility +
+  multi-cell tables; Phase 40+ if demand. Each needs XSS
+  audit (numeric-only restriction for span; literal-only
+  restriction for scope).
+- **`<caption>` element** — GFM doesn't have caption syntax;
+  Phase 40+ if non-GFM extension surfaces.
+- **`remarkPlugins` slot consumer** (the third framework
+  slot) — Phase 38 used `rehypePlugins`; Phase 39 used
+  `schemaOverrides`; Phase 40+ candidate consumer for
+  `remarkPlugins` would complete the 3-of-3 slot
+  demonstration. Candidates: `@mention` resolution
+  (needs new plugin authoring) OR custom remark transform
+  for some markdown extension not covered by `remark-gfm`.
+- **Surface-specific table schemas** — different surfaces
+  could enable different table feature sets (e.g.,
+  `reviewNotes` allows `colspan`; `bio` does not). Phase
+  40+ if cross-surface tables emerge with different
+  requirements.
+
 ### D-H. Phase 18+ deferrals
 
 Phase 17 ships MINIMAL markdown surface. Deferred to Phase 18+:
