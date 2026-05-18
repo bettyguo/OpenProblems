@@ -12,7 +12,7 @@ import {
 } from "./extensions";
 import { ArxivExtensionRegistry } from "./extensions/arxiv";
 import { CompositeExtensionRegistry } from "./extensions/composite";
-import { TablesExtensionRegistry } from "./extensions/tables";
+import { PHASE_39_DEFAULT_ENABLED_SURFACES, TablesExtensionRegistry } from "./extensions/tables";
 import {
   PHASE_38_DEFAULT_ENABLED_SURFACES,
   WikilinkExtensionRegistry,
@@ -1116,5 +1116,165 @@ describe("Phase-42 same-surface different-slot composition under default dispatc
     expect(html).not.toContain("javascript:");
     expect(html).toContain("<table>");
     expect(html).toContain('href="/problems/a-slug"');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-43 — end-to-end tables cross-surface expansion via the factory-
+// driven `PHASE_39_DEFAULT_ENABLED_SURFACES` constant (NOT manual constructor
+// args). Verifies that the Phase-43 default-enabled-surfaces expansion to
+// `Set(["bio", "reviewNotes", "rationale", "actionRationale"])` activates
+// GFM-table rendering on ALL 4 surfaces end-to-end through the full
+// `unified` pipeline. Mirrors the Phase-42 wikilinks end-to-end shape
+// verbatim.
+//
+// `schemaOverrides` is the slot tables uses — `bioSchema` (and the other
+// 3 base schemas) gets the GFM table tag set folded in for that surface.
+// First production state where bio + rationale + actionRationale render
+// tables via the framework (Phase 18/27/29 ship had table tags STRIPPED on
+// those surfaces).
+// ---------------------------------------------------------------------------
+
+describe("Phase-43 tables default — all 4 surfaces via PHASE_39_DEFAULT_ENABLED_SURFACES", () => {
+  beforeEach(() => {
+    __setRegistryForTests(new TablesExtensionRegistry(PHASE_39_DEFAULT_ENABLED_SURFACES));
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it("tables render on bio under Phase-43 default (newly-enabled surface; first schemaOverrides-on-bio)", () => {
+    const html = renderBioMarkdown("| Col |\n|---|\n| cell |") ?? "";
+    expect(html).toContain("<table>");
+    expect(html).toContain("<th>Col</th>");
+    expect(html).toContain("<td>cell</td>");
+  });
+
+  it("tables render on reviewNotes under Phase-43 default (Phase-39 baseline)", () => {
+    const html = renderReviewNotesMarkdown("| A | B |\n|---|---|\n| 1 | 2 |") ?? "";
+    expect(html).toContain("<table>");
+    expect(html).toContain("<th>A</th>");
+    expect(html).toContain("<td>1</td>");
+  });
+
+  it("tables render on rationale under Phase-43 default (newly-enabled surface)", () => {
+    const html = renderRationaleMarkdown("| Criterion |\n|---|\n| n/a |");
+    expect(html).toContain("<table>");
+    expect(html).toContain("<th>Criterion</th>");
+  });
+
+  it("tables render on actionRationale under Phase-43 default (newly-enabled surface)", () => {
+    const html = renderActionRationaleMarkdown("| Dim |\n|---|\n| score |");
+    expect(html).toContain("<table>");
+    expect(html).toContain("<th>Dim</th>");
+  });
+
+  it("PHASE_39_DEFAULT_ENABLED_SURFACES contains all 4 surfaces Phase 43", () => {
+    expect(PHASE_39_DEFAULT_ENABLED_SURFACES.size).toBe(4);
+    expect(PHASE_39_DEFAULT_ENABLED_SURFACES.has("bio")).toBe(true);
+    expect(PHASE_39_DEFAULT_ENABLED_SURFACES.has("reviewNotes")).toBe(true);
+    expect(PHASE_39_DEFAULT_ENABLED_SURFACES.has("rationale")).toBe(true);
+    expect(PHASE_39_DEFAULT_ENABLED_SURFACES.has("actionRationale")).toBe(true);
+  });
+
+  it("XSS defenses survive Phase-43 tables expansion on bio (javascript: stripped; tables render)", () => {
+    const md = "[bad](javascript:alert(1))\n\n| A |\n|---|\n| ok |";
+    const html = renderBioMarkdown(md) ?? "";
+    expect(html).not.toContain("javascript:");
+    expect(html).toContain("<table>");
+  });
+
+  it("GFM column alignment renders on bio under Phase-43 default", () => {
+    const md = "| L | C | R |\n|:--|:-:|--:|\n| a | b | c |";
+    const html = renderBioMarkdown(md) ?? "";
+    expect(html).toContain('align="left"');
+    expect(html).toContain('align="center"');
+    expect(html).toContain('align="right"');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-43 — end-to-end same-surface different-slot composition under
+// Phase-43 default constants for both wikilinks AND tables (both at all-4
+// surfaces). Verifies that wikilinks + tables coexist on every surface
+// (wikilinks contributes `rehypePlugins`; tables contributes
+// `schemaOverrides`; distinct slots per APPEND-D-R conflict-free rules)
+// AND with arxiv on rationale produces the **first "all 3 framework
+// slots on the same surface" case** end-to-end.
+// ---------------------------------------------------------------------------
+
+describe("Phase-43 same-surface different-slot composition — all 4 surfaces + 3-slots-on-rationale", () => {
+  beforeEach(() => {
+    // Use Phase-43 default constants for BOTH wikilinks AND tables
+    // (Phase-42 + Phase-43 expansions applied). arxiv remains rationale-
+    // only (Phase 41 default; Phase 44+ candidate for analogous expansion).
+    const wikilinks = new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES);
+    const tables = new TablesExtensionRegistry(PHASE_39_DEFAULT_ENABLED_SURFACES);
+    const arxiv = new ArxivExtensionRegistry(new Set(["rationale"]));
+    __setRegistryForTests(new CompositeExtensionRegistry([wikilinks, tables, arxiv]));
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it("bio: wikilinks resolve AND tables render under Phase-43 3-way default (same-surface different-slot)", () => {
+    const md = "see [[scalable-oversight]] then:\n\n| A | B |\n|---|---|\n| 1 | 2 |";
+    const html = renderBioMarkdown(md) ?? "";
+    expect(html).toContain('href="/problems/scalable-oversight"');
+    expect(html).toContain("<table>");
+    expect(html).toContain("<th>A</th>");
+  });
+
+  it("reviewNotes: wikilinks resolve AND tables render under Phase-43 3-way default", () => {
+    const md = "compare with [[hallucination-reduction]]:\n\n| A |\n|---|\n| 1 |";
+    const html = renderReviewNotesMarkdown(md) ?? "";
+    expect(html).toContain('href="/problems/hallucination-reduction"');
+    expect(html).toContain("<table>");
+  });
+
+  it("rationale: ALL 3 SLOTS active (wikilinks + tables + arxiv) — first 3-slots-on-same-surface case", () => {
+    // First "all 3 framework slots on same surface" case in project
+    // history. wikilinks via rehypePlugins; tables via schemaOverrides;
+    // arxiv via remarkPlugins. All conflict-free per APPEND-D-R because
+    // each surface has at most one component per slot.
+    const md = "see [[scalable-oversight]] and arxiv:1909.03004:\n\n| Criterion |\n|---|\n| ok |";
+    const html = renderRationaleMarkdown(md);
+    expect(html).toContain('href="/problems/scalable-oversight"');
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+    expect(html).toContain("<table>");
+    expect(html).toContain("<th>Criterion</th>");
+  });
+
+  it("actionRationale: wikilinks resolve AND tables render under Phase-43 3-way default", () => {
+    const md = "see [[hallucination-reduction]]:\n\n| Dim |\n|---|\n| score |";
+    const html = renderActionRationaleMarkdown(md);
+    expect(html).toContain('href="/problems/hallucination-reduction"');
+    expect(html).toContain("<table>");
+  });
+
+  it("arxiv does NOT resolve outside rationale under Phase-43 3-way (scope respected)", () => {
+    expect(renderBioMarkdown("see arxiv:1909.03004 here")).toBe("<p>see arxiv:1909.03004 here</p>");
+    expect(renderReviewNotesMarkdown("see arxiv:1909.03004 here")).toBe(
+      "<p>see arxiv:1909.03004 here</p>",
+    );
+    expect(renderActionRationaleMarkdown("see arxiv:1909.03004 here")).toBe(
+      "<p>see arxiv:1909.03004 here</p>",
+    );
+  });
+
+  it("XSS defenses survive 3-way same-surface composition on rationale (all 3 slots active)", () => {
+    const md =
+      "[bad](javascript:alert(1)) and [[a-slug]] and arxiv:1909.03004:\n\n| C |\n|---|\n| ok |";
+    const html = renderRationaleMarkdown(md);
+    expect(html).not.toContain("javascript:alert");
+    expect(html).toContain('href="/problems/a-slug"');
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+    expect(html).toContain("<table>");
   });
 });
