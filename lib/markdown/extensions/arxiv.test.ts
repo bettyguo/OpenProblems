@@ -121,6 +121,93 @@ describe("remarkLinkArxivIds — plugin behavior", () => {
     expect(html).toContain('href="https://arxiv.org/abs/2024.12345v1"');
     expect(html).toContain('href="https://arxiv.org/abs/2305.10160"');
   });
+
+  // ---------------------------------------------------------------
+  // Phase-47 alias syntax `[[arxiv:NNNN.NNNNN|display]]` (Unit 47.1).
+  // Backwards-compatible with Phase-41 bare `arxiv:NNNN.NNNNN`; the
+  // bracketed form is the priority alternative in a dual-form regex
+  // with the bare form as fallback. Closes ADR-0018 APPEND-D-Y item
+  // 5 at 6-phase carryover (Phase 41 → 47). Mirrors Phase-46
+  // wikilinks alias regex-extension verbatim on the arxiv plugin.
+  // First dual-form regex in the framework.
+  // ---------------------------------------------------------------
+
+  it("Phase-47: resolves [[arxiv:NNNN.NNNNN|display]] to <a href=...>display</a>", () => {
+    expect(runArxivPipeline("[[arxiv:1909.03004|Smith et al. 2024]]")).toBe(
+      '<p><a href="https://arxiv.org/abs/1909.03004">Smith et al. 2024</a></p>',
+    );
+  });
+
+  it("Phase-47: bracketed without alias renders the arxiv ref verbatim (brackets stripped)", () => {
+    expect(runArxivPipeline("[[arxiv:1909.03004]]")).toBe(
+      '<p><a href="https://arxiv.org/abs/1909.03004">arxiv:1909.03004</a></p>',
+    );
+  });
+
+  it("Phase-47: bracketed with version + alias preserves both", () => {
+    expect(runArxivPipeline("[[arxiv:1909.03004v3|original release]]")).toBe(
+      '<p><a href="https://arxiv.org/abs/1909.03004v3">original release</a></p>',
+    );
+  });
+
+  it("Phase-47: backwards-compat — bare arxiv:NNNN.NNNNN still works (Phase-41 baseline)", () => {
+    expect(runArxivPipeline("arxiv:1909.03004")).toBe(
+      '<p><a href="https://arxiv.org/abs/1909.03004">arxiv:1909.03004</a></p>',
+    );
+  });
+
+  it("Phase-47: aliased + bare arxiv coexist in same paragraph", () => {
+    const html = runArxivPipeline("compare [[arxiv:1909.03004|first paper]] with arxiv:2024.01234");
+    expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">first paper</a>');
+    expect(html).toContain('<a href="https://arxiv.org/abs/2024.01234">arxiv:2024.01234</a>');
+  });
+
+  it("Phase-47: empty alias [[arxiv:NNNN.NNNNN|]] falls through as literal (display class +)", () => {
+    // The alias display class is `+` (one-or-more) mirroring Phase-46.
+    // Empty alias does not satisfy; the bracketed alternative fails;
+    // the bare alternative matches the inner `arxiv:NNNN.NNNNN`,
+    // leaving the brackets + pipe as literal context.
+    expect(runArxivPipeline("[[arxiv:1909.03004|]]")).toBe(
+      '<p>[[<a href="https://arxiv.org/abs/1909.03004">arxiv:1909.03004</a>|]]</p>',
+    );
+  });
+
+  it("Phase-47: alias display HTML-escapes via remark-rehype text-node rendering (XSS safety)", () => {
+    const html = runArxivPipeline("[[arxiv:1909.03004|x & y]]");
+    expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">x &#x26; y</a>');
+  });
+
+  it("Phase-47: case-insensitive prefix in bracketed form; alias preserves source casing", () => {
+    expect(runArxivPipeline("[[ARXIV:2024.12345|Display]]")).toBe(
+      '<p><a href="https://arxiv.org/abs/2024.12345">Display</a></p>',
+    );
+  });
+
+  it("Phase-47: bracketed-without-alias preserves source casing of arxiv ref", () => {
+    expect(runArxivPipeline("[[ArXiv:2024.12345]]")).toBe(
+      '<p><a href="https://arxiv.org/abs/2024.12345">ArXiv:2024.12345</a></p>',
+    );
+  });
+
+  it("Phase-47: multiple aliased arxiv refs in same paragraph", () => {
+    const html = runArxivPipeline(
+      "see [[arxiv:1909.03004|first]] and [[arxiv:2024.12345|second]] for context",
+    );
+    expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">first</a>');
+    expect(html).toContain('<a href="https://arxiv.org/abs/2024.12345">second</a>');
+  });
+
+  it("Phase-47: aliased arxiv inside bold renders <strong><a>display</a></strong>", () => {
+    expect(runArxivPipeline("**[[arxiv:1909.03004|critical work]]**")).toBe(
+      '<p><strong><a href="https://arxiv.org/abs/1909.03004">critical work</a></strong></p>',
+    );
+  });
+
+  it("Phase-47: aliased arxiv with multi-word display preserves spaces", () => {
+    expect(runArxivPipeline("[[arxiv:1909.03004|Smith, Jones, and Bell 2024]]")).toBe(
+      '<p><a href="https://arxiv.org/abs/1909.03004">Smith, Jones, and Bell 2024</a></p>',
+    );
+  });
 });
 
 describe("ArxivExtensionRegistry — class behavior", () => {

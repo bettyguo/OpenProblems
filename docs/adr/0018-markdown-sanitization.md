@@ -1844,6 +1844,187 @@ continues to work; wikilinks plugin handles `[[slug]]` +
 - **2nd `schemaOverrides` consumer** beyond tables — Phase
   47+.
 
+**EXTENDED Phase 47 Unit 47.1** — **second realization of the
+Phase-46 plugin-regex-extension phase-shape pattern**: arxiv
+alias syntax `[[arxiv:NNNN.NNNNN|display]]` via in-place regex
+extension on `remarkLinkArxivIds` in `ArxivExtensionRegistry`.
+**First plugin-regex-extension on a `remarkPlugins` consumer
+in project history** (Phase 46 extended a `rehypePlugins`
+consumer). **First dual-form regex** in the framework —
+alternation between bracketed form (priority) and bare form
+(fallback) coexist in a single regex with two alternatives.
+
+**Closes APPEND-D-Y item 5** ("arXiv ID display-text alias
+syntax (e.g., `[[arxiv:NNNN.NNNNN|Smith et al. 2024]]`):
+GitHub-wiki-flavor alias syntax. No current content evidence;
+Phase 42+.") at **6-phase carryover** (Phase 41 → Phase 47).
+Faster than the 8-phase Phase-46 wikilinks-alias closure
+because the Phase-46 precedent reduced the architectural risk
+of alias-syntax extensions; the `remarkPlugins` analog became
+tractable at the next phase boundary.
+
+**Sixth prep-/APPEND-doc-level deferral closed by a later
+phase**: Phase 42 → 38 D-L item 1; Phase 43 → 39 D-Q item 2;
+Phase 44 → 41 D-Y item 1; Phase 45 → 41 D-Y item 4; Phase 46
+→ 38 D-L item 2; Phase 47 → 41 D-Y item 5. **APPEND-deferral
+closure cadence sustained 6 phases**. **Third non-cross-
+surface-expansion APPEND-deferral closure** in the cadence
+(Phase 45 was first with new-consumer; Phase 46 was second
+with regex-extension on `rehypePlugins`; Phase 47 is third
+with regex-extension on `remarkPlugins`).
+
+**Fourteenth APPEND on ADR-0018 D-G** — extends the **first-
+ADR-D-clause-with-most-APPENDs record** from 13 → 14
+(Phase 18 + 27 + 29 + 37 + 38 + 39 + 40 + 41 + 42 + 43 + 44 +
+45 + 46 + **47**).
+
+**Fifth two-letter APPEND letter D-AE** (after Phase-43 D-AA
++ Phase-44 D-AB + Phase-45 D-AC + Phase-46 D-AD). Excel-
+spreadsheet column convention sustained — D-AF + D-AG + ... +
+D-AZ would carry Phase 48+ at this cadence.
+
+**APPEND-D-AE arxiv alias regex shape**:
+
+```ts
+// Before (Phase 41 ship through Phase-46 close):
+const ARXIV_PATTERN = /\barxiv:(\d{4}\.\d{4,5})(v\d+)?\b/gi;
+
+// After (Phase 47 ship):
+const ARXIV_PATTERN =
+  /\[\[arxiv:(\d{4}\.\d{4,5})(v\d+)?(?:\|([^\]\n]+))?\]\]|\barxiv:(\d{4}\.\d{4,5})(v\d+)?\b/gi;
+```
+
+**First dual-form regex in the framework**. Alternation
+between bracketed (priority) and bare (fallback). Engine tries
+the bracketed alternative first at each position; if it fails,
+tries the bare alternative.
+
+- **Bracketed form** `\[\[arxiv:(...)(...)?(?:\|([^\]\n]+))?\]\]`:
+  - Group 1 = arxiv ID (`\d{4}\.\d{4,5}`; Phase-41 baseline
+    preserved).
+  - Group 2 = optional version (`v\d+`; Phase-41 baseline
+    preserved).
+  - Group 3 = optional display text (`[^\]\n]+`; mirrors
+    Phase-46 wikilinks alias display class).
+- **Bare form** `\barxiv:(...)(...)?\b`:
+  - Group 4 = arxiv ID (Phase-41 baseline preserved
+    verbatim).
+  - Group 5 = optional version (Phase-41 baseline preserved
+    verbatim).
+  - No alias support in bare form (alias requires bracket-
+    wrapping per APPEND-D-Y item 5 deferral text and
+    Phase-47 D-3 prep-doc decision).
+
+**Plugin body branches on `isBracketed = match[0].startsWith("[[")`**.
+Three display rules:
+
+1. `alias` defined → `display = alias` (bracketed form with
+   `|display`).
+2. `isBracketed` AND `alias` undefined → `display = match[0].slice(2, -2)`
+   (bracketed form without alias; drop `[[` + `]]` while
+   preserving source casing).
+3. Else (bare form) → `display = match[0]` (Phase-41 baseline:
+   verbatim source casing).
+
+**Why bracket-wrapping** (vs the Phase-46 wikilinks pattern
+of native-bracket-with-optional-alias): the wikilinks plugin
+already had `[[ ]]` brackets as part of its baseline syntax;
+adding `|display` is a within-existing-syntax-extension. The
+arxiv plugin's Phase-41 baseline is the bare `arxiv:NNNN.NNNNN`
+form with NO brackets — `|display` would have an ambiguous
+terminator in prose context (no `]]` to mark the end). The
+bracket-wrapping introduces explicit delimiters for the alias
+form while preserving the bare form via dual-form alternation.
+
+**No collision with wikilinks plugin**: wikilinks regex's slug
+class `[a-z0-9-]+` excludes `:` and `.` — both present in
+the arxiv ID inside `[[arxiv:NNNN.NNNNN]]`. The wikilinks
+plugin's regex would NOT match `[[arxiv:1909.03004]]` or
+`[[arxiv:1909.03004|display]]`. No regex-ambiguity. Additionally,
+the staged execution order resolves any hypothetical collision
+in favor of arxiv: `remarkPlugins` runs BEFORE `rehypePlugins`,
+so the bracket-wrapped arxiv form is replaced with a `<a>`
+link element BEFORE wikilinks gets a chance to see the text.
+
+**Empty alias `[[arxiv:NNNN.NNNNN|]]` behavior**: mirrors
+Phase-46 (display class `+` quantifier; empty alias does not
+satisfy). When the bracketed alternative fails, the engine
+backtracks and tries the bare alternative — which can match
+the inner `arxiv:NNNN.NNNNN` portion, leaving the brackets +
+pipe as literal context. Result: `[[<a>arxiv:1909.03004</a>|]]`.
+Documented behavior; Phase 48+ refinement candidate.
+
+**XSS audit Phase 47**: display text becomes mdast `text` node
+`value` inside an mdast `link` node, then transits through
+`remark-rehype` to a hast `<a>` element with text-node children.
+The text-node value is HTML-escaped by `rehype-stringify` per
+HTML5 spec (`&` → `&#x26;`; `<` → `&#x3C;`; `>` → `&#x3E;`).
+Test "Phase-47: alias display HTML-escapes via remark-rehype
+text-node rendering (XSS safety)" asserts `[[arxiv:1909.03004|x & y]]`
+emits `<a href="...">x &#x26; y</a>`. Display is purely
+cosmetic text-content; cannot escape its text-node context.
+**No new XSS surface** introduced beyond Phase-17 sanitize-
+line-of-defense.
+
+**No env-var change Phase 47**: alias is plugin-internal regex
+evolution. `MARKDOWN_EXTENSIONS=arxiv` (Phase-44 default-all-
+4) automatically picks up bracketed alias syntax. Composition
+matrix unchanged (`wikilinks,tables,arxiv,doi` 4-way Phase-45
+default continues to work; arxiv plugin handles bare +
+bracketed forms; other consumers unchanged).
+
+**Phase 48+ deferrals** (Phase-47 arxiv-alias scope cap):
+
+- **Alias syntax in doi consumer** `[[doi:10.NNNN/xxx|display]]`
+  (new Phase-46 deferral carries) — Phase 48+ candidate; mirrors
+  Phase-47 arxiv alias verbatim on the doi plugin via dual-form
+  regex. **Most-natural Phase-48 candidate** at rank 1 if cadence
+  preserved.
+- **Older-style category-prefixed arxiv IDs** (APPEND-D-Y item
+  2 carries) — Phase 48+.
+- **Bare arxiv IDs without `arxiv:` prefix** (APPEND-D-Y item
+  3 carries) — Phase 48+.
+- **Bare DOIs without `doi:` prefix** (new Phase-45 deferral
+  carries) — Phase 48+.
+- **dx.doi.org legacy host parsing** (new Phase-45 deferral
+  carries) — Phase 48+.
+- **Stricter trailing-lookahead for legitimate trailing-period
+  DOIs** (new Phase-45 deferral carries) — Phase 48+.
+- **Paper-card hover-preview** (APPEND-D-Y item 6 carries) —
+  Phase 48+.
+- **Cross-entity wikilinks** (APPEND-D-L item 3 carries) —
+  Phase 48+.
+- **`<a class="wikilink">` styling** (APPEND-D-L item 4 carries)
+  — Phase 48+.
+- **404 handling for unresolved wikilinks** (APPEND-D-L item 5
+  carries) — Phase 48+.
+- **Plugin parameterization for wikilink-href-builder** (APPEND-
+  D-L item 6 carries) — Phase 48+.
+- **Auto-trim of alias display whitespace** (new Phase-46
+  deferral carries) — Phase 48+.
+- **Empty-alias-as-slug-fallback** (new Phase-46 deferral
+  carries) — Phase 48+.
+- **Empty-alias-as-bare-arxiv-fallback** for
+  `[[arxiv:NNNN.NNNNN|]]` — new Phase-47 deferral; Phase 48+
+  refinement candidate (mirrors Phase-46 wikilinks empty-alias
+  question).
+- **Table-specific attributes** (APPEND-D-Q item 3 carries) —
+  Phase 48+.
+- **`<caption>` element** (APPEND-D-Q item 4 carries) — Phase
+  48+.
+- **Surface-specific table schemas** (APPEND-D-Q item 6 carries)
+  — Phase 48+.
+- **DOI cross-surface expansion** (new Phase-45 APPEND-D-AC
+  deferral carries) — Phase ~49 at 4-phase-gap cadence.
+- **PubMed PMID sibling consumer** (new Phase-45 deferral
+  carries) — Phase 48+.
+- **3rd-or-later `remarkPlugins` consumer beyond arxiv + doi**
+  — Phase 48+.
+- **2nd `rehypePlugins` consumer beyond wikilinks** — Phase
+  48+.
+- **2nd `schemaOverrides` consumer beyond tables** — Phase
+  48+.
+
 ### D-H. Phase 18+ deferrals
 
 Phase 17 ships MINIMAL markdown surface. Deferred to Phase 18+:

@@ -2470,6 +2470,46 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 47 — Community-adjacent surfaces (**thirty-eighth NON-§13 phase**: arxiv alias syntax `[[arxiv:NNNN.NNNNN|display]]` via regex extension on existing `remarkLinkArxivIds` plugin in `ArxivExtensionRegistry`; **second realization of the Phase-46 plugin-regex-extension phase-shape pattern**; **first plugin-regex-extension on a `remarkPlugins` consumer** in project history; **first dual-form regex** in the framework (bracketed + bare alternation); closes ADR-0018 APPEND-D-Y item 5 deferral at 6-phase carryover; APPEND-D-AE fifth two-letter slot; anticipated 5 units; 42nd "Continue" override invoked)
 
+#### Unit 47.1 — `ARXIV_PATTERN` dual-form regex (bracketed + bare) + plugin body update + 12 NEW arxiv.test.ts alias tests + ADR-0018 D-G APPEND-D-AE (first plugin-regex-extension on a `remarkPlugins` consumer; first dual-form regex; 14th D-G APPEND extends record 13 → 14)
+
+- Second Phase-47 unit; code+APPEND.
+- **MODIFIED `lib/markdown/extensions/arxiv.ts`**: in-place regex extension on `ARXIV_PATTERN` + plugin body update.
+  - Regex evolved (**first dual-form regex in the framework**):
+    - Before: `/\barxiv:(\d{4}\.\d{4,5})(v\d+)?\b/gi`
+    - After: `/\[\[arxiv:(\d{4}\.\d{4,5})(v\d+)?(?:\|([^\]\n]+))?\]\]|\barxiv:(\d{4}\.\d{4,5})(v\d+)?\b/gi`
+  - Alternation between bracketed form (priority) and bare form (fallback). Engine tries the bracketed alternative first at each position. Bracket-wrapping disambiguates the display terminator that would otherwise be ambiguous in `remarkPlugins` prose context (unlike Phase-46 wikilinks where `]]` is the natural terminator, arxiv's bare form has no natural terminator for a `|display` clause).
+  - Plugin body branches on `isBracketed = match[0].startsWith("[[")`. Three display rules: (1) `alias` defined → `display = alias`; (2) `isBracketed` AND `alias` undefined → `display = match[0].slice(2, -2)` (drop brackets while preserving source casing); (3) bare form → `display = match[0]` verbatim (Phase-41 baseline).
+  - Backwards-compatible: every existing bare `arxiv:NNNN.NNNNN` match preserved via the second alternation arm with `id = match[4]`, `version = match[5]`.
+  - JSDoc updated with Phase-47 EXTENDED block documenting alias syntax + first dual-form regex + bracket-wrapping rationale + collision-freedom audit with wikilinks plugin.
+- **MODIFIED `lib/markdown/extensions/arxiv.test.ts`**: +**12 NEW alias tests** appended to the existing `describe("remarkLinkArxivIds — plugin behavior", ...)` block:
+  - `[[arxiv:NNNN.NNNNN|display]]` resolves to `<a href="...">display</a>`.
+  - Bracketed without alias renders verbatim (brackets stripped): `[[arxiv:1909.03004]]` → `<a>arxiv:1909.03004</a>`.
+  - Bracketed with version + alias preserves both.
+  - Backwards-compat: bare `arxiv:NNNN.NNNNN` still works (Phase-41 baseline).
+  - Aliased + bare arxiv coexist in same paragraph.
+  - Empty alias `[[arxiv:NNNN.NNNNN|]]` falls through (bracketed alternative fails; bare alternative matches inner ref). Documented behavior.
+  - Alias display HTML-escapes via text-node rendering: `[[arxiv:1909.03004|x & y]]` emits `&#x26;`.
+  - Case-insensitive prefix in bracketed form; alias preserves source casing.
+  - Bracketed-without-alias preserves source casing of arxiv ref: `[[ArXiv:2024.12345]]` → `<a>ArXiv:2024.12345</a>`.
+  - Multiple aliased arxiv refs in same paragraph.
+  - Aliased arxiv inside bold: `**[[arxiv:...|x]]**` → `<strong><a>x</a></strong>`.
+  - Aliased arxiv with multi-word display preserves spaces and punctuation.
+- **MODIFIED `docs/adr/0018-markdown-sanitization.md`**: **APPEND-D-AE** added (fifth two-letter slot after Phase-43 D-AA + Phase-44 D-AB + Phase-45 D-AC + Phase-46 D-AD; **14th APPEND on D-G** extending the first-ADR-D-clause-with-most-APPENDs record 13 → 14). New block documents: (1) second realization of Phase-46 plugin-regex-extension phase-shape pattern; (2) first plugin-regex-extension on a `remarkPlugins` consumer; (3) first dual-form regex in the framework; (4) closure of APPEND-D-Y item 5 deferral at 6-phase carryover; (5) sixth APPEND-deferral closure (cadence sustained 6 phases); (6) third non-cross-surface-expansion APPEND-deferral closure; (7) regex evolution before/after with alternation explanation; (8) plugin body display rules (3 cases); (9) bracket-wrapping rationale; (10) collision-freedom audit with wikilinks; (11) empty alias + XSS audit explicit; (12) no env-var change; (13) Phase 48+ deferrals.
+- **Architectural firsts**:
+  - **Second realization of the Phase-46 plugin-regex-extension phase-shape pattern**. Phase 46 was first realization (wikilinks alias on `rehypePlugins`); Phase 47 is second (arxiv alias on `remarkPlugins`). Pattern's slot-independence validated.
+  - **First plugin-regex-extension on a `remarkPlugins` consumer in project history**.
+  - **First dual-form regex in the framework**. Alternation between bracketed form (priority) and bare form (fallback) — preserves Phase-41 baseline while adding bracketed alias capability.
+  - **First "alias-syntax on a non-bracketed-base consumer"** — wikilinks Phase 46 used `[[ ]]` natively; arxiv Phase 47 ADDS brackets as an alias form on top of the Phase-41 bare form.
+  - **Collision-freedom-via-stage-AND-regex-disjointness** discipline established: distinct pipeline stages (`remarkPlugins` before `rehypePlugins`) + distinct regex character classes (arxiv `\d{4}\.\d{4,5}` vs wikilinks `[a-z0-9-]+`) jointly guarantee no cross-consumer interference.
+  - **14th APPEND on ADR-0018 D-G**: extends project record 13 → 14.
+  - **Fifth two-letter APPEND letter D-AE**: Excel-spreadsheet column convention sustained.
+- **Smoke gates**:
+  - `pnpm validate-content` → 203 files unchanged.
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **1024 / 72 files** (+12 / 0 vs Unit 47.0: 12 NEW `arxiv.test.ts` alias tests).
+  - `pnpm audit-content` → 0 errors / 6 warnings UNCHANGED (Q32 baseline).
+  - First Load JS = 103 kB UNCHANGED (server-only plugin extension; zero client-bundle delta); Middleware = 160 kB UNCHANGED.
+
 #### Unit 47.0 — Phase 47 prep (arxiv alias syntax `[[arxiv:NNNN.NNNNN|display]]`; second realization of Phase-46 plugin-regex-extension phase-shape; D-1 D-AE; anticipated 5 units; 42nd "Continue" override invoked)
 
 - First Phase-47 unit; docs-only. Drafted `docs/thinking/47.0-phase-47-prep.md` (Phase-46 → 47 baseline at HEAD `429d188`; D-1 first-thread recommendation; D-3 arxiv alias regex shape — `ARXIV_PATTERN` evolves to **first dual-form regex** with alternation between bracketed `[[arxiv:NNNN.NNNNN|display]]` and bare `arxiv:NNNN.NNNNN`; plugin body branches on `isBracketed = match[0].startsWith("[[")`; Phase 48+ deferrals; provisional 5-unit breakdown; per-unit decisions D-8..D-13 lean-noted; alternative threads overridable into Unit 47.1; 12 anticipated architectural firsts).

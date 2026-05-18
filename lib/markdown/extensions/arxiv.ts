@@ -46,6 +46,22 @@ import type { MarkdownExtensionRegistry, MarkdownExtensionSet, MarkdownSurface }
  * URLs; demand-signal-first deferral to Phase 42+ per
  * ADR-0018 D-G APPEND Phase-42+ deferrals.
  *
+ * **Phase 47 alias-syntax extension** (since Unit 47.1; closes
+ * ADR-0018 APPEND-D-Y item 5 at 6-phase carryover): the regex
+ * gains a bracketed alternation `\[\[arxiv:NNNN.NNNNN[v\d+]?(?:\|display)?\]\]`
+ * matched BEFORE the bare form. **First dual-form regex in the
+ * framework** — bracketed form (priority) + bare form
+ * (fallback) coexist via alternation. The bracket-wrapping
+ * disambiguates the display terminator that would otherwise be
+ * ambiguous in a `remarkPlugins` prose context (unlike Phase-
+ * 46 wikilinks where `]]` is the natural terminator, arxiv's
+ * bare form has no natural terminator for a `|display`
+ * clause). Backwards-compatible: every existing bare
+ * `arxiv:NNNN.NNNNN` match preserved via the second
+ * alternation arm. No collision with wikilinks plugin
+ * (`[a-z0-9-]+` slug class excludes `:` and `.`); also distinct
+ * pipeline stage (`remarkPlugins` runs before `rehypePlugins`).
+ *
  * Plugin declaration style: idiomatic remark-plugin function
  * declaration (factory returning a transformer) rather than
  * `Plugin<[], Root>` type alias. The function-declaration shape
@@ -64,7 +80,8 @@ import type { MarkdownExtensionRegistry, MarkdownExtensionSet, MarkdownSurface }
  * invariant.
  */
 
-const ARXIV_PATTERN = /\barxiv:(\d{4}\.\d{4,5})(v\d+)?\b/gi;
+const ARXIV_PATTERN =
+  /\[\[arxiv:(\d{4}\.\d{4,5})(v\d+)?(?:\|([^\]\n]+))?\]\]|\barxiv:(\d{4}\.\d{4,5})(v\d+)?\b/gi;
 
 export function remarkLinkArxivIds() {
   return function transformer(tree: Root): undefined {
@@ -82,10 +99,27 @@ export function remarkLinkArxivIds() {
 
       while ((match = ARXIV_PATTERN.exec(text)) !== null) {
         const matchStart = match.index;
-        const display = match[0];
-        const id = match[1];
-        const version = match[2] ?? "";
+        const matched = match[0];
+        const isBracketed = matched.startsWith("[[");
+
+        const id = isBracketed ? match[1] : match[4];
+        const version = (isBracketed ? match[2] : match[5]) ?? "";
+        const alias = match[3]; // only defined for bracketed form
         if (id === undefined) continue;
+
+        let display: string;
+        if (alias !== undefined) {
+          display = alias;
+        } else if (isBracketed) {
+          // Bracketed without alias: drop brackets while preserving
+          // source casing (e.g., `[[ArXiv:1909.03004]]` →
+          // `<a>ArXiv:1909.03004</a>`).
+          display = matched.slice(2, -2);
+        } else {
+          // Bare form (Phase-41 baseline): display source casing
+          // verbatim (e.g., `ArXiv:2024.12345`).
+          display = matched;
+        }
 
         if (matchStart > cursor) {
           newNodes.push({ type: "text", value: text.slice(cursor, matchStart) });
@@ -97,7 +131,7 @@ export function remarkLinkArxivIds() {
           children: [{ type: "text", value: display }],
         });
 
-        cursor = matchStart + display.length;
+        cursor = matchStart + matched.length;
       }
 
       if (newNodes.length === 0) return;
