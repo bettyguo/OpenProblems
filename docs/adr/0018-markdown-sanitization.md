@@ -684,6 +684,124 @@ at 103 kB** end-to-end (53rd consecutive unit at 103 kB on
 Unit 37.1 ship). Mirrors the Phase-35 `lib/moderation/` zero-
 cost-default discipline.
 
+**EXTENDED Phase 38 Unit 38.1** — first concrete Phase-37-
+framework consumer: **wikilink resolution on `actionRationale`
+surface** via the framework's `rehypePlugins` slot + new
+`lib/markdown/extensions/wikilinks.ts` module (~120 lines
+including JSDoc + ~15 plugin-level + registry-level tests).
+Closes **Class B.14 at 9+ phase carryover** (Phase-29 D-G
+REALIZED block surfaced "rating-action rationale wikilink
+resolution" as Class B.14; carried unchanged through every
+Phase 30-37 acceptance-gate boundary; never promoted to top-
+level Q). **First concrete Phase-37-framework consumer in
+project history** — validates the framework's "zero-rework
+consumption" property documented in Phase-37 APPEND-D-G (the
+Phase-38 implementation needed zero edits to Phase-37
+framework files; only NEW files added + factory dispatch arm
+in Unit 38.2).
+
+**Demand signal at Phase-38 ship**: **16 `[[problem-slug]]`
+occurrences** across rating-action YAMLs (per `grep -rn '\[\['
+content/problems/`) — every concrete instance references a
+slug that exists in `content/problems/`. All currently render
+as literal text per Phase-29 markdown promotion. The framework-
+consumption ships per-surface activation: `actionRationale`
+ONLY at Phase-38 default; the other three markdown surfaces
+(`bio` + `reviewNotes` + `rationale`) continue to receive the
+empty extension set per `WikilinkExtensionRegistry`'s
+`getExtensions` default-deny.
+
+**APPEND-D-H wikilink plugin shape** —
+`rehypeResolveWikilinks` rehype plugin walks the post-sanitize
+HAST tree, finds text-node substrings matching kebab-case
+`[[slug]]` pattern via `WIKILINK_PATTERN = /\[\[([a-z0-9-]+)\]\]/g`,
+and splice-replaces each match with an `<a
+href="/problems/{slug}">{slug}</a>` element node. **Folds
+AFTER `rehype-sanitize` + `rehypeStripUnsafeHrefs` per Phase-37
+framework's APPEND-D-D plugin-order-after-default discipline**
+— the relative `/problems/{slug}` href bypasses the strip step
+because the wikilink plugin adds the link AFTER that step
+runs. This is the **first framework-emitted relative URLs in
+markdown output** in project history; documents the framework's
+"extensions fold after default plugins" design value for
+relative-URL-emitting extensions specifically.
+
+**APPEND-D-I XSS-safety boundary** — the wikilink plugin
+emits `<a>` elements + `href` attributes that have NOT been
+validated by `rehype-sanitize` (`rehype-sanitize` ran BEFORE
+the wikilink plugin in the pipeline). The security contract
+relies on the plugin's regex `[a-z0-9-]+`:
+
+- Slug pattern is restrictive: kebab-case only; no special
+  chars; no path traversal; no scheme injection.
+- Href format is fixed: `/problems/${slug}` — no user-
+  controllable URL component beyond the validated slug.
+- Slug-as-text content is also safe (same restrictive
+  character set as href).
+
+**The regex IS the validation.** Anything not matching
+`[a-z0-9-]+` falls through as literal text. A curator-
+authored YAML rationale containing
+`[[javascript:alert(1)]]` would NOT match the wikilink
+pattern (special chars in the inner brackets); it renders as
+literal `[[javascript:alert(1)]]`. This is the documented
+contract for Phase-38 + Phase-39+ framework-consumer
+implementations: each post-sanitize extension MUST validate
+its own output OR emit only fixed-shape elements
+parameterized by regex-validated tokens.
+
+**APPEND-D-J URL-resolution convention** — Phase 38 ships
+**locale-less hrefs** (`/problems/{slug}`) per Path A lean
+from Phase-38-prep D-8. Next.js i18n middleware (ADR-0011)
+forwards `/problems/{slug}` → `/{locale}/problems/{slug}` at
+request time using the visitor's current-locale cookie. Phase
+39+ may adopt locale-aware hrefs if middleware-redirect
+overhead becomes a measurable concern (no evidence yet).
+
+**APPEND-D-K `WikilinkExtensionRegistry` per-surface
+activation** — class constructor takes
+`ReadonlySet<MarkdownSurface>`; `getExtensions(surface)`
+returns `{ rehypePlugins: [rehypeResolveWikilinks] }` for
+enabled surfaces, `{}` otherwise. Phase-38 default =
+`PHASE_38_DEFAULT_ENABLED_SURFACES = new Set(["actionRationale"])`.
+Future surface-list-as-env-var (e.g.,
+`MARKDOWN_EXTENSIONS_WIKILINKS_SURFACES=actionRationale,bio`)
+deferred to Phase 39+ if multi-surface demand surfaces — no
+content evidence currently outside actionRationale (zero
+`[[slug]]` occurrences in `users.bio` + `ratingChallenges.reviewNotes`
++ `ratingChallenges.rationale` DB-backed content as of
+Phase-38 ship).
+
+**APPEND-D-L Phase 39+ deferrals** (Phase-38 wikilink consumer
+scope cap):
+
+- **Cross-surface wikilink expansion** — bio + reviewNotes +
+  rationale wikilinks; demand-signal-first; constructor-arg
+  change with zero plugin or registry rework.
+- **Multi-anchor `[[slug|display-text]]` syntax** — GitHub-wiki-
+  flavor alias (e.g., `[[scalable-oversight|the oversight
+  problem]]`); zero content evidence.
+- **Cross-entity wikilinks** — `[[paper-id]]` → `/papers/{id}`;
+  `[[author-slug]]` → `/authors/{slug}`; `[[institution-slug]]`
+  → `/institutions/{slug}`. Requires entity-type
+  disambiguation in syntax (current `[a-z0-9-]+` matches all
+  three); Phase 39+ if cross-entity demand surfaces.
+- **`<a class="wikilink">` styling** — schemaOverride needed
+  to allow `class` attribute on `<a>`. Phase 39+ if visual-
+  styling demand surfaces.
+- **404 handling for unresolved slugs** — currently
+  `[[unknown-slug]]` generates `<a
+  href="/problems/unknown-slug">unknown-slug</a>` pointing at
+  a 404 (matches the existing markdown-link-to-nonexistent-URL
+  behavior; same failure mode as a regular markdown link to a
+  bad URL). Phase 39+ may add build-time validation against
+  `content/problems/` directory listing + render-time fallback
+  to literal text.
+- **Plugin parameterization** — `rehypeResolveWikilinks` is
+  hardcoded to `/problems/${slug}` path Phase 38; Phase 39+
+  cross-entity expansion would parameterize via plugin options
+  (`{ buildHref: (slug) => string }`).
+
 ### D-H. Phase 18+ deferrals
 
 Phase 17 ships MINIMAL markdown surface. Deferred to Phase 18+:
