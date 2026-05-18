@@ -2470,6 +2470,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 40 — Community-adjacent surfaces (**thirty-first NON-§13 phase**: multi-value `MARKDOWN_EXTENSIONS=wikilinks,tables` composition via new `CompositeExtensionRegistry` infrastructure; closes Phase-38-prep D-11 deferral + Phase-39 mutual-exclusivity wrinkle; enables wikilinks + tables to coexist; anticipated 4-5 units; 35th "Continue" override invoked)
 
+#### Unit 40.3 — Phase-40 hygiene + composition pattern reconciliation + Phase-38-prep D-11 closure documentation (Q-tally UNCHANGED at 66; Phase-37+ candidate count UNCHANGED at 8; 10-phase no-new-B-category streak EXTENDS to Phase 40; 67th consecutive 103 kB unit)
+
+- Fourth Phase-40 unit; docs-only hygiene. Mirrors Phase-39 hygiene shape (also no-source-edits; no specific Q/B-class closure of a top-level item).
+- **Phase-38-prep D-11 deferral CLOSED**: Phase-38-prep document committed Phase 38 said "single-value Phase 38; Phase-39+ extension to multi-value lean"; Phase 40 Units 40.1 + 40.2 realized the multi-value extension end-to-end. **First Phase-N-onwards prep-doc deferral explicitly resolved by a phase-(N+M)** — Phase-38 → Phase-40 = 2-phase gap from intent to realization. Audit-trail discipline: Phase-38-prep doc itself left untouched (historical record of Phase-38 intent preserved); resolution documented in Phase-40 CHANGELOG + ADR-0018 D-G Phase-40 APPEND blocks Unit 40.1 + 40.2.
+- **Top-level Q-tally UNCHANGED at 66** (28 resolved + 4 lean + 34 open). Phase 40 closes a prep-doc-D-deferral, not a top-level Q.
+- **Phase-37+ candidate count UNCHANGED at 8**. Multi-value composition was Phase-39-gate Phase-40-candidate rank 2 (a within-bucket framework-consumer infrastructure choice); the candidate-count tracking is at the top-level Q/B-class granularity, not within-bucket deferrals.
+- **10-phase no-new-B-category streak EXTENDS to Phase 40** (Phase 31 + 32 + 33 + 34 + 35 + 36 + 37 + 38 + 39 + **40** = **first such 10-phase run in project history**). Phase 40 surfaces no new ambiguities; composition infrastructure is established not surface-new.
+- **Composition pattern milestone**: framework now supports **arbitrary disjoint-surface multi-consumer composition** via `MARKDOWN_EXTENSIONS=wikilinks,tables` (or any comma-separated combination of recognized consumers). The Phase-37 framework is **complete in its multi-consumer composition story** at Phase-40 close — concrete-extension scope and per-consumer enabled-surface flexibility are the remaining levers, both with documented Phase-41+ patterns (cross-surface expansion + remarkPlugins-slot consumer + resolvable schemaOverrides conflicts + etc.).
+- **No source files modified**: composition realization shipped Units 40.1 + 40.2.
+- **No OPEN_QUESTIONS.md edits**.
+- **No ADR edits**: ADR-0018 D-G already extended at Unit 40.1 ship with the Phase-40 APPEND (APPEND-D-R through APPEND-D-T).
+- **No new tests**: 833/70 UNCHANGED.
+- **No client-bundle delta**: First Load JS shared chunk UNCHANGED at 103 kB (**67th consecutive 103 kB unit**).
+- **Parallel-curator awareness**: docs-only commit; no collision. Working tree at HEAD `a13049a` clean at unit start.
+- Smoke gates: `pnpm audit-content` → 0 errors / 6 warnings UNCHANGED (Q32 baseline since Phase 2; unchanged through every Phase 3-40 unit; **38 consecutive phases**).
+- THINK artifact: `docs/thinking/40.3-phase-40-hygiene.md`.
+
 #### Unit 40.2 — Multi-value `MARKDOWN_EXTENSIONS` parsing in `getExtensionRegistry()` + 10 dispatch tests + 6 end-to-end composed reviewNotes+actionRationale tests (833/70; 66th consecutive 103 kB unit; first multi-value env-var dispatch under framework; Phase-38-prep D-11 deferral CLOSED)
 
 - Third Phase-40 unit; wires the Unit-40.1 `CompositeExtensionRegistry` into the factory via comma-separated env-var parsing. **Phase-38-prep D-11 deferral CLOSED** (multi-value `MARKDOWN_EXTENSIONS` composition realized end-to-end).
