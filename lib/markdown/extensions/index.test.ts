@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { ArxivExtensionRegistry } from "./arxiv";
+import { ArxivExtensionRegistry, remarkLinkArxivIds } from "./arxiv";
 import { CompositeExtensionRegistry } from "./composite";
+import { DoiExtensionRegistry, remarkLinkDoiIds } from "./doi";
 import { __resetRegistryForTests, DefaultExtensionRegistry, getExtensionRegistry } from "./index";
 import { TablesExtensionRegistry } from "./tables";
 import { WikilinkExtensionRegistry } from "./wikilinks";
@@ -125,6 +126,29 @@ describe("getExtensionRegistry (factory) — env-var dispatch", () => {
     expect(() => getExtensionRegistry()).toThrow(/arxiv/);
   });
 
+  it("error message lists 'doi' Phase 45", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "unknown";
+    expect(() => getExtensionRegistry()).toThrow(/doi/);
+  });
+
+  it("returns DoiExtensionRegistry when MARKDOWN_EXTENSIONS is 'doi' Phase 45", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "doi";
+    expect(getExtensionRegistry()).toBeInstanceOf(DoiExtensionRegistry);
+  });
+
+  it("DoiExtensionRegistry dispatch enables doi on rationale only Phase 45 (mirrors Phase-41 arxiv-first-ship demand-signal-first precedent)", () => {
+    // Phase 45 ship: Set(["rationale"]). DOI consumer first-ship pattern
+    // mirrors Phase-41 arxiv first-ship — single-surface scope; curator
+    // paper-citation surface; cross-surface expansion to all 4 surfaces
+    // deferred Phase 46+ per ADR-0018 APPEND-D-AC Phase-46+ deferrals.
+    process.env["MARKDOWN_EXTENSIONS"] = "doi";
+    const r = getExtensionRegistry();
+    expect(r.getExtensions("rationale").remarkPlugins).toBeDefined();
+    expect(r.getExtensions("bio")).toEqual({});
+    expect(r.getExtensions("reviewNotes")).toEqual({});
+    expect(r.getExtensions("actionRationale")).toEqual({});
+  });
+
   it("returns CompositeExtensionRegistry when MARKDOWN_EXTENSIONS is 'wikilinks,tables' Phase 40", () => {
     process.env["MARKDOWN_EXTENSIONS"] = "wikilinks,tables";
     expect(getExtensionRegistry()).toBeInstanceOf(CompositeExtensionRegistry);
@@ -236,6 +260,94 @@ describe("getExtensionRegistry (factory) — env-var dispatch", () => {
   it("3-way composite ordering does not affect outcome (order-independent for disjoint case)", () => {
     process.env["MARKDOWN_EXTENSIONS"] = "arxiv,tables,wikilinks";
     expect(getExtensionRegistry()).toBeInstanceOf(CompositeExtensionRegistry);
+  });
+
+  it("returns CompositeExtensionRegistry for 'arxiv,doi' Phase 45 first-same-slot pair", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "arxiv,doi";
+    expect(getExtensionRegistry()).toBeInstanceOf(CompositeExtensionRegistry);
+  });
+
+  it("arxiv,doi composite concatenates BOTH plugins in remarkPlugins on rationale (first same-slot case Phase 45)", () => {
+    // **First compositional same-slot case in project history.** Under
+    // `MARKDOWN_EXTENSIONS=arxiv,doi` Phase-45 default the `remarkPlugins`
+    // slot on `rationale` (the only surface both consumers default-enable
+    // Phase 45) carries BOTH plugins via `CompositeExtensionRegistry`
+    // per APPEND-D-R "concatenated across components in registration
+    // order" rule. Pre-Phase-45 every slot had exactly one consumer
+    // (trivially satisfied); Phase 45 puts the concatenation rule under
+    // real pressure.
+    process.env["MARKDOWN_EXTENSIONS"] = "arxiv,doi";
+    const r = getExtensionRegistry();
+    const remarkPlugins = r.getExtensions("rationale").remarkPlugins;
+    expect(remarkPlugins).toBeDefined();
+    expect(remarkPlugins).toHaveLength(2);
+    expect(remarkPlugins).toEqual([remarkLinkArxivIds, remarkLinkDoiIds]);
+  });
+
+  it("doi,arxiv composite preserves registration order in remarkPlugins (env-var-comma-order)", () => {
+    // Order reversal: env-var `doi,arxiv` puts DOI first. Plugin
+    // invocation order is `[remarkLinkDoiIds, remarkLinkArxivIds]`.
+    // Plugin order is behaviorally equivalent for these two consumers
+    // because their regex prefixes (`\bdoi:` vs `\barxiv:`) are disjoint
+    // — neither plugin's emitted link text matches the other's regex.
+    // The framework's registration-order discipline holds regardless.
+    process.env["MARKDOWN_EXTENSIONS"] = "doi,arxiv";
+    const r = getExtensionRegistry();
+    const remarkPlugins = r.getExtensions("rationale").remarkPlugins;
+    expect(remarkPlugins).toBeDefined();
+    expect(remarkPlugins).toHaveLength(2);
+    expect(remarkPlugins).toEqual([remarkLinkDoiIds, remarkLinkArxivIds]);
+  });
+
+  it("arxiv,doi composite enables only arxiv (not doi) on non-rationale surfaces Phase 45", () => {
+    // Phase-44 close: arxiv enabled on all 4 surfaces.
+    // Phase-45 ship: doi enabled on `rationale` only.
+    // Under `arxiv,doi` composite: bio + reviewNotes + actionRationale
+    // get arxiv ONLY (1-element remarkPlugins array); rationale gets BOTH.
+    process.env["MARKDOWN_EXTENSIONS"] = "arxiv,doi";
+    const r = getExtensionRegistry();
+    expect(r.getExtensions("bio").remarkPlugins).toEqual([remarkLinkArxivIds]);
+    expect(r.getExtensions("reviewNotes").remarkPlugins).toEqual([remarkLinkArxivIds]);
+    expect(r.getExtensions("actionRationale").remarkPlugins).toEqual([remarkLinkArxivIds]);
+    expect(r.getExtensions("rationale").remarkPlugins).toEqual([
+      remarkLinkArxivIds,
+      remarkLinkDoiIds,
+    ]);
+  });
+
+  it("returns CompositeExtensionRegistry for 'wikilinks,tables,arxiv,doi' (first 4-way Phase 45)", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "wikilinks,tables,arxiv,doi";
+    expect(getExtensionRegistry()).toBeInstanceOf(CompositeExtensionRegistry);
+  });
+
+  it("4-way composite enables ALL 4 CONSUMERS Phase 45 (first 4-consumer composition under default dispatch)", () => {
+    // **First "4-consumer composition under default dispatch" state in
+    // project history.** Pre-Phase-45 max was 3-consumer (Phase-44
+    // maximal-activation `wikilinks,tables,arxiv`). Phase 45 adds DOI
+    // as the fourth consumer.
+    //
+    // Composition matrix at Phase-45 default:
+    //   bio:             wikilinks(rehype) + tables(schema) + arxiv(remark)
+    //   reviewNotes:     wikilinks(rehype) + tables(schema) + arxiv(remark)
+    //   rationale:       wikilinks(rehype) + tables(schema) + [arxiv, doi](remark) ← first 4-consumer convergent surface
+    //   actionRationale: wikilinks(rehype) + tables(schema) + arxiv(remark)
+    //
+    // Conflict-free per APPEND-D-R because (a) wikilinks + tables + arxiv
+    // each occupy distinct slots; (b) within `remarkPlugins` the two
+    // plugins concatenate in registration order per APPEND-D-R rule.
+    process.env["MARKDOWN_EXTENSIONS"] = "wikilinks,tables,arxiv,doi";
+    const r = getExtensionRegistry();
+    // rationale: the ONLY surface where DOI participates Phase 45.
+    expect(r.getExtensions("rationale").rehypePlugins).toBeDefined();
+    expect(r.getExtensions("rationale").schemaOverrides).toBeDefined();
+    expect(r.getExtensions("rationale").remarkPlugins).toEqual([
+      remarkLinkArxivIds,
+      remarkLinkDoiIds,
+    ]);
+    // Other 3 surfaces: 3-consumer composition (arxiv only in remarkPlugins).
+    expect(r.getExtensions("bio").remarkPlugins).toEqual([remarkLinkArxivIds]);
+    expect(r.getExtensions("reviewNotes").remarkPlugins).toEqual([remarkLinkArxivIds]);
+    expect(r.getExtensions("actionRationale").remarkPlugins).toEqual([remarkLinkArxivIds]);
   });
 
   it("__resetRegistryForTests clears the singleton so subsequent calls re-read env", () => {

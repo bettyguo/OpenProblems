@@ -1501,6 +1501,189 @@ styling); (c) validation (404-handling); OR (d) new consumers
 - **Surface-specific table schemas** (APPEND-D-Q item 6) —
   Phase 45+ via constructor-arg-as-map change.
 
+**EXTENDED Phase 45 Unit 45.1** — **fourth concrete Phase-37-
+framework consumer**: DOI auto-link on `rationale` surface via
+`remarkPlugins` slot + new `DoiExtensionRegistry` + new
+single-value dispatch arm `MARKDOWN_EXTENSIONS=doi` (fourth
+single-value arm after `wikilinks` + `tables` + `arxiv`).
+**First second-consumer in any single framework slot** — DOI
+joins arxiv (Phase 41) in `remarkPlugins`; `rehypePlugins` +
+`schemaOverrides` slots remain singleton Phase 45.
+
+**Closes APPEND-D-Y item 4** ("DOI auto-linking — `doi:10.<reg>/<id>` →
+`https://doi.org/10.<reg>/<id>`: naturally a sibling consumer
+in the same Phase-37 framework slot (`remarkPlugins`) — composes
+cleanly with arxiv via `CompositeExtensionRegistry`. Phase 42+
+if curator content surfaces DOI citations.") at **4-phase
+carryover** (Phase 41 → Phase 45; mirrors Phase 38→42 and
+Phase 39→43 4-phase gaps). **Fourth prep-/APPEND-doc-level
+deferral closed by a later phase** — establishes the **APPEND-
+deferral closure cadence sustained 4 phases** (Phase 42 closed
+D-L item 1; Phase 43 closed D-Q item 2; Phase 44 closed D-Y
+item 1; Phase 45 closes D-Y item 4). **First non-cross-
+surface-expansion APPEND-deferral closure** — Phase 42-44
+closures were all cross-surface-expansion items; Phase 45
+closes a sibling-consumer item.
+
+**First compositional same-slot case in project history.**
+Pre-Phase-45 every framework slot (`remarkPlugins` +
+`rehypePlugins` + `schemaOverrides`) had exactly one consumer
+under default dispatch:
+
+  - `rehypePlugins` ← wikilinks alone (Phase 38, expanded
+    Phase 42 to all 4 surfaces; still singleton in the slot).
+  - `schemaOverrides` ← tables alone (Phase 39, expanded
+    Phase 43 to all 4 surfaces; still singleton in the slot).
+  - `remarkPlugins` ← arxiv alone (Phase 41, expanded Phase
+    44 to all 4 surfaces; still singleton in the slot).
+
+The `CompositeExtensionRegistry` APPEND-D-R rule "concatenated
+across components in registration order" for `remarkPlugins`
+and `rehypePlugins` was **trivially satisfied** because no two
+consumers ever contributed to the same slot. Phase 45 puts the
+concatenation rule under real pressure: under
+`MARKDOWN_EXTENSIONS=arxiv,doi` (Phase 45 ship) the
+`remarkPlugins` slot on `rationale` (the only shared-enabled
+surface; doi Phase-45-default is `rationale`-only) carries
+`[remarkLinkArxivIds, remarkLinkDoiIds]` per the registration-
+order rule. **First "two plugins active in the same slot on
+the same surface under default dispatch" state**.
+
+**Twelfth APPEND on ADR-0018 D-G** — extends the **first-
+ADR-D-clause-with-most-APPENDs record** from 11 → 12
+(Phase 18 + 27 + 29 + 37 + 38 + 39 + 40 + 41 + 42 + 43 + 44 +
+**45**).
+
+**Third two-letter APPEND letter D-AC** (after Phase-43 D-AA
++ Phase-44 D-AB). Excel-spreadsheet column convention
+sustained — D-AD + D-AE + ... + D-AZ would carry Phase 46+
+at this cadence.
+
+**APPEND-D-AC doi consumer shape** —
+`PHASE_45_DEFAULT_ENABLED_SURFACES = Set(["rationale"])` per
+Phase-41-arxiv-first-ship demand-signal-first precedent.
+`rationale` is the Phase-27 challenge-resolution-rationale
+surface — the natural locus for curator paper-citation prose
+that cites DOIs. Cross-surface expansion to bio + reviewNotes
++ actionRationale deferred Phase 46+ per the per-consumer-
+expansion-as-separate-phase pattern (Phase 38→42, Phase
+39→43, Phase 41→44 each established a 4-phase gap; Phase
+45→49 would extend the pattern).
+
+**DOI regex**: `\bdoi:(10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+?)(?=[\s.,;)]|$)/gi`.
+The 4-9-digit registrant bound + suffix-character-class
+follow Crossref's "DOIs and matching regular expressions"
+reference regex. Trailing lookahead bounds the suffix against
+sentence-terminator punctuation (`.`, `,`, `;`, `)`, whitespace,
+end-of-string) so prose-embedded DOIs match without trailing
+punctuation. Phase-45 ship tradeoff: most curator-prose DOI
+citations end on sentence-terminator punctuation; the
+lookahead favors typical-prose-correctness over edge-case-
+DOI-correctness (hypothetical DOIs with legitimate trailing
+periods would be truncated; deferred Phase 46+ for stricter
+context-aware matching via curator-content demand signal).
+Bare DOIs without `doi:` prefix deferred Phase 46+ per
+ambiguity (numeric-only `10.<reg>/<suffix>` looks identical
+to generic decimal-then-slash prose).
+
+**Emitted host**: canonical `https://doi.org/<id>`. The
+legacy `dx.doi.org` host redirects to `doi.org` and is NOT
+emitted Phase 45 (deferred Phase 46+ if curator content
+surfaces dx.doi.org legacy URLs).
+
+**Plugin order under composition**: env-var-comma-order
+preserved through `CompositeExtensionRegistry` constructor +
+plugin concatenation. `MARKDOWN_EXTENSIONS=arxiv,doi` → plugin
+order `[remarkLinkArxivIds, remarkLinkDoiIds]`. Plugin order
+is **behaviorally equivalent** for arxiv + doi Phase 45
+because their regex prefixes (`\barxiv:` vs `\bdoi:` literal-
+prefix word-boundary-anchored) are disjoint — neither
+plugin's emitted link text matches the other's regex. The
+framework's registration-order discipline holds regardless;
+future Phase 46+ orderings-may-matter cases will arise if a
+consumer's regex could match arxiv- or doi-emitted link text.
+
+**Composition matrix at Phase-45 default** under
+`CompositeExtensionRegistry`:
+
+| Composition | New behavior |
+|---|---|
+| `doi` alone | doi remark on `rationale` only; first second-consumer-in-slot (arxiv already present Phase 44 all 4) |
+| `arxiv,doi` | **first same-slot composition**: `rationale` gets `[arxiv, doi]` in `remarkPlugins`; other 3 surfaces get `[arxiv]` only |
+| `wikilinks,doi` | `rationale` gets wikilinks rehype + doi remark; other 3 get wikilinks rehype only |
+| `tables,doi` | `rationale` gets tables schema + doi remark; other 3 get tables schema only |
+| `wikilinks,tables,doi` | `rationale` 3-consumer; other 3 surfaces 2-consumer |
+| `wikilinks,arxiv,doi` | `rationale` 3-consumer with `[arxiv, doi]` in remark; other 3 surfaces 2-consumer with arxiv only in remark |
+| `tables,arxiv,doi` | `rationale` 3-consumer with `[arxiv, doi]` in remark; other 3 surfaces 2-consumer |
+| `wikilinks,tables,arxiv,doi` (Phase 45 4-way default) | **first 4-consumer composition**: `rationale` carries 4 consumers across 3 slots; other 3 surfaces 3-consumer |
+
+**First "4-consumer composition under default dispatch"
+state in project history.** Pre-Phase-45 max was 3-consumer
+(Phase-44 `wikilinks,tables,arxiv`). Conflict-free per
+APPEND-D-R because (a) wikilinks + tables + arxiv each occupy
+distinct slots Phase 44; (b) DOI joins arxiv in `remarkPlugins`
+under the registration-order concatenation rule. Each surface
+still has at most one component contributing to `rehypePlugins`
++ at most one contributing to `schemaOverrides`; only
+`remarkPlugins` slot is doubly-occupied (on shared-enabled
+surfaces — `rationale` only Phase 45).
+
+**Phase 46+ deferrals** (Phase-45 doi-consumer scope cap):
+
+- **DOI cross-surface expansion** to bio + reviewNotes +
+  actionRationale — Phase-46+ analogous to Phase-44 arxiv
+  cross-surface expansion; zero current content evidence;
+  demand-signal-first; constructor-arg change with zero
+  plugin / registry / factory rework (the property each
+  Phase 38/39/41/45 consumer documents).
+- **DOI display-text alias syntax** `[[doi:10.NNNN/xxx|display]]`
+  — Phase 46+ if curator content surfaces; mirrors arxiv
+  APPEND-D-Y item 5 deferral.
+- **Bare DOIs without `doi:` prefix** — Phase 46+ if stricter
+  context-aware match warranted; ambiguity is even higher
+  than bare arxiv IDs (the leading `10.` looks identical to
+  generic decimal-then-slash prose).
+- **`dx.doi.org` legacy-host parsing** — Phase 46+ if curator
+  content surfaces dx.doi.org URLs; Phase 45 emits the
+  canonical `doi.org` URL only.
+- **Stricter trailing-lookahead for legitimate trailing-period
+  DOIs** — Phase 46+ if curator content surfaces edge-case
+  DOIs (hypothetical `doi:10.1234/abc.` ending in legitimate
+  trailing period; Phase 45 lookahead truncates these).
+- **Older-style category-prefixed arxiv IDs** (APPEND-D-Y
+  item 2 carries) — Phase 46+ if curator content surfaces.
+- **Bare arxiv IDs without prefix** (APPEND-D-Y item 3 carries)
+  — Phase 46+.
+- **arxiv display-text alias syntax** `[[arxiv:NNNN.NNNNN|display]]`
+  (APPEND-D-Y item 5 carries) — Phase 46+.
+- **Paper-card hover-preview** (APPEND-D-Y item 6 carries) —
+  Phase 46+ couples to UI thread.
+- **Multi-anchor wikilink alias `[[slug|display]]`** (APPEND-
+  D-L item 2 carries) — Phase 46+.
+- **Cross-entity wikilinks** (APPEND-D-L item 3 carries) —
+  Phase 46+.
+- **`<a class="wikilink">` styling** (APPEND-D-L item 4 carries)
+  — Phase 46+.
+- **404 handling for unresolved wikilinks** (APPEND-D-L item 5
+  carries) — Phase 46+.
+- **Plugin parameterization for wikilink-href-builder** —
+  Phase 46+.
+- **Table-specific attributes** (`colspan` / `rowspan` /
+  `scope`; APPEND-D-Q item 3) — Phase 46+.
+- **`<caption>` element** (APPEND-D-Q item 4) — Phase 46+.
+- **Surface-specific table schemas** (APPEND-D-Q item 6) —
+  Phase 46+ via constructor-arg-as-map change.
+- **3rd-or-later `remarkPlugins` consumer** beyond arxiv + doi
+  — Phase 46+ if curator content surfaces additional auto-
+  link consumers (e.g., `pubmed:` PMID auto-link;
+  `orcid:` ORCID auto-link).
+- **2nd `rehypePlugins` consumer** beyond wikilinks — Phase
+  46+ analogous case for `rehypePlugins` slot doubling.
+- **2nd `schemaOverrides` consumer** beyond tables — Phase
+  46+ analogous case; would test APPEND-D-R "at most one
+  component per surface" throw-on-conflict rule for
+  `schemaOverrides`.
+
 ### D-H. Phase 18+ deferrals
 
 Phase 17 ships MINIMAL markdown surface. Deferred to Phase 18+:
