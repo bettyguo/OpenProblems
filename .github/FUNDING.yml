@@ -1,0 +1,22 @@
+# GitHub Sponsors button configuration. See:
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/displaying-a-sponsor-button-in-your-repository
+#
+# This project is currently PhD-led research and pre-1.0. The maintainer
+# does not yet accept sponsorship; this file is a placeholder documenting
+# the intended channels once the methodology paper lands.
+#
+# When uncommented:
+#   github: ["<maintainer-handle>"]
+# Then the "Sponsor" button appears on the repo page.
+
+# github: []           # GitHub Sponsors (one or more handles)
+# patreon:             # Patreon
+# open_collective:     # Open Collective
+# ko_fi:               # Ko-fi
+# tidelift:            # Tidelift
+# community_bridge:    # LF community bridge
+# liberapay:           # Liberapay
+# issuehunt:           # IssueHunt
+# otechie:             # Otechie
+# lfx_crowdfunding:    # LFX Crowdfunding
+# custom:              # array of arbitrary URLs (max 4)

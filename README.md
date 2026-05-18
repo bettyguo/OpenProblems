@@ -23,6 +23,7 @@
 
 <p align="center">
   <a href="#vision">Vision</a> ·
+  <a href="#why-this-matters">Why this matters</a> ·
   <a href="#rating-methodology">Methodology</a> ·
   <a href="#status">Status</a> ·
   <a href="#architecture">Architecture</a> ·
@@ -52,6 +53,27 @@ Every page must serve three personas — _Surveyor_, _Frontier Pusher_, _Strateg
 <p align="center">
   <img src="docs/figures/reader-personas.svg" alt="Three reader personas — Surveyor / Frontier Pusher / Strategist — and the signals they want" width="100%"/>
 </p>
+
+<!-- ─────────────────────────────────────────────────────────────── -->
+
+## Why this matters
+
+Six adjacent platforms; two orthogonal axes. The top-right quadrant — **problem-shaped AND rated with methodology** — is empty. That's the gap.
+
+<p align="center">
+  <img src="docs/figures/competitive-landscape.svg" alt="Competitive landscape — 2x2 positioning quadrant placing LLM OpenProblems in the empty top-right (problem-shaped + rated) versus Papers with Code (sunsetted), Hugging Face Trending (feed-shaped), nlp-progress, OpenReview, arxiv-sanity, Semantic Scholar, and Wikipedia; below: a 6-row feature comparison table" width="100%"/>
+</p>
+
+|                                 | Problem-shaped | Rated (methodology) | Curated taxonomy | Revision history |     Active 2026      | Citable |
+| ------------------------------- | :------------: | :-----------------: | :--------------: | :--------------: | :------------------: | :-----: |
+| **★ LLM OpenProblems**          |       ✓        |          ✓          |        ✓         |        ✓         |          ✓           |    ✓    |
+| Papers with Code                |       ✗        |          ◐          |        ✓         |        ✗         | _sunsetted Jul 2025_ |    ◐    |
+| Hugging Face Trending Papers    |       ✗        |          ✗          |        ✗         |        ✗         |          ✓           |    ✗    |
+| nlp-progress                    |       ◐        |          ✗          |        ✓         |        ◐         |       _stale_        |    ◐    |
+| OpenReview                      |       ✗        |          ◐          |        ✗         |        ✓         |          ✓           |    ✓    |
+| Semantic Scholar / arxiv-sanity |       ✗        |          ✗          |        ✗         |        ✗         |          ✓           |    ◐    |
+
+Where the analogy ends and the differentiator begins: **the rating-action ledger**. Every change to a rating ships a net-new YAML file under `content/problems/<slug>/ratings/`, signed by a curator, time-stamped, methodology-versioned, and immutable per [ADR-0005](./docs/adr/0005-rating-action-immutability.md). A rating you cited in your paper last year is still there next year, byte-for-byte — and if it has been superseded, you can read the entire chain.
 
 <!-- ─────────────────────────────────────────────────────────────── -->
 
@@ -290,17 +312,22 @@ See [`OPEN_QUESTIONS.md`](./OPEN_QUESTIONS.md) Q54 / Q55 / Q69 / Q73 / Q75 / Q77
 7. The most recent [`docs/SESSION_HANDOFF_2026-05-18_phase-44-close.md`](./docs/SESSION_HANDOFF_2026-05-18_phase-44-close.md) — paste-into-fresh-session resume payload with the full live ledger.
 8. [`docs/thinking/`](./docs/thinking/) — per-unit THINK artifacts (§15.1 of the master prompt). The `<phase>.0-phase-N-prep.md` and `<phase>.<n>-phase-N-acceptance-gate.md` files frame each phase end-to-end.
 9. [`CHANGELOG.md`](./CHANGELOG.md) — every unit with file paths and rationale (~8500 lines).
-10. [`docs/figures/`](./docs/figures/) — SVG diagrams catalog (the seven figures embedded above).
+10. [`docs/figures/`](./docs/figures/) — SVG diagrams catalog (the eight figures embedded above + `gallery.html` for the GitHub-Pages-ready live preview).
+11. [`CONTRIBUTING.md`](./CONTRIBUTING.md) — contribution rhythm, PR checklist, commit conventions, parallel-curator workflow.
+12. [`SECURITY.md`](./SECURITY.md) — vulnerability-disclosure policy + scope by ADR surface.
+13. [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md) — Contributor-Covenant 2.1 with project-specific notes on rating challenges and ADR debates.
 
 <!-- ─────────────────────────────────────────────────────────────── -->
 
 ## Contributing
 
-This is a multi-month, PhD-led research project governed end-to-end by [`MASTER_PROMPT.md`](./MASTER_PROMPT.md). Three things to know:
+This is a multi-month, PhD-led research project governed end-to-end by [`MASTER_PROMPT.md`](./MASTER_PROMPT.md). The full guide lives in [`CONTRIBUTING.md`](./CONTRIBUTING.md); the headline rules:
 
 - **Editorial content** — PRs against [`content/`](./content/) (problems, papers, authors, institutions, methodology) are welcome. Follow [`docs/CURATION_PROMPT.md`](./docs/CURATION_PROMPT.md) and the Zod schemas in [`lib/schemas/`](./lib/schemas/). New rating actions land as net-new YAML files only — ADR-0005 forbids in-place edits.
 - **Code** — open an issue first if the change touches an ADR-shaped surface (auth, schemas, markdown allow-list, data model, rating methodology). Smaller fixes (typos, link corrections, dependency bumps) are PR-direct.
 - **Discussion** — load-bearing architecture questions go into [`OPEN_QUESTIONS.md`](./OPEN_QUESTIONS.md), not a forum thread. Open questions carry forward across phases with explicit lean / resolved tags.
+- **Security** — please use [`SECURITY.md`](./SECURITY.md) for private vulnerability disclosure rather than a public issue.
+- **Community** — see [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md). Disagreement is welcome and expected; harassment is not.
 
 ### Roadmap (Phase 45 → 46+)
 
@@ -322,7 +349,20 @@ Q4 resolved in Unit 1.0 (2026-05-14); Apache-2.0 picked over MIT for the explici
 
 <!-- ─────────────────────────────────────────────────────────────── -->
 
+## Star history
+
+<a href="https://star-history.com/#jacobwucs/OpenProblems&Date">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=jacobwucs/OpenProblems&type=Date&theme=dark"/>
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=jacobwucs/OpenProblems&type=Date"/>
+    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=jacobwucs/OpenProblems&type=Date" width="100%"/>
+  </picture>
+</a>
+
+<!-- ─────────────────────────────────────────────────────────────── -->
+
 <p align="center">
-  <sub>Built one unit at a time · ~8500 CHANGELOG lines · 921 tests · 103 kB First Load JS unchanged for 85 consecutive units.</sub><br/>
-  <sub>Governed by <a href="./MASTER_PROMPT.md">MASTER_PROMPT.md</a> · authored under <a href="./docs/CURATION_PROMPT.md">CURATION_PROMPT.md</a> · 24 ADRs accepted.</sub>
+  <sub>Built one unit at a time · ~8500 CHANGELOG lines · 985 tests · 103 kB First Load JS unchanged for 89 consecutive units.</sub><br/>
+  <sub>Governed by <a href="./MASTER_PROMPT.md">MASTER_PROMPT.md</a> · authored under <a href="./docs/CURATION_PROMPT.md">CURATION_PROMPT.md</a> · 24 ADRs accepted · Phase 45 in flight.</sub><br/>
+  <sub>Open the figures gallery → <a href="./docs/figures/gallery.html"><code>docs/figures/gallery.html</code></a> · Deploy → <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fjacobwucs%2FOpenProblems">Vercel</a></sub>
 </p>

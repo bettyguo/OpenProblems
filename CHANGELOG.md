@@ -2470,6 +2470,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 45 — Community-adjacent surfaces (**thirty-sixth NON-§13 phase**: fourth concrete Phase-37-framework consumer — DOI auto-link on `rationale` surface via `remarkPlugins` slot + new `DoiExtensionRegistry` + fourth single-value dispatch arm `MARKDOWN_EXTENSIONS=doi`; **first compositional same-slot case** in project history — two consumers both contributing to `remarkPlugins` under composition; APPEND-D-R "concatenated across components in registration order" rule becomes live with two real consumers; mirrors Phase-41 arxiv first-consumer ship shape; closes ADR-0018 APPEND-D-Y item 4 deferral at 4-phase carryover; APPEND-D-AC third two-letter slot; 5 numbered units + 2 parallel-session sub-units; 40th "Continue" override invoked; **CLOSED**)
 
+#### Unit 45.4a — Competitive landscape figure (8th SVG) + 3 community-health files + README "Why this matters" + star history footer (docs-only hygiene; parallel session; no source modified)
+
+- Post-Phase-45-gate docs hygiene unit. Adds the 8th SVG figure (competitive landscape), three GitHub-recognized community-health files (CONTRIBUTING.md + SECURITY.md + CODE_OF_CONDUCT.md), a `.github/FUNDING.yml` placeholder, a new "Why this matters" README section with a comparison table, and a star-history footer chart. Phase 45 closed at `728d54e`; this unit ships as a parallel-session docs sub-unit alongside the closed phase, mirroring the Unit 45.0a + 45.1a placement convention.
+- **NEW `docs/figures/competitive-landscape.svg`** (FIG 8 / 8; 1280 × 760): 2×2 positioning quadrant + 6-row feature comparison table.
+  - **Quadrant** (left): X-axis = "paper- / feed-shaped → problem-shaped"; Y-axis = "unrated → rated · methodology-backed". Top-right quadrant (problem-shaped + rated) is empty — that's the gap. LLM OpenProblems pin sits there with a radial glow ("★ NORTH-STAR QUADRANT"). 6 alternatives plotted: Papers with Code (paper-shaped, partially rated, **SUNSETTED JUL 2025**), OpenReview (paper-shaped, review-rated), nlp-progress (list-shaped, unrated), Hugging Face Trending (feed-shaped, unrated), arxiv-sanity (paper-shaped, unrated), Semantic Scholar (paper-shaped, unrated), Wikipedia (mixed, unrated).
+  - **Legend panel** (right): 4 entry cards explaining the gap — "Why Papers with Code doesn't fill it" (sunsetted + paper-shaped at root); "Why HF Trending doesn't" (feed-shaped); "Why nlp-progress / OpenReview / arxiv-sanity don't" (lists / reviews / recommenders, not rated problems); "Why this project does" (problem-shaped + rated + methodology-backed + immutable rating-action ledger).
+  - **Feature comparison table** (bottom): 6 columns (Problem-shaped · Rated · Curated taxonomy · Revision history · Active 2026 · Citable) × 7 rows (LLM OpenProblems highlighted with amber accent and ✓ across all 6; the 6 alternatives shown with ✓ / ◐ / ✗ / status text).
+  - viewBox-only sizing; no overlapping text / arrows / boxes per the figures README design discipline.
+- **NEW `CONTRIBUTING.md`** (140+ lines): three contribution surfaces (editorial content / code / discussion); PR checklist (8 items); commit-message conventions with examples; code-style notes (TypeScript strict, Zod boundaries, server-only markdown, no client-side rating mutation); security pointer; CoC pointer; parallel-curator awareness note. Pulls from `MASTER_PROMPT.md` §15 (THINK / DESIGN / CODE / ITERATE / COMMIT rhythm) and the per-phase ADR / no-`--no-verify` discipline.
+- **NEW `SECURITY.md`** (110+ lines): supported-versions section; private-disclosure channels (GitHub Security Advisories + email); 5-scope priority list (1 Markdown XSS by ADR-0018; 2 Auth / session by ADR-0012 + 0020; 3 Moderation by ADR-0024; 4 EXIF stripping by ADR-0019; 5 Rating-action immutability by ADR-0005); explicit out-of-scope list; coordinated-disclosure policy. Maps each scope to its ADR.
+- **NEW `CODE_OF_CONDUCT.md`** (90+ lines): Contributor Covenant 2.1 base; project-specific notes on rating challenges ("not personal attacks") and ADR debates ("propose a superseding ADR — don't litigate in PR comments"); 4-tier enforcement ladder.
+- **NEW `.github/FUNDING.yml`**: commented-out scaffold documenting the intended GitHub-Sponsors path; not yet active (PhD-led pre-1.0 research). Surfaces the channel for when the methodology paper lands and sponsorship becomes appropriate.
+- **`README.md`** updates:
+  - New `## Why this matters` section (between Vision and Rating methodology) embedding the competitive-landscape figure + an inline Markdown version of the comparison table (so it renders even if the SVG fails) + a paragraph framing the rating-action ledger as the differentiator.
+  - TOC chip added: `Why this matters`.
+  - Reading-order extended from 10 → 13 items (adds CONTRIBUTING.md / SECURITY.md / CODE_OF_CONDUCT.md).
+  - Contributing section condensed (full guide lives in CONTRIBUTING.md); adds Security + Community line items pointing to the new files.
+  - New `## Star history` section embedding a `<picture>` element with light/dark variants pulling from `api.star-history.com` — renders inline as the GitHub-star trajectory once the repo accumulates stars. Click-through to `star-history.com/#jacobwucs/OpenProblems`.
+  - Footer KPI line bumped from 921 / 85 to 985 / 89 to reflect Phase-45 close.
+- **`docs/figures/README.md`** catalog: row for figure 8 appended; column widths re-flowed by prettier on commit.
+- **`docs/figures/gallery.html`**: nav chip + section 8 appended; subtitle copy updated from "8 SVG figures" → "9 hand-authored SVG figures (1 hero + 8 numbered)".
+- **No source files modified.** Phase 45 source units (45.1 + 45.2 + 45.3 + 45.4) untouched; this is parallel-safe documentation hygiene.
+- **Smoke gates** (docs-only):
+  - `pnpm validate-content` → 203 files unchanged.
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **985 / 72 files** UNCHANGED (carries Unit 45.4 baseline).
+  - `pnpm audit-content` → 0 errors / 6 warnings UNCHANGED (Q32 baseline).
+  - First Load JS = 103 kB UNCHANGED; Middleware = 160 kB UNCHANGED.
+- **Why now**: the user-prompt-submit instruction ("Continue") interpreted under the `feedback_unit_rhythm` memory rule + the runtime "work without stopping" override. The defensible default for a post-gate docs hygiene unit is to continue the README + figures polish arc, surfacing the project's *why-this-matters* positioning + adding the GitHub-recognized community-health files that typically push a repo into the Trending-eligible tier. **Tradeoff flagged**: the FUNDING.yml is commented-out (no sponsorship channel active yet); the star-history.com `<picture>` element renders an empty axis until the repo has stars (the chart degrades gracefully).
+
 #### Unit 45.4 — Phase 45 acceptance gate (fourth concrete consumer; first compositional same-slot case; D-AC; 985/72; 88th consecutive 103 kB unit; 41st "Continue" override opportunity at Phase 45 → 46 boundary)
 
 - Fifth and final Phase-45 numbered unit; gate-only. **Phase 45 CLOSES at this unit's commit**. Phase 46 entry awaits explicit "Continue" override per §12.

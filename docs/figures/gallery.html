@@ -154,7 +154,7 @@
     <header class="hero">
       <span class="eyebrow">Figures gallery · v1.0 · 2026</span>
       <h1>LLM <span class="accent">Open</span>Problems</h1>
-      <p>An interactive preview of the 8 hand-authored SVG figures that visualize the project's architecture, methodology, data model, markdown extension framework, phase ledger, reader personas, and workflow rhythm.</p>
+      <p>An interactive preview of the 9 hand-authored SVG figures (1 hero + 8 numbered) that visualize the project's architecture, methodology, data model, markdown extension framework, phase ledger, reader personas, workflow rhythm, and competitive landscape.</p>
       <nav class="nav" aria-label="Figure navigation">
         <a href="#hero">Hero</a>
         <a href="#fig-1">1 · Architecture</a>
@@ -164,6 +164,7 @@
         <a href="#fig-5">5 · Phase ledger</a>
         <a href="#fig-6">6 · Reader personas</a>
         <a href="#fig-7">7 · Workflow</a>
+        <a href="#fig-8">8 · Competitive landscape</a>
         <a href="https://github.com/jacobwucs/OpenProblems">↗ Repo</a>
       </nav>
     </header>
@@ -235,10 +236,19 @@
       <section class="fig" id="fig-7">
         <header>
           <h2>7 · Development workflow</h2>
-          <span class="meta">FIG · 7 / 7 · 1280 × 540</span>
+          <span class="meta">FIG · 7 / 8 · 1280 × 540</span>
         </header>
         <p>The 5-step <strong>THINK → DESIGN → CODE → ITERATE → COMMIT</strong> rhythm. One unit at a time. Don't batch. Commit after each unit. The pre-commit hook chain (ADR-0005 immutability → lint-staged + prettier → <code>pnpm test</code> → commitlint 100-char header) gates the rhythm. Never <code>--no-verify</code>.</p>
         <div class="frame"><img src="./workflow.svg" alt="Five-step development workflow rhythm with pre-commit hook chain" loading="lazy"/></div>
+      </section>
+
+      <section class="fig" id="fig-8">
+        <header>
+          <h2>8 · Competitive landscape</h2>
+          <span class="meta">FIG · 8 / 8 · 1280 × 760</span>
+        </header>
+        <p>Where this project sits versus six adjacent platforms on two orthogonal axes: <em>problem-shaped vs paper / feed-shaped</em> and <em>rated with methodology vs unrated</em>. The top-right quadrant — problem-shaped AND rated — is empty; that's the gap. Includes a 6-row feature comparison table covering problem-shape, rating, taxonomy curation, revision history, active status, and citability.</p>
+        <div class="frame"><img src="./competitive-landscape.svg" alt="Competitive landscape quadrant and feature comparison" loading="lazy"/></div>
       </section>
     </main>
 

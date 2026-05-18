@@ -2,16 +2,17 @@
 
 Hand-drawn SVG diagrams for the LLM OpenProblems README and PR previews. Each figure is authored to render crisply on GitHub light + dark mode at the embedded width, with **no overlapping text, boxes, or arrows** — the layout grid is explicit in the comments at the top of each file.
 
-| #    | File                                                 | Purpose                                                                                                     | Used in                                    |
-| ---- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
-| Hero | [`hero-banner.svg`](./hero-banner.svg)               | One-glance product positioning: the rating-agency metaphor + 5 dimensions + KPI strip                       | `README.md` top                            |
-| 1    | [`architecture.svg`](./architecture.svg)             | The 5-layer system: Client UI → App Router → `lib/` → Storage → External                                    | `README.md` § Architecture                 |
-| 2    | [`data-model.svg`](./data-model.svg)                 | Three first-class entities (Problem / Paper / Author+Institution) + the immutable RatingAction ledger       | `README.md` § Data model                   |
-| 3    | [`markdown-framework.svg`](./markdown-framework.svg) | The 4×3 surface×consumer matrix at Phase 44 full activation (12 / 12 triples), and where Phase 45 DOI joins | `README.md` § Markdown extension framework |
-| 4    | [`rating-dimensions.svg`](./rating-dimensions.svg)   | The 5 rating dimensions with their scales (S/A/B/C/D/E, 0–100, 0–5 stars)                                   | `README.md` § Rating methodology           |
-| 5    | [`phase-ledger.svg`](./phase-ledger.svg)             | All 45 phases on one timeline, banded by thematic cluster, with ADR markers + KPI strip                     | `README.md` § Status                       |
-| 6    | [`reader-personas.svg`](./reader-personas.svg)       | The three reader personas the IA must serve on every page                                                   | `README.md` § Vision                       |
-| 7    | [`workflow.svg`](./workflow.svg)                     | The 5-step THINK → DESIGN → CODE → ITERATE → COMMIT rhythm + pre-commit chain                               | `README.md` § Workflow                     |
+| #    | File                                                       | Purpose                                                                                                     | Used in                                    |
+| ---- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| Hero | [`hero-banner.svg`](./hero-banner.svg)                     | One-glance product positioning: the rating-agency metaphor + 5 dimensions + KPI strip                       | `README.md` top                            |
+| 1    | [`architecture.svg`](./architecture.svg)                   | The 5-layer system: Client UI → App Router → `lib/` → Storage → External                                    | `README.md` § Architecture                 |
+| 2    | [`data-model.svg`](./data-model.svg)                       | Three first-class entities (Problem / Paper / Author+Institution) + the immutable RatingAction ledger       | `README.md` § Data model                   |
+| 3    | [`markdown-framework.svg`](./markdown-framework.svg)       | The 4×3 surface×consumer matrix at Phase 44 full activation (12 / 12 triples), and where Phase 45 DOI joins | `README.md` § Markdown extension framework |
+| 4    | [`rating-dimensions.svg`](./rating-dimensions.svg)         | The 5 rating dimensions with their scales (S/A/B/C/D/E, 0–100, 0–5 stars)                                   | `README.md` § Rating methodology           |
+| 5    | [`phase-ledger.svg`](./phase-ledger.svg)                   | All 45 phases on one timeline, banded by thematic cluster, with ADR markers + KPI strip                     | `README.md` § Status                       |
+| 6    | [`reader-personas.svg`](./reader-personas.svg)             | The three reader personas the IA must serve on every page                                                   | `README.md` § Vision                       |
+| 7    | [`workflow.svg`](./workflow.svg)                           | The 5-step THINK → DESIGN → CODE → ITERATE → COMMIT rhythm + pre-commit chain                               | `README.md` § Workflow                     |
+| 8    | [`competitive-landscape.svg`](./competitive-landscape.svg) | 2×2 positioning quadrant + 6-row feature comparison vs Papers with Code, HF Trending, nlp-progress, etc.    | `README.md` § Why this matters             |
 
 ## Design rules
 
