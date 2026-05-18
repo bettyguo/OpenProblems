@@ -252,11 +252,14 @@ The env contract is at [`.env.example`](./.env.example) — currently empty valu
 
 ### Live preview options
 
-The stack is Next.js with React Server Components — the canonical zero-config target is **Vercel** (the master prompt assumes this). One-click deploy:
+Three ways to see the work without cloning the repo:
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fjacobwucs%2FOpenProblems&project-name=llm-openproblems&repository-name=llm-openproblems)
+1. **Figures gallery (zero-config, GitHub Pages).** [`docs/figures/gallery.html`](./docs/figures/gallery.html) is a self-contained static page that presents all 8 figures with light/dark-mode-aware styling and a sticky in-page navigator. Drop the `docs/` folder into GitHub Pages (Settings → Pages → Source: `main` / `docs`) and the gallery is live at `https://<owner>.github.io/<repo>/figures/gallery.html` — no build, no server. The same page renders verbatim by opening the file locally.
+2. **Full app (Vercel).** The stack is Next.js with React Server Components — the canonical zero-config target is **Vercel** (the master prompt assumes this). One-click deploy:
 
-For a components-only static preview (cards, badges, rating chips, charts), [`pnpm storybook`](./.storybook/) ships a Storybook 10 build that can be deployed to GitHub Pages or Chromatic for design review without standing up the full app.
+   [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fjacobwucs%2FOpenProblems&project-name=llm-openproblems&repository-name=llm-openproblems)
+
+3. **Components only (Storybook).** [`pnpm storybook`](./.storybook/) ships a Storybook 10 build (cards, badges, rating chips, charts) that can be deployed to GitHub Pages or Chromatic for design review without standing up the full app.
 
 <!-- ─────────────────────────────────────────────────────────────── -->
 

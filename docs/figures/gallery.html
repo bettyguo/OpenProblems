@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>LLM OpenProblems · Figures gallery</title>
+    <meta name="description" content="LLM OpenProblems — interactive figures gallery. Hero, architecture, data model, markdown extension framework, rating dimensions, phase ledger, reader personas, workflow." />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230b1437'/%3E%3Ctext x='32' y='42' font-family='ui-monospace,monospace' font-size='32' font-weight='800' text-anchor='middle' fill='%23f59e0b'%3EO%3C/text%3E%3C/svg%3E" />
+    <style>
+      :root {
+        --bg: #f8fafc;
+        --bg-elev: #ffffff;
+        --fg: #0f172a;
+        --fg-muted: #475569;
+        --fg-dim: #94a3b8;
+        --accent: #f59e0b;
+        --border: #e2e8f0;
+        --shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 8px 32px rgba(15, 23, 42, 0.08);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0b1437;
+          --bg-elev: #16224a;
+          --fg: #f8fafc;
+          --fg-muted: #cbd5e1;
+          --fg-dim: #94a3b8;
+          --border: #1e2a55;
+          --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 32px rgba(0, 0, 0, 0.45);
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        background: var(--bg);
+        color: var(--fg);
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Inter, sans-serif;
+        line-height: 1.55;
+      }
+      header.hero {
+        text-align: center;
+        padding: 72px 24px 32px;
+        max-width: 1180px;
+        margin: 0 auto;
+      }
+      .eyebrow {
+        display: inline-block;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        color: var(--accent);
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+      h1 {
+        font-size: clamp(34px, 5vw, 54px);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        margin: 12px 0 14px;
+      }
+      h1 .accent { color: var(--accent); }
+      header.hero p {
+        font-size: clamp(15px, 1.6vw, 18px);
+        color: var(--fg-muted);
+        max-width: 760px;
+        margin: 0 auto;
+      }
+      .nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: center;
+        margin: 28px auto 0;
+        max-width: 1180px;
+      }
+      .nav a {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12px;
+        padding: 8px 14px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        text-decoration: none;
+        color: var(--fg-muted);
+        background: var(--bg-elev);
+        transition: all 0.15s ease;
+      }
+      .nav a:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      main {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 32px 24px 80px;
+      }
+      section.fig {
+        background: var(--bg-elev);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 28px;
+        margin: 24px 0;
+        box-shadow: var(--shadow);
+      }
+      section.fig header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 18px;
+        flex-wrap: wrap;
+      }
+      section.fig h2 {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 700;
+      }
+      section.fig .meta {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 11px;
+        color: var(--fg-dim);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      section.fig p {
+        margin: 0 0 18px;
+        color: var(--fg-muted);
+        font-size: 14px;
+      }
+      section.fig .frame {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.04), rgba(59, 130, 246, 0.04));
+        border-radius: 12px;
+        padding: 12px;
+        overflow: auto;
+      }
+      section.fig img {
+        display: block;
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+      }
+      footer {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 24px;
+        text-align: center;
+        color: var(--fg-dim);
+        font-size: 13px;
+        border-top: 1px solid var(--border);
+      }
+      footer a { color: var(--accent); text-decoration: none; }
+      footer a:hover { text-decoration: underline; }
+    </style>
+  </head>
+  <body>
+    <header class="hero">
+      <span class="eyebrow">Figures gallery · v1.0 · 2026</span>
+      <h1>LLM <span class="accent">Open</span>Problems</h1>
+      <p>An interactive preview of the 8 hand-authored SVG figures that visualize the project's architecture, methodology, data model, markdown extension framework, phase ledger, reader personas, and workflow rhythm.</p>
+      <nav class="nav" aria-label="Figure navigation">
+        <a href="#hero">Hero</a>
+        <a href="#fig-1">1 · Architecture</a>
+        <a href="#fig-2">2 · Data model</a>
+        <a href="#fig-3">3 · Markdown framework</a>
+        <a href="#fig-4">4 · Rating dimensions</a>
+        <a href="#fig-5">5 · Phase ledger</a>
+        <a href="#fig-6">6 · Reader personas</a>
+        <a href="#fig-7">7 · Workflow</a>
+        <a href="https://github.com/jacobwucs/OpenProblems">↗ Repo</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="fig" id="hero">
+        <header>
+          <h2>Hero · brand banner</h2>
+          <span class="meta">FIG · HERO · 1280 × 480</span>
+        </header>
+        <p>One-glance product positioning: the rating-agency metaphor + 5 rating-dimension cards (Difficulty, Saturation, Urgency, Value, Industry Call) + a KPI strip across the bottom (45 phases · 24 ADRs · 921 / 71 tests · 103 kB First Load JS · 85+ unchanged-bundle units · 9 migrations · 168 i18n keys).</p>
+        <div class="frame"><img src="./hero-banner.svg" alt="LLM OpenProblems brand banner showing the rating agency metaphor and five rating-dimension cards" loading="lazy"/></div>
+      </section>
+
+      <section class="fig" id="fig-1">
+        <header>
+          <h2>1 · System architecture</h2>
+          <span class="meta">FIG · 1 / 7 · 1280 × 820</span>
+        </header>
+        <p>Five layers, top to bottom: Client UI (React / Tailwind / shadcn / D3) → App Router (Next.js 15 RSC, locale sub-paths, route handlers, Vercel Cron, middleware 160 kB) → <code>lib/</code> (schemas, auth, markdown + extensions framework, moderation, email, storage, i18n) → Storage (<code>content/</code> file-first, Turso libSQL, Vercel Blob) + External (GitHub/Google OAuth, Resend, Anthropic + arXiv).</p>
+        <div class="frame"><img src="./architecture.svg" alt="Five-layer architecture diagram" loading="lazy"/></div>
+      </section>
+
+      <section class="fig" id="fig-2">
+        <header>
+          <h2>2 · Canonical data model</h2>
+          <span class="meta">FIG · 2 / 7 · 1200 × 760</span>
+        </header>
+        <p>Three first-class entities (Problem ↔ Paper ↔ Author + Institution) plus the immutable RatingAction ledger (id · problemSlug · dimension D/S/U/V/IC · from → to · rationale · curator · methodologyVersion · timestamp). Pre-commit hook ADR-0005 enforces append-only on <code>content/problems/*/ratings/*.yaml</code> — only net-new files pass.</p>
+        <div class="frame"><img src="./data-model.svg" alt="Canonical data model showing Problem, Paper, Author/Institution entities and the immutable RatingAction ledger" loading="lazy"/></div>
+      </section>
+
+      <section class="fig" id="fig-3">
+        <header>
+          <h2>3 · Markdown extension framework</h2>
+          <span class="meta">FIG · 3 / 7 · 1280 × 820</span>
+        </header>
+        <p>The Phase 37–44 framework state — 3 consumers (Wikilinks → <code>rehypePlugins</code>, Tables → <code>schemaOverrides</code>, arXiv → <code>remarkPlugins</code>) × 4 surfaces (<code>bio</code>, <code>reviewNotes</code>, <code>rationale</code>, <code>actionRationale</code>) = <strong>12 / 12 component-surface-slot triples ACTIVE</strong> under default dispatch. Phase 45 lands DOI as a sibling consumer in <code>remarkPlugins</code> → first compositional same-slot case.</p>
+        <div class="frame"><img src="./markdown-framework.svg" alt="Markdown extension framework matrix" loading="lazy"/></div>
+      </section>
+
+      <section class="fig" id="fig-4">
+        <header>
+          <h2>4 · Five rating dimensions</h2>
+          <span class="meta">FIG · 4 / 7 · 1280 × 580</span>
+        </header>
+        <p>Difficulty (letter grade S/A/B/C/D/E) · Saturation (0–100% donut) · Urgency (0–5 star bars) · Value (0–5 ascending histogram) · Industry Call (signals + half-gauge). Each independently scored, each with a rationale, each revisable. All revisions emit immutable rating-actions.</p>
+        <div class="frame"><img src="./rating-dimensions.svg" alt="Five rating dimensions with their scales and visualizations" loading="lazy"/></div>
+      </section>
+
+      <section class="fig" id="fig-5">
+        <header>
+          <h2>5 · Phase ledger 0 → 45</h2>
+          <span class="meta">FIG · 5 / 7 · 1280 × 560</span>
+        </header>
+        <p>All 45 phases banded by thematic cluster (Foundation · Rating + Domain + Intel + Discussions · Bilingual · Auth + Profile + Curator · Profile fields + Avatars + EXIF + Op scripts · Editorial UX · Subscriber + Email + Cron · Moderation + Privacy · Markdown extension framework · pending) with 18 ADR markers as gold dots. KPI strip at the bottom.</p>
+        <div class="frame"><img src="./phase-ledger.svg" alt="Phase ledger timeline 0 to 45 with cluster bands, ADR markers, and KPI strip" loading="lazy"/></div>
+      </section>
+
+      <section class="fig" id="fig-6">
+        <header>
+          <h2>6 · Three reader personas</h2>
+          <span class="meta">FIG · 6 / 7 · 1280 × 540</span>
+        </header>
+        <p>The IA must serve all three on every page: <em>Surveyor</em> (lit-review student; wants taxonomy + canonical papers + SOTA + citable URLs) · <em>Frontier Pusher</em> (PhD / researcher; wants leaderboards + movers + competitor handles + rating-challenge + watchlist) · <em>Strategist</em> (PI / funder; wants V×IC cross-cut + low-Sat × high-U cross-cut + movers radar + trend lines + institution rollups).</p>
+        <div class="frame"><img src="./reader-personas.svg" alt="Three reader personas — Surveyor, Frontier Pusher, Strategist" loading="lazy"/></div>
+      </section>
+
+      <section class="fig" id="fig-7">
+        <header>
+          <h2>7 · Development workflow</h2>
+          <span class="meta">FIG · 7 / 7 · 1280 × 540</span>
+        </header>
+        <p>The 5-step <strong>THINK → DESIGN → CODE → ITERATE → COMMIT</strong> rhythm. One unit at a time. Don't batch. Commit after each unit. The pre-commit hook chain (ADR-0005 immutability → lint-staged + prettier → <code>pnpm test</code> → commitlint 100-char header) gates the rhythm. Never <code>--no-verify</code>.</p>
+        <div class="frame"><img src="./workflow.svg" alt="Five-step development workflow rhythm with pre-commit hook chain" loading="lazy"/></div>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built one unit at a time · governed by <a href="https://github.com/jacobwucs/OpenProblems/blob/main/MASTER_PROMPT.md">MASTER_PROMPT.md</a> · 24 ADRs accepted · <a href="https://github.com/jacobwucs/OpenProblems">View source on GitHub →</a></p>
+    </footer>
+  </body>
+</html>

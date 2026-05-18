@@ -1,200 +1,207 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 560" role="img" aria-label="Five rating dimensions — Difficulty, Saturation, Urgency, Value, Industry Call — scales and meanings" font-family="ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 580" role="img" aria-label="Five rating dimensions — Difficulty, Saturation, Urgency, Value, Industry Call — scales and meanings" font-family="ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,sans-serif">
   <title>Five rating dimensions — methodology v1.0</title>
+  <desc>Five vertical cards, one per rating dimension, each showing the dimension name, plain-definition prompt, scale visualization (letter-grade pills / saturation donut / urgency star bars / value ascending histogram / industry call half-gauge) and TypeScript type signature.</desc>
   <defs>
     <linearGradient id="bg-rd" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#f8fafc"/><stop offset="1" stop-color="#eef2f7"/>
     </linearGradient>
   </defs>
-  <rect width="1280" height="560" fill="url(#bg-rd)"/>
+  <rect width="1280" height="580" fill="url(#bg-rd)"/>
 
-  <g transform="translate(40,36)">
+  <g transform="translate(40,40)">
     <text x="0" y="0" fill="#0f172a" font-size="26" font-weight="800" letter-spacing="-0.3">Five rating dimensions · methodology v1.0</text>
     <text x="0" y="22" fill="#475569" font-size="13">Each scored independently · each with a rationale · each with a revisable history · all revisions emit immutable rating-actions</text>
-    <text x="1240" y="-2" text-anchor="end" fill="#94a3b8" font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" letter-spacing="1.4">FIG · 4 / 7</text>
-    <text x="1240" y="18" text-anchor="end" fill="#94a3b8" font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" letter-spacing="1.4">MASTER_PROMPT.md · §3.1 + §8</text>
+    <text x="1200" y="-2" text-anchor="end" fill="#94a3b8" font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" letter-spacing="1.4">FIG · 4 / 7</text>
+    <text x="1200" y="18" text-anchor="end" fill="#94a3b8" font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" letter-spacing="1.4">MASTER_PROMPT.md · §3.1 + §8</text>
   </g>
 
-  <!-- 5 columns, each 224 wide, gap 16. Origin at (40,108). Total = 5*224 + 4*16 = 1184. -->
+  <!-- 5 columns, each 224 wide, gap 16. Origin (40,108). Card height 436. Total = 5*224+4*16 = 1184. -->
 
   <!-- Column 1: Difficulty -->
-  <g transform="translate(40,108)">
-    <rect width="224" height="416" rx="14" fill="#ffffff" stroke="#1d4ed8" stroke-width="2"/>
-    <rect x="0" y="0" width="224" height="56" rx="14" fill="#1d4ed8"/>
-    <rect x="0" y="42" width="224" height="14" fill="#1d4ed8"/>
+  <g transform="translate(40,112)">
+    <rect width="224" height="436" rx="14" fill="#ffffff" stroke="#1d4ed8" stroke-width="2"/>
+    <rect x="0" y="0" width="224" height="60" rx="14" fill="#1d4ed8"/>
+    <rect x="0" y="46" width="224" height="14" fill="#1d4ed8"/>
     <text x="112" y="22" text-anchor="middle" fill="#dbeafe" font-size="10" letter-spacing="2" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">DIMENSION 1</text>
-    <text x="112" y="44" text-anchor="middle" fill="#ffffff" font-size="20" font-weight="800">Difficulty</text>
-    <text x="112" y="84" text-anchor="middle" fill="#1e293b" font-size="12">How hard is this,</text>
-    <text x="112" y="100" text-anchor="middle" fill="#1e293b" font-size="12">given current methods?</text>
+    <text x="112" y="46" text-anchor="middle" fill="#ffffff" font-size="20" font-weight="800">Difficulty</text>
+    <text x="112" y="90" text-anchor="middle" fill="#1e293b" font-size="12">How hard is this,</text>
+    <text x="112" y="108" text-anchor="middle" fill="#1e293b" font-size="12">given current methods?</text>
 
-    <text x="20" y="138" fill="#64748b" font-size="10" letter-spacing="1.4" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">SCALE · LETTER GRADE</text>
-    <g transform="translate(20,150)">
-      <g><rect width="184" height="30" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/><text x="14" y="20" fill="#1e3a8a" font-size="13" font-weight="800">S</text><text x="44" y="20" fill="#1e293b" font-size="11">grand-challenge</text></g>
-      <g transform="translate(0,36)"><rect width="184" height="30" rx="6" fill="#dbeafe"/><text x="14" y="20" fill="#1d4ed8" font-size="13" font-weight="800">A</text><text x="44" y="20" fill="#1e293b" font-size="11">very hard</text></g>
-      <g transform="translate(0,72)"><rect width="184" height="30" rx="6" fill="#e2e8f0"/><text x="14" y="20" fill="#475569" font-size="13" font-weight="800">B</text><text x="44" y="20" fill="#1e293b" font-size="11">hard</text></g>
-      <g transform="translate(0,108)"><rect width="184" height="30" rx="6" fill="#e2e8f0"/><text x="14" y="20" fill="#475569" font-size="13" font-weight="800">C</text><text x="44" y="20" fill="#1e293b" font-size="11">moderate</text></g>
-      <g transform="translate(0,144)"><rect width="184" height="30" rx="6" fill="#f1f5f9"/><text x="14" y="20" fill="#64748b" font-size="13" font-weight="800">D</text><text x="44" y="20" fill="#1e293b" font-size="11">low</text></g>
-      <g transform="translate(0,180)"><rect width="184" height="30" rx="6" fill="#f1f5f9"/><text x="14" y="20" fill="#94a3b8" font-size="13" font-weight="800">E</text><text x="44" y="20" fill="#1e293b" font-size="11">trivial</text></g>
+    <text x="20" y="142" fill="#64748b" font-size="10" letter-spacing="1.4" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">SCALE · LETTER GRADE</text>
+    <g transform="translate(20,154)">
+      <g><rect width="184" height="32" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/><text x="14" y="22" fill="#1e3a8a" font-size="14" font-weight="800">S</text><text x="44" y="22" fill="#1e293b" font-size="12">grand-challenge</text></g>
+      <g transform="translate(0,38)"><rect width="184" height="32" rx="6" fill="#dbeafe"/><text x="14" y="22" fill="#1d4ed8" font-size="14" font-weight="800">A</text><text x="44" y="22" fill="#1e293b" font-size="12">very hard</text></g>
+      <g transform="translate(0,76)"><rect width="184" height="32" rx="6" fill="#e2e8f0"/><text x="14" y="22" fill="#475569" font-size="14" font-weight="800">B</text><text x="44" y="22" fill="#1e293b" font-size="12">hard</text></g>
+      <g transform="translate(0,114)"><rect width="184" height="32" rx="6" fill="#e2e8f0"/><text x="14" y="22" fill="#475569" font-size="14" font-weight="800">C</text><text x="44" y="22" fill="#1e293b" font-size="12">moderate</text></g>
+      <g transform="translate(0,152)"><rect width="184" height="32" rx="6" fill="#f1f5f9"/><text x="14" y="22" fill="#64748b" font-size="14" font-weight="800">D</text><text x="44" y="22" fill="#1e293b" font-size="12">low</text></g>
+      <g transform="translate(0,190)"><rect width="184" height="32" rx="6" fill="#f1f5f9"/><text x="14" y="22" fill="#94a3b8" font-size="14" font-weight="800">E</text><text x="44" y="22" fill="#1e293b" font-size="12">trivial</text></g>
     </g>
-    <text x="20" y="392" fill="#94a3b8" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">type: union of 6 literals</text>
+    <line x1="20" y1="400" x2="204" y2="400" stroke="#e2e8f0"/>
+    <text x="20" y="420" fill="#94a3b8" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">type: union of 6 literals</text>
   </g>
 
   <!-- Column 2: Saturation -->
-  <g transform="translate(280,108)">
-    <rect width="224" height="416" rx="14" fill="#ffffff" stroke="#047857" stroke-width="2"/>
-    <rect x="0" y="0" width="224" height="56" rx="14" fill="#047857"/>
-    <rect x="0" y="42" width="224" height="14" fill="#047857"/>
+  <g transform="translate(280,112)">
+    <rect width="224" height="436" rx="14" fill="#ffffff" stroke="#047857" stroke-width="2"/>
+    <rect x="0" y="0" width="224" height="60" rx="14" fill="#047857"/>
+    <rect x="0" y="46" width="224" height="14" fill="#047857"/>
     <text x="112" y="22" text-anchor="middle" fill="#a7f3d0" font-size="10" letter-spacing="2" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">DIMENSION 2</text>
-    <text x="112" y="44" text-anchor="middle" fill="#ffffff" font-size="20" font-weight="800">Saturation</text>
-    <text x="112" y="84" text-anchor="middle" fill="#1e293b" font-size="12">How close to "solved"</text>
-    <text x="112" y="100" text-anchor="middle" fill="#1e293b" font-size="12">vs. achievable ceiling?</text>
+    <text x="112" y="46" text-anchor="middle" fill="#ffffff" font-size="20" font-weight="800">Saturation</text>
+    <text x="112" y="90" text-anchor="middle" fill="#1e293b" font-size="12">How close to "solved"</text>
+    <text x="112" y="108" text-anchor="middle" fill="#1e293b" font-size="12">vs. achievable ceiling?</text>
 
-    <text x="20" y="138" fill="#64748b" font-size="10" letter-spacing="1.4" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">SCALE · 0 — 100 PERCENT</text>
+    <text x="20" y="142" fill="#64748b" font-size="10" letter-spacing="1.4" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">SCALE · 0 — 100 PERCENT</text>
 
     <!-- big donut -->
     <g transform="translate(112,236)">
-      <circle r="62" fill="none" stroke="#e2e8f0" stroke-width="12"/>
-      <circle r="62" fill="none" stroke="#10b981" stroke-width="12" stroke-dasharray="148 389" stroke-linecap="round" transform="rotate(-90)"/>
-      <text y="-4" text-anchor="middle" fill="#0f172a" font-size="32" font-weight="800">38</text>
-      <text y="22" text-anchor="middle" fill="#10b981" font-size="14" font-weight="700">PERCENT</text>
+      <circle r="64" fill="none" stroke="#e2e8f0" stroke-width="14"/>
+      <circle r="64" fill="none" stroke="#10b981" stroke-width="14" stroke-dasharray="153 402" stroke-linecap="round" transform="rotate(-90)"/>
+      <text y="-2" text-anchor="middle" fill="#0f172a" font-size="34" font-weight="800">38</text>
+      <text y="24" text-anchor="middle" fill="#10b981" font-size="13" font-weight="700">PERCENT</text>
     </g>
 
-    <g transform="translate(20,328)" font-size="11">
+    <g transform="translate(20,340)" font-size="11">
       <text y="0" fill="#475569"><tspan fill="#0f172a" font-weight="700">0%</tspan> · pristine open problem</text>
       <text y="18" fill="#475569"><tspan fill="#0f172a" font-weight="700">50%</tspan> · halfway to ceiling</text>
       <text y="36" fill="#475569"><tspan fill="#0f172a" font-weight="700">100%</tspan> · effectively solved</text>
     </g>
-    <text x="20" y="392" fill="#94a3b8" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">type: number(0..100) · null OK</text>
+    <line x1="20" y1="400" x2="204" y2="400" stroke="#e2e8f0"/>
+    <text x="20" y="420" fill="#94a3b8" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">type: number(0..100) · null OK</text>
   </g>
 
   <!-- Column 3: Urgency -->
-  <g transform="translate(520,108)">
-    <rect width="224" height="416" rx="14" fill="#ffffff" stroke="#d97706" stroke-width="2"/>
-    <rect x="0" y="0" width="224" height="56" rx="14" fill="#d97706"/>
-    <rect x="0" y="42" width="224" height="14" fill="#d97706"/>
+  <g transform="translate(520,112)">
+    <rect width="224" height="436" rx="14" fill="#ffffff" stroke="#d97706" stroke-width="2"/>
+    <rect x="0" y="0" width="224" height="60" rx="14" fill="#d97706"/>
+    <rect x="0" y="46" width="224" height="14" fill="#d97706"/>
     <text x="112" y="22" text-anchor="middle" fill="#fde68a" font-size="10" letter-spacing="2" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">DIMENSION 3</text>
-    <text x="112" y="44" text-anchor="middle" fill="#ffffff" font-size="20" font-weight="800">Urgency</text>
-    <text x="112" y="84" text-anchor="middle" fill="#1e293b" font-size="12">How time-sensitive</text>
-    <text x="112" y="100" text-anchor="middle" fill="#1e293b" font-size="12">is progress here?</text>
+    <text x="112" y="46" text-anchor="middle" fill="#ffffff" font-size="20" font-weight="800">Urgency</text>
+    <text x="112" y="90" text-anchor="middle" fill="#1e293b" font-size="12">How time-sensitive</text>
+    <text x="112" y="108" text-anchor="middle" fill="#1e293b" font-size="12">is progress here?</text>
 
-    <text x="20" y="138" fill="#64748b" font-size="10" letter-spacing="1.4" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">SCALE · 0 — 5 STARS</text>
+    <text x="20" y="142" fill="#64748b" font-size="10" letter-spacing="1.4" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">SCALE · 0 — 5 STARS</text>
 
-    <g transform="translate(36,176)">
-      <!-- 5 rows of star bars -->
+    <g transform="translate(40,168)">
+      <!-- 5 rows of star bars. row height 26. -->
       <g><text x="-12" y="14" fill="#64748b" font-size="11" text-anchor="end" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">5</text>
         <g fill="#f59e0b">
           <path transform="translate(0,0)"   d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
-          <path transform="translate(28,0)"  d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
-          <path transform="translate(56,0)"  d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
-          <path transform="translate(84,0)"  d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
-          <path transform="translate(112,0)" d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
+          <path transform="translate(26,0)"  d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
+          <path transform="translate(52,0)"  d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
+          <path transform="translate(78,0)"  d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
+          <path transform="translate(104,0)" d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
         </g>
       </g>
-      <g transform="translate(0,28)"><text x="-12" y="14" fill="#64748b" font-size="11" text-anchor="end" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">4</text>
+      <g transform="translate(0,26)"><text x="-12" y="14" fill="#64748b" font-size="11" text-anchor="end" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">4</text>
         <g fill="#f59e0b">
           <path transform="translate(0,0)"   d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
-          <path transform="translate(28,0)"  d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
-          <path transform="translate(56,0)"  d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
-          <path transform="translate(84,0)"  d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
+          <path transform="translate(26,0)"  d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
+          <path transform="translate(52,0)"  d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
+          <path transform="translate(78,0)"  d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
         </g>
-        <path transform="translate(112,0)" fill="#e2e8f0" d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
+        <path transform="translate(104,0)" fill="#e2e8f0" d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
       </g>
-      <g transform="translate(0,56)"><text x="-12" y="14" fill="#64748b" font-size="11" text-anchor="end" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">3</text>
+      <g transform="translate(0,52)"><text x="-12" y="14" fill="#64748b" font-size="11" text-anchor="end" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">3</text>
         <g fill="#f59e0b">
           <path transform="translate(0,0)"   d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
-          <path transform="translate(28,0)"  d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
-          <path transform="translate(56,0)"  d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
+          <path transform="translate(26,0)"  d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
+          <path transform="translate(52,0)"  d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
         </g>
         <g fill="#e2e8f0">
-          <path transform="translate(84,0)"  d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
-          <path transform="translate(112,0)" d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
+          <path transform="translate(78,0)"  d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
+          <path transform="translate(104,0)" d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
         </g>
       </g>
-      <g transform="translate(0,84)"><text x="-12" y="14" fill="#64748b" font-size="11" text-anchor="end" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">2</text>
+      <g transform="translate(0,78)"><text x="-12" y="14" fill="#64748b" font-size="11" text-anchor="end" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">2</text>
         <g fill="#f59e0b">
           <path transform="translate(0,0)"   d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
-          <path transform="translate(28,0)"  d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
+          <path transform="translate(26,0)"  d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
         </g>
         <g fill="#e2e8f0">
-          <path transform="translate(56,0)"  d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
-          <path transform="translate(84,0)"  d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
-          <path transform="translate(112,0)" d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
+          <path transform="translate(52,0)"  d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
+          <path transform="translate(78,0)"  d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
+          <path transform="translate(104,0)" d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
         </g>
       </g>
-      <g transform="translate(0,112)"><text x="-12" y="14" fill="#64748b" font-size="11" text-anchor="end" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">1</text>
+      <g transform="translate(0,104)"><text x="-12" y="14" fill="#64748b" font-size="11" text-anchor="end" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">1</text>
         <g fill="#f59e0b">
           <path transform="translate(0,0)" d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
         </g>
         <g fill="#e2e8f0">
-          <path transform="translate(28,0)"  d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
-          <path transform="translate(56,0)"  d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
-          <path transform="translate(84,0)"  d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
-          <path transform="translate(112,0)" d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
+          <path transform="translate(26,0)"  d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
+          <path transform="translate(52,0)"  d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
+          <path transform="translate(78,0)"  d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
+          <path transform="translate(104,0)" d="M8 0 l2.4 5.1 5.6 0.6 -4.2 3.9 1.2 5.6 -5 -2.9 -5 2.9 1.2 -5.6 -4.2 -3.9 5.6 -0.6 z"/>
         </g>
       </g>
     </g>
-    <text x="20" y="360" fill="#475569" font-size="11">5 · existential / safety-critical</text>
-    <text x="20" y="376" fill="#475569" font-size="11">3 · clear blocker, no deadline</text>
-    <text x="20" y="392" fill="#94a3b8" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">type: integer(0..5)</text>
+    <text x="20" y="332" fill="#475569" font-size="11"><tspan font-weight="700" fill="#0f172a">5</tspan> · existential / safety-critical</text>
+    <text x="20" y="350" fill="#475569" font-size="11"><tspan font-weight="700" fill="#0f172a">3</tspan> · clear blocker, no deadline</text>
+    <text x="20" y="368" fill="#475569" font-size="11"><tspan font-weight="700" fill="#0f172a">1</tspan> · slow-burn priority</text>
+    <line x1="20" y1="400" x2="204" y2="400" stroke="#e2e8f0"/>
+    <text x="20" y="420" fill="#94a3b8" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">type: integer(0..5)</text>
   </g>
 
   <!-- Column 4: Value -->
-  <g transform="translate(760,108)">
-    <rect width="224" height="416" rx="14" fill="#ffffff" stroke="#7c3aed" stroke-width="2"/>
-    <rect x="0" y="0" width="224" height="56" rx="14" fill="#7c3aed"/>
-    <rect x="0" y="42" width="224" height="14" fill="#7c3aed"/>
+  <g transform="translate(760,112)">
+    <rect width="224" height="436" rx="14" fill="#ffffff" stroke="#7c3aed" stroke-width="2"/>
+    <rect x="0" y="0" width="224" height="60" rx="14" fill="#7c3aed"/>
+    <rect x="0" y="46" width="224" height="14" fill="#7c3aed"/>
     <text x="112" y="22" text-anchor="middle" fill="#ddd6fe" font-size="10" letter-spacing="2" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">DIMENSION 4</text>
-    <text x="112" y="44" text-anchor="middle" fill="#ffffff" font-size="20" font-weight="800">Value</text>
-    <text x="112" y="84" text-anchor="middle" fill="#1e293b" font-size="12">Expected scientific /</text>
-    <text x="112" y="100" text-anchor="middle" fill="#1e293b" font-size="12">economic impact</text>
+    <text x="112" y="46" text-anchor="middle" fill="#ffffff" font-size="20" font-weight="800">Value</text>
+    <text x="112" y="90" text-anchor="middle" fill="#1e293b" font-size="12">Expected scientific /</text>
+    <text x="112" y="108" text-anchor="middle" fill="#1e293b" font-size="12">economic impact</text>
 
-    <text x="20" y="138" fill="#64748b" font-size="10" letter-spacing="1.4" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">SCALE · 0 — 5 STARS</text>
+    <text x="20" y="142" fill="#64748b" font-size="10" letter-spacing="1.4" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">SCALE · 0 — 5 STARS</text>
 
     <!-- value-shape: ascending bars -->
-    <g transform="translate(28,168)">
-      <rect x="0"   y="120" width="28" height="14"  rx="2" fill="#ddd6fe"/>
-      <rect x="34"  y="98"  width="28" height="36"  rx="2" fill="#c4b5fd"/>
-      <rect x="68"  y="76"  width="28" height="58"  rx="2" fill="#a78bfa"/>
-      <rect x="102" y="48"  width="28" height="86"  rx="2" fill="#8b5cf6"/>
-      <rect x="136" y="14"  width="28" height="120" rx="2" fill="#7c3aed"/>
-      <g font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#94a3b8" text-anchor="middle">
-        <text x="14"  y="150">1</text>
-        <text x="48"  y="150">2</text>
-        <text x="82"  y="150">3</text>
-        <text x="116" y="150">4</text>
-        <text x="150" y="150">5</text>
+    <g transform="translate(28,172)">
+      <rect x="0"   y="120" width="28" height="16"  rx="2" fill="#ddd6fe"/>
+      <rect x="34"  y="98"  width="28" height="38"  rx="2" fill="#c4b5fd"/>
+      <rect x="68"  y="74"  width="28" height="62"  rx="2" fill="#a78bfa"/>
+      <rect x="102" y="46"  width="28" height="90"  rx="2" fill="#8b5cf6"/>
+      <rect x="136" y="10"  width="28" height="126" rx="2" fill="#7c3aed"/>
+      <g font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#94a3b8" text-anchor="middle">
+        <text x="14"  y="152">1</text>
+        <text x="48"  y="152">2</text>
+        <text x="82"  y="152">3</text>
+        <text x="116" y="152">4</text>
+        <text x="150" y="152">5</text>
       </g>
     </g>
-    <text x="20" y="344" fill="#475569" font-size="11">5 · paradigm-shifting</text>
-    <text x="20" y="360" fill="#475569" font-size="11">3 · valuable subfield advance</text>
-    <text x="20" y="376" fill="#475569" font-size="11">1 · incremental</text>
-    <text x="20" y="392" fill="#94a3b8" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">type: integer(0..5)</text>
+    <text x="20" y="350" fill="#475569" font-size="11"><tspan font-weight="700" fill="#0f172a">5</tspan> · paradigm-shifting</text>
+    <text x="20" y="368" fill="#475569" font-size="11"><tspan font-weight="700" fill="#0f172a">3</tspan> · valuable subfield advance</text>
+    <text x="20" y="386" fill="#475569" font-size="11"><tspan font-weight="700" fill="#0f172a">1</tspan> · incremental</text>
+    <line x1="20" y1="400" x2="204" y2="400" stroke="#e2e8f0"/>
+    <text x="20" y="420" fill="#94a3b8" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">type: integer(0..5)</text>
   </g>
 
   <!-- Column 5: Industry Call -->
-  <g transform="translate(1000,108)">
-    <rect width="224" height="416" rx="14" fill="#ffffff" stroke="#dc2626" stroke-width="2"/>
-    <rect x="0" y="0" width="224" height="56" rx="14" fill="#dc2626"/>
-    <rect x="0" y="42" width="224" height="14" fill="#dc2626"/>
+  <g transform="translate(1000,112)">
+    <rect width="224" height="436" rx="14" fill="#ffffff" stroke="#dc2626" stroke-width="2"/>
+    <rect x="0" y="0" width="224" height="60" rx="14" fill="#dc2626"/>
+    <rect x="0" y="46" width="224" height="14" fill="#dc2626"/>
     <text x="112" y="22" text-anchor="middle" fill="#fecaca" font-size="10" letter-spacing="2" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">DIMENSION 5</text>
-    <text x="112" y="44" text-anchor="middle" fill="#ffffff" font-size="20" font-weight="800">Industry Call</text>
-    <text x="112" y="84" text-anchor="middle" fill="#1e293b" font-size="12">How loudly is industry</text>
-    <text x="112" y="100" text-anchor="middle" fill="#1e293b" font-size="12">asking for this?</text>
+    <text x="112" y="46" text-anchor="middle" fill="#ffffff" font-size="20" font-weight="800">Industry Call</text>
+    <text x="112" y="90" text-anchor="middle" fill="#1e293b" font-size="12">How loudly is industry</text>
+    <text x="112" y="108" text-anchor="middle" fill="#1e293b" font-size="12">asking for this?</text>
 
-    <text x="20" y="138" fill="#64748b" font-size="10" letter-spacing="1.4" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">SIGNALS</text>
-    <g transform="translate(20,150)" font-size="12">
-      <g><circle cx="6" cy="14" r="5" fill="#dc2626"/><text x="20" y="18" fill="#1e293b">job postings</text></g>
+    <text x="20" y="142" fill="#64748b" font-size="10" letter-spacing="1.4" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">SIGNALS</text>
+    <g transform="translate(20,156)" font-size="12">
+      <g><circle cx="6" cy="14" r="5" fill="#dc2626"/><text x="20" y="18" fill="#1e293b">Job postings</text></g>
       <g transform="translate(0,22)"><circle cx="6" cy="14" r="5" fill="#dc2626"/><text x="20" y="18" fill="#1e293b">VC funding flows</text></g>
-      <g transform="translate(0,44)"><circle cx="6" cy="14" r="5" fill="#dc2626"/><text x="20" y="18" fill="#1e293b">infra demand</text></g>
-      <g transform="translate(0,66)"><circle cx="6" cy="14" r="5" fill="#dc2626"/><text x="20" y="18" fill="#1e293b">RFP / RFC volume</text></g>
-      <g transform="translate(0,88)"><circle cx="6" cy="14" r="5" fill="#dc2626"/><text x="20" y="18" fill="#1e293b">conference sponsorship</text></g>
+      <g transform="translate(0,44)"><circle cx="6" cy="14" r="5" fill="#dc2626"/><text x="20" y="18" fill="#1e293b">Infrastructure demand</text></g>
+      <g transform="translate(0,66)"><circle cx="6" cy="14" r="5" fill="#dc2626"/><text x="20" y="18" fill="#1e293b">Conference sponsorship</text></g>
     </g>
-    <!-- gauge -->
-    <g transform="translate(112,316)">
-      <path d="M -70 0 A 70 70 0 0 1 70 0" fill="none" stroke="#fee2e2" stroke-width="14" stroke-linecap="round"/>
-      <path d="M -70 0 A 70 70 0 0 1 7.4 -69.6" fill="none" stroke="#dc2626" stroke-width="14" stroke-linecap="round"/>
-      <text y="-12" text-anchor="middle" fill="#0f172a" font-size="24" font-weight="800">3</text>
-      <text y="6" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">/ 5</text>
+
+    <!-- gauge: top arc at gauge_y - 70 - 7 (stroke half) = gauge_y - 77. Need top > 244 (signals row 4 bottom). gauge_y >= 322 -->
+    <g transform="translate(112,360)">
+      <path d="M -68 0 A 68 68 0 0 1 68 0" fill="none" stroke="#fee2e2" stroke-width="14" stroke-linecap="round"/>
+      <path d="M -68 0 A 68 68 0 0 1 7.2 -67.6" fill="none" stroke="#dc2626" stroke-width="14" stroke-linecap="round"/>
+      <text y="-14" text-anchor="middle" fill="#0f172a" font-size="28" font-weight="800">3</text>
+      <text y="-2" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">/ 5</text>
     </g>
-    <text x="20" y="392" fill="#94a3b8" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">type: integer(0..5)</text>
+    <line x1="20" y1="400" x2="204" y2="400" stroke="#e2e8f0"/>
+    <text x="20" y="420" fill="#94a3b8" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">type: integer(0..5)</text>
   </g>
 </svg>

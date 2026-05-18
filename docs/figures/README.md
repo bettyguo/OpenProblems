@@ -35,3 +35,12 @@ open docs/figures/hero-banner.svg
 ```
 
 GitHub renders them inline in Markdown via standard `![alt](path)` syntax — no extra config required.
+
+## Live gallery (GitHub Pages-ready)
+
+[`gallery.html`](./gallery.html) is a self-contained static page that bundles all 8 figures with a sticky navigator, light/dark-mode-aware CSS, and accessible markup. It has zero dependencies and can be deployed to GitHub Pages directly from the `docs/` directory:
+
+1. **Settings → Pages → Source**: `main` branch, `/docs` folder. Save.
+2. The gallery is live at `https://<owner>.github.io/<repo>/figures/gallery.html`.
+
+For a local preview, open the file directly — `file:///…/docs/figures/gallery.html` renders identically.

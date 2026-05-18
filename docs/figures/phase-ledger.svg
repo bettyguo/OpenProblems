@@ -1,5 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 420" role="img" aria-label="Phase ledger — Phase 0 through Phase 44 closed, Phase 45 in flight; 45 phases / 24 ADRs / 921 of 71 tests / 103 kB First Load JS unchanged for 85 consecutive units" font-family="ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 560" role="img" aria-label="Phase ledger — Phase 0 through Phase 44 closed, Phase 45 in flight; 45 phases, 24 ADRs, 921 of 71 tests, 103 kB First Load JS unchanged for 85 consecutive units" font-family="ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,sans-serif">
   <title>Phase ledger 0 → 45</title>
+  <desc>Top: 45-phase timeline banded by thematic cluster, with ADR markers as gold dots above. Middle: 9 cluster cards in a 3-by-3 grid. Bottom: KPI strip with 9 headline metrics.</desc>
   <defs>
     <linearGradient id="bg-pl" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#0b1437"/><stop offset="1" stop-color="#0f172a"/>
@@ -15,173 +16,184 @@
     <linearGradient id="band-markdown" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#be185d"/><stop offset="1" stop-color="#ec4899"/></linearGradient>
     <linearGradient id="band-pending" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#475569"/><stop offset="1" stop-color="#64748b"/></linearGradient>
   </defs>
-  <rect width="1280" height="420" fill="url(#bg-pl)"/>
+  <rect width="1280" height="560" fill="url(#bg-pl)"/>
 
   <g transform="translate(40,36)">
     <text x="0" y="0" fill="#f8fafc" font-size="26" font-weight="800" letter-spacing="-0.3">Phase ledger · 0 → 45</text>
-    <text x="0" y="22" fill="#cbd5e1" font-size="13">All 45 phases closed (✅). Phase 45 in flight (⏸ at unit 45.0). 9 thematic clusters · 24 ADRs · 921/71 tests · 103 kB First Load JS UNCHANGED for 85 consecutive units.</text>
-    <text x="1240" y="-2" text-anchor="end" fill="#94a3b8" font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" letter-spacing="1.4">FIG · 5 / 7</text>
-    <text x="1240" y="18" text-anchor="end" fill="#94a3b8" font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" letter-spacing="1.4">HEAD a7e971b · 2026-05-18</text>
+    <text x="0" y="22" fill="#cbd5e1" font-size="13">All 45 phases closed (✅). Phase 45 in flight (⏸ at Unit 45.0). 9 thematic clusters · 24 ADRs · 921/71 tests · 103 kB First Load JS UNCHANGED for 85 consecutive units.</text>
+    <text x="1200" y="-2" text-anchor="end" fill="#94a3b8" font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" letter-spacing="1.4">FIG · 5 / 7</text>
+    <text x="1200" y="18" text-anchor="end" fill="#94a3b8" font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" letter-spacing="1.4">HEAD a7e971b · 2026-05-18</text>
   </g>
 
-  <!-- Timeline track. 46 phases over a 1200-px ruler. -->
-  <!-- Origin x=40, width=1200. Each phase = 1200/45 ≈ 26.67. We'll use 26 with 2 gap. -->
-  <!-- Cluster bands: vertical stripes -->
-  <g transform="translate(40,118)">
-    <!-- cluster band background -->
-    <g>
-      <!-- Phase 0-2 = Foundation -->
-      <rect x="0"   y="0" width="79"  height="40" fill="url(#band-foundation)"/>
-      <!-- Phase 3-6 = Rating + Domain + Intel + Discussions -->
-      <rect x="79"  y="0" width="106" height="40" fill="url(#band-intel)"/>
-      <!-- Phase 7-8 = Bilingual -->
-      <rect x="185" y="0" width="53"  height="40" fill="url(#band-bilingual)"/>
-      <!-- Phase 9-14 = Auth + Profile + Curator + Visibility -->
-      <rect x="238" y="0" width="159" height="40" fill="url(#band-auth)"/>
-      <!-- Phase 15-21 = Profile fields + avatars + EXIF + orphan-cleanup -->
-      <rect x="397" y="0" width="186" height="40" fill="url(#band-ops)"/>
-      <!-- Phase 22-25 = Operational scripts -->
-      <rect x="583" y="0" width="106" height="40" fill="url(#band-ops)"/>
-      <!-- Phase 26-29 = Per-challenge UI + rationale markdown -->
-      <rect x="689" y="0" width="106" height="40" fill="url(#band-editorial)"/>
-      <!-- Phase 30-34 = Email + cron + subscriber -->
-      <rect x="795" y="0" width="133" height="40" fill="url(#band-email)"/>
-      <!-- Phase 35-36 = Moderation + privacy -->
-      <rect x="928" y="0" width="53"  height="40" fill="url(#band-moderation)"/>
-      <!-- Phase 37-44 = Markdown extension framework arc -->
-      <rect x="981" y="0" width="213" height="40" fill="url(#band-markdown)"/>
-      <!-- Phase 45 pending -->
-      <rect x="1194" y="0" width="26" height="40" fill="url(#band-pending)" opacity="0.6"/>
+  <!-- Timeline: origin x=40, width=1200. 46 phases (0..45) over 1200 px → 26.087 per phase. -->
+  <!-- Cluster width math (phases × 26.087): Foundation P0-2 (3) = 78 · Intel P3-6 (4) = 104 · Bilingual P7-8 (2) = 52 · Auth P9-14 (6) = 156 · Ops P15-21 (7) = 183 · Scripts P22-25 (4) = 104 · Editorial P26-29 (4) = 104 · Email P30-34 (5) = 131 · Moderation P35-36 (2) = 52 · Markdown P37-44 (8) = 209 · Pending P45 (1) = 27. -->
+  <g transform="translate(40,108)">
+    <!-- ADR markers (dots above the track) -->
+    <g fill="#fbbf24">
+      <circle cx="13" cy="-12" r="3.5"/><!-- ADRs 0001-0005 at P0 (rendered as one dot) -->
+      <circle cx="91" cy="-12" r="3.5"/><!-- 0006 P3 -->
+      <circle cx="117" cy="-12" r="3.5"/><!-- 0007 P4 -->
+      <circle cx="143" cy="-12" r="3.5"/><!-- 0008-0009 P5 -->
+      <circle cx="169" cy="-12" r="3.5"/><!-- 0010 P6 -->
+      <circle cx="196" cy="-12" r="3.5"/><!-- 0011 P7 -->
+      <circle cx="248" cy="-12" r="3.5"/><!-- 0012-0013 P9 -->
+      <circle cx="326" cy="-12" r="3.5"/><!-- 0014 P12 -->
+      <circle cx="378" cy="-12" r="3.5"/><!-- 0015 P14 -->
+      <circle cx="404" cy="-12" r="3.5"/><!-- 0016 P15 -->
+      <circle cx="430" cy="-12" r="3.5"/><!-- 0017 P16 -->
+      <circle cx="456" cy="-12" r="3.5"/><!-- 0018 P17 -->
+      <circle cx="508" cy="-12" r="3.5"/><!-- 0019 P19 -->
+      <circle cx="743" cy="-12" r="3.5"/><!-- 0020 P28 -->
+      <circle cx="795" cy="-12" r="3.5"/><!-- 0021 P30 -->
+      <circle cx="821" cy="-12" r="3.5"/><!-- 0022 P31 -->
+      <circle cx="873" cy="-12" r="3.5"/><!-- 0023 P33 -->
+      <circle cx="925" cy="-12" r="3.5"/><!-- 0024 P35 -->
     </g>
 
-    <!-- Phase ticks (every phase) -->
+    <!-- cluster bands. each cluster ends mid-gap between phases -->
     <g>
-      <!-- vertical dividers every 5 phases -->
-      <line x1="0"    y1="-10" x2="0"    y2="44" stroke="#cbd5e1" stroke-opacity="0.4"/>
-      <line x1="133"  y1="-10" x2="133"  y2="44" stroke="#cbd5e1" stroke-opacity="0.4"/>
-      <line x1="266"  y1="-10" x2="266"  y2="44" stroke="#cbd5e1" stroke-opacity="0.4"/>
-      <line x1="400"  y1="-10" x2="400"  y2="44" stroke="#cbd5e1" stroke-opacity="0.4"/>
-      <line x1="533"  y1="-10" x2="533"  y2="44" stroke="#cbd5e1" stroke-opacity="0.4"/>
-      <line x1="666"  y1="-10" x2="666"  y2="44" stroke="#cbd5e1" stroke-opacity="0.4"/>
-      <line x1="800"  y1="-10" x2="800"  y2="44" stroke="#cbd5e1" stroke-opacity="0.4"/>
-      <line x1="933"  y1="-10" x2="933"  y2="44" stroke="#cbd5e1" stroke-opacity="0.4"/>
-      <line x1="1066" y1="-10" x2="1066" y2="44" stroke="#cbd5e1" stroke-opacity="0.4"/>
-      <line x1="1200" y1="-10" x2="1200" y2="44" stroke="#cbd5e1" stroke-opacity="0.4"/>
+      <rect x="0"    y="0" width="78"  height="50" fill="url(#band-foundation)"/>
+      <rect x="78"   y="0" width="104" height="50" fill="url(#band-intel)"/>
+      <rect x="182"  y="0" width="52"  height="50" fill="url(#band-bilingual)"/>
+      <rect x="234"  y="0" width="156" height="50" fill="url(#band-auth)"/>
+      <rect x="390"  y="0" width="183" height="50" fill="url(#band-ops)"/>
+      <rect x="573"  y="0" width="104" height="50" fill="url(#band-ops)" opacity="0.78"/>
+      <rect x="677"  y="0" width="104" height="50" fill="url(#band-editorial)"/>
+      <rect x="781"  y="0" width="131" height="50" fill="url(#band-email)"/>
+      <rect x="912"  y="0" width="52"  height="50" fill="url(#band-moderation)"/>
+      <rect x="964"  y="0" width="209" height="50" fill="url(#band-markdown)"/>
+      <rect x="1173" y="0" width="27"  height="50" fill="url(#band-pending)"/>
+    </g>
+
+    <!-- vertical separators between clusters (subtle) -->
+    <g stroke="#0b1437" stroke-width="2" stroke-opacity="0.45">
+      <line x1="78"   y1="0" x2="78"   y2="50"/>
+      <line x1="182"  y1="0" x2="182"  y2="50"/>
+      <line x1="234"  y1="0" x2="234"  y2="50"/>
+      <line x1="390"  y1="0" x2="390"  y2="50"/>
+      <line x1="573"  y1="0" x2="573"  y2="50"/>
+      <line x1="677"  y1="0" x2="677"  y2="50"/>
+      <line x1="781"  y1="0" x2="781"  y2="50"/>
+      <line x1="912"  y1="0" x2="912"  y2="50"/>
+      <line x1="964"  y1="0" x2="964"  y2="50"/>
+      <line x1="1173" y1="0" x2="1173" y2="50"/>
     </g>
 
     <!-- phase ticks across the bottom -->
     <g font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#cbd5e1">
-      <text x="0"    y="60" text-anchor="middle">P0</text>
-      <text x="133"  y="60" text-anchor="middle">P5</text>
-      <text x="266"  y="60" text-anchor="middle">P10</text>
-      <text x="400"  y="60" text-anchor="middle">P15</text>
-      <text x="533"  y="60" text-anchor="middle">P20</text>
-      <text x="666"  y="60" text-anchor="middle">P25</text>
-      <text x="800"  y="60" text-anchor="middle">P30</text>
-      <text x="933"  y="60" text-anchor="middle">P35</text>
-      <text x="1066" y="60" text-anchor="middle">P40</text>
-      <text x="1194" y="60" text-anchor="middle" fill="#fbbf24" font-weight="700">P45 ⏸</text>
+      <text x="0"    y="70" text-anchor="middle">P0</text>
+      <text x="130"  y="70" text-anchor="middle">P5</text>
+      <text x="261"  y="70" text-anchor="middle">P10</text>
+      <text x="391"  y="70" text-anchor="middle">P15</text>
+      <text x="521"  y="70" text-anchor="middle">P20</text>
+      <text x="652"  y="70" text-anchor="middle">P25</text>
+      <text x="782"  y="70" text-anchor="middle">P30</text>
+      <text x="913"  y="70" text-anchor="middle">P35</text>
+      <text x="1043" y="70" text-anchor="middle">P40</text>
+      <text x="1186" y="70" text-anchor="middle" fill="#fbbf24" font-weight="700">P45 ⏸</text>
     </g>
 
-    <!-- ADR markers (dots above the track) -->
-    <g fill="#fbbf24">
-      <!-- ADR 0001-0005 at P0 -->
-      <circle cx="13" cy="-6" r="3.5"/>
-      <!-- ADR 0006 at P3 -->
-      <circle cx="93" cy="-6" r="3.5"/>
-      <!-- ADR 0007 at P4 -->
-      <circle cx="120" cy="-6" r="3.5"/>
-      <!-- ADR 0008-0009 at P5 -->
-      <circle cx="146" cy="-6" r="3.5"/>
-      <!-- 0010 at P6 -->
-      <circle cx="173" cy="-6" r="3.5"/>
-      <!-- 0011 at P7 -->
-      <circle cx="200" cy="-6" r="3.5"/>
-      <!-- 0012-0013 at P9 -->
-      <circle cx="253" cy="-6" r="3.5"/>
-      <!-- 0014 at P12 -->
-      <circle cx="333" cy="-6" r="3.5"/>
-      <!-- 0015 at P14 -->
-      <circle cx="386" cy="-6" r="3.5"/>
-      <!-- 0016 at P15 -->
-      <circle cx="413" cy="-6" r="3.5"/>
-      <!-- 0017 at P16 -->
-      <circle cx="440" cy="-6" r="3.5"/>
-      <!-- 0018 at P17 -->
-      <circle cx="466" cy="-6" r="3.5"/>
-      <!-- 0019 at P19 -->
-      <circle cx="520" cy="-6" r="3.5"/>
-      <!-- 0020 at P28 -->
-      <circle cx="760" cy="-6" r="3.5"/>
-      <!-- 0021 at P30 -->
-      <circle cx="813" cy="-6" r="3.5"/>
-      <!-- 0022 at P31 -->
-      <circle cx="840" cy="-6" r="3.5"/>
-      <!-- 0023 at P33 -->
-      <circle cx="893" cy="-6" r="3.5"/>
-      <!-- 0024 at P35 -->
-      <circle cx="946" cy="-6" r="3.5"/>
-    </g>
-
-    <!-- check marks per phase, inside band -->
-    <g fill="#ffffff" font-size="11" text-anchor="middle">
-      <!-- 45 check marks evenly spaced; for brevity skip individual marks and use single label -->
+    <!-- "EVERY GOLD DOT = AN ADR" legend -->
+    <g transform="translate(0,-30)">
+      <circle cx="6" cy="0" r="3.5" fill="#fbbf24"/>
+      <text x="18" y="3" fill="#94a3b8" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" letter-spacing="1.2">EACH GOLD DOT = ONE ADR (18 distinct phases · 24 ADRs)</text>
     </g>
   </g>
 
-  <!-- Cluster labels (below track) -->
-  <g transform="translate(40,202)" font-size="11">
-    <g><line x1="0" y1="0" x2="79" y2="0" stroke="#3b82f6" stroke-width="3" stroke-linecap="round"/>
-      <text x="0" y="20" fill="#dbeafe" font-weight="700">Foundation</text>
-      <text x="0" y="36" fill="#94a3b8" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="10">P0–P2 · 5 ADRs</text>
+  <!-- Cluster legend: 3 cols x 3 rows of 9 + 1 pending. Each card 388 wide x 88 tall. Gap 14. -->
+  <g transform="translate(40,222)">
+    <!-- row 1 -->
+    <g transform="translate(0,0)">
+      <rect width="388" height="88" rx="10" fill="#1e293b" stroke="#334155"/>
+      <rect x="0" y="0" width="6" height="88" fill="url(#band-foundation)"/>
+      <text x="20" y="22" fill="#dbeafe" font-weight="700" font-size="14">Foundation</text>
+      <text x="20" y="42" fill="#94a3b8" font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">P0 — P2 · 3 phases · 5 ADRs</text>
+      <text x="20" y="62" fill="#cbd5e1" font-size="11">Stack · schemas · App Router stub · Velite</text>
+      <text x="20" y="78" fill="#cbd5e1" font-size="11">pipeline · brand · first problems</text>
     </g>
-    <g transform="translate(85,0)"><line x1="0" y1="0" x2="100" y2="0" stroke="#a855f7" stroke-width="3" stroke-linecap="round"/>
-      <text x="0" y="20" fill="#ede9fe" font-weight="700">Rating · DomainMap · Intel · Discussions</text>
-      <text x="0" y="36" fill="#94a3b8" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="10">P3–P6 · 5 ADRs</text>
+    <g transform="translate(402,0)">
+      <rect width="388" height="88" rx="10" fill="#1e293b" stroke="#334155"/>
+      <rect x="0" y="0" width="6" height="88" fill="url(#band-intel)"/>
+      <text x="20" y="22" fill="#ede9fe" font-weight="700" font-size="14">Rating · DomainMap · Intel · Discussions</text>
+      <text x="20" y="42" fill="#94a3b8" font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">P3 — P6 · 4 phases · 5 ADRs</text>
+      <text x="20" y="62" fill="#cbd5e1" font-size="11">Rating dynamics · movers · D3 force-directed</text>
+      <text x="20" y="78" fill="#cbd5e1" font-size="11">domain map · arXiv ingest · Giscus discussions</text>
     </g>
-    <g transform="translate(191,0)"><line x1="0" y1="0" x2="47" y2="0" stroke="#22d3ee" stroke-width="3" stroke-linecap="round"/>
-      <text x="0" y="20" fill="#cffafe" font-weight="700">Bilingual</text>
-      <text x="0" y="36" fill="#94a3b8" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="10">P7–P8 · ADR-0011</text>
+    <g transform="translate(804,0)">
+      <rect width="388" height="88" rx="10" fill="#1e293b" stroke="#334155"/>
+      <rect x="0" y="0" width="6" height="88" fill="url(#band-bilingual)"/>
+      <text x="20" y="22" fill="#cffafe" font-weight="700" font-size="14">Bilingual rendering</text>
+      <text x="20" y="42" fill="#94a3b8" font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">P7 — P8 · 2 phases · ADR-0011</text>
+      <text x="20" y="62" fill="#cbd5e1" font-size="11">next-intl · sub-path routing · sibling-file</text>
+      <text x="20" y="78" fill="#cbd5e1" font-size="11">storage · 168 keys / locale</text>
     </g>
-    <g transform="translate(244,0)"><line x1="0" y1="0" x2="153" y2="0" stroke="#fbbf24" stroke-width="3" stroke-linecap="round"/>
-      <text x="0" y="20" fill="#fef3c7" font-weight="700">Auth · Profile · Curator · Visibility</text>
-      <text x="0" y="36" fill="#94a3b8" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="10">P9–P14 · 4 ADRs · §13 closed at P9</text>
+
+    <!-- row 2 -->
+    <g transform="translate(0,102)">
+      <rect width="388" height="88" rx="10" fill="#1e293b" stroke="#334155"/>
+      <rect x="0" y="0" width="6" height="88" fill="url(#band-auth)"/>
+      <text x="20" y="22" fill="#fef3c7" font-weight="700" font-size="14">Auth · Profile · Curator · Visibility</text>
+      <text x="20" y="42" fill="#94a3b8" font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">P9 — P14 · 6 phases · 4 ADRs · §13 closed</text>
+      <text x="20" y="62" fill="#cbd5e1" font-size="11">NextAuth v5 · Turso · rating-challenge form</text>
+      <text x="20" y="78" fill="#cbd5e1" font-size="11">curator state machine · per-handle profiles</text>
     </g>
-    <g transform="translate(403,0)"><line x1="0" y1="0" x2="286" y2="0" stroke="#f87171" stroke-width="3" stroke-linecap="round"/>
-      <text x="0" y="20" fill="#fee2e2" font-weight="700">Profile fields · Avatars · EXIF · Operational scripts</text>
-      <text x="0" y="36" fill="#94a3b8" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="10">P15–P25 · 3 ADRs · 6 ops-script keystones</text>
+    <g transform="translate(402,102)">
+      <rect width="388" height="88" rx="10" fill="#1e293b" stroke="#334155"/>
+      <rect x="0" y="0" width="6" height="88" fill="url(#band-ops)"/>
+      <text x="20" y="22" fill="#fee2e2" font-weight="700" font-size="14">Profile fields · Avatars · EXIF · Op scripts</text>
+      <text x="20" y="42" fill="#94a3b8" font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">P15 — P25 · 11 phases · 3 ADRs · 6 op-script keystones</text>
+      <text x="20" y="62" fill="#cbd5e1" font-size="11">displayName · bio · Vercel Blob · sharp EXIF</text>
+      <text x="20" y="78" fill="#cbd5e1" font-size="11">backfill · orphan cleanup · emit-challenge-action</text>
     </g>
-    <g transform="translate(695,0)"><line x1="0" y1="0" x2="100" y2="0" stroke="#10b981" stroke-width="3" stroke-linecap="round"/>
-      <text x="0" y="20" fill="#d1fae5" font-weight="700">Editorial UX</text>
-      <text x="0" y="36" fill="#94a3b8" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="10">P26–P29 · ADR-0018 D-G #2/#3</text>
+    <g transform="translate(804,102)">
+      <rect width="388" height="88" rx="10" fill="#1e293b" stroke="#334155"/>
+      <rect x="0" y="0" width="6" height="88" fill="url(#band-editorial)"/>
+      <text x="20" y="22" fill="#d1fae5" font-weight="700" font-size="14">Editorial UX</text>
+      <text x="20" y="42" fill="#94a3b8" font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">P26 — P29 · 4 phases · ADR-0018 D-G #2/#3</text>
+      <text x="20" y="62" fill="#cbd5e1" font-size="11">Per-challenge detail · markdown rationale</text>
+      <text x="20" y="78" fill="#cbd5e1" font-size="11">multi-provider OAuth · actionRationale MDX</text>
     </g>
-    <g transform="translate(801,0)"><line x1="0" y1="0" x2="127" y2="0" stroke="#c084fc" stroke-width="3" stroke-linecap="round"/>
-      <text x="0" y="20" fill="#ede9fe" font-weight="700">Subscriber · Email · Cron</text>
-      <text x="0" y="36" fill="#94a3b8" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="10">P30–P34 · 3 ADRs · 22-phase patience close</text>
+
+    <!-- row 3 -->
+    <g transform="translate(0,204)">
+      <rect width="388" height="88" rx="10" fill="#1e293b" stroke="#334155"/>
+      <rect x="0" y="0" width="6" height="88" fill="url(#band-email)"/>
+      <text x="20" y="22" fill="#ede9fe" font-weight="700" font-size="14">Subscriber · Email · Cron</text>
+      <text x="20" y="42" fill="#94a3b8" font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">P30 — P34 · 5 phases · 3 ADRs · 22-phase patience close</text>
+      <text x="20" y="62" fill="#cbd5e1" font-size="11">Resend · 3 templates · weekly digest cron</text>
+      <text x="20" y="78" fill="#cbd5e1" font-size="11">per-user subscriptions · "manage" widget</text>
     </g>
-    <g transform="translate(934,0)"><line x1="0" y1="0" x2="47" y2="0" stroke="#2dd4bf" stroke-width="3" stroke-linecap="round"/>
-      <text x="0" y="20" fill="#ccfbf1" font-weight="700">Moderation · Privacy</text>
-      <text x="0" y="36" fill="#94a3b8" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="10">P35–P36 · ADR-0024</text>
+    <g transform="translate(402,204)">
+      <rect width="388" height="88" rx="10" fill="#1e293b" stroke="#334155"/>
+      <rect x="0" y="0" width="6" height="88" fill="url(#band-moderation)"/>
+      <text x="20" y="22" fill="#ccfbf1" font-weight="700" font-size="14">Moderation · Privacy</text>
+      <text x="20" y="42" fill="#94a3b8" font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">P35 — P36 · 2 phases · ADR-0024 · 0025 candidate slot</text>
+      <text x="20" y="62" fill="#cbd5e1" font-size="11">Framework-only ContentModerator interface</text>
+      <text x="20" y="78" fill="#cbd5e1" font-size="11">per-user privacy opt-out (Q64 closure)</text>
     </g>
-    <g transform="translate(987,0)"><line x1="0" y1="0" x2="207" y2="0" stroke="#ec4899" stroke-width="3" stroke-linecap="round"/>
-      <text x="0" y="20" fill="#fce7f3" font-weight="700">Markdown extension framework</text>
-      <text x="0" y="36" fill="#94a3b8" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="10">P37–P44 · 8-phase arc · 12/12 triples</text>
+    <g transform="translate(804,204)">
+      <rect width="388" height="88" rx="10" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+      <rect x="0" y="0" width="6" height="88" fill="url(#band-markdown)"/>
+      <text x="20" y="22" fill="#fce7f3" font-weight="700" font-size="14">Markdown extension framework <tspan fill="#fbbf24" font-size="11">★</tspan></text>
+      <text x="20" y="42" fill="#94a3b8" font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">P37 — P44 · 8 phases · 8 D-G APPENDs · 12/12 triples</text>
+      <text x="20" y="62" fill="#cbd5e1" font-size="11">Framework + 3 consumers + composition</text>
+      <text x="20" y="78" fill="#cbd5e1" font-size="11">+ 3 cross-surface expansions · Phase 45 → DOI</text>
     </g>
   </g>
 
   <!-- Bottom stats bar -->
-  <g transform="translate(40,332)">
-    <rect width="1200" height="60" rx="10" fill="#1e293b" stroke="#334155"/>
-    <g transform="translate(20,16)" font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">
-      <g><text y="14" fill="#94a3b8" letter-spacing="1.2">PHASES</text><text y="32" fill="#fbbf24" font-size="22" font-weight="800">45</text></g>
-      <g transform="translate(110,0)"><text y="14" fill="#94a3b8" letter-spacing="1.2">ADRS</text><text y="32" fill="#fbbf24" font-size="22" font-weight="800">24</text></g>
-      <g transform="translate(180,0)"><text y="14" fill="#94a3b8" letter-spacing="1.2">UNITS · CHANGELOG</text><text y="32" fill="#fbbf24" font-size="22" font-weight="800">~8.5k</text></g>
-      <g transform="translate(330,0)"><text y="14" fill="#94a3b8" letter-spacing="1.2">VITEST FILES</text><text y="32" fill="#fbbf24" font-size="22" font-weight="800">71</text></g>
-      <g transform="translate(450,0)"><text y="14" fill="#94a3b8" letter-spacing="1.2">VITEST TESTS</text><text y="32" fill="#fbbf24" font-size="22" font-weight="800">921</text></g>
-      <g transform="translate(570,0)"><text y="14" fill="#94a3b8" letter-spacing="1.2">FIRST LOAD JS</text><text y="32" fill="#fbbf24" font-size="22" font-weight="800">103 kB</text></g>
-      <g transform="translate(710,0)"><text y="14" fill="#94a3b8" letter-spacing="1.2">UNCHANGED-BUNDLE STREAK</text><text y="32" fill="#fbbf24" font-size="22" font-weight="800">85+</text></g>
-      <g transform="translate(910,0)"><text y="14" fill="#94a3b8" letter-spacing="1.2">DB MIGRATIONS</text><text y="32" fill="#fbbf24" font-size="22" font-weight="800">9</text></g>
-      <g transform="translate(1030,0)"><text y="14" fill="#94a3b8" letter-spacing="1.2">i18n KEYS · LOCALE</text><text y="32" fill="#fbbf24" font-size="22" font-weight="800">168</text></g>
+  <g transform="translate(40,520)">
+    <rect width="1200" height="36" rx="10" fill="#1e293b" stroke="#334155"/>
+    <g transform="translate(20,12)" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">
+      <g><text y="0" fill="#94a3b8" letter-spacing="1.1">PHASES </text><text x="56" y="0" fill="#fbbf24" font-size="13" font-weight="800">45</text></g>
+      <g transform="translate(98,0)"><text y="0" fill="#94a3b8" letter-spacing="1.1">ADRs </text><text x="38" y="0" fill="#fbbf24" font-size="13" font-weight="800">24</text></g>
+      <g transform="translate(168,0)"><text y="0" fill="#94a3b8" letter-spacing="1.1">CHANGELOG </text><text x="84" y="0" fill="#fbbf24" font-size="13" font-weight="800">~8.5k</text></g>
+      <g transform="translate(298,0)"><text y="0" fill="#94a3b8" letter-spacing="1.1">VITEST FILES </text><text x="92" y="0" fill="#fbbf24" font-size="13" font-weight="800">71</text></g>
+      <g transform="translate(420,0)"><text y="0" fill="#94a3b8" letter-spacing="1.1">VITEST TESTS </text><text x="92" y="0" fill="#fbbf24" font-size="13" font-weight="800">921</text></g>
+      <g transform="translate(548,0)"><text y="0" fill="#94a3b8" letter-spacing="1.1">FIRST LOAD JS </text><text x="98" y="0" fill="#fbbf24" font-size="13" font-weight="800">103 kB</text></g>
+      <g transform="translate(700,0)"><text y="0" fill="#94a3b8" letter-spacing="1.1">UNCHANGED STREAK </text><text x="124" y="0" fill="#fbbf24" font-size="13" font-weight="800">85+ units</text></g>
+      <g transform="translate(880,0)"><text y="0" fill="#94a3b8" letter-spacing="1.1">MIGRATIONS </text><text x="80" y="0" fill="#fbbf24" font-size="13" font-weight="800">9</text></g>
+      <g transform="translate(978,0)"><text y="0" fill="#94a3b8" letter-spacing="1.1">i18n KEYS / LOCALE </text><text x="132" y="0" fill="#fbbf24" font-size="13" font-weight="800">168</text></g>
     </g>
   </g>
 </svg>
