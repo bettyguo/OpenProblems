@@ -64,6 +64,13 @@
       "when": 1779055903653,
       "tag": "0008_subscriber_user_id",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1779068398218,
+      "tag": "0009_user_profile_public",
+      "breakpoints": true
     }
   ]
 }

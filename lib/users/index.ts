@@ -111,12 +111,18 @@ export async function getPublicProfileByHandle(handle: string): Promise<PublicPr
       displayName: users.displayName,
       bio: users.bio,
       imageOverride: users.imageOverride,
+      profilePublic: users.profilePublic,
     })
     .from(users)
     .where(sql`LOWER(${users.githubLogin}) = LOWER(${normalized})`)
     .limit(1);
 
-  if (!row || !row.githubLogin) return null;
+  // Phase-36 Q64 per-user privacy opt-out per ADR-0015 D-A APPEND
+  // (Phase-36 extension): opted-out users return null so the caller's
+  // `notFound()` fires → /[locale]/u/{handle} renders the pure 404
+  // (no friendly "this profile is private" page; minimizes handle-
+  // existence information leakage per Phase-36-prep D-H).
+  if (!row || !row.githubLogin || !row.profilePublic) return null;
 
   return {
     userId: row.userId,
@@ -486,4 +492,30 @@ export async function clearProfileImage(userId: string): Promise<void> {
   } catch {
     // Orphan tolerated; abandoned-blob cleanup script handles it.
   }
+}
+
+// ---------------------------------------------------------------------------
+// Phase-36 per-user privacy opt-out (Unit 36.1) — per ADR-0015 D-A APPEND
+// (extends the public-data invariant with the user's right to opt out). Closes
+// Q64 architectural carryover at 15+ phase carryover = longest open
+// architectural Q in project history post-Q68 resolution.
+// ---------------------------------------------------------------------------
+
+/**
+ * Set the user's profile-public flag per Phase-36 Q64 resolution. When
+ * `isPublic` is false the user opts OUT of the public surface:
+ * `getPublicProfileByHandle` returns null for them → `/[locale]/u/{handle}`
+ * returns 404 (pure 404; no friendly "this profile is private" notice to
+ * minimize handle-existence information leakage per Phase-36-prep D-H).
+ *
+ * Public-by-default invariant preserved per ADR-0015 D-A APPEND: new users
+ * land with `profilePublic = true` via the schema default; the user must
+ * explicitly opt out via the toggle on `/[locale]/profile`. No confirmation
+ * modal — the toggle is reversible per Phase-36-prep D-11 lean.
+ *
+ * Caller (server action on `/profile`) has already verified the session.
+ * Helpers know nothing about auth — pass `userId` directly.
+ */
+export async function setProfilePublic(userId: string, isPublic: boolean): Promise<void> {
+  await db.update(users).set({ profilePublic: isPublic }).where(eq(users.id, userId));
 }

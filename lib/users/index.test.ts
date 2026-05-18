@@ -14,8 +14,8 @@ vi.mock("@/lib/storage", () => ({
 
 vi.mock("@/lib/moderation", () => ({
   getModerator: vi.fn(() => ({
-    moderateText: vi.fn(async () => ({ ok: true })),
-    moderateImage: vi.fn(async () => ({ ok: true })),
+    moderateText: vi.fn(async () => ({ ok: true as const })),
+    moderateImage: vi.fn(async () => ({ ok: true as const })),
   })),
 }));
 
@@ -39,6 +39,7 @@ const {
   MAX_BIO_CHARS,
   MAX_DISPLAY_NAME_CHARS,
   MAX_IMAGE_URL_CHARS,
+  setProfilePublic,
   updateProfile,
   updateProfileImage,
   validateBio,
@@ -86,7 +87,9 @@ describe("getPublicProfileByHandle", () => {
       bio: null,
       imageOverride: null,
     };
-    vi.mocked(db.select).mockReturnValueOnce(profileQuery([fakeRow]) as never);
+    vi.mocked(db.select).mockReturnValueOnce(
+      profileQuery([{ ...fakeRow, profilePublic: true }]) as never,
+    );
 
     const profile = await getPublicProfileByHandle("BettyGuo");
     expect(profile).toEqual(fakeRow);
@@ -103,7 +106,9 @@ describe("getPublicProfileByHandle", () => {
       bio: null,
       imageOverride: null,
     };
-    vi.mocked(db.select).mockReturnValueOnce(profileQuery([fakeRow]) as never);
+    vi.mocked(db.select).mockReturnValueOnce(
+      profileQuery([{ ...fakeRow, profilePublic: true }]) as never,
+    );
 
     const profile = await getPublicProfileByHandle("bettyguo"); // lowercase URL
     expect(profile?.githubLogin).toBe("BettyGuo"); // canonical wins
@@ -126,7 +131,9 @@ describe("getPublicProfileByHandle", () => {
       bio: null,
       imageOverride: null,
     };
-    vi.mocked(db.select).mockReturnValueOnce(profileQuery([fakeRow]) as never);
+    vi.mocked(db.select).mockReturnValueOnce(
+      profileQuery([{ ...fakeRow, profilePublic: true }]) as never,
+    );
 
     const profile = await getPublicProfileByHandle("anything");
     expect(profile).toBeNull();
@@ -329,7 +336,9 @@ describe("PublicProfile shape extension (Unit 15.3)", () => {
       bio: "I'm a PhD.",
       imageOverride: null,
     };
-    vi.mocked(db.select).mockReturnValueOnce(profileQuery([fakeRow]) as never);
+    vi.mocked(db.select).mockReturnValueOnce(
+      profileQuery([{ ...fakeRow, profilePublic: true }]) as never,
+    );
 
     const profile = await getPublicProfileByHandle("BettyGuo");
     expect(profile?.displayName).toBe("Betty");
@@ -347,7 +356,9 @@ describe("PublicProfile shape extension (Unit 15.3)", () => {
       bio: null,
       imageOverride: null,
     };
-    vi.mocked(db.select).mockReturnValueOnce(profileQuery([fakeRow]) as never);
+    vi.mocked(db.select).mockReturnValueOnce(
+      profileQuery([{ ...fakeRow, profilePublic: true }]) as never,
+    );
 
     const profile = await getPublicProfileByHandle("BettyGuo");
     expect(profile?.displayName).toBeNull();
@@ -588,7 +599,9 @@ describe("PublicProfile shape extension (Unit 16.3 — imageOverride)", () => {
       bio: null,
       imageOverride: "https://store.public.blob.vercel-storage.com/avatars/u-1-9.jpg",
     };
-    vi.mocked(db.select).mockReturnValueOnce(profileQuery([fakeRow]) as never);
+    vi.mocked(db.select).mockReturnValueOnce(
+      profileQuery([{ ...fakeRow, profilePublic: true }]) as never,
+    );
 
     const profile = await getPublicProfileByHandle("BettyGuo");
     expect(profile?.imageOverride).toBe(
@@ -605,19 +618,19 @@ describe("Content moderation integration (ADR-0024 D-D)", () => {
     vi.mocked(delAvatar).mockReset();
     vi.mocked(getModerator).mockReset();
     vi.mocked(getModerator).mockReturnValue({
-      moderateText: vi.fn(async () => ({ ok: true })),
-      moderateImage: vi.fn(async () => ({ ok: true })),
+      moderateText: vi.fn(async () => ({ ok: true as const })),
+      moderateImage: vi.fn(async () => ({ ok: true as const })),
     });
   });
 
   it("updateProfile returns the moderation reason when bio is blocked (ADR-0024 D-D bio surface)", async () => {
     vi.mocked(getModerator).mockReturnValue({
       moderateText: vi.fn(async () => ({
-        ok: false,
-        severity: "block",
+        ok: false as const,
+        severity: "block" as const,
         reasons: ["bio policy violation"],
       })),
-      moderateImage: vi.fn(async () => ({ ok: true })),
+      moderateImage: vi.fn(async () => ({ ok: true as const })),
     });
     vi.mocked(db.update).mockReturnValue({
       set: vi.fn().mockReturnThis(),
@@ -631,10 +644,10 @@ describe("Content moderation integration (ADR-0024 D-D)", () => {
 
   it("updateProfileImage returns the moderation reason when avatar is blocked (ADR-0024 D-D avatar surface)", async () => {
     vi.mocked(getModerator).mockReturnValue({
-      moderateText: vi.fn(async () => ({ ok: true })),
+      moderateText: vi.fn(async () => ({ ok: true as const })),
       moderateImage: vi.fn(async () => ({
-        ok: false,
-        severity: "block",
+        ok: false as const,
+        severity: "block" as const,
         reasons: ["image policy violation"],
       })),
     });
@@ -646,5 +659,50 @@ describe("Content moderation integration (ADR-0024 D-D)", () => {
     const err = await updateProfileImage("u-1", file);
     expect(err).toBe("image policy violation");
     expect(putAvatar).not.toHaveBeenCalled();
+  });
+});
+
+describe("Phase-36 Q64 per-user privacy opt-out (ADR-0015 D-A APPEND)", () => {
+  beforeEach(() => {
+    vi.mocked(db.select).mockReset();
+    vi.mocked(db.update).mockReset();
+  });
+
+  it("getPublicProfileByHandle returns null when profilePublic is false (opted-out users surface as 404)", async () => {
+    const optedOutRow = {
+      userId: "u-1",
+      githubLogin: "BettyGuo",
+      name: "Betty G.",
+      image: null,
+      createdAt: new Date("2026-05-14"),
+      displayName: null,
+      bio: null,
+      imageOverride: null,
+      profilePublic: false,
+    };
+    vi.mocked(db.select).mockReturnValueOnce(profileQuery([optedOutRow]) as never);
+
+    const profile = await getPublicProfileByHandle("BettyGuo");
+    expect(profile).toBeNull();
+  });
+
+  it("setProfilePublic(userId, false) writes profilePublic = false to the row", async () => {
+    const set = vi.fn().mockReturnThis();
+    const where = vi.fn().mockResolvedValue(undefined);
+    vi.mocked(db.update).mockReturnValueOnce({ set, where } as never);
+
+    await setProfilePublic("u-1", false);
+
+    expect(set).toHaveBeenCalledWith({ profilePublic: false });
+  });
+
+  it("setProfilePublic(userId, true) writes profilePublic = true to the row (re-publish path)", async () => {
+    const set = vi.fn().mockReturnThis();
+    const where = vi.fn().mockResolvedValue(undefined);
+    vi.mocked(db.update).mockReturnValueOnce({ set, where } as never);
+
+    await setProfilePublic("u-1", true);
+
+    expect(set).toHaveBeenCalledWith({ profilePublic: true });
   });
 });

@@ -14,8 +14,8 @@ vi.mock("@/lib/rating-challenges", async (importOriginal) => {
 });
 vi.mock("@/lib/moderation", () => ({
   getModerator: vi.fn(() => ({
-    moderateText: vi.fn(async () => ({ ok: true })),
-    moderateImage: vi.fn(async () => ({ ok: true })),
+    moderateText: vi.fn(async () => ({ ok: true as const })),
+    moderateImage: vi.fn(async () => ({ ok: true as const })),
   })),
 }));
 
@@ -181,11 +181,11 @@ describe("POST /api/v1/rating-challenges", () => {
     it("returns 422 moderation-refused on rationale block (ADR-0024 D-D rating-challenge surface)", async () => {
       vi.mocked(getModerator).mockReturnValueOnce({
         moderateText: vi.fn(async () => ({
-          ok: false,
-          severity: "block",
+          ok: false as const,
+          severity: "block" as const,
           reasons: ["rationale policy violation"],
         })),
-        moderateImage: vi.fn(async () => ({ ok: true })),
+        moderateImage: vi.fn(async () => ({ ok: true as const })),
       });
       const res = await POST(
         makeReq({

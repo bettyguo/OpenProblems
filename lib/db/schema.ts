@@ -59,6 +59,20 @@ export const users = sqliteTable("user", {
   // separate primitive); the DB stores only the URL pointer — preserves
   // [ADR-0013](../../docs/adr/0013-db-choice.md) D-F USER-STATE-only.
   imageOverride: text("imageOverride"),
+  // Phase-36 user-controlled privacy opt-out per [ADR-0015](../../docs/adr/0015-per-user-privacy-model.md)
+  // D-A (extended; see Phase-36 APPEND in Unit 36.3 hygiene). Boolean stored
+  // as SQLite integer 0/1 via drizzle-orm `integer({ mode: "boolean" })`;
+  // `notNull().default(true)` backfills existing rows to public-by-default
+  // (matches Phase 9-35 behavior verbatim; explicit opt-out via toggle on
+  // `/[locale]/profile`). When false, `getPublicProfileByHandle` returns null
+  // → `/[locale]/u/{handle}` returns 404 (pure 404; no friendly notice to
+  // minimize handle-existence information leakage per Phase-36 prep D-H).
+  // Migration `0009_user_profile_public` is the **fourth ALTER migration**
+  // adding a column to `users` and the first since Phase 16's
+  // `0005_user_image_override`. Closes Q64 architectural carryover at
+  // **15+ phase carryover** — longest open architectural Q in project history
+  // post-Q68 resolution.
+  profilePublic: integer("profilePublic", { mode: "boolean" }).notNull().default(true),
 });
 
 export const accounts = sqliteTable(

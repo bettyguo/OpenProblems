@@ -1,0 +1,1 @@
+ALTER TABLE `user` ADD `profilePublic` integer DEFAULT true NOT NULL;
