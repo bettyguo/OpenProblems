@@ -2470,6 +2470,108 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 39 — Community-adjacent surfaces (**thirtieth NON-§13 phase**: second concrete Phase-37-framework consumer — GFM tables on `reviewNotes` surface via `schemaOverrides` slot + new `TablesExtensionRegistry` + second non-default env-var dispatch arm `MARKDOWN_EXTENSIONS=tables`; validates the framework slot Phase 38 did NOT exercise; first "framework + 2 consumers" 3-phase cluster in project history; anticipated 4-5 units; 34th "Continue" override invoked)
 
+#### Unit 39.4 — Phase 39 acceptance gate (second concrete Phase-37-framework consumer realized; tables-per-reviewNotes; 24 ADRs; 5 units; 805/69; ADR-0018 D-G extends to 6 APPENDs; 64th consecutive 103 kB unit; 35th "Continue" override opportunity at Phase 39 → 40 boundary)
+
+- Fifth and final Phase-39 unit; gate-only. **Phase 39 CLOSES at this unit's commit**. Phase 40 entry awaits explicit "Continue" override OR phase-40 thread direction.
+
+##### Phase 39 — what shipped (5 units)
+
+| Unit | Title | Type | Commit |
+|---|---|---|---|
+| 39.0 | Phase 39 prep | docs | `cb8bb99` |
+| 39.1 | Tables extension + ADR-0018 D-G APPEND | code+APPEND | `e7b55d0` |
+| 39.2 | `MARKDOWN_EXTENSIONS=tables` dispatch + end-to-end tests | code | `e1d2e98` |
+| 39.3 | Phase-39 hygiene + reconciliation | docs | `b68331d` |
+| 39.4 | Phase 39 acceptance gate (this unit) | gate | (this commit) |
+
+Total: **5 units** — mirrors Phase 35 + 37 + 38 5-unit framework shapes.
+
+##### GFM tables consumer realized
+
+Phase-39-prep D-1 first-thread recommendation realized end-to-end:
+
+- `lib/markdown/extensions/tables.ts` shipped (Unit 39.1): `GFM_TABLE_SCHEMA_OVERRIDES` + `TablesExtensionRegistry` class + `PHASE_39_DEFAULT_ENABLED_SURFACES` const + 10 tests (5 schema-content + 5 registry-class including a divergence-detector parity test against `bioSchema.tagNames`).
+- `MARKDOWN_EXTENSIONS=tables` env-var dispatch arm in `getExtensionRegistry()` (Unit 39.2; second non-default Phase-37-framework dispatch arm in project history).
+- 3 env-var-aware dispatch tests + 8 end-to-end reviewNotes tables-rendering tests (Unit 39.2).
+- ADR-0018 D-G APPEND adds Phase-39 EXTENDED block (Unit 39.1; APPEND-D-M tables shape + D-N override-replace exercise + divergence-detector pattern + D-O XSS-audit boundary + D-P dispatch arm + D-Q Phase 40+ deferrals).
+
+##### Phase 38 → Phase 39 delta
+
+| Metric | Phase 38 close | Phase 39 close | Δ |
+|---|---|---|---|
+| Tests | 784 / 68 files | **805 / 69 files** | +21 / +1 |
+| ADRs | 24 | **24** | 0 |
+| ADR-0018 D-G APPEND count | 5 | **6** (project record extends) | +1 |
+| DB tables | 7 | 7 | 0 |
+| Migrations | 9 | 9 | 0 |
+| Env vars | 14 | 14 (recognized values 2 → 3 on `MARKDOWN_EXTENSIONS`) | 0 |
+| i18n keys per locale | 168 | 168 | 0 |
+| Dynamic page+API routes | 13 | 13 | 0 |
+| First Load JS shared chunk | 103 kB | **103 kB** | 0 |
+| Middleware bundle | 160 kB | 160 kB | 0 |
+| OPEN_QUESTIONS top-level Q-count | 66 | **66** | 0 |
+| Phase-37+ candidate count | 8 | **8** | 0 |
+| Runtime deps added | — | **0** | 0 |
+| `lib/markdown/extensions/` files | 7 | **9** (+tables.ts + tables.test.ts) | +2 |
+| Phase-37-framework concrete consumers | 1 | **2** | +1 |
+| Phase-37-framework slots exercised by real consumers | 1 (rehypePlugins) | **2** (rehypePlugins + schemaOverrides) | +1 |
+
+##### Architectural firsts in Phase 39 (14 enumerated)
+
+1. **Second concrete Phase-37-framework consumer in project history** — first was Phase-38 wikilinks. After Phase 39 the framework has 2 consumers exercising 2 of 3 slots.
+2. **First "framework + 2 consumers" 3-phase cluster in project history** (Phase 37 framework + Phase 38 wikilinks + Phase 39 tables).
+3. **First real-consumer exercise of `schemaOverrides` slot** — Phase 37 + 38 only tested it with synthetic test extensions.
+4. **First real-consumer exercise of APPEND-D-C override-replace semantics** — `GFM_TABLE_SCHEMA_OVERRIDES.tagNames` supplies the full Phase-17 base list verbatim + 6 additions; same for `attributes`.
+5. **First divergence-detector test pattern** — `tables.test.ts` asserts every entry in `bioSchema.tagNames` appears in `GFM_TABLE_SCHEMA_OVERRIDES.tagNames`. Future ADR-0018 D-B base-list expansion that omits this override surfaces as a test failure.
+6. **Second non-default Phase-37-framework env-var dispatch arm** — `MARKDOWN_EXTENSIONS=tables` joins `wikilinks`.
+7. **First multi-non-default-arm env-var** in `getExtensionRegistry()` (3 recognized values: default + wikilinks + tables).
+8. **First markdown-pipeline tag-allowlist expansion since Phase 17** — Phase 17 set the initial 18-tag allow-list; Phase 18 + 27 + 29 surface additions all reused it verbatim; Phase 39 is the **first per-surface allow-list expansion** (6 new tags for reviewNotes only).
+9. **Third consecutive Phase-37-framework-pattern phase** (Phase 37 + 38 + 39).
+10. **Sixth APPEND on ADR-0018 D-G** — extends the **first-ADR-D-clause-with-most-APPENDs record** from 5 → 6 (Phase 18 + 27 + 29 + 37 + 38 + 39).
+11. **9th consecutive phase without new B category** (Phase 31 + 32 + 33 + 34 + 35 + 36 + 37 + 38 + **39** = first such 9-phase run in project history).
+12. **61st-through-64th consecutive 103 kB First Load JS units** in project history (Phase 9 Unit 9.5 → Phase 39 Unit 39.4 inclusive).
+13. **Thirtieth NON-§13 phase** (§13 ledger CLOSED at Unit 9.9; carried unchanged through Phases 10-39).
+14. **First Phase-34-onward phase to NOT close a specific Q or B** — Phase 34 + 35 + 36 + 37 + 38 each closed something (Q79 + Q68 + Q64 + Q72 + B.14); Phase 39 ships framework-consumer realization without a specific Q/B-class closure. **First "framework-consumer-only no-Q-closure" phase since the framework landed**; 5-phase net-decrease streak ENDS at Phase 38.
+
+##### Phase 39 → Phase 40 entry conditions
+
+Per §12 cardinal rule: **Phase 40 entry requires explicit human sign-off**. This unit ships the Phase 39 close; Phase 40.0 prep awaits `"Continue"` override OR phase-40-thread direction.
+
+**Recommended Phase 40 first-thread candidates**:
+
+| Rank | Thread | Units | Tractability |
+|---|---|---|---|
+| 1 | Third concrete Phase-37-framework consumer (exercises `remarkPlugins` slot for 3-of-3 demonstration; e.g., `@mention` resolution OR custom remark transform) | 2-3 | Completes framework's 3-slot demonstration; needs new plugin authoring vs Phase 39 schema-only |
+| 2 | Multi-value `MARKDOWN_EXTENSIONS=wikilinks,tables` composition + `CompositeExtensionRegistry` | 2-3 | Closes Phase-38 + 39 mutual-exclusivity deferral |
+| 3 | ADR-0025 concrete content-moderation provider | 3-5 | Strongest patience signal; not autonomous-tractable |
+| 4 | Pre-commit typecheck hook | 1 | Closes Unit-36.1 gap; tiny |
+| 5 | Q78 digest-send analytics | 3-5 | Waits for Q77 |
+| 6 | Account-deletion blob cleanup | 1-2 | Conditional on UI |
+| 7 | `safeAuth()` extraction | 1 | Still 4 copies |
+| 8 | Subscribe + `/profile` test backfill | 1-2 | Not user-visible |
+| 9 | N. v2 methodology authoring | curator | §1 (d) blocker |
+| 10 | Q79 Profile B / C | 2-3 each | Needs user-feedback |
+
+**Operational gates still pending** (6 UNCHANGED from Phase 38 close): Q54 + Q55 + Q69 + Q73 + Q75 + Q77.
+
+##### Anti-scope (Phase 40+ deferrals; carried forward)
+
+NOT multi-value `MARKDOWN_EXTENSIONS=wikilinks,tables` composition (Phase 40+); NOT `CompositeExtensionRegistry` (Phase 40+); NOT cross-surface table expansion (Phase 40+); NOT table-specific attributes `colspan` / `rowspan` / `scope` (Phase 40+); NOT `<caption>` (Phase 40+); NOT `remarkPlugins` slot consumer (Phase 40+); NOT surface-specific table schemas (Phase 40+); NOT ADR-0025 concrete content-moderation provider (Phase 40+); NOT Q78 digest-send analytics (waits for Q77); NOT account-deletion blob cleanup (Phase 40+); NOT v2 methodology authoring (curator-track); all Phase-30-through-38 deferrals carry forward.
+
+##### Smoke gates (Phase 39 close)
+
+- `pnpm typecheck` — strict; passes.
+- `pnpm test` — **805 / 69 files** passing.
+- `pnpm audit-content` — 0 errors / 6 warnings (Q32 baseline since Phase 2; **37 consecutive phases unchanged**).
+- First Load JS shared chunk — **103 kB UNCHANGED** end-to-end Phase 9 Unit 9.5 → Phase 39 Unit 39.4 (**64 consecutive units**).
+- Middleware bundle — **160 kB UNCHANGED** since Phase 12.
+
+##### Boundary statement
+
+**Phase 39 CLOSED after 5 units (39.0 prep + 39.1 tables + 39.2 dispatch + 39.3 hygiene + 39.4 gate). Second concrete Phase-37-framework consumer realized via GFM tables on `reviewNotes`: `TablesExtensionRegistry` + `GFM_TABLE_SCHEMA_OVERRIDES` + `MARKDOWN_EXTENSIONS=tables` env-var dispatch arm. First "framework + 2 consumers" 3-phase cluster in project history. First real-consumer exercise of `schemaOverrides` slot + APPEND-D-C override-replace semantics. First multi-non-default-arm env-var in framework dispatch. Sixth APPEND on ADR-0018 D-G — extends first-ADR-D-clause-with-most-APPENDs record (Phase 18 + 27 + 29 + 37 + 38 + 39). Thirtieth NON-§13 phase. Third consecutive Phase-37-framework-pattern phase. Ninth consecutive phase without new B category (first 9-phase run). First Phase-34-onward phase without specific Q/B-class closure; 5-phase net-decrease streak ends at Phase 38. 805 tests across 69 vitest files (+21 / +1 vs Phase 38). 24 ADRs UNCHANGED. 7 DB tables UNCHANGED. 9 migrations UNCHANGED. 14 env vars (recognized values 2 → 3 on `MARKDOWN_EXTENSIONS`). 168 i18n keys per locale UNCHANGED. First Load JS 103 kB UNCHANGED (64 consecutive units). Middleware 160 kB UNCHANGED. OPEN_QUESTIONS top-level Q-count 66 UNCHANGED. Phase-37+ candidate count 8 UNCHANGED. Zero new ADRs / migrations / i18n keys / operational gates / runtime deps. Phase 40 entry requires explicit human sign-off per §12.**
+
+- THINK artifact: `docs/thinking/39.4-phase-39-acceptance-gate.md`.
+
 #### Unit 39.3 — Phase-39 hygiene + framework-multi-consumer pattern reconciliation + Q-status carry-forward (Q-tally UNCHANGED at 66; Phase-37+ candidate count UNCHANGED at 8; 5-phase net-decrease streak ENDS at Phase 38; 9-phase no-new-B-category streak EXTENDS to Phase 39; 63rd consecutive 103 kB unit)
 
 - Fourth Phase-39 unit; docs-only hygiene. Mirrors Phase-32 hygiene (no-new-Q-closure phase) more than Phase-37 + 38 hygiene shapes (each closed a specific Q or B). **Unique among Phase-34-through-39 hygiene shapes**: Phase 39 ships the second concrete framework consumer WITHOUT closing any specific Q/B-class carryover.
