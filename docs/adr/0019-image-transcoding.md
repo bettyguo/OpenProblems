@@ -425,6 +425,8 @@ content moderation (row 1 of the example pipeline; ADR-0020
 candidate); cropping UI (row 2); AVIF format conversion (row 4
 half).
 
+**EXTENDED Phase 35 Unit 35.2** — Q68 expansion content moderation (row 1 of the D-F example pipeline) **REALIZED as framework-only** per [ADR-0024](./0024-content-moderation.md), but with one path correction vs the D-F anticipation: the moderation call sits in `lib/users/index.ts` `updateProfileImage()` **BEFORE** the `lib/storage/putAvatar` sharp pipeline rather than inside the pipeline between `.rotate()` and `.toBuffer()`. Rationale: Phase-35's `NoopModerator` default doesn't operate on pixel data; positioning the call in the user-facing helper (rather than the storage layer) keeps the storage layer free of moderation dependencies. Future Phase-36+ provider that requires pixel-data-post-rotation can refactor to plumb the moderator into `putAvatar`'s sharp chain at the D-F-anticipated position. The framework contract (`moderateImage(buffer, ctx)`) doesn't constrain pre/post-rotation. **First APPEND on ADR-0019 D-F** at 16-phase age (Phase 19 → Phase 35). Phase-36+ remaining D-F candidates: cropping UI (row 2); AVIF format conversion (row 4 half); concrete content-moderation provider commitment + potential pixel-data-post-rotation refactor.
+
 ## Consequences
 
 ### Positive

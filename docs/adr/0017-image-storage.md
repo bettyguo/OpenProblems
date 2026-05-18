@@ -522,6 +522,8 @@ Phase 16 ships MINIMAL image override surface. Deferred to Phase
   user privacy report.
 - **Q68 expansion** (content moderation on uploaded images).
   Defer until abuse signals.
+
+  **EXTENDED Phase 35 Unit 35.2** — Q68 expansion **RESOLVED architecturally as framework-only** per [ADR-0024](./0024-content-moderation.md). `lib/users/index.ts` `updateProfileImage()` now calls `getModerator().moderateImage(buffer, { surface: "avatar", userIdOrEmail })` AFTER MIME / size / magic-byte validation + BEFORE the `putAvatar` Vercel Blob upload — refused images never touch paid storage and never trigger delete-on-replace of the prior image. **`NoopModerator` default ships Phase 35**: zero API cost / latency / FP. Concrete provider commitment (OpenAI moderation / Perspective / regex-wordlist / custom) deferred Phase 36+ per ADR-0024 D-G operational-API-gate. Buffer is double-read (once for moderation, once inside `putAvatar`'s sharp pipeline) — microsecond cost on the 2 MB cap; avoids refactoring the storage layer in Phase 35. **First APPEND on ADR-0017 D-H** at 18-phase age (Phase 17 → Phase 35).
 - **Cropping UI** (`react-easy-crop` or similar). Defer until
   user feedback demands.
 - **Server-side resizing / transcoding** (sharp on Vercel

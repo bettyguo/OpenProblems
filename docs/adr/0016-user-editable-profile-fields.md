@@ -290,6 +290,8 @@ The decision pins seven concrete contracts:
 5. **No uniqueness check on `displayName`**. Multiple users may pick
    the same display name; `githubLogin` remains the unique URL key.
 
+**EXTENDED Phase 35 Unit 35.2** — Q68 content moderation candidate **RESOLVED architecturally as framework-only** per [ADR-0024](./0024-content-moderation.md). `lib/users/index.ts` `updateProfile()` now calls `getModerator().moderateText(bio, { surface: "bio", userIdOrEmail })` between bio validation and the DB UPDATE; only fires when `set.bio` is non-empty; returns the moderator's first reason string on `severity: "block"`. **`NoopModerator` default ships Phase 35**: zero API cost / latency / false positives — pass-through behavior preserves Phase 15-34 trust-users posture verbatim. Concrete provider commitment (OpenAI moderation / Perspective / regex-wordlist / custom) deferred Phase 36+ per ADR-0024 D-G operational-API-gate. `displayName` is NOT moderated per ADR-0024 D-12 lean (short-form field; future provider can extend). **First APPEND on ADR-0016 D-B** at 20-phase age (Phase 15 → Phase 35) — the demand-signal-first concern that previously deferred Q68 12+ phases is dissolved by the no-op default reducing pre-position cost to zero. **Seventh APPEND-pattern ADR D-clause cluster** in project history.
+
 **Implementation**:
 - `lib/users/index.ts` exports `validateDisplayName(s)` +
   `validateBio(s)` returning `null` on valid OR a human-readable
