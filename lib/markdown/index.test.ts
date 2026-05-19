@@ -4972,3 +4972,227 @@ describe("Phase-59 first all-4-surfaces 7-consumer composition — wikilinks,tab
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// Phase-60 — end-to-end bioRxiv alias-syntax extension. The dual-form regex
+// in `BIORXIV_PATTERN` now matches both bracketed `[[biorxiv:NNN(vN)?(|display)?]]`
+// and bare `biorxiv:NNN(vN)?` references. **Seventh realization of Phase-46
+// plugin-regex-extension phase-shape pattern** — first 7-realization for
+// that pattern in project history (extends Phase-55 record 6 → 7). Class +
+// factory dispatch arm + `PHASE_58_DEFAULT_ENABLED_SURFACES` UNCHANGED;
+// pure plugin-internal regex extension.
+//
+// Phase 59 cross-surface state (all 4 surfaces) preserved; Phase 60 alias-
+// syntax extends biorxiv display-text on every surface from the start
+// (unlike Phase-55 orcid alias which shipped rationale-only initially).
+// Closes APPEND-D-AP alias item at 2-phase carryover (Phase 58 → 60).
+// ---------------------------------------------------------------------------
+
+describe("Phase-60 biorxiv alias syntax — all 4 surfaces under default dispatch", () => {
+  beforeEach(() => {
+    __setRegistryForTests(new BiorxivExtensionRegistry(PHASE_58_DEFAULT_ENABLED_SURFACES));
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it("alias renders on bio: [[biorxiv:YYYY.MM.DD.NNNNNN|display]] → <a>display</a>", () => {
+    expect(renderBioMarkdown("see [[biorxiv:2024.01.15.575678|Smith 2024]] here") ?? "").toBe(
+      '<p>see <a href="https://www.biorxiv.org/content/10.1101/2024.01.15.575678">Smith 2024</a> here</p>',
+    );
+  });
+
+  it("alias renders on reviewNotes", () => {
+    expect(renderReviewNotesMarkdown("see [[biorxiv:2024.01.15.575678|Smith 2024]] here")).toBe(
+      '<p>see <a href="https://www.biorxiv.org/content/10.1101/2024.01.15.575678">Smith 2024</a> here</p>',
+    );
+  });
+
+  it("alias renders on rationale", () => {
+    expect(renderRationaleMarkdown("see [[biorxiv:2024.01.15.575678|Smith 2024]] here")).toBe(
+      '<p>see <a href="https://www.biorxiv.org/content/10.1101/2024.01.15.575678">Smith 2024</a> here</p>',
+    );
+  });
+
+  it("alias renders on actionRationale", () => {
+    expect(renderActionRationaleMarkdown("see [[biorxiv:2024.01.15.575678|Smith 2024]] here")).toBe(
+      '<p>see <a href="https://www.biorxiv.org/content/10.1101/2024.01.15.575678">Smith 2024</a> here</p>',
+    );
+  });
+
+  it("Phase-58 backwards-compat: bare biorxiv:YYYY.MM.DD.NNNNNN still renders on every surface", () => {
+    const md = "see biorxiv:2024.01.15.575678 here";
+    const expected =
+      '<p>see <a href="https://www.biorxiv.org/content/10.1101/2024.01.15.575678">biorxiv:2024.01.15.575678</a> here</p>';
+    expect(renderBioMarkdown(md)).toBe(expected);
+    expect(renderReviewNotesMarkdown(md)).toBe(expected);
+    expect(renderRationaleMarkdown(md)).toBe(expected);
+    expect(renderActionRationaleMarkdown(md)).toBe(expected);
+  });
+
+  it("bracketed without alias renders verbatim ref on every surface (brackets stripped)", () => {
+    const md = "see [[biorxiv:2024.01.15.575678]] here";
+    const expected =
+      '<p>see <a href="https://www.biorxiv.org/content/10.1101/2024.01.15.575678">biorxiv:2024.01.15.575678</a> here</p>';
+    expect(renderBioMarkdown(md)).toBe(expected);
+    expect(renderReviewNotesMarkdown(md)).toBe(expected);
+    expect(renderRationaleMarkdown(md)).toBe(expected);
+    expect(renderActionRationaleMarkdown(md)).toBe(expected);
+  });
+
+  it("bracketed with version suffix preserves version in URL on every surface", () => {
+    const md = "see [[biorxiv:2024.01.15.575678v2|revision 2]] for context";
+    const expected =
+      '<p>see <a href="https://www.biorxiv.org/content/10.1101/2024.01.15.575678v2">revision 2</a> for context</p>';
+    expect(renderBioMarkdown(md)).toBe(expected);
+    expect(renderReviewNotesMarkdown(md)).toBe(expected);
+    expect(renderRationaleMarkdown(md)).toBe(expected);
+    expect(renderActionRationaleMarkdown(md)).toBe(expected);
+  });
+
+  it("alias display HTML-escapes via remark-rehype text-node rendering on every surface (XSS safety end-to-end)", () => {
+    const md = "[[biorxiv:2024.01.15.575678|x & y]]";
+    const expected =
+      '<a href="https://www.biorxiv.org/content/10.1101/2024.01.15.575678">x &#x26; y</a>';
+    expect(renderBioMarkdown(md) ?? "").toContain(expected);
+    expect(renderReviewNotesMarkdown(md)).toContain(expected);
+    expect(renderRationaleMarkdown(md)).toContain(expected);
+    expect(renderActionRationaleMarkdown(md)).toContain(expected);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-60 — first "all 4 surfaces are sextuple-alias" state under 7-way
+// MARKDOWN_EXTENSIONS=wikilinks,tables,arxiv,doi,pubmed,orcid,biorxiv
+// Phase-60 default + Phase-46/47/48/51/55/60 alias extensions. Pre-Phase-60
+// all 4 surfaces are quintuple-alias (Phase 56 ship). Post-Phase-60 every
+// surface carries 6 alias consumers (wikilinks + arxiv + doi + pubmed +
+// orcid + biorxiv). **First surface-with-6-alias-consumers cardinality
+// of 4** in project history.
+// ---------------------------------------------------------------------------
+
+describe("Phase-60 first all-4-surfaces sextuple-alias state under 7-way composite", () => {
+  beforeEach(() => {
+    const wikilinks = new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES);
+    const tables = new TablesExtensionRegistry(PHASE_39_DEFAULT_ENABLED_SURFACES);
+    const arxiv = new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES);
+    const doi = new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES);
+    const pubmed = new PubmedExtensionRegistry(PHASE_50_DEFAULT_ENABLED_SURFACES);
+    const orcid = new OrcidExtensionRegistry(PHASE_54_DEFAULT_ENABLED_SURFACES);
+    const biorxiv = new BiorxivExtensionRegistry(PHASE_58_DEFAULT_ENABLED_SURFACES);
+    __setRegistryForTests(
+      new CompositeExtensionRegistry([wikilinks, tables, arxiv, doi, pubmed, orcid, biorxiv]),
+    );
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it("bio: all 6 aliases (wikilinks + arxiv + doi + pubmed + orcid + biorxiv) render together — FIRST SEXTUPLE-ALIAS state", () => {
+    // **First "all 4 surfaces are sextuple-alias" state in project
+    // history.** Pre-Phase-60 all 4 surfaces are quintuple-alias (Phase 56
+    // ship); Phase 60 adds biorxiv as the 6th alias-syntax consumer on
+    // every surface. First surface-with-6-alias-consumers cardinality of 4.
+    const md =
+      "see [[scalable-oversight|topic]] and [[arxiv:1909.03004|paper A]] and [[doi:10.1234/abc|paper B]] and [[pubmed:12345678|paper C]] and [[orcid:0000-0002-1825-0097|author A]] and [[biorxiv:2024.01.15.575678|preprint A]].";
+    const html = renderBioMarkdown(md) ?? "";
+    expect(html).toContain('<a href="/problems/scalable-oversight">topic</a>');
+    expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">paper A</a>');
+    expect(html).toContain('<a href="https://doi.org/10.1234/abc">paper B</a>');
+    expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">paper C</a>');
+    expect(html).toContain('<a href="https://orcid.org/0000-0002-1825-0097">author A</a>');
+    expect(html).toContain(
+      '<a href="https://www.biorxiv.org/content/10.1101/2024.01.15.575678">preprint A</a>',
+    );
+  });
+
+  it("reviewNotes: all 6 aliases render together", () => {
+    const md =
+      "see [[hallucination-reduction|topic]], [[arxiv:2024.01234|paper A]], [[doi:10.5678/xyz|paper B]], [[pmid:99999999|paper C]], [[orcid:0000-0001-5109-3700|author B]], [[biorxiv:2023.12.05.570123|preprint B]].";
+    const html = renderReviewNotesMarkdown(md);
+    expect(html).toContain('<a href="/problems/hallucination-reduction">topic</a>');
+    expect(html).toContain('<a href="https://arxiv.org/abs/2024.01234">paper A</a>');
+    expect(html).toContain('<a href="https://doi.org/10.5678/xyz">paper B</a>');
+    expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/99999999/">paper C</a>');
+    expect(html).toContain('<a href="https://orcid.org/0000-0001-5109-3700">author B</a>');
+    expect(html).toContain(
+      '<a href="https://www.biorxiv.org/content/10.1101/2023.12.05.570123">preprint B</a>',
+    );
+  });
+
+  it("rationale: all 6 aliases render together", () => {
+    const md =
+      "see [[benchmark-integrity|topic]] and [[arxiv:1909.03004|paper A]] and [[doi:10.1234/abc|paper B]] and [[pubmed:12345678|paper C]] and [[orcid:0000-0002-9079-593X|author C]] and [[biorxiv:2024.01.15.575678v2|preprint v2]].";
+    const html = renderRationaleMarkdown(md);
+    expect(html).toContain('<a href="/problems/benchmark-integrity">topic</a>');
+    expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">paper A</a>');
+    expect(html).toContain('<a href="https://doi.org/10.1234/abc">paper B</a>');
+    expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">paper C</a>');
+    expect(html).toContain('<a href="https://orcid.org/0000-0002-9079-593X">author C</a>');
+    expect(html).toContain(
+      '<a href="https://www.biorxiv.org/content/10.1101/2024.01.15.575678v2">preprint v2</a>',
+    );
+  });
+
+  it("actionRationale: all 6 aliases render together", () => {
+    const md =
+      "see [[scalable-oversight|topic]], [[arxiv:1909.03004|the work]], [[doi:10.1234/abc|cite this]], [[pmid:12345678|biomed paper]], [[orcid:0000-0002-1825-0097|primary author]], and [[biorxiv:2024.01.15.575678|the preprint]].";
+    const html = renderActionRationaleMarkdown(md);
+    expect(html).toContain('<a href="/problems/scalable-oversight">topic</a>');
+    expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">the work</a>');
+    expect(html).toContain('<a href="https://doi.org/10.1234/abc">cite this</a>');
+    expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">biomed paper</a>');
+    expect(html).toContain('<a href="https://orcid.org/0000-0002-1825-0097">primary author</a>');
+    expect(html).toContain(
+      '<a href="https://www.biorxiv.org/content/10.1101/2024.01.15.575678">the preprint</a>',
+    );
+  });
+
+  it("Backwards-compat under 7-way composite: bare wikilink + bare arxiv + bare doi + bare pubmed + bare orcid + bare biorxiv all coexist on every surface", () => {
+    // Phase-60 alias is in addition to bare; both forms supported on
+    // every surface post-Phase-60.
+    const md =
+      "see scalable-oversight, arxiv:1909.03004, doi:10.1234/abc, pubmed:12345678, orcid:0000-0002-1825-0097, biorxiv:2024.01.15.575678 here";
+    for (const renderer of [
+      renderBioMarkdown,
+      renderReviewNotesMarkdown,
+      renderRationaleMarkdown,
+      renderActionRationaleMarkdown,
+    ] as const) {
+      const html = renderer(md) ?? "";
+      expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+      expect(html).toContain('href="https://doi.org/10.1234/abc"');
+      expect(html).toContain('href="https://pubmed.ncbi.nlm.nih.gov/12345678/"');
+      expect(html).toContain('href="https://orcid.org/0000-0002-1825-0097"');
+      expect(html).toContain('href="https://www.biorxiv.org/content/10.1101/2024.01.15.575678"');
+    }
+  });
+
+  it("XSS defenses survive Phase-60 sextuple-alias on every surface", () => {
+    const md =
+      "[bad](javascript:alert(1)) [[s|safe slug]] [[arxiv:1909.03004|safe arxiv]] [[doi:10.1234/abc|safe doi]] [[pubmed:12345678|safe pubmed]] [[orcid:0000-0002-1825-0097|safe orcid]] [[biorxiv:2024.01.15.575678|safe biorxiv]].";
+    for (const renderer of [
+      renderBioMarkdown,
+      renderReviewNotesMarkdown,
+      renderRationaleMarkdown,
+      renderActionRationaleMarkdown,
+    ] as const) {
+      const html = renderer(md) ?? "";
+      expect(html).not.toContain("javascript:alert");
+      expect(html).toContain('<a href="/problems/s">safe slug</a>');
+      expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">safe arxiv</a>');
+      expect(html).toContain('<a href="https://doi.org/10.1234/abc">safe doi</a>');
+      expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">safe pubmed</a>');
+      expect(html).toContain('<a href="https://orcid.org/0000-0002-1825-0097">safe orcid</a>');
+      expect(html).toContain(
+        '<a href="https://www.biorxiv.org/content/10.1101/2024.01.15.575678">safe biorxiv</a>',
+      );
+    }
+  });
+});
