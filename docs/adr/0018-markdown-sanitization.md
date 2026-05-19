@@ -4513,6 +4513,242 @@ cap):
 - **3rd regex evolution on `remarkLinkArxivIds`** — Phase
   60+.
 
+#### EXTENDED Phase 60 Unit 60.1 — APPEND-D-AR bioRxiv display-text alias syntax (seventh realization of Phase-46 plugin-regex-extension phase-shape pattern — first 7-realization for that pattern; first state where both principal axes of zero-rework framework extension are at 7 realizations — first TWO 7-realization framework patterns coexisting; re-equalizes Phase-59 asymmetric state at depth-7 tier; fifth dual-form regex — first 5-of-5 `remarkPlugins` consumers with dual-form regex; fifth plugin-regex-extension on a `remarkPlugins` consumer — first state where ALL 5 `remarkPlugins` consumers have had alias-syntax extensions; first state where ALL 7 Phase-37-framework consumers have had ALL applicable extensions resolved; first all-4-surfaces sextuple-alias; closes APPEND-D-AP alias item — D-AP becomes 4th D-clause with BOTH items closed and first D-clause with both items closed in REVERSED order; nineteenth APPEND-deferral closure; 27th D-G APPEND record extends; eighteenth two-letter slot D-AR; fifty-first NON-§13 phase)
+
+Phase 60 extends `remarkLinkBiorxivIds` with bracketed alias-
+syntax via an in-place dual-form regex evolution on
+`BIORXIV_PATTERN`. **Seventh realization of the Phase-46
+plugin-regex-extension phase-shape pattern** — **first 7-
+realization phase-shape pattern in project history** (extends
+Phase-55 6-realization record to 7). Class + factory dispatch
+arm + `PHASE_58_DEFAULT_ENABLED_SURFACES` constant UNCHANGED.
+
+**APPEND-D-AR bioRxiv alias regex evolution**:
+
+```ts
+// Before (Phase 58 ship through Phase-59 close):
+const BIORXIV_PATTERN = /\bbiorxiv:(\d{4}\.\d{2}\.\d{2}\.\d{6})(v\d+)?\b/gi;
+
+// After (Phase 60 ship):
+const BIORXIV_PATTERN =
+  /\[\[biorxiv:(\d{4}\.\d{2}\.\d{2}\.\d{6})(v\d+)?(?:\|([^\]\n]+))?\]\]|\bbiorxiv:(\d{4}\.\d{2}\.\d{2}\.\d{6})(v\d+)?\b/gi;
+```
+
+**Fifth dual-form regex** in the framework: alternation
+between the bracketed form (priority) and the bare form
+(fallback). Engine tries the bracketed alternative first; if
+it fails at a given position, tries the bare alternative.
+
+- **Bracketed form**
+  `\[\[biorxiv:(\d{4}\.\d{2}\.\d{2}\.\d{6})(v\d+)?(?:\|([^\]\n]+))?\]\]`:
+  - Group 1 = bioRxiv ID (Phase-58 baseline ID-class
+    preserved).
+  - Group 2 = optional version suffix (Phase-58 baseline
+    preserved).
+  - Group 3 = optional display text (`[^\]\n]+`; mirrors
+    Phase-46/47/48/51/55 alias display class).
+  - **No trailing-lookahead** — `]]` is the explicit
+    terminator.
+- **Bare form** `\bbiorxiv:(\d{4}\.\d{2}\.\d{2}\.\d{6})(v\d+)?\b`:
+  - Group 4 = bioRxiv ID (Phase-58 baseline preserved
+    verbatim).
+  - Group 5 = optional version suffix (Phase-58 baseline
+    preserved verbatim).
+  - **Word-boundary anchors** preserved verbatim — no
+    lookahead-vs-`\b` divergence (biorxiv bare form had no
+    lookahead at Phase-58 ship, mirroring arxiv + pubmed +
+    orcid).
+
+**Plugin body update**: branch on
+`isBracketed = matched.startsWith("[[")`. For the bracketed
+form, ID is group 1, version is group 2, alias is group 3.
+For the bare form, ID is group 4, version is group 5 (no
+alias). Bracketed without alias drops `[[` + `]]` while
+preserving source casing of the prefix variant (mirrors
+Phase-47/48/51/55 body shape verbatim).
+
+**First state where both principal axes of zero-rework
+framework extension are at 7 realizations**. Plugin-regex-
+extension reaches 7 at Phase 60. Constructor-arg-only-zero-
+rework-expansion is at 7 (Phase 59 ship). **First "TWO 7-
+realization framework patterns coexisting" state** in project
+history. **Re-equalizes the Phase-59 asymmetric state** at
+the depth-7 tier (Phase 59: constructor-arg-only at 7 +
+plugin-regex-extension at 6 = asymmetric; Phase 60: both at
+7 = symmetric at higher tier). The two patterns differ in
+dimension (plugin-body axis vs registry-state axis); both at
+7 realizations spanning the full 7-consumer roster.
+
+**Fifth plugin-regex-extension on a `remarkPlugins` consumer**
+in project history (Phase 47 arxiv + Phase 48 doi + Phase 51
+pubmed + Phase 55 orcid + Phase 60 biorxiv). **First state
+where ALL 5 `remarkPlugins` consumers have had alias-syntax
+extensions resolved within the cadence** — the alias-syntax
+phase-shape has exhausted all current `remarkPlugins`
+consumer candidates as of Phase 60 close. **All 5
+`remarkPlugins` consumers exhibit dual-form regex post-Phase
+60** — first 5-of-5 state.
+
+**First "all 4 surfaces are sextuple-alias" state** in project
+history. Pre-Phase-60 all surfaces are quintuple-alias (Phase
+56 ship: wikilinks + arxiv + doi + pubmed + orcid aliases);
+post-Phase-60 every surface carries 6 alias consumers
+(+ biorxiv alias). **First surface-with-6-alias-consumers
+cardinality of 4** in project history.
+
+**First state where ALL 7 Phase-37-framework consumers have
+had ALL their applicable extensions resolved** in project
+history. Post-Phase-60:
+
+| Consumer | Registry-state axis | Plugin-body axis |
+|---|---|---|
+| wikilinks (Phase 38) | 4-surface (Phase 42) | alias (Phase 46) |
+| tables (Phase 39) | 4-surface (Phase 43) | schema-extension (Phase 57) |
+| arxiv (Phase 41) | 4-surface (Phase 44) | alias (Phase 47) + legacy ID-class (Phase 53) |
+| doi (Phase 45) | 4-surface (Phase 49) | alias (Phase 48) |
+| pubmed (Phase 50) | 4-surface (Phase 52) | alias (Phase 51) |
+| orcid (Phase 54) | 4-surface (Phase 56) | alias (Phase 55) |
+| biorxiv (Phase 58) | 4-surface (Phase 59) | alias (Phase 60) |
+
+Every concrete consumer has been fully extended along both
+principal axes. **Phase 60 represents the framework's current
+capability ceiling** for the 7-consumer roster with no NEW
+consumers, NEW slot kinds, or NEW phase-shape patterns
+introduced. Phase 61+ candidates must introduce new consumers,
+new slot kinds, or new phase-shape patterns to advance the
+framework further.
+
+**XSS audit Phase 60**: bioRxiv plugin emits absolute https://
+URLs unchanged. Alias display text emits as mdast `text` node
+`value` → hast text-node child → HTML-escaped by
+`rehype-stringify` per HTML5 spec. No new tag-names; no
+event-handler attribute paths; no schemaOverrides additions.
+**No new XSS surface**. Display HTML-escaping verified via
+ampersand test (`&` → `&#x26;`) mirroring Phase-55 verbatim.
+
+**Closes APPEND-D-AP alias item** ("bioRxiv display-text
+alias syntax `[[biorxiv:YYYY.MM.DD.NNNNNN|display]]` —
+mirrors Phase-47 arxiv + Phase-48 doi + Phase-51 pubmed +
+Phase-55 orcid alias-syntax pattern; Phase 59+ at standard
+1-to-3-phase-gap cadence; would be **seventh realization of
+the Phase-46 plugin-regex-extension phase-shape pattern**")
+at **2-phase carryover** (Phase 58 → Phase 60). NOT a record
+(1-phase floor remains for alias; Phase 51 + Phase 55 tied
+at 1-phase). The 2-phase carryover reflects the Phase-59
+cross-surface-first ordering that consumed the immediate-
+next-thread slot at 1-phase carryover (cross-surface)
+instead of the alias slot. **First state where alias-syntax
+extension follows cross-surface expansion within the same
+consumer's post-first-ship arc** — first post-first-ship arc
+where cross-surface-first ordering was followed by alias-
+syntax.
+
+**D-AP becomes fourth D-clause with BOTH items closed within
+the cadence**: D-AC (Phase 45 + Phase 48 alias + Phase 49
+cross-surface); D-AH (Phase 50 + Phase 51 alias + Phase 52
+cross-surface); D-AL (Phase 54 + Phase 55 alias + Phase 56
+cross-surface); **D-AP (Phase 58 + Phase 59 cross-surface +
+Phase 60 alias)**. **First D-clause with BOTH items closed
+in REVERSED order** in project history — D-AC/D-AH/D-AL each
+had alias-first then cross-surface; D-AP has cross-surface-
+first then alias. Confirms the cross-surface-first ordering
+as a viable alternative to the alias-first cadence; both
+orderings achieve the 2-item-both-closed state within 2-3
+phases of consumer first-ship.
+
+**Sixth alias-syntax extension** in the closure cadence
+(Phase 46 wikilinks + Phase 47 arxiv + Phase 48 doi + Phase
+51 pubmed + Phase 55 orcid + Phase 60 biorxiv). Alias-
+carryover trajectory from consumer-first-ship: 8 → 6 → 3 →
+1 → 1 → **2 phases**. Acceleration NOT continuous — the
+2-phase carryover at Phase 60 reflects the Phase-59 cross-
+surface-first ordering that consumed the immediate-next-
+thread slot.
+
+**Nineteenth prep-/APPEND-doc-level deferral closed by a later
+phase**: Phase 42 → 38 D-L item 1; Phase 43 → 39 D-Q item 2;
+Phase 44 → 41 D-Y item 1; Phase 45 → 41 D-Y item 4; Phase 46
+→ 38 D-L item 2; Phase 47 → 41 D-Y item 5; Phase 48 → 45
+D-AC item 2; Phase 49 → 45 D-AC cross-surface; Phase 50 →
+45 D-AC PubMed PMID item; Phase 51 → new Phase-50 deferral;
+Phase 52 → 50 D-AH PubMed cross-surface; Phase 53 → 41 D-Y
+item 2; Phase 54 → 45 D-AC ORCID item; Phase 55 → new
+Phase-54 deferral; Phase 56 → 54 D-AL ORCID cross-surface
+item; Phase 57 → 39 D-Q item 3 Table-specific attributes;
+Phase 58 → 54 D-AL bioRxiv preprint consumer item; Phase 59
+→ 58 D-AP bioRxiv cross-surface item; **Phase 60 → 58 D-AP
+bioRxiv alias item**. **APPEND-deferral closure cadence
+sustained 19 phases** — **new longest sustained cadence in
+project history** (extends Phase-59 record 18 → 19). **First
+19-phase APPEND-deferral closure run**. **Both items of D-AP
+closed within consecutive phases** (Phase 59 cross-surface +
+Phase 60 alias) — first state where consecutive APPEND-
+deferral closures resolve the same D-clause's two items.
+
+**Twenty-seventh APPEND on ADR-0018 D-G** — extends the
+**first-ADR-D-clause-with-most-APPENDs record** from 26 → 27
+(Phase 18 + 27 + 29 + 37 + 38 + 39 + 40 + 41 + 42 + 43 + 44
++ 45 + 46 + 47 + 48 + 49 + 50 + 51 + 52 + 53 + 54 + 55 + 56
++ 57 + 58 + 59 + **60**).
+
+**Eighteenth two-letter APPEND letter D-AR** (after Phase-43
+D-AA + Phase-44 D-AB + Phase-45 D-AC + Phase-46 D-AD + Phase-
+47 D-AE + Phase-48 D-AF + Phase-49 D-AG + Phase-50 D-AH +
+Phase-51 D-AI + Phase-52 D-AJ + Phase-53 D-AK + Phase-54
+D-AL + Phase-55 D-AM + Phase-56 D-AN + Phase-57 D-AO + Phase-
+58 D-AP + Phase-59 D-AQ). Excel-spreadsheet column convention
+sustained.
+
+**Twenty-fifth consecutive no-new-ADR phase** (Phase 36-60;
+extends Phase-59 record 24 → 25). **Thirtieth consecutive
+phase without new B category** (Phase 31-60; extends Phase-
+59 record 29 → 30). **Fifty-first NON-§13 phase** (extends
+Phase-59 half-century milestone to 51).
+
+**Phase 61+ deferrals** (Phase-60 biorxiv-alias scope cap):
+
+- **Cross-entity wikilinks** (APPEND-D-L item 3 carries) —
+  Phase 61+ rank 1.
+- **`<a class="wikilink">` styling** (APPEND-D-L item 4
+  carries) — Phase 61+; **second schema-extension realization**
+  sibling to Phase 57.
+- **404 handling for unresolved wikilinks** (APPEND-D-L item
+  5 carries) — Phase 61+.
+- **Plugin parameterization for wikilink-href-builder**
+  (APPEND-D-L item 6 carries) — Phase 61+.
+- **Bare arxiv / DOI / PubMed / ORCID / bioRxiv IDs without
+  prefix** — Phase 61+.
+- **Legacy numeric-only bioRxiv IDs** (pre-2019 format) —
+  Phase 61+.
+- **dx.doi.org legacy host parsing** (APPEND-D-AC carries) —
+  Phase 61+.
+- **Stricter trailing-lookahead for trailing-period DOIs**
+  (APPEND-D-AC carries) — Phase 61+.
+- **Paper-card hover-preview** (APPEND-D-Y item 6 carries) —
+  Phase 61+.
+- **Auto-trim of alias display whitespace** — Phase 61+.
+- **Empty-alias fallback unification** across consumers —
+  Phase 61+.
+- **`<caption>` element** (APPEND-D-Q item 4 carries) —
+  Phase 61+.
+- **Surface-specific table schemas** (APPEND-D-Q item 6
+  carries) — Phase 61+.
+- **A future plugin that EMITS `colSpan`/`rowSpan`/`scope`**
+  to realize the Phase-57 schema-ready-before-plugin state —
+  Phase 61+.
+- **OSF preprint consumer** — eighth concrete consumer —
+  Phase 61+.
+- **6th-or-later `remarkPlugins` consumer beyond arxiv + doi
+  + pubmed + orcid + biorxiv** — Phase 61+.
+- **2nd `rehypePlugins` consumer beyond wikilinks** — Phase
+  61+.
+- **2nd `schemaOverrides` consumer beyond tables** — Phase
+  61+.
+- **3rd regex evolution on `remarkLinkArxivIds`** — Phase
+  61+.
+- **ADR-0025 concrete content-moderation provider** — Phase
+  61+; not autonomous-tractable.
+
 ### D-H. Phase 18+ deferrals
 
 Phase 17 ships MINIMAL markdown surface. Deferred to Phase 18+:

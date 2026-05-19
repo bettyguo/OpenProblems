@@ -186,6 +186,138 @@ describe("remarkLinkBiorxivIds — plugin behavior", () => {
       "<p>just some text with no preprint refs</p>",
     );
   });
+
+  // -------------------------------------------------------------------------
+  // Phase-60 alias-syntax tests — bracketed dual-form regex extension
+  // `[[biorxiv:YYYY.MM.DD.NNNNNN(vN)?(|display)?]]`. **Fifth dual-form regex
+  // in the framework** (after arxiv Phase 47 + doi Phase 48 + pubmed Phase
+  // 51 + orcid Phase 55). **Seventh realization of Phase-46 plugin-regex-
+  // extension phase-shape pattern** — first 7-realization for that pattern
+  // in project history. Closes APPEND-D-AP alias item at 2-phase carryover
+  // (Phase 58 → 60). Mirrors Phase-55 orcid alias test shape verbatim with
+  // bioRxiv-specific ID-class + version suffix substitutions.
+  // -------------------------------------------------------------------------
+
+  it("Phase-60 alias: bracketed [[biorxiv:YYYY.MM.DD.NNNNNN|display]] → <a href=...>display</a>", () => {
+    expect(runBiorxivPipeline("see [[biorxiv:2024.01.15.575678|Smith 2024]] for context")).toBe(
+      '<p>see <a href="https://www.biorxiv.org/content/10.1101/2024.01.15.575678">Smith 2024</a> for context</p>',
+    );
+  });
+
+  it("Phase-60 alias: bracketed without alias [[biorxiv:YYYY.MM.DD.NNNNNN]] strips brackets but preserves source casing of prefix", () => {
+    expect(runBiorxivPipeline("see [[biorxiv:2024.01.15.575678]] here")).toBe(
+      '<p>see <a href="https://www.biorxiv.org/content/10.1101/2024.01.15.575678">biorxiv:2024.01.15.575678</a> here</p>',
+    );
+  });
+
+  it("Phase-60 alias: bracketed without alias preserves uppercase prefix casing ([[BIORXIV:...]])", () => {
+    expect(runBiorxivPipeline("see [[BIORXIV:2024.01.15.575678]] here")).toBe(
+      '<p>see <a href="https://www.biorxiv.org/content/10.1101/2024.01.15.575678">BIORXIV:2024.01.15.575678</a> here</p>',
+    );
+  });
+
+  it("Phase-60 alias: bracketed with version suffix [[biorxiv:YYYY.MM.DD.NNNNNNvN|display]] preserves version in URL", () => {
+    expect(
+      runBiorxivPipeline("see [[biorxiv:2024.01.15.575678v2|revision 2]] for the latest version"),
+    ).toBe(
+      '<p>see <a href="https://www.biorxiv.org/content/10.1101/2024.01.15.575678v2">revision 2</a> for the latest version</p>',
+    );
+  });
+
+  it("Phase-60 alias: backwards-compat — bare biorxiv:YYYY.MM.DD.NNNNNN (Phase-58 baseline) still works", () => {
+    expect(runBiorxivPipeline("see biorxiv:2024.01.15.575678 here")).toBe(
+      '<p>see <a href="https://www.biorxiv.org/content/10.1101/2024.01.15.575678">biorxiv:2024.01.15.575678</a> here</p>',
+    );
+  });
+
+  it("Phase-60 alias: backwards-compat — bare biorxiv:YYYY.MM.DD.NNNNNNvN (Phase-58 version-suffix baseline) still works", () => {
+    expect(runBiorxivPipeline("see biorxiv:2024.01.15.575678v3 here")).toBe(
+      '<p>see <a href="https://www.biorxiv.org/content/10.1101/2024.01.15.575678v3">biorxiv:2024.01.15.575678v3</a> here</p>',
+    );
+  });
+
+  it("Phase-60 alias: aliased + bare coexist in same paragraph", () => {
+    const html = runBiorxivPipeline(
+      "compare [[biorxiv:2024.01.15.575678|paper A]] with biorxiv:2023.12.05.570123",
+    );
+    expect(html).toContain(
+      '<a href="https://www.biorxiv.org/content/10.1101/2024.01.15.575678">paper A</a>',
+    );
+    expect(html).toContain(
+      '<a href="https://www.biorxiv.org/content/10.1101/2023.12.05.570123">biorxiv:2023.12.05.570123</a>',
+    );
+  });
+
+  it("Phase-60 alias: empty alias [[biorxiv:YYYY.MM.DD.NNNNNN|]] falls through to bare form (mirrors Phase-47/51/55 pattern)", () => {
+    // The bracketed regex requires `[^\]\n]+` (one or more chars) in the
+    // alias group, so empty alias `[[biorxiv:NNN|]]` does NOT match the
+    // bracketed form. The `\b...\b` bare form matches `biorxiv:NNN` inside
+    // the `[[...]]` (the `[[` and `]]` are not word chars; `\b` triggers
+    // at the boundary). Mirrors Phase-47 arxiv + Phase-51 pubmed + Phase-
+    // 55 orcid empty-alias behavior verbatim.
+    const html = runBiorxivPipeline("see [[biorxiv:2024.01.15.575678|]] here");
+    expect(html).toContain(
+      '<a href="https://www.biorxiv.org/content/10.1101/2024.01.15.575678">biorxiv:2024.01.15.575678</a>',
+    );
+  });
+
+  it("Phase-60 alias: display HTML-escapes via text-node rendering (XSS safety; mirrors Phase-55 ampersand-escape pattern)", () => {
+    // The display text is emitted as an mdast `text` node `value`, which
+    // transits through `remark-rehype` to a hast text-node child. The text-
+    // node value is HTML-escaped by `rehype-stringify` per HTML5 spec —
+    // no raw HTML leakage from alias display. Ampersand is the canonical
+    // proof: `&` in source becomes `&#x26;` in output. (Bracket characters
+    // like `<` cannot reach the alias group because the bracketed regex
+    // alternative requires `[^\]\n]+` which doesn't admit `]`, and
+    // remark-parse strips raw `<script>` tags upstream — neither path
+    // delivers an unescaped HTML-special char into the display group.)
+    const html = runBiorxivPipeline("[[biorxiv:2024.01.15.575678|x & y]]");
+    expect(html).toContain(
+      '<a href="https://www.biorxiv.org/content/10.1101/2024.01.15.575678">x &#x26; y</a>',
+    );
+  });
+
+  it("Phase-60 alias: bracketed with mixed-case prefix ([[BiOrXiV:...|display]]) matches case-insensitively", () => {
+    expect(runBiorxivPipeline("see [[BiOrXiV:2024.01.15.575678|mixed case]] here")).toBe(
+      '<p>see <a href="https://www.biorxiv.org/content/10.1101/2024.01.15.575678">mixed case</a> here</p>',
+    );
+  });
+
+  it("Phase-60 alias: multiple aliased bioRxiv IDs in same paragraph", () => {
+    const html = runBiorxivPipeline(
+      "compare [[biorxiv:2024.01.15.575678|paper A]] with [[biorxiv:2023.12.05.570123|paper B]]",
+    );
+    expect(html).toContain(
+      '<a href="https://www.biorxiv.org/content/10.1101/2024.01.15.575678">paper A</a>',
+    );
+    expect(html).toContain(
+      '<a href="https://www.biorxiv.org/content/10.1101/2023.12.05.570123">paper B</a>',
+    );
+  });
+
+  it("Phase-60 alias: bracketed bioRxiv inside bold renders correctly", () => {
+    expect(
+      runBiorxivPipeline("see **[[biorxiv:2024.01.15.575678|primary source]]** for details"),
+    ).toBe(
+      '<p>see <strong><a href="https://www.biorxiv.org/content/10.1101/2024.01.15.575678">primary source</a></strong> for details</p>',
+    );
+  });
+
+  it("Phase-60 alias: multi-word alias display preserves spaces + punctuation", () => {
+    expect(
+      runBiorxivPipeline("[[biorxiv:2024.01.15.575678|Smith, Jones, et al. 2024]] is the source"),
+    ).toBe(
+      '<p><a href="https://www.biorxiv.org/content/10.1101/2024.01.15.575678">Smith, Jones, et al. 2024</a> is the source</p>',
+    );
+  });
+
+  it("Phase-60 alias: bracketed bioRxiv with version + alias preserves version in URL but uses alias as display", () => {
+    expect(
+      runBiorxivPipeline("see [[biorxiv:2023.12.05.570123v10|tenth revision]] for the history"),
+    ).toBe(
+      '<p>see <a href="https://www.biorxiv.org/content/10.1101/2023.12.05.570123v10">tenth revision</a> for the history</p>',
+    );
+  });
 });
 
 describe("BiorxivExtensionRegistry — class behavior", () => {

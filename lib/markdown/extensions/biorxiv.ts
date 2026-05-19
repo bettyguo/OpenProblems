@@ -99,6 +99,41 @@ import type { MarkdownExtensionRegistry, MarkdownExtensionSet, MarkdownSurface }
  * No trailing-lookahead constraint: the trailing character is
  * `\d` (word char), and `\b` triggers at non-word boundary.
  *
+ * **Phase 60 alias-syntax extension** (since Unit 60.1; closes
+ * APPEND-D-AP alias item at 2-phase carryover Phase 58 → 60):
+ * the regex gains a bracketed alternation
+ * `\[\[biorxiv:YYYY.MM.DD.NNNNNN(vN)?(?:\|display)?\]\]`
+ * matched BEFORE the bare form. **Fifth dual-form regex in the
+ * framework** (after Phase-47 arxiv + Phase-48 doi + Phase-51
+ * pubmed + Phase-55 orcid). **Seventh realization of Phase-46
+ * plugin-regex-extension phase-shape pattern** — first 7-
+ * realization phase-shape pattern in project history (extends
+ * Phase-55 6-realization record to 7). **First state where
+ * both principal axes of zero-rework framework extension are
+ * at 7 realizations** — first TWO 7-realization framework
+ * patterns coexisting (plugin-regex-extension at 7 from Phase
+ * 60 + constructor-arg-only-zero-rework-expansion at 7 from
+ * Phase 59); re-equalizes Phase-59 asymmetric state at depth-
+ * 7 tier. **All 5 `remarkPlugins` consumers exhibit dual-form
+ * regex post-Phase 60** — first state where every consumer in
+ * the 5-consumer-cardinality same-slot has been extended with
+ * alias-syntax via the dual-form regex pattern. **First all-
+ * 4-surfaces sextuple-alias state** (wikilinks + arxiv + doi
+ * + pubmed + orcid + biorxiv aliases on every surface).
+ * **First state where ALL 7 Phase-37-framework consumers have
+ * had ALL their applicable extensions resolved** (every
+ * concrete consumer fully extended along both principal axes
+ * = registry-state axis 4-surface + plugin-body axis alias /
+ * regex evolution). Backwards-compatible: every existing bare
+ * `biorxiv:YYYY.MM.DD.NNNNNN(vN)?` match preserved via the
+ * second alternation arm. No collision with wikilinks
+ * (`[a-z0-9-]+` slug class excludes `:`); also distinct
+ * pipeline stage (`remarkPlugins` runs before `rehypePlugins`).
+ * No collision with arxiv/doi/pubmed/orcid (same `remarkPlugins`
+ * slot; all five regex character classes are pairwise disjoint
+ * per the regex-disjointness-as-sole-defense discipline Phase
+ * 58 established for 5 same-slot consumers).
+ *
  * Plugin declaration style: idiomatic remark-plugin function
  * declaration (factory returning a transformer) rather than
  * `Plugin<[], Root>` type alias. Mirrors Phase-41 arxiv +
@@ -115,7 +150,8 @@ import type { MarkdownExtensionRegistry, MarkdownExtensionSet, MarkdownSurface }
  * invariant.
  */
 
-const BIORXIV_PATTERN = /\bbiorxiv:(\d{4}\.\d{2}\.\d{2}\.\d{6})(v\d+)?\b/gi;
+const BIORXIV_PATTERN =
+  /\[\[biorxiv:(\d{4}\.\d{2}\.\d{2}\.\d{6})(v\d+)?(?:\|([^\]\n]+))?\]\]|\bbiorxiv:(\d{4}\.\d{2}\.\d{2}\.\d{6})(v\d+)?\b/gi;
 
 export function remarkLinkBiorxivIds() {
   return function transformer(tree: Root): undefined {
@@ -134,9 +170,26 @@ export function remarkLinkBiorxivIds() {
       while ((match = BIORXIV_PATTERN.exec(text)) !== null) {
         const matchStart = match.index;
         const matched = match[0];
-        const id = match[1];
-        const version = match[2] ?? "";
+        const isBracketed = matched.startsWith("[[");
+
+        const id = isBracketed ? match[1] : match[4];
+        const version = (isBracketed ? match[2] : match[5]) ?? "";
+        const alias = match[3]; // only defined for bracketed form
         if (id === undefined) continue;
+
+        let display: string;
+        if (alias !== undefined) {
+          display = alias;
+        } else if (isBracketed) {
+          // Bracketed without alias: drop brackets while preserving
+          // source casing (e.g., `[[BIORXIV:2024.01.15.575678]]` →
+          // `<a>BIORXIV:2024.01.15.575678</a>`).
+          display = matched.slice(2, -2);
+        } else {
+          // Bare form (Phase-58 baseline): display source casing
+          // verbatim.
+          display = matched;
+        }
 
         if (matchStart > cursor) {
           newNodes.push({ type: "text", value: text.slice(cursor, matchStart) });
@@ -145,7 +198,7 @@ export function remarkLinkBiorxivIds() {
         newNodes.push({
           type: "link",
           url: `https://www.biorxiv.org/content/10.1101/${id}${version}`,
-          children: [{ type: "text", value: matched }],
+          children: [{ type: "text", value: display }],
         });
 
         cursor = matchStart + matched.length;

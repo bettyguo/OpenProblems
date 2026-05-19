@@ -2490,6 +2490,57 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - First Load JS = 103 kB UNCHANGED (154 consecutive units at Phase 59.4 ship; this unit docs-only); Middleware = 160 kB UNCHANGED.
 - THINK artifact: `docs/thinking/60.0-phase-60-prep.md`.
 
+#### Unit 60.1 — `BIORXIV_PATTERN` dual-form regex extension + plugin body update + 14 NEW alias-syntax tests in `biorxiv.test.ts` + ADR-0018 D-G APPEND-D-AR (seventh realization of Phase-46 plugin-regex-extension phase-shape pattern — first 7-realization for that pattern; first state where both principal axes of zero-rework framework extension are at 7 realizations — first TWO 7-realization framework patterns coexisting; fifth dual-form regex — first 5-of-5 `remarkPlugins` consumers; first state where ALL 7 framework consumers have had ALL applicable extensions resolved; first all-4-surfaces sextuple-alias; closes APPEND-D-AP alias item; D-AP becomes 4th D-clause with BOTH items closed and first D-clause with both items closed in REVERSED order; 27th D-G APPEND extends 26 → 27; eighteenth two-letter slot D-AR; 1426/75)
+
+- Second Phase-60 unit; code + ADR APPEND.
+- **`BIORXIV_PATTERN` dual-form regex evolution** in `lib/markdown/extensions/biorxiv.ts`:
+  - Before (Phase 58 ship through Phase-59 close): `/\bbiorxiv:(\d{4}\.\d{2}\.\d{2}\.\d{6})(v\d+)?\b/gi`.
+  - After (Phase 60 ship): `/\[\[biorxiv:(\d{4}\.\d{2}\.\d{2}\.\d{6})(v\d+)?(?:\|([^\]\n]+))?\]\]|\bbiorxiv:(\d{4}\.\d{2}\.\d{2}\.\d{6})(v\d+)?\b/gi`.
+  - Bracketed form group 1 = ID, group 2 = optional version, group 3 = optional alias display. Bare form group 4 = ID, group 5 = optional version. **Fifth dual-form regex** in the framework (after arxiv Phase 47 + doi Phase 48 + pubmed Phase 51 + orcid Phase 55).
+- **`remarkLinkBiorxivIds` plugin body update**: branch on `isBracketed = matched.startsWith("[[")`. For bracketed form, ID = group 1, version = group 2, alias = group 3. For bare form, ID = group 4, version = group 5. Bracketed without alias drops `[[`+`]]` while preserving source casing of prefix variant. Mirrors Phase-47/Phase-48/Phase-51/Phase-55 body shape verbatim with biorxiv-specific ID-class + version suffix substitutions.
+- **`BiorxivExtensionRegistry` class + factory dispatch arm + `PHASE_58_DEFAULT_ENABLED_SURFACES` constant UNCHANGED**. Phase 60 is plugin-internal regex extension. Phase 59 cross-surface state (all 4 surfaces) preserved verbatim.
+- Docstring on `remarkLinkBiorxivIds` updated to document Phase 60 alias-syntax extension (mirrors Phase-55 orcid docstring shape verbatim).
+- **14 NEW alias-syntax tests** in `biorxiv.test.ts` (mirrors Phase-55 orcid alias test shape):
+  1. Bracketed `[[biorxiv:YYYY.MM.DD.NNNNNN|display]]` → `<a href=...>display</a>`.
+  2. Bracketed without alias `[[biorxiv:YYYY.MM.DD.NNNNNN]]` strips brackets but preserves source casing.
+  3. Bracketed without alias preserves uppercase prefix casing (`[[BIORXIV:...]]`).
+  4. Bracketed with version suffix `[[biorxiv:YYYY.MM.DD.NNNNNN v2|display]]` preserves version in URL.
+  5. Backwards-compat: bare `biorxiv:YYYY.MM.DD.NNNNNN` (Phase-58 baseline) still works.
+  6. Backwards-compat: bare `biorxiv:YYYY.MM.DD.NNNNNN vN` (Phase-58 version-suffix baseline) still works.
+  7. Aliased + bare coexist in same paragraph.
+  8. Empty alias `[[biorxiv:YYYY.MM.DD.NNNNNN|]]` falls through to bare form (mirrors Phase-47/51/55).
+  9. Display HTML-escapes via text-node rendering (XSS safety; ampersand `&` → `&#x26;`).
+  10. Bracketed with mixed-case prefix (`[[BiOrXiV:...|display]]`).
+  11. Multiple aliased bioRxiv IDs in same paragraph.
+  12. Bracketed bioRxiv inside bold renders correctly.
+  13. Multi-word alias display preserves spaces + punctuation.
+  14. Bracketed bioRxiv with version + alias (`[[biorxiv:NNN v10|tenth revision]]`) — preserves version in URL but uses alias as display.
+- **ADR-0018 D-G** gains **EXTENDED Phase 60 Unit 60.1** block + **APPEND-D-AR** (eighteenth two-letter slot after D-AA … D-AQ). Documents:
+  - **Seventh realization of the Phase-46 plugin-regex-extension phase-shape pattern** — first 7-realization phase-shape pattern in project history (extends Phase-55 record 6 → 7).
+  - **First state where both principal axes of zero-rework framework extension are at 7 realizations** — first TWO 7-realization framework patterns coexisting (plugin-regex-extension at 7 + constructor-arg-only-zero-rework-expansion at 7). Re-equalizes Phase-59 asymmetric state at depth-7 tier.
+  - **Fifth dual-form regex** in the framework. **First 5-of-5 `remarkPlugins` consumers with dual-form regex**.
+  - **Fifth plugin-regex-extension on a `remarkPlugins` consumer** — first state where ALL 5 `remarkPlugins` consumers have had alias-syntax extensions resolved within the cadence.
+  - **First "all 4 surfaces are sextuple-alias" state** — wikilinks + arxiv + doi + pubmed + orcid + biorxiv aliases on every surface. First surface-with-6-alias-consumers cardinality of 4.
+  - **First state where ALL 7 Phase-37-framework consumers have had ALL their applicable extensions resolved** — Phase 60 represents the framework's current capability ceiling.
+  - **Closes APPEND-D-AP alias item at 2-phase carryover** (Phase 58 → 60). **D-AP becomes 4th D-clause with BOTH items closed** within the cadence (D-AC + D-AH + D-AL + D-AP). **First D-clause with BOTH items closed in REVERSED order** (cross-surface-first then alias).
+  - **Nineteenth APPEND-deferral closure** — cadence sustained 19 phases (new record). First 19-phase APPEND-deferral closure run. **Both items of D-AP closed within consecutive phases** (Phase 59 + Phase 60) — first state where consecutive APPEND-deferral closures resolve the same D-clause's two items.
+  - **27th APPEND on D-G** — extends record 26 → 27. **Eighteenth two-letter APPEND letter D-AR**.
+  - **25th consecutive no-new-ADR phase** (Phase 36-60; extends Phase-59 record 24 → 25). **30th consecutive phase without new B category** (Phase 31-60; extends Phase-59 record 29 → 30). **Fifty-first NON-§13 phase**.
+- **XSS audit Phase 60**: bioRxiv plugin emits absolute https:// URLs unchanged. Alias display HTML-escapes via text-node rendering (verified via ampersand test). No new tag-names; no event-handler attribute paths; no schemaOverrides additions. No new XSS surface.
+- **Smoke gates**:
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **1426 / 75 files** (+14 NEW tests across +0 new files; total Phase 60 delta now +14 vs Phase 59 close at 1412).
+  - `pnpm audit-content` → 0 errors / 6 warnings UNCHANGED.
+  - First Load JS = 103 kB UNCHANGED (156 consecutive units at Unit 60.1 ship); Middleware = 160 kB UNCHANGED.
+- **No new ADRs / migrations / i18n keys / operational gates / runtime deps**.
+- **Env vars**: `MARKDOWN_EXTENSIONS` recognized arms UNCHANGED at 8 single-value (alias-syntax extension within existing biorxiv consumer; no new arm).
+- **`lib/markdown/extensions/` files**: 21 UNCHANGED.
+- **Phase-37-framework concrete consumers**: 7 UNCHANGED.
+- **Plugin-regex-extension realizations**: 6 → **7** (+biorxiv alias) — **first 7-realization** for that pattern.
+- **Constructor-arg-only-zero-rework-expansion realizations**: 7 UNCHANGED (Phase 59 ship).
+- **Dual-form regex realizations**: 4 → **5** (+biorxiv) — first 5-of-5 state.
+- **OPEN_QUESTIONS UNCHANGED** at 28 resolved + 4 lean + 34 open = 66 total.
+
 ### Phase 59 — Community-adjacent surfaces (**fiftieth NON-§13 phase — HALF-CENTURY-OF-NON-§13-PHASES MILESTONE**: seventh cross-surface expansion of a Phase-37-framework consumer — bioRxiv expands from `rationale`-only to all 4 markdown surfaces via constructor-arg value-only change in `PHASE_58_DEFAULT_ENABLED_SURFACES`; **seventh realization of "constructor-arg-only zero-rework expansion" property** — **first 7-realization for that pattern** (extends Phase-56 record 6 → 7); **first state where constructor-arg-only-zero-rework-expansion (7) exceeds plugin-regex-extension (6) in realization count** — first asymmetric state at the depth-6+ tier between the project's two principal axes of zero-rework framework extension; **first "all 4 surfaces have 5-consumer same-slot composition" state**; **first "all 4 surfaces with 7-consumer composition under default dispatch" state** — second "all-surfaces saturated at maximum-consumer-cardinality" state (first was Phase 56 at 6-consumer); closes ADR-0018 APPEND-D-AP bioRxiv cross-surface item at **1-phase carryover** (Phase 58 → Phase 59) — **NEW FASTEST cross-surface-expansion APPEND-deferral closure record** (extends prior 2-phase record from Phase 52 + 56); **first sub-2-phase cross-surface closure**; **first cross-surface expansion shipped as immediate-next-thread after first-ship without intervening alias-syntax** — inverts the prior post-first-ship arc ordering; APPEND-D-AQ seventeenth two-letter slot; anticipated 5 numbered units; 54th "Continue" override invoked — fourth invocation past half-century threshold)
 
 #### Unit 59.0 — Phase 59 prep (bioRxiv cross-surface expansion; seventh constructor-arg-only realization; first 7-realization for that pattern; NEW fastest cross-surface closure record at 1-phase; first cross-surface-first post-first-ship arc; D-1 D-AP; anticipated 5 units; 54th "Continue" override invoked — fourth past half-century; fiftieth NON-§13 phase milestone)
