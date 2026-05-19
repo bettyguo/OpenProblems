@@ -2470,6 +2470,58 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 53 — Community-adjacent surfaces (**forty-fourth NON-§13 phase**: older-style category-prefixed arxiv IDs `arxiv:math/0211159` / `arxiv:cs.AI/0501001` / `arxiv:hep-th/9711200` via in-place ID-class extension on `remarkLinkArxivIds` regex; **fifth realization of Phase-46 plugin-regex-extension phase-shape pattern** — **first 5-realization phase-shape pattern in project history**; **first non-alias-syntax plugin-regex-extension**; **second regex evolution on `remarkLinkArxivIds`** — first plugin with 2 regex evolutions; closes ADR-0018 APPEND-D-Y item 2 at **12-phase carryover** — **LONGEST ABSOLUTE APPEND-DEFERRAL CLOSURE EVER OBSERVED** (beats prior 8-phase D-L item 2 record from Phase 38 → 46); APPEND-D-AK eleventh two-letter slot; anticipated 5 numbered units; 48th "Continue" override invoked)
 
+#### Unit 53.1 — `ARXIV_PATTERN` inner ID-class disjunction (modern + legacy category-prefixed) + 16 NEW arxiv.test.ts legacy tests + ADR-0018 D-G APPEND-D-AK (fifth realization of Phase-46 plugin-regex-extension phase-shape — first 5-realization phase-shape pattern; first non-alias-syntax plugin-regex-extension; second regex evolution on `remarkLinkArxivIds` — first plugin with 2 regex evolutions; 20th D-G APPEND extends record 19 → 20; 1211/73)
+
+- Second Phase-53 unit; code + ADR APPEND.
+- **`ARXIV_PATTERN` regex evolution** (in-place edit of `lib/markdown/extensions/arxiv.ts`):
+  - Before (Phase 47 ship through Phase-52 close): `/\[\[arxiv:(\d{4}\.\d{4,5})(v\d+)?(?:\|([^\]\n]+))?\]\]|\barxiv:(\d{4}\.\d{4,5})(v\d+)?\b/gi`.
+  - After (Phase 53 ship): `/\[\[arxiv:(\d{4}\.\d{4,5}|[a-z]+(?:-[a-z]+)*(?:\.[A-Z-]+)?\/\d{7})(v\d+)?(?:\|([^\]\n]+))?\]\]|\barxiv:(\d{4}\.\d{4,5}|[a-z]+(?:-[a-z]+)*(?:\.[A-Z-]+)?\/\d{7})(v\d+)?\b/gi`.
+  - **Inner ID-class disjunction** added in BOTH the bracketed alternative AND the bare alternative. Modern (`\d{4}\.\d{4,5}`) + legacy (`[a-z]+(?:-[a-z]+)*(?:\.[A-Z-]+)?/\d{7}`). Unambiguous because the two alternatives have disjoint first characters (`\d` vs `[a-z]`). **First inner-class disjunction in a dual-form regex** in project history.
+  - **Fifth realization of Phase-46 plugin-regex-extension phase-shape pattern** — **first 5-realization phase-shape pattern in project history**.
+  - **First non-alias-syntax plugin-regex-extension** in project history. Phase 46-51 extensions added bracketed alias-syntax alternatives; Phase 53 extends the inner ID-class within the existing dual-form structure.
+  - **Second regex evolution on `remarkLinkArxivIds`** in project history. Phase 47 (alias-syntax dual-form) was first; Phase 53 (ID-class extension) is second. **First plugin with 2 regex evolutions**.
+- **Plugin body + `ArxivExtensionRegistry` class + factory dispatch arm + `PHASE_41_DEFAULT_ENABLED_SURFACES` UNCHANGED**. The existing plugin body extracts the ID via match groups 1 (bracketed) or 4 (bare); both now capture either modern or legacy format. URL form `https://arxiv.org/abs/${id}${version}` works identically for both formats (arxiv.org URL space natively supports both).
+- **arxiv.ts doc-comments updated**: Pattern strictness section now documents the dual ID-class. "Phase 45+ may add older-style category-prefixed arxiv IDs" footer updated to "Phase 53 ships ... Phase 54+ may add bare arxiv IDs without prefix...". Case-insensitivity caveat added (the `/i` flag folds the category class; `arxiv:Math/0211159` matches case-insensitively and arxiv.org canonicalizes via redirect).
+- **16 NEW tests** in `lib/markdown/extensions/arxiv.test.ts` covering plugin-level legacy-format behavior (Phase-53 section after Phase-47 alias section):
+  - Bare legacy single-word category: `arxiv:math/0211159`.
+  - Bare legacy with uppercase subcategory: `arxiv:cs.AI/0501001`.
+  - Bare legacy with hyphenated category: `arxiv:hep-th/9711200`.
+  - Bare legacy with uppercase 2-letter subcategory: `arxiv:cs.GT/0309136`.
+  - Bare legacy with hyphenated category + hyphenated subcategory: `arxiv:cond-mat.stat-mech/0301001`.
+  - Bare legacy with version suffix: `arxiv:hep-th/9711200v2`.
+  - Bracketed legacy without alias: `[[arxiv:math/0211159]]`.
+  - Bracketed legacy with alias: `[[arxiv:math/0211159|Witten 2002]]`.
+  - Bracketed legacy preserves source casing of prefix.
+  - Backwards-compat: modern `arxiv:1909.03004` still works.
+  - Modern + legacy coexist in same paragraph.
+  - Bracketed modern + bracketed legacy coexist.
+  - Rejects legacy with 6-digit identifier (regex requires exactly 7 digits).
+  - Legacy preserves trailing sentence-terminator period outside the match.
+  - Legacy nested inside bold renders correctly.
+  - XSS: legacy alias display HTML-escapes via remark-rehype text-node rendering.
+- **ADR-0018 D-G** gains **EXTENDED Phase 53 Unit 53.1** block + **APPEND-D-AK** (eleventh two-letter slot after D-AA … D-AJ). Documents:
+  - **Fifth realization of Phase-46 plugin-regex-extension phase-shape pattern** — first 5-realization phase-shape pattern in project history.
+  - **Project's first multi-5-realization state** — TWO 5-realization framework patterns coexist post-Phase 53 (`constructor-arg-only-zero-rework-expansion` from Phase 52 + `plugin-regex-extension` from Phase 53).
+  - **First non-alias-syntax plugin-regex-extension** in project history.
+  - **Second regex evolution on `remarkLinkArxivIds`** — first plugin with 2 regex evolutions.
+  - **Closes APPEND-D-Y item 2 at 12-phase carryover** (Phase 41 → 53) — **LONGEST ABSOLUTE APPEND-DEFERRAL CLOSURE EVER OBSERVED** (beats prior 8-phase D-L item 2 record from Phase 38 → 46 wikilinks alias closure). **First 12-phase APPEND-deferral closure in absolute carryover terms**.
+  - **Twelfth APPEND-deferral closure** — cadence sustained 12 phases (longest ever; extends Phase-52 record 11 → 12).
+  - **First "non-cross-surface non-alias non-sibling APPEND-deferral closure on the `remarkPlugins` slot kind"** — first regex-evolution-only closure on remark.
+  - **20th APPEND on ADR-0018 D-G** — extends first-ADR-D-clause-with-most-APPENDs record 19 → 20. **Two-decade APPEND mark** on the same D-clause.
+  - **Eleventh two-letter APPEND letter D-AK**.
+  - Inner-class disjunction discipline unambiguous (disjoint first characters `\d` vs `[a-z]`).
+  - Plugin body + class + factory + default-set UNCHANGED.
+  - Case-insensitivity caveat documented.
+  - Regex-disjointness-as-sole-defense at 3-consumer cardinality HOLDS UNDER ID-CLASS EXTENSION — first state where regex-disjointness is exercised across a mix of single-ID-class (doi + pubmed) and dual-ID-class (arxiv modern + legacy) regexes at 3-consumer cardinality on all 4 surfaces.
+  - XSS audit: no new XSS surface; legacy alias display HTML-escapes via text-node rendering.
+  - Phase 54+ deferrals.
+- **No env-var change**: legacy-format extension is plugin-internal regex evolution. `MARKDOWN_EXTENSIONS=arxiv` (Phase-44 all-4-surfaces default) and 5-way composite (Phase-52 default) automatically pick up legacy IDs.
+- **Smoke gates**:
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **1211 / 73 files** (+16 vs Unit 53.0).
+  - `pnpm audit-content` → 0 errors / 6 warnings UNCHANGED.
+  - First Load JS = 103 kB UNCHANGED (122 consecutive units); Middleware = 160 kB UNCHANGED.
+
 #### Unit 53.0 — Phase 53 prep (older-style category-prefixed arxiv IDs via ID-class extension on `ARXIV_PATTERN`; fifth realization of plugin-regex-extension phase-shape; first non-alias-syntax plugin-regex-extension; D-1 D-AK; anticipated 5 units; 48th "Continue" override invoked)
 
 - First Phase-53 unit; docs-only. Drafted `docs/thinking/53.0-phase-53-prep.md` (Phase-52 → 53 baseline at HEAD `8a8faac`; D-1 first-thread recommendation; D-3 arxiv legacy regex shape — `ARXIV_PATTERN` evolves with inner ID-class disjunction `\d{4}\.\d{4,5}|[a-z]+(?:-[a-z]+)*(?:\.[A-Z-]+)?/\d{7}` inside BOTH bracketed alternative AND bare alternative; preserves dual-form structure from Phase 47; D-12 decoupling not required (regex extension, not constant-value change); Phase 54+ deferrals; provisional 5-unit breakdown; 12 anticipated architectural firsts).

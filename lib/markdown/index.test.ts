@@ -889,9 +889,12 @@ describe("Phase-41 arxiv consumer — end-to-end via ArxivExtensionRegistry", ()
     );
   });
 
-  it("non-matching pattern (older category-prefixed) falls through as literal text", () => {
+  it("Phase-53: older category-prefixed pattern now MATCHES end-to-end (was literal text pre-Phase-53)", () => {
+    // Pre-Phase-53: legacy IDs rejected; rendered as literal text. Phase
+    // 53 ship: matches via Phase-53 ARXIV_PATTERN inner ID-class
+    // disjunction; renders to canonical https://arxiv.org/abs/<id> link.
     expect(renderRationaleMarkdown("arxiv:math/0211159 is older style")).toBe(
-      "<p>arxiv:math/0211159 is older style</p>",
+      '<p><a href="https://arxiv.org/abs/math/0211159">arxiv:math/0211159</a> is older style</p>',
     );
   });
 });

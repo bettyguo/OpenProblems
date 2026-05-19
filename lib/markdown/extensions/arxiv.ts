@@ -39,12 +39,41 @@ import type { MarkdownExtensionRegistry, MarkdownExtensionSet, MarkdownSurface }
  *     pass `rehypeStripUnsafeHrefs` naturally; they fold at the
  *     remark stage and rely on standard mdast→hast bridging.
  *
- * Pattern strictness: `\d{4}\.\d{4,5}` matches the modern
- * (post-2007) arXiv-ID format. Older-style category-prefixed IDs
- * (`math/0211159`, `cs.AI/0501001`) are out of scope Phase 41 —
- * none encountered in the project's existing paper-evidence
- * URLs; demand-signal-first deferral to Phase 42+ per
- * ADR-0018 D-G APPEND Phase-42+ deferrals.
+ * Pattern strictness: ID-class disjunction
+ * `\d{4}\.\d{4,5}|[a-z]+(?:-[a-z]+)*(?:\.[A-Z-]+)?/\d{7}` matches
+ * BOTH the modern (post-2007) format AND the legacy (pre-2007)
+ * category-prefixed format. Modern: `1909.03004`, `2024.01234`.
+ * Legacy: `math/0211159`, `cs.AI/0501001`, `hep-th/9711200`,
+ * `cond-mat.stat-mech/0301001`. The alternatives' first characters
+ * are disjoint (`\d` vs `[a-z]`) — no backtracking ambiguity.
+ *
+ * **Phase 53 legacy-format extension** (since Unit 53.1; closes
+ * ADR-0018 APPEND-D-Y item 2 at **12-phase carryover** — longest
+ * absolute APPEND-deferral closure ever observed): the inner
+ * ID-class gains a second alternative for the pre-2007 format
+ * `[a-z]+(?:-[a-z]+)*(?:\.[A-Z-]+)?/\d{7}`. Both bracketed-alias
+ * and bare forms inherit the disjunction. The URL form
+ * `https://arxiv.org/abs/${id}` works identically because
+ * arxiv.org's URL space natively supports both formats
+ * (`https://arxiv.org/abs/1909.03004` and
+ * `https://arxiv.org/abs/math/0211159` both resolve canonically).
+ * **Fifth realization of Phase-46 plugin-regex-extension phase-
+ * shape pattern** — first 5-realization phase-shape pattern in
+ * project history. **First non-alias-syntax plugin-regex-
+ * extension** — Phase 46-51 extensions all added bracketed
+ * alias-syntax alternatives; Phase 53 is the first regex
+ * extension that extends the inner ID class (rather than the
+ * surrounding match shape). **Second regex evolution on
+ * `remarkLinkArxivIds`** — first plugin with 2 regex evolutions.
+ *
+ * Case-insensitivity caveat: the `/i` flag folds the category
+ * class `[a-z]+` to match `[a-zA-Z]+`. arxiv.org URL space is
+ * canonically lowercase, so a source like `arxiv:Math/0211159`
+ * matches and emits `https://arxiv.org/abs/Math/0211159` which
+ * arxiv.org canonicalizes via redirect. This mirrors the
+ * Phase-41 prefix-case-insensitivity convention (`ArXiv:` →
+ * `https://arxiv.org/abs/...`) and preserves source casing in
+ * display per Phase-41 baseline.
  *
  * **Phase 47 alias-syntax extension** (since Unit 47.1; closes
  * ADR-0018 APPEND-D-Y item 5 at 6-phase carryover): the regex
@@ -81,7 +110,7 @@ import type { MarkdownExtensionRegistry, MarkdownExtensionSet, MarkdownSurface }
  */
 
 const ARXIV_PATTERN =
-  /\[\[arxiv:(\d{4}\.\d{4,5})(v\d+)?(?:\|([^\]\n]+))?\]\]|\barxiv:(\d{4}\.\d{4,5})(v\d+)?\b/gi;
+  /\[\[arxiv:(\d{4}\.\d{4,5}|[a-z]+(?:-[a-z]+)*(?:\.[A-Z-]+)?\/\d{7})(v\d+)?(?:\|([^\]\n]+))?\]\]|\barxiv:(\d{4}\.\d{4,5}|[a-z]+(?:-[a-z]+)*(?:\.[A-Z-]+)?\/\d{7})(v\d+)?\b/gi;
 
 export function remarkLinkArxivIds() {
   return function transformer(tree: Root): undefined {
@@ -191,11 +220,15 @@ export function remarkLinkArxivIds() {
  * produces **all 3 framework slots active on all 4 surfaces**
  * — maximal multi-consumer all-surfaces composition.
  *
- * Phase 45+ may add older-style category-prefixed arxiv IDs
- * (APPEND-D-Y item 2), bare arxiv IDs without prefix (item 3),
- * DOI sibling consumer (item 4; first compositional same-slot
- * case), display-text alias syntax (item 5), or paper-card
- * hover-preview (item 6).
+ * Phase 53 ships older-style category-prefixed arxiv IDs (Unit
+ * 53.1; closes APPEND-D-Y item 2 at 12-phase carryover —
+ * longest absolute APPEND-deferral closure ever observed). The
+ * regex inner ID-class disjunction matches both modern and
+ * legacy formats; no class / registry / factory rework.
+ *
+ * Phase 54+ may add bare arxiv IDs without prefix (APPEND-D-Y
+ * item 3), paper-card hover-preview (item 6), or a third regex
+ * evolution on `remarkLinkArxivIds`.
  */
 export class ArxivExtensionRegistry implements MarkdownExtensionRegistry {
   private readonly enabledSurfaces: ReadonlySet<MarkdownSurface>;

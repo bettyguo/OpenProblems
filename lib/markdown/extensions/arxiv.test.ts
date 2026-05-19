@@ -95,8 +95,13 @@ describe("remarkLinkArxivIds — plugin behavior", () => {
     expect(runArxivPipeline("Xarxiv:1909.03004")).toBe("<p>Xarxiv:1909.03004</p>");
   });
 
-  it("rejects older-style category-prefixed IDs (out of scope Phase 41)", () => {
-    expect(runArxivPipeline("arxiv:math/0211159")).toBe("<p>arxiv:math/0211159</p>");
+  it("Phase-53: older-style category-prefixed IDs now MATCH (was rejected pre-Phase-53)", () => {
+    // Pre-Phase-53: rejected as out of scope per ADR-0018 D-G Phase-42+
+    // deferrals (APPEND-D-Y item 2). Phase 53 ship: matches via inner
+    // ID-class disjunction — see Phase-53 section below for full coverage.
+    expect(runArxivPipeline("arxiv:math/0211159")).toBe(
+      '<p><a href="https://arxiv.org/abs/math/0211159">arxiv:math/0211159</a></p>',
+    );
   });
 
   it("rejects bare IDs without `arxiv:` prefix (out of scope Phase 41)", () => {
@@ -207,6 +212,114 @@ describe("remarkLinkArxivIds — plugin behavior", () => {
     expect(runArxivPipeline("[[arxiv:1909.03004|Smith, Jones, and Bell 2024]]")).toBe(
       '<p><a href="https://arxiv.org/abs/1909.03004">Smith, Jones, and Bell 2024</a></p>',
     );
+  });
+
+  // ---------------------------------------------------------------
+  // Phase-53 legacy category-prefixed arxiv IDs (Unit 53.1). Inner
+  // ID-class disjunction `\d{4}\.\d{4,5}|[a-z]+(?:-[a-z]+)*(?:\.[A-Z-]+)?/\d{7}`
+  // matches BOTH modern and legacy formats. Closes ADR-0018 APPEND-
+  // D-Y item 2 at 12-phase carryover — longest absolute APPEND-
+  // deferral closure ever observed. Fifth realization of Phase-46
+  // plugin-regex-extension phase-shape pattern. First non-alias-
+  // syntax plugin-regex-extension. Second regex evolution on
+  // remarkLinkArxivIds.
+  // ---------------------------------------------------------------
+
+  it("Phase-53: resolves bare legacy `arxiv:math/0211159` (single-word category)", () => {
+    expect(runArxivPipeline("arxiv:math/0211159")).toBe(
+      '<p><a href="https://arxiv.org/abs/math/0211159">arxiv:math/0211159</a></p>',
+    );
+  });
+
+  it("Phase-53: resolves bare legacy with uppercase subcategory `arxiv:cs.AI/0501001`", () => {
+    expect(runArxivPipeline("arxiv:cs.AI/0501001")).toBe(
+      '<p><a href="https://arxiv.org/abs/cs.AI/0501001">arxiv:cs.AI/0501001</a></p>',
+    );
+  });
+
+  it("Phase-53: resolves bare legacy with hyphenated category `arxiv:hep-th/9711200`", () => {
+    expect(runArxivPipeline("arxiv:hep-th/9711200")).toBe(
+      '<p><a href="https://arxiv.org/abs/hep-th/9711200">arxiv:hep-th/9711200</a></p>',
+    );
+  });
+
+  it("Phase-53: resolves bare legacy with uppercase 2-letter subcategory `arxiv:cs.GT/0309136`", () => {
+    expect(runArxivPipeline("arxiv:cs.GT/0309136")).toBe(
+      '<p><a href="https://arxiv.org/abs/cs.GT/0309136">arxiv:cs.GT/0309136</a></p>',
+    );
+  });
+
+  it("Phase-53: resolves bare legacy with hyphenated category + hyphenated subcategory `arxiv:cond-mat.stat-mech/0301001`", () => {
+    expect(runArxivPipeline("arxiv:cond-mat.stat-mech/0301001")).toBe(
+      '<p><a href="https://arxiv.org/abs/cond-mat.stat-mech/0301001">arxiv:cond-mat.stat-mech/0301001</a></p>',
+    );
+  });
+
+  it("Phase-53: resolves bare legacy with version suffix `arxiv:hep-th/9711200v2`", () => {
+    expect(runArxivPipeline("arxiv:hep-th/9711200v2")).toBe(
+      '<p><a href="https://arxiv.org/abs/hep-th/9711200v2">arxiv:hep-th/9711200v2</a></p>',
+    );
+  });
+
+  it("Phase-53: resolves bracketed legacy without alias `[[arxiv:math/0211159]]`", () => {
+    expect(runArxivPipeline("[[arxiv:math/0211159]]")).toBe(
+      '<p><a href="https://arxiv.org/abs/math/0211159">arxiv:math/0211159</a></p>',
+    );
+  });
+
+  it("Phase-53: resolves bracketed legacy with alias `[[arxiv:math/0211159|Witten 2002]]`", () => {
+    expect(runArxivPipeline("[[arxiv:math/0211159|Witten 2002]]")).toBe(
+      '<p><a href="https://arxiv.org/abs/math/0211159">Witten 2002</a></p>',
+    );
+  });
+
+  it("Phase-53: bracketed legacy preserves source casing of prefix (`[[ArXiv:math/0211159]]`)", () => {
+    expect(runArxivPipeline("[[ArXiv:math/0211159]]")).toBe(
+      '<p><a href="https://arxiv.org/abs/math/0211159">ArXiv:math/0211159</a></p>',
+    );
+  });
+
+  it("Phase-53: backwards-compat — modern format `arxiv:1909.03004` still works", () => {
+    expect(runArxivPipeline("arxiv:1909.03004")).toBe(
+      '<p><a href="https://arxiv.org/abs/1909.03004">arxiv:1909.03004</a></p>',
+    );
+  });
+
+  it("Phase-53: modern + legacy coexist in same paragraph", () => {
+    const html = runArxivPipeline("compare arxiv:1909.03004 with arxiv:hep-th/9711200 here");
+    expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">arxiv:1909.03004</a>');
+    expect(html).toContain(
+      '<a href="https://arxiv.org/abs/hep-th/9711200">arxiv:hep-th/9711200</a>',
+    );
+  });
+
+  it("Phase-53: bracketed modern + bracketed legacy coexist", () => {
+    const html = runArxivPipeline(
+      "see [[arxiv:1909.03004|modern]] and [[arxiv:math/0211159|legacy]] here",
+    );
+    expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">modern</a>');
+    expect(html).toContain('<a href="https://arxiv.org/abs/math/0211159">legacy</a>');
+  });
+
+  it("Phase-53: rejects legacy with 6-digit identifier (\\d{7} requires exactly 7)", () => {
+    expect(runArxivPipeline("arxiv:math/021115")).toBe("<p>arxiv:math/021115</p>");
+  });
+
+  it("Phase-53: legacy preserves trailing sentence-terminator period outside the match", () => {
+    expect(runArxivPipeline("cited as arxiv:math/0211159.")).toBe(
+      '<p>cited as <a href="https://arxiv.org/abs/math/0211159">arxiv:math/0211159</a>.</p>',
+    );
+  });
+
+  it("Phase-53: legacy nested inside bold renders correctly", () => {
+    expect(runArxivPipeline("**arxiv:hep-th/9711200**")).toBe(
+      '<p><strong><a href="https://arxiv.org/abs/hep-th/9711200">arxiv:hep-th/9711200</a></strong></p>',
+    );
+  });
+
+  it("Phase-53: legacy alias display HTML-escapes via remark-rehype text-node rendering (XSS safety)", () => {
+    const html = runArxivPipeline("[[arxiv:math/0211159|x & y]]");
+    expect(html).toContain('<a href="https://arxiv.org/abs/math/0211159">x &#x26; y</a>');
   });
 });
 

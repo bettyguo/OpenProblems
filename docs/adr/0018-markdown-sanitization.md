@@ -2991,6 +2991,218 @@ cap):
 - **2nd `schemaOverrides` consumer beyond tables** — Phase
   53+.
 
+**EXTENDED Phase 53 Unit 53.1** — **fifth realization of the
+Phase-46 plugin-regex-extension phase-shape pattern**: older-
+style category-prefixed arxiv IDs `arxiv:math/0211159` /
+`arxiv:cs.AI/0501001` / `arxiv:hep-th/9711200` via in-place
+inner-ID-class disjunction extension on `remarkLinkArxivIds`
+regex. **First 5-realization phase-shape pattern in project
+history** (Phase 46 wikilinks alias; Phase 47 arxiv alias;
+Phase 48 doi alias; Phase 51 pubmed alias; Phase 53 arxiv
+legacy; extends Phase-52 first-5-realization-property mark
+from `constructor-arg-only-zero-rework-expansion` to also
+cover `plugin-regex-extension`). **Project's first multi-5-
+realization state** — TWO 5-realization framework patterns
+coexist post-Phase 53.
+
+**First non-alias-syntax plugin-regex-extension** in project
+history. Phase 46-51 plugin-regex-extensions all added
+BRACKETED `[[...]]` alias-syntax alternatives. Phase 53 is the
+**first regex extension that does NOT add an alias form** — it
+extends the inner ID-class within both existing alternatives
+(bracketed + bare) to recognize a second ID format. Validates
+that the plugin-regex-extension phase-shape generalizes beyond
+alias-syntax to arbitrary ID-class evolutions.
+
+**Second regex evolution on `remarkLinkArxivIds`** in project
+history. Phase 47 was first (alias-syntax dual-form); Phase 53
+is second (ID-class extension). **First plugin with 2 regex
+evolutions** in project history — sets the precedent that a
+consumer plugin may accumulate multiple regex evolutions
+across phases without architectural rework.
+
+**Closes APPEND-D-Y item 2** ("Older-style category-prefixed
+arXiv IDs: pre-2007 `<archive>/<id>` format (`arxiv:math/0211159`,
+`arxiv:cs.AI/0501001`). None encountered in the project's
+existing paper-evidence URLs; the modern-format-only Phase-41
+regex deliberately rejects them. Phase 42+ if curator content
+surfaces older citations.") at **12-phase carryover** (Phase
+41 → Phase 53). **LONGEST ABSOLUTE APPEND-DEFERRAL CLOSURE
+EVER OBSERVED** (beats prior 8-phase D-L item 2 record from
+Phase 38 → 46 wikilinks alias closure). **First 12-phase
+APPEND-deferral closure in absolute carryover terms**. The 12-
+phase gap reflects the demand-signal-first deferral discipline
+— no curator content surfaced older citations through Phase
+52; the regex evolution is architecturally tractable
+independent of demand signal once the plugin-regex-extension
+phase-shape pattern has 4 prior realizations.
+
+**Twelfth prep-/APPEND-doc-level deferral closed by a later
+phase**: Phase 42 → 38 D-L item 1; Phase 43 → 39 D-Q item 2;
+Phase 44 → 41 D-Y item 1; Phase 45 → 41 D-Y item 4; Phase 46
+→ 38 D-L item 2; Phase 47 → 41 D-Y item 5; Phase 48 → 45 D-AC
+item 2; Phase 49 → 45 D-AC cross-surface; Phase 50 → 45 D-AC
+PubMed PMID item; Phase 51 → new Phase-50 deferral; Phase 52
+→ 50 D-AH PubMed cross-surface; Phase 53 → 41 D-Y item 2.
+**APPEND-deferral closure cadence sustained 12 phases** —
+**new longest sustained cadence in project history** (extends
+Phase-52 record 11 → 12). **First 12-phase APPEND-deferral
+closure run** in the project's phase taxonomy.
+
+**First "non-cross-surface non-alias non-sibling APPEND-
+deferral closure on the `remarkPlugins` slot kind"** in the
+cadence. Phase 45 doi sibling + Phase 50 pubmed sibling were
+sibling-consumer closures; Phase 47 arxiv + Phase 48 doi +
+Phase 51 pubmed were alias-syntax closures; Phase 53 arxiv
+legacy is neither. **First regex-evolution-only closure on
+remark**.
+
+**Twentieth APPEND on ADR-0018 D-G** — extends the **first-
+ADR-D-clause-with-most-APPENDs record** from 19 → 20 (Phase
+18 + 27 + 29 + 37 + 38 + 39 + 40 + 41 + 42 + 43 + 44 + 45 +
+46 + 47 + 48 + 49 + 50 + 51 + 52 + **53**). **Two-decade
+APPEND mark** on the same D-clause.
+
+**Eleventh two-letter APPEND letter D-AK** (after Phase-43
+D-AA + Phase-44 D-AB + Phase-45 D-AC + Phase-46 D-AD + Phase-
+47 D-AE + Phase-48 D-AF + Phase-49 D-AG + Phase-50 D-AH +
+Phase-51 D-AI + Phase-52 D-AJ). Excel-spreadsheet column
+convention sustained — D-AL + D-AM + ... + D-AZ would carry
+Phase 54+ at this cadence (after D-AZ rolls to D-BA).
+
+**APPEND-D-AK arxiv legacy regex shape**:
+
+```ts
+// Before (Phase 47 ship through Phase-52 close):
+const ARXIV_PATTERN =
+  /\[\[arxiv:(\d{4}\.\d{4,5})(v\d+)?(?:\|([^\]\n]+))?\]\]|\barxiv:(\d{4}\.\d{4,5})(v\d+)?\b/gi;
+
+// After (Phase 53 ship):
+const ARXIV_PATTERN =
+  /\[\[arxiv:(\d{4}\.\d{4,5}|[a-z]+(?:-[a-z]+)*(?:\.[A-Z-]+)?\/\d{7})(v\d+)?(?:\|([^\]\n]+))?\]\]|\barxiv:(\d{4}\.\d{4,5}|[a-z]+(?:-[a-z]+)*(?:\.[A-Z-]+)?\/\d{7})(v\d+)?\b/gi;
+```
+
+**Inner ID-class disjunction** added in BOTH the bracketed
+alternative AND the bare alternative. The ID-class becomes:
+
+- **Modern** `\d{4}\.\d{4,5}` (Phase 41 baseline; e.g.,
+  `1909.03004`, `2024.01234`).
+- **Legacy** `[a-z]+(?:-[a-z]+)*(?:\.[A-Z-]+)?/\d{7}` (Phase
+  53 NEW):
+  - **Category** `[a-z]+(?:-[a-z]+)*` — matches single-word
+    (`math`, `physics`) AND hyphenated multi-word categories
+    (`hep-th`, `cond-mat`, `nucl-ex`, `astro-ph`).
+  - **Subcategory** `(?:\.[A-Z-]+)?` — optional uppercase
+    subcategory (`cs.AI`, `cs.GT`, `cs.IT`); supports
+    hyphenated subcategories (`cond-mat.stat-mech`).
+  - **Separator** `/` — literal slash.
+  - **ID** `\d{7}` — exactly 7 digits (year-month + paper
+    number; e.g., `0211159` = November 2002, paper 159).
+
+**Inner-class disjunction discipline**: the alternation
+`\d{4}\.\d{4,5}|[a-z]+(?:-[a-z]+)*(?:\.[A-Z-]+)?\/\d{7}` is
+unambiguous because the two alternatives have disjoint first
+characters (`\d` vs `[a-z]`) — no backtracking ambiguity.
+**First inner-class disjunction in a dual-form regex** in
+project history.
+
+**Plugin body + `ArxivExtensionRegistry` class + factory
+dispatch arm + `PHASE_41_DEFAULT_ENABLED_SURFACES` UNCHANGED**.
+The existing plugin body extracts the ID via match groups 1
+(bracketed) or 4 (bare); both now capture either modern or
+legacy format. The URL form
+`https://arxiv.org/abs/${id}${version}` works identically
+because arxiv.org's URL space natively supports both formats
+(`https://arxiv.org/abs/1909.03004` and
+`https://arxiv.org/abs/math/0211159` both resolve
+canonically).
+
+**Case-insensitivity caveat**: the `/i` flag folds the
+category class `[a-z]+` to match `[a-zA-Z]+`. arxiv.org URL
+space is canonically lowercase, so a source like
+`arxiv:Math/0211159` matches and emits
+`https://arxiv.org/abs/Math/0211159` which arxiv.org
+canonicalizes via redirect. This mirrors the Phase-41 prefix-
+case-insensitivity convention.
+
+**Regex-disjointness-as-sole-defense discipline at 3-consumer
+cardinality HOLDS UNDER ID-CLASS EXTENSION**:
+
+| Pair | Disjointness mechanism post-Phase-53 |
+|---|---|
+| arxiv-vs-doi | arxiv requires literal `arxiv:` prefix (both modern and legacy); doi requires literal `doi:` prefix. Distinct literal prefixes — unchanged from Phase 50. |
+| arxiv-vs-pubmed | arxiv requires `arxiv:`; pubmed requires `pubmed:` or `pmid:`. Distinct literal prefixes — unchanged. |
+| doi-vs-pubmed | doi requires `doi:`; pubmed requires `pubmed:`/`pmid:`. Distinct literal prefixes — unchanged. |
+
+All three pairs continue to be collision-free via regex
+character class disjointness alone. The ID-class extension is
+**entirely within the `arxiv:` prefix scope** — adding legacy
+IDs cannot create new collisions with doi or pubmed because
+the prefix discriminator dominates. **First state where regex-
+disjointness is exercised across a mix of single-ID-class
+(doi + pubmed) and dual-ID-class (arxiv modern + legacy)
+regexes at 3-consumer cardinality on all 4 surfaces**.
+
+**XSS audit Phase 53**: legacy display text becomes mdast
+`text` node `value` inside an mdast `link` node, then transits
+through `remark-rehype` to a hast `<a>` element with text-node
+children. The text-node value is HTML-escaped by
+`rehype-stringify` per HTML5 spec. Test "Phase-53: legacy
+alias display HTML-escapes" asserts `[[arxiv:math/0211159|x & y]]`
+emits `<a href="...">x &#x26; y</a>`. **No new XSS surface**.
+
+**No env-var change Phase 53**: legacy-format extension is
+plugin-internal regex evolution. `MARKDOWN_EXTENSIONS=arxiv`
+(Phase-44 all-4-surfaces default) and 5-way composite
+`wikilinks,tables,arxiv,doi,pubmed` (Phase-52 all-4-surfaces
+default) automatically pick up legacy IDs.
+
+**Phase 54+ deferrals** (Phase-53 arxiv-legacy scope cap):
+
+- **Bare arxiv IDs without `arxiv:` prefix** (APPEND-D-Y item
+  3 carries) — Phase 54+.
+- **Bare DOIs without `doi:` prefix** (APPEND-D-AC carries) —
+  Phase 54+.
+- **Bare PubMed IDs without prefix** — Phase 54+.
+- **dx.doi.org legacy host parsing** (APPEND-D-AC carries) —
+  Phase 54+.
+- **Stricter trailing-lookahead for trailing-period DOIs** —
+  Phase 54+.
+- **Paper-card hover-preview** (APPEND-D-Y item 6 carries) —
+  Phase 54+.
+- **ORCID auto-link consumer** — sixth concrete consumer;
+  Phase 54+; first 4th-`remarkPlugins` consumer.
+- **bioRxiv preprint consumer** — sixth or later concrete
+  consumer; Phase 54+.
+- **OSF preprint consumer** — sixth or later concrete
+  consumer; Phase 54+.
+- **Cross-entity wikilinks** (APPEND-D-L item 3 carries) —
+  Phase 54+.
+- **`<a class="wikilink">` styling** (APPEND-D-L item 4
+  carries) — Phase 54+.
+- **404 handling for unresolved wikilinks** (APPEND-D-L item 5
+  carries) — Phase 54+.
+- **Plugin parameterization for wikilink-href-builder** (APPEND-
+  D-L item 6 carries) — Phase 54+.
+- **Auto-trim of alias display whitespace** — Phase 54+.
+- **Empty-alias fallback unification** across consumers —
+  Phase 54+.
+- **Table-specific attributes** (APPEND-D-Q item 3 carries) —
+  Phase 54+.
+- **`<caption>` element** (APPEND-D-Q item 4 carries) — Phase
+  54+.
+- **Surface-specific table schemas** (APPEND-D-Q item 6 carries)
+  — Phase 54+.
+- **3rd regex evolution on `remarkLinkArxivIds`** (e.g.,
+  bare arxiv IDs without prefix; or further legacy-format
+  variants) — Phase 54+.
+- **4th-or-later `remarkPlugins` consumer beyond arxiv + doi
+  + pubmed** — Phase 54+.
+- **2nd `rehypePlugins` consumer beyond wikilinks** — Phase
+  54+.
+- **2nd `schemaOverrides` consumer beyond tables** — Phase
+  54+.
+
 ### D-H. Phase 18+ deferrals
 
 Phase 17 ships MINIMAL markdown surface. Deferred to Phase 18+:
