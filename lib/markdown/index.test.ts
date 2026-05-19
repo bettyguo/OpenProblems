@@ -3343,3 +3343,212 @@ describe("Phase-52 first all-4-surfaces 3-consumer same-slot composition (arxiv+
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// Phase-53 — end-to-end older-style category-prefixed arxiv IDs via inner
+// ID-class disjunction extension on ARXIV_PATTERN. Fifth realization of the
+// Phase-46 plugin-regex-extension phase-shape pattern (first 5-realization
+// phase-shape in project history). First non-alias-syntax plugin-regex-
+// extension. Second regex evolution on remarkLinkArxivIds (first plugin with
+// 2 regex evolutions).
+//
+// Closes ADR-0018 APPEND-D-Y item 2 at 12-phase carryover (Phase 41 → 53) —
+// LONGEST ABSOLUTE APPEND-DEFERRAL CLOSURE EVER OBSERVED (beats prior 8-
+// phase D-L item 2 record from Phase 38 → 46 wikilinks alias closure).
+// ---------------------------------------------------------------------------
+
+describe("Phase-53 arxiv legacy category-prefixed IDs — all 4 surfaces under default dispatch", () => {
+  beforeEach(() => {
+    __setRegistryForTests(new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES));
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it("legacy arxiv:math/0211159 renders on bio (NEW Phase-53 ID-class extension)", () => {
+    expect(renderBioMarkdown("see arxiv:math/0211159 here") ?? "").toBe(
+      '<p>see <a href="https://arxiv.org/abs/math/0211159">arxiv:math/0211159</a> here</p>',
+    );
+  });
+
+  it("legacy arxiv:hep-th/9711200 renders on reviewNotes (hyphenated category)", () => {
+    expect(renderReviewNotesMarkdown("see arxiv:hep-th/9711200 here")).toBe(
+      '<p>see <a href="https://arxiv.org/abs/hep-th/9711200">arxiv:hep-th/9711200</a> here</p>',
+    );
+  });
+
+  it("legacy arxiv:cs.AI/0501001 renders on rationale (subcategory format)", () => {
+    expect(renderRationaleMarkdown("see arxiv:cs.AI/0501001 here")).toBe(
+      '<p>see <a href="https://arxiv.org/abs/cs.AI/0501001">arxiv:cs.AI/0501001</a> here</p>',
+    );
+  });
+
+  it("legacy arxiv:cond-mat.stat-mech/0301001 renders on actionRationale (hyphenated category + subcategory)", () => {
+    expect(renderActionRationaleMarkdown("see arxiv:cond-mat.stat-mech/0301001 here")).toBe(
+      '<p>see <a href="https://arxiv.org/abs/cond-mat.stat-mech/0301001">arxiv:cond-mat.stat-mech/0301001</a> here</p>',
+    );
+  });
+
+  it("Phase-47 bracketed alias works for legacy IDs on bio", () => {
+    expect(renderBioMarkdown("see [[arxiv:math/0211159|Witten 2002]] here") ?? "").toBe(
+      '<p>see <a href="https://arxiv.org/abs/math/0211159">Witten 2002</a> here</p>',
+    );
+  });
+
+  it("legacy + modern formats coexist on every surface (parity + backwards-compat)", () => {
+    const md = "compare arxiv:1909.03004 (modern) with arxiv:hep-th/9711200 (legacy)";
+    for (const renderer of [
+      renderBioMarkdown,
+      renderReviewNotesMarkdown,
+      renderRationaleMarkdown,
+      renderActionRationaleMarkdown,
+    ] as const) {
+      const html = renderer(md) ?? "";
+      expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+      expect(html).toContain('href="https://arxiv.org/abs/hep-th/9711200"');
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-53 — legacy + modern + bracketed alias coexistence under 5-way
+// composite (Phase-52 maximal-activation default). All 4 surfaces inherit
+// the legacy-ID matching via the Phase-44 cross-surface arxiv default + the
+// Phase-53 ID-class extension flowing through the composite-registry
+// dispatch.
+// ---------------------------------------------------------------------------
+
+describe("Phase-53 arxiv legacy + modern + alias coexistence under 5-way composite", () => {
+  beforeEach(() => {
+    const wikilinks = new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES);
+    const tables = new TablesExtensionRegistry(PHASE_39_DEFAULT_ENABLED_SURFACES);
+    const arxiv = new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES);
+    const doi = new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES);
+    const pubmed = new PubmedExtensionRegistry(PHASE_50_DEFAULT_ENABLED_SURFACES);
+    __setRegistryForTests(new CompositeExtensionRegistry([wikilinks, tables, arxiv, doi, pubmed]));
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it("rationale: modern + legacy + bracketed alias all coexist under 5-way default (NEW Phase-53)", () => {
+    const md =
+      "see arxiv:1909.03004 (modern), arxiv:math/0211159 (legacy), and [[arxiv:hep-th/9711200|Maldacena 1997]] (alias-legacy)";
+    const html = renderRationaleMarkdown(md);
+    expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">arxiv:1909.03004</a>');
+    expect(html).toContain('<a href="https://arxiv.org/abs/math/0211159">arxiv:math/0211159</a>');
+    expect(html).toContain('<a href="https://arxiv.org/abs/hep-th/9711200">Maldacena 1997</a>');
+  });
+
+  it("bio: legacy renders alongside doi + pubmed under 5-way composite", () => {
+    const md = "compare arxiv:hep-th/9711200 with doi:10.1234/abc and pubmed:12345678";
+    const html = renderBioMarkdown(md) ?? "";
+    expect(html).toContain('href="https://arxiv.org/abs/hep-th/9711200"');
+    expect(html).toContain('href="https://doi.org/10.1234/abc"');
+    expect(html).toContain('href="https://pubmed.ncbi.nlm.nih.gov/12345678/"');
+  });
+
+  it("legacy alias inherits XSS safety (HTML-escape via text-node rendering)", () => {
+    const md = "[[arxiv:math/0211159|x & y]]";
+    for (const renderer of [
+      renderBioMarkdown,
+      renderReviewNotesMarkdown,
+      renderRationaleMarkdown,
+      renderActionRationaleMarkdown,
+    ] as const) {
+      const html = renderer(md) ?? "";
+      expect(html).toContain('<a href="https://arxiv.org/abs/math/0211159">x &#x26; y</a>');
+    }
+  });
+
+  it("XSS defenses survive Phase-53 legacy + 5-way composite on every surface", () => {
+    const md =
+      "[bad](javascript:alert(1)) [[scalable-oversight|topic]] arxiv:hep-th/9711200 doi:10.1234/abc pubmed:12345678.\n\n| A | B |\n|---|---|\n| 1 | 2 |";
+    for (const renderer of [
+      renderBioMarkdown,
+      renderReviewNotesMarkdown,
+      renderRationaleMarkdown,
+      renderActionRationaleMarkdown,
+    ] as const) {
+      const html = renderer(md) ?? "";
+      expect(html).not.toContain("javascript:alert");
+      expect(html).toContain('href="https://arxiv.org/abs/hep-th/9711200"');
+      expect(html).toContain('href="https://doi.org/10.1234/abc"');
+      expect(html).toContain('href="https://pubmed.ncbi.nlm.nih.gov/12345678/"');
+      expect(html).toContain("<table>");
+    }
+  });
+
+  it("legacy with version suffix renders correctly under 5-way composite", () => {
+    const md = "see arxiv:cond-mat/0301001v3 for the long-form discussion";
+    for (const renderer of [
+      renderBioMarkdown,
+      renderReviewNotesMarkdown,
+      renderRationaleMarkdown,
+      renderActionRationaleMarkdown,
+    ] as const) {
+      const html = renderer(md) ?? "";
+      expect(html).toContain('href="https://arxiv.org/abs/cond-mat/0301001v3"');
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-53 — legacy arxiv + doi + pubmed 3-consumer same-slot composition.
+// Regex-disjointness-as-sole-defense discipline at 3-consumer cardinality
+// (Phase 50 established; Phase 52 generalized to all 4 surfaces) HOLDS UNDER
+// ID-CLASS EXTENSION on arxiv. First state where regex-disjointness is
+// exercised across a mix of single-ID-class (doi + pubmed) and dual-ID-
+// class (arxiv modern + legacy) regexes at 3-consumer cardinality.
+// ---------------------------------------------------------------------------
+
+describe("Phase-53 arxiv legacy + 3-consumer same-slot composition (regex-disjointness holds under ID-class extension)", () => {
+  beforeEach(() => {
+    const arxiv = new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES);
+    const doi = new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES);
+    const pubmed = new PubmedExtensionRegistry(PHASE_50_DEFAULT_ENABLED_SURFACES);
+    __setRegistryForTests(new CompositeExtensionRegistry([arxiv, doi, pubmed]));
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it("bio: legacy arxiv + doi + pubmed all render (NEW Phase-53 — mixed ID-class disjointness)", () => {
+    const html =
+      renderBioMarkdown(
+        "compare arxiv:hep-th/9711200 with doi:10.1234/abc and pubmed:12345678 directly",
+      ) ?? "";
+    expect(html).toContain('href="https://arxiv.org/abs/hep-th/9711200"');
+    expect(html).toContain('href="https://doi.org/10.1234/abc"');
+    expect(html).toContain('href="https://pubmed.ncbi.nlm.nih.gov/12345678/"');
+  });
+
+  it("reviewNotes: legacy arxiv + doi + pubmed all render", () => {
+    const html = renderReviewNotesMarkdown(
+      "see arxiv:math/0211159 and doi:10.5678/xyz and pmid:99999999 here",
+    );
+    expect(html).toContain('href="https://arxiv.org/abs/math/0211159"');
+    expect(html).toContain('href="https://doi.org/10.5678/xyz"');
+    expect(html).toContain('href="https://pubmed.ncbi.nlm.nih.gov/99999999/"');
+  });
+
+  it("rationale + actionRationale: legacy arxiv + modern arxiv + doi + pubmed all coexist (parity)", () => {
+    const md = "see arxiv:1909.03004, arxiv:cond-mat/0301001, doi:10.1234/abc, and pubmed:12345678";
+    for (const renderer of [renderRationaleMarkdown, renderActionRationaleMarkdown] as const) {
+      const html = renderer(md);
+      expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+      expect(html).toContain('href="https://arxiv.org/abs/cond-mat/0301001"');
+      expect(html).toContain('href="https://doi.org/10.1234/abc"');
+      expect(html).toContain('href="https://pubmed.ncbi.nlm.nih.gov/12345678/"');
+    }
+  });
+});

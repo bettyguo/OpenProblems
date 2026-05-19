@@ -2470,6 +2470,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 53 — Community-adjacent surfaces (**forty-fourth NON-§13 phase**: older-style category-prefixed arxiv IDs `arxiv:math/0211159` / `arxiv:cs.AI/0501001` / `arxiv:hep-th/9711200` via in-place ID-class extension on `remarkLinkArxivIds` regex; **fifth realization of Phase-46 plugin-regex-extension phase-shape pattern** — **first 5-realization phase-shape pattern in project history**; **first non-alias-syntax plugin-regex-extension**; **second regex evolution on `remarkLinkArxivIds`** — first plugin with 2 regex evolutions; closes ADR-0018 APPEND-D-Y item 2 at **12-phase carryover** — **LONGEST ABSOLUTE APPEND-DEFERRAL CLOSURE EVER OBSERVED** (beats prior 8-phase D-L item 2 record from Phase 38 → 46); APPEND-D-AK eleventh two-letter slot; anticipated 5 numbered units; 48th "Continue" override invoked)
 
+#### Unit 53.2 — NEW end-to-end Phase-53 tests on bio + reviewNotes + rationale + actionRationale for legacy IDs + 5-way composite coexistence + 3-consumer same-slot under ID-class extension (14 NEW tests; 1225/73)
+
+- Third Phase-53 unit; code-only (test additions to `lib/markdown/index.test.ts`).
+- Three new describe blocks added at end of file:
+- **First describe block** — `Phase-53 arxiv legacy category-prefixed IDs — all 4 surfaces under default dispatch` (6 tests):
+  - legacy `arxiv:math/0211159` renders on bio (NEW Phase-53 ID-class extension).
+  - legacy `arxiv:hep-th/9711200` renders on reviewNotes (hyphenated category).
+  - legacy `arxiv:cs.AI/0501001` renders on rationale (subcategory format).
+  - legacy `arxiv:cond-mat.stat-mech/0301001` renders on actionRationale (hyphenated category + subcategory).
+  - Phase-47 bracketed alias works for legacy IDs on bio.
+  - legacy + modern formats coexist on every surface (parity + backwards-compat loop).
+- **Second describe block** — `Phase-53 arxiv legacy + modern + alias coexistence under 5-way composite` (5 tests):
+  - rationale: modern + legacy + bracketed alias all coexist under 5-way default.
+  - bio: legacy renders alongside doi + pubmed under 5-way composite.
+  - legacy alias inherits XSS safety (HTML-escape via text-node rendering; loop over all 4 surfaces).
+  - XSS defenses survive Phase-53 legacy + 5-way composite on every surface (javascript: stripped + tables render).
+  - legacy with version suffix renders correctly under 5-way composite (`arxiv:cond-mat/0301001v3`).
+- **Third describe block** — `Phase-53 arxiv legacy + 3-consumer same-slot composition (regex-disjointness holds under ID-class extension)` (3 tests):
+  - bio: legacy arxiv + doi + pubmed all render — **mixed single-ID-class (doi + pubmed) + dual-ID-class (arxiv modern + legacy) regex-disjointness at 3-consumer cardinality**.
+  - reviewNotes: legacy arxiv + doi + pubmed all render.
+  - rationale + actionRationale: legacy arxiv + modern arxiv + doi + pubmed all coexist (parity).
+- **Composition matrix snapshot Phase 53**: same as Phase 52 (5-consumer + quadruple-alias on all 4 surfaces); arxiv consumer now matches both modern and legacy IDs within the existing dual-form structure. **First state where regex-disjointness-as-sole-defense at 3-consumer cardinality is exercised across a mix of single-ID-class and dual-ID-class regexes on all 4 surfaces in production default**.
+- **No source code changes**: Unit 53.1 already shipped the regex evolution + plugin doc-comments + APPEND-D-AK; Unit 53.2 is pure test additions validating the all-4-surfaces legacy + composite end-to-end.
+- **Smoke gates**:
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **1225 / 73 files** (+14 vs Unit 53.1).
+  - `pnpm audit-content` → 0 errors / 6 warnings UNCHANGED.
+  - First Load JS = 103 kB UNCHANGED (123 consecutive units); Middleware = 160 kB UNCHANGED.
+
 #### Unit 53.1 — `ARXIV_PATTERN` inner ID-class disjunction (modern + legacy category-prefixed) + 16 NEW arxiv.test.ts legacy tests + ADR-0018 D-G APPEND-D-AK (fifth realization of Phase-46 plugin-regex-extension phase-shape — first 5-realization phase-shape pattern; first non-alias-syntax plugin-regex-extension; second regex evolution on `remarkLinkArxivIds` — first plugin with 2 regex evolutions; 20th D-G APPEND extends record 19 → 20; 1211/73)
 
 - Second Phase-53 unit; code + ADR APPEND.
