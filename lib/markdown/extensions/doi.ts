@@ -194,18 +194,30 @@ export function remarkLinkDoiIds() {
  * DOI-autolink remark plugin on a curator-specified set of
  * surfaces.
  *
- * **Phase-45 default** (Unit 45.1 ship):
- * `PHASE_45_DEFAULT_ENABLED_SURFACES` = `Set(["rationale"])` —
- * single-surface scope mirroring the Phase-41 arxiv-first-ship
- * demand-signal-first precedent. `rationale` is the curator
- * paper-citation surface (Phase-27 challenge-resolution
- * rationale text); cross-surface expansion to bio + reviewNotes
- * + actionRationale deferred Phase 46+ per the per-consumer-
- * expansion-as-separate-phase pattern Phase 38→42, Phase 39→43,
- * Phase 41→44 each established.
+ * **Phase-49 default** (since Unit 49.1):
+ * `PHASE_45_DEFAULT_ENABLED_SURFACES` = `Set(["bio",
+ * "reviewNotes", "rationale", "actionRationale"])` — all 4
+ * wired markdown surfaces enabled. Closes Phase-45 ADR-0018
+ * APPEND-D-AC cross-surface item at 4-phase carryover
+ * (matches Phase-38 → 42 + Phase-39 → 43 4-phase cadence
+ * verbatim). **Fourth real-consumer-expansion realization**
+ * of the "constructor-arg-only zero-rework expansion" property
+ * (Phase 42 wikilinks first; Phase 43 tables second; Phase 44
+ * arxiv third; Phase 49 doi fourth). **Completes the per-
+ * consumer all-4-surfaces arc**: all 4 Phase-37-framework
+ * consumers ship default-enabled on all 4 surfaces.
  *
- * For non-enabled surfaces returns an empty extension set
- * (default-deny). Per-surface differentiation remains the
+ * **Phase-45 default** (Unit 45.1 ship through Phase-48 close):
+ * was `Set(["rationale"])` — single-surface scope (Phase-27
+ * challenge-resolution-rationale surface as the natural locus
+ * for curator paper-citation prose). Phase 49 generalizes to
+ * all 4 surfaces under the audit-trail-preserving constant-name
+ * discipline (Phase 45 = introduction phase encoded in name;
+ * VALUE evolves Phase 49).
+ *
+ * For non-enabled surfaces (none at Phase 49 default; future
+ * curator constructs may pass a narrower set) returns an empty
+ * extension set. Per-surface differentiation remains the
  * framework's central value — the class is generic over the
  * enabled set.
  *
@@ -217,30 +229,37 @@ export function remarkLinkDoiIds() {
  *     all-4): distinct slot (remark vs schema); conflict-free
  *     on every surface.
  *   - Phase 41 `ArxivExtensionRegistry` (Phase 44 default
- *     all-4): **SAME slot** (both `remarkPlugins`) — **first
- *     compositional same-slot case** per APPEND-D-R
- *     concatenation rule. Under `CompositeExtensionRegistry`
- *     the `remarkPlugins` array becomes `[remarkLinkArxivIds, remarkLinkDoiIds]`
- *     on shared-enabled surfaces (rationale Phase 45 default).
+ *     all-4): **SAME slot** (both `remarkPlugins`) — same-slot
+ *     composition per APPEND-D-R concatenation rule. Under
+ *     `CompositeExtensionRegistry` the `remarkPlugins` array
+ *     becomes `[remarkLinkArxivIds, remarkLinkDoiIds]` on
+ *     shared-enabled surfaces. Phase 49 generalizes this state
+ *     from rationale-only (Phase 45 first same-slot case) to
+ *     ALL 4 surfaces — **first "all 4 surfaces have same-slot
+ *     composition" state** in project history. Regex-
+ *     disjointness-as-sole-defense discipline (arxiv ID class
+ *     `\d{4}\.\d{4,5}` lacks `/`; doi ID class requires `/`)
+ *     becomes the production collision-freedom guarantee on
+ *     every surface, not just rationale.
  *
- * `MARKDOWN_EXTENSIONS=wikilinks,tables,arxiv,doi` Phase-45
- * default produces **first 4-consumer composition** under
- * default dispatch:
+ * `MARKDOWN_EXTENSIONS=wikilinks,tables,arxiv,doi` Phase-49
+ * default produces **maximal multi-consumer all-surfaces
+ * composition under default dispatch**:
  *
- *   - bio: wikilinks(rehype) + tables(schema) + arxiv(remark)
- *   - reviewNotes: wikilinks(rehype) + tables(schema) + arxiv(remark)
- *   - rationale: wikilinks(rehype) + tables(schema) + [arxiv, doi](remark)
- *   - actionRationale: wikilinks(rehype) + tables(schema) + arxiv(remark)
+ *   - bio: wikilinks(rehype) + tables(schema) + [arxiv, doi](remark)
+ *   - reviewNotes: wikilinks(rehype) + tables(schema) + [arxiv, doi](remark)
+ *   - rationale: wikilinks(rehype) + tables(schema) + [arxiv, doi](remark) — Phase-45 baseline preserved
+ *   - actionRationale: wikilinks(rehype) + tables(schema) + [arxiv, doi](remark)
  *
- * Only `rationale` carries the doubly-occupied `remarkPlugins`
- * slot Phase 45; the other 3 surfaces match the Phase-44
- * baseline. DOI cross-surface expansion to all 4 surfaces is
- * deferred Phase 46+.
+ * **All 4 surfaces carry the doubly-occupied `remarkPlugins`
+ * slot** post-Phase-49 + the Phase-46/47/48 alias-syntax
+ * extensions on wikilinks + arxiv + doi → **first "all 4
+ * surfaces are triple-alias" state** in project history.
  *
- * Phase 46+ may add DOI cross-surface expansion (APPEND-D-AC
- * Phase-46+ deferrals), DOI display-text alias syntax
- * `[[doi:10.NNNN/xxx|display]]`, bare-DOI matching without
- * `doi:` prefix, or `dx.doi.org` legacy-host parsing.
+ * Phase 50+ may add bare-DOI matching without `doi:` prefix,
+ * `dx.doi.org` legacy-host parsing, or stricter trailing-
+ * lookahead for legitimate trailing-period DOIs (APPEND-D-AC
+ * Phase-50+ deferrals).
  */
 export class DoiExtensionRegistry implements MarkdownExtensionRegistry {
   private readonly enabledSurfaces: ReadonlySet<MarkdownSurface>;
@@ -259,28 +278,39 @@ export class DoiExtensionRegistry implements MarkdownExtensionRegistry {
 
 /**
  * Default-enabled-surfaces for `DoiExtensionRegistry` per
- * ADR-0018 D-G APPEND-D-AC (Phase 45 Unit 45.1).
+ * ADR-0018 D-G APPEND Phase-49 EXTENDED block (Unit 49.1).
  *
- * **Phase 45 ship** — `rationale`-only (Phase-27 challenge-
- * resolution rationale text). Mirrors the Phase-41 arxiv-first-
- * ship demand-signal-first precedent: curator paper-citation
- * prose lives in `rationale`; cross-surface expansion to bio
- * + reviewNotes + actionRationale deferred Phase 46+ per the
- * per-consumer-expansion-as-separate-phase pattern.
+ * **Phase 49 ship** — all 4 wired markdown surfaces enabled.
+ * Closes Phase-45 ADR-0018 APPEND-D-AC cross-surface item at
+ * 4-phase carryover (matches Phase-38 → 42 + Phase-39 → 43
+ * 4-phase cadence verbatim). **Fourth prep-/APPEND-doc-level
+ * deferral closed by value-only change** (Phase 42 closed D-L
+ * item 1; Phase 43 closed D-Q item 2; Phase 44 closed D-Y item
+ * 1; Phase 49 closes D-AC cross-surface item). **Fifth cross-
+ * surface-expansion APPEND-deferral closure** in the cadence
+ * (Phase 42 + 43 + 44 + 49). **Completes the per-consumer all-
+ * 4-surfaces arc**: all 4 Phase-37-framework consumers ship
+ * default-enabled on all 4 surfaces.
  *
- * Constant's NAME encodes the introduction-phase audit trail
- * (Phase 45 = WHEN the doi consumer first shipped); future
- * cross-surface expansions will evolve the VALUE while
- * preserving the name per Phase-42/43/44 D-8 precedent.
+ * **Phase 45 → 48 ship** (historical record) — was
+ * `Set(["rationale"])`. The constant's NAME preserves the
+ * introduction-phase audit trail (Phase 45 = WHEN the doi
+ * consumer first shipped); the VALUE evolves Phase 49 per the
+ * Phase-42/43/44 D-8 precedent. Surface enumeration follows
+ * `MarkdownSurface` type-union order per Phase-42/43/44 D-9
+ * precedent.
  *
  * Imported by the factory dispatch arm `MARKDOWN_EXTENSIONS=doi`
- * in `./index.ts` — single-value arm + multi-value composition
- * arms `wikilinks,doi` / `tables,doi` / `arxiv,doi` /
- * `wikilinks,tables,doi` / `wikilinks,arxiv,doi` /
- * `tables,arxiv,doi` / `wikilinks,tables,arxiv,doi` all
- * recognized at Phase 45 ship per `buildSingleConsumerRegistry`
- * + `CompositeExtensionRegistry` wrapping.
+ * in `./index.ts` — Phase 49 expansion flows through the
+ * dispatch arm unchanged (constructor-arg-only change; zero
+ * plugin / registry / factory rework per the property each
+ * Phase 38/39/41/45 consumer documented). Fourth-consumer
+ * realization of the property after Phase-42 wikilinks +
+ * Phase-43 tables + Phase-44 arxiv.
  */
 export const PHASE_45_DEFAULT_ENABLED_SURFACES: ReadonlySet<MarkdownSurface> = new Set([
+  "bio",
+  "reviewNotes",
   "rationale",
+  "actionRationale",
 ]);

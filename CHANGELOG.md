@@ -2470,6 +2470,39 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 49 — Community-adjacent surfaces (**fortieth NON-§13 phase**: fourth cross-surface expansion of a Phase-37-framework consumer — doi expands from `rationale`-only to all 4 markdown surfaces via constructor-arg change in `PHASE_45_DEFAULT_ENABLED_SURFACES`; mirrors Phase 42 + 43 + 44 expansion pattern verbatim; **first cross-surface expansion since Phase 44**; **fourth realization of the "constructor-arg-only zero-rework expansion" property** — completes per-consumer all-4-surfaces arc; closes ADR-0018 APPEND-D-AC cross-surface item at 4-phase carryover; APPEND-D-AG seventh two-letter slot; 5 numbered units anticipated; 44th "Continue" override invoked; **IN PROGRESS**)
 
+#### Unit 49.1 — `PHASE_45_DEFAULT_ENABLED_SURFACES` cross-surface expansion to all 4 surfaces + dispatch tests updated + decoupling of Phase-45/46/47/48 baseline blocks + ADR-0018 D-G APPEND-D-AG (fourth realization of constructor-arg-only zero-rework expansion property; first all-4-surfaces same-slot composition under default; first all-4-surfaces triple-alias state anticipated at Unit 49.2; 16th D-G APPEND extends record 15 → 16; 1069/72)
+
+- Second Phase-49 unit; code + ADR APPEND.
+- **`PHASE_45_DEFAULT_ENABLED_SURFACES` value change** (in-place edit of `lib/markdown/extensions/doi.ts`):
+  - Before (Phase 45 ship through Phase-48 close): `new Set(["rationale"])`.
+  - After (Phase 49 ship): `new Set(["bio", "reviewNotes", "rationale", "actionRationale"])`.
+  - **Fourth real-consumer-expansion realization** of the "constructor-arg-only zero-rework expansion" property — completes the per-consumer all-4-surfaces arc (Phase 42 wikilinks + Phase 43 tables + Phase 44 arxiv + Phase 49 doi). Constant NAME preserved per Phase-42/43/44 D-8 precedent (Phase 45 = introduction phase encoded in name; VALUE evolves Phase 49). Surface enumeration follows `MarkdownSurface` type-union order per Phase-42/43/44 D-9 precedent.
+- **`DoiExtensionRegistry` class + factory dispatch arm UNCHANGED**. Pure constructor-arg-only change; zero plugin / registry / factory rework. Fourth-consumer realization of the property.
+- **`doi.test.ts` registry assertion update**: the `PHASE_45_DEFAULT_ENABLED_SURFACES` assertion at lines 302-313 flips from `Set(["rationale"])` + size 1 → all 4 surfaces + size 4. Test name updated to "exposes `PHASE_45_DEFAULT_ENABLED_SURFACES` = Set of all 4 surfaces (Phase 49 expansion)".
+- **`lib/markdown/extensions/index.test.ts` dispatch-test updates** (3 tests flipped to reflect Phase-49 reality):
+  1. "DoiExtensionRegistry dispatch enables doi on all 4 surfaces Phase 49" (was rationale-only) — verifies all 4 surfaces get doi remark-plugin under `MARKDOWN_EXTENSIONS=doi`.
+  2. "arxiv,doi composite enables BOTH arxiv and doi on all 4 surfaces Phase 49 (first all-4-surfaces same-slot composition)" (was bio/reviewNotes/actionRationale arxiv-only + rationale BOTH) — verifies every surface carries `[remarkLinkArxivIds, remarkLinkDoiIds]`.
+  3. "4-way composite enables ALL 4 CONSUMERS on ALL 4 SURFACES Phase 49 (maximal multi-consumer all-surfaces composition under default dispatch)" (was 3-consumer-non-rationale-surfaces + 4-consumer-rationale) — verifies every surface has rehype + schema + same-slot remark composition.
+- **Decoupling of Phase-45/46/47/48 baseline test blocks** in `lib/markdown/index.test.ts` (4 locations + 1 default-dispatch block): existing test blocks that asserted the Phase-45 rationale-only state via `PHASE_45_DEFAULT_ENABLED_SURFACES` are decoupled with an explicit `new Set(["rationale"])` constructor arg. Preserves Phase-45 baseline coverage (the "first same-slot composition on a single surface", "first 4-consumer composition with rationale-only DOI participation", and "alias does NOT render on bio/reviewNotes/actionRationale" assertions). Block titles annotated with "(decoupled from constant after Phase-49 expansion)" notes. **Mirrors the Phase-44 Phase-41-arxiv-baseline decoupling precedent verbatim** (the Phase-41 arxiv block used explicit `new Set(["rationale"])` from inception; Phase-45 doi blocks now adopt the same shape).
+- **ADR-0018 D-G** gains **EXTENDED Phase 49 Unit 49.1** block + **APPEND-D-AG** (seventh two-letter slot after D-AA + D-AB + D-AC + D-AD + D-AE + D-AF). Documents:
+  - **Fourth cross-surface expansion of a Phase-37-framework consumer** — completes the per-consumer all-4-surfaces arc.
+  - **Closes APPEND-D-AC cross-surface item** at **4-phase carryover** (Phase 45 → 49). Matches Phase-38 → 42 + Phase-39 → 43 4-phase cadence verbatim.
+  - **Eighth prep-/APPEND-doc-level deferral closed by a later phase**. **APPEND-deferral closure cadence sustained 8 phases**.
+  - **Fifth cross-surface-expansion APPEND-deferral closure** in the cadence. **First cross-surface-expansion closure since Phase 44** (4-phase non-cross-surface-expansion streak Phase 45-48 ends at Phase 49).
+  - **First D-clause to have BOTH items closed within the closure cadence** — D-AC carries 2 distinct items (Phase 48 closed item 2; Phase 49 closes cross-surface). Sets precedent for multi-item APPEND closure across phases.
+  - **16th APPEND on ADR-0018 D-G** — extends first-ADR-D-clause-with-most-APPENDs record 15 → 16.
+  - **Seventh two-letter APPEND letter D-AG**.
+  - **Composition matrix at Phase-49 4-way default**: all 4 surfaces carry wikilinks(rehype) + tables(schema) + [arxiv, doi](remark) = **maximal multi-consumer all-surfaces composition under default dispatch**.
+  - **First "all 4 surfaces have same-slot composition" state** — regex-disjointness-as-sole-defense discipline (Phase 48 established) now exercised on every surface in production default.
+  - **First "all 4 surfaces are triple-alias" state** under 4-way default (Phase-49 end-to-end validation lands in Unit 49.2).
+- **No env-var change**: cross-surface expansion is constructor-arg-only. `MARKDOWN_EXTENSIONS=doi` (singleton) and 4-way composite `wikilinks,tables,arxiv,doi` (Phase-45 default) automatically pick up the all-4-surfaces dispatch.
+- **No collision audit changes**: arxiv-vs-doi pair regex-disjointness was established at Phase 48 (arxiv ID class lacks `/`; doi ID class requires `/`); Phase 49 only generalizes the *coverage* of this pair (rationale-only → all 4 surfaces) without altering the pair's collision-freedom guarantee.
+- **Smoke gates**:
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **1069 / 72 files** UNCHANGED (constant-value change + test assertion updates; no net test count delta; +3 dispatch tests updated in-place; doi.test.ts assertion updated in-place).
+  - `pnpm audit-content` → 0 errors / 6 warnings UNCHANGED (Q32 baseline; 45 consecutive phases).
+  - First Load JS = 103 kB UNCHANGED (102 consecutive units); Middleware = 160 kB UNCHANGED.
+
 #### Unit 49.0 — Phase 49 prep (DOI cross-surface expansion to all 4 surfaces; fourth realization of constructor-arg-only zero-rework expansion property; D-1 D-AG; anticipated 5 units; 44th "Continue" override invoked)
 
 - First Phase-49 unit; docs-only. Drafted `docs/thinking/49.0-phase-49-prep.md` (Phase-48 → 49 baseline at HEAD `6567e5f`; D-1 first-thread recommendation; D-3 doi cross-surface expansion shape — `PHASE_45_DEFAULT_ENABLED_SURFACES` evolves from `Set(["rationale"])` to `Set(["bio", "reviewNotes", "rationale", "actionRationale"])`; Phase 50+ deferrals; provisional 5-unit breakdown; per-unit decisions D-8..D-11 lean-noted; alternative threads overridable into Unit 49.1; 12 anticipated architectural firsts).

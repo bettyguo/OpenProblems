@@ -299,16 +299,22 @@ describe("DoiExtensionRegistry — class behavior", () => {
     expect(r.getExtensions("reviewNotes")).toEqual({});
   });
 
-  it('exposes PHASE_45_DEFAULT_ENABLED_SURFACES = Set(["rationale"]) Phase 45 ship', () => {
-    // Phase 45 ship: rationale-only — mirrors Phase-41 arxiv-first-ship
-    // demand-signal-first precedent. Constant's NAME encodes the
-    // introduction-phase audit trail (Phase 45 = WHEN the doi consumer
-    // first shipped). Cross-surface expansion to all 4 surfaces deferred
-    // Phase 46+ per ADR-0018 APPEND-D-AC Phase-46+ deferrals.
+  it("exposes PHASE_45_DEFAULT_ENABLED_SURFACES = Set of all 4 surfaces (Phase 49 expansion)", () => {
+    // Phase 45 ship through Phase-48 close: Set(["rationale"]). Phase 49
+    // expansion: all 4 surfaces per ADR-0018 APPEND-D-AC cross-surface
+    // closure (4-phase carryover Phase 45 → 49; matches Phase-38 → 42 +
+    // Phase-39 → 43 4-phase cadence verbatim). **Fourth real-consumer-
+    // expansion realization** of the "constructor-arg-only zero-rework
+    // expansion" property — completes the per-consumer all-4-surfaces
+    // arc (Phase 42 wikilinks; Phase 43 tables; Phase 44 arxiv; Phase 49
+    // doi). Constant NAME preserved per Phase-42/43/44 D-8 precedent
+    // (Phase 45 = introduction phase encoded in name; VALUE evolves
+    // Phase 49). Surface enumeration follows `MarkdownSurface` type-
+    // union order per Phase-42/43/44 D-9 precedent.
+    expect(PHASE_45_DEFAULT_ENABLED_SURFACES.has("bio")).toBe(true);
+    expect(PHASE_45_DEFAULT_ENABLED_SURFACES.has("reviewNotes")).toBe(true);
     expect(PHASE_45_DEFAULT_ENABLED_SURFACES.has("rationale")).toBe(true);
-    expect(PHASE_45_DEFAULT_ENABLED_SURFACES.has("bio")).toBe(false);
-    expect(PHASE_45_DEFAULT_ENABLED_SURFACES.has("reviewNotes")).toBe(false);
-    expect(PHASE_45_DEFAULT_ENABLED_SURFACES.has("actionRationale")).toBe(false);
-    expect(PHASE_45_DEFAULT_ENABLED_SURFACES.size).toBe(1);
+    expect(PHASE_45_DEFAULT_ENABLED_SURFACES.has("actionRationale")).toBe(true);
+    expect(PHASE_45_DEFAULT_ENABLED_SURFACES.size).toBe(4);
   });
 });

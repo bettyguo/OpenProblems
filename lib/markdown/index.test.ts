@@ -12,7 +12,7 @@ import {
 } from "./extensions";
 import { ArxivExtensionRegistry, PHASE_41_DEFAULT_ENABLED_SURFACES } from "./extensions/arxiv";
 import { CompositeExtensionRegistry } from "./extensions/composite";
-import { DoiExtensionRegistry, PHASE_45_DEFAULT_ENABLED_SURFACES } from "./extensions/doi";
+import { DoiExtensionRegistry } from "./extensions/doi";
 import { PHASE_39_DEFAULT_ENABLED_SURFACES, TablesExtensionRegistry } from "./extensions/tables";
 import {
   PHASE_38_DEFAULT_ENABLED_SURFACES,
@@ -1454,9 +1454,14 @@ describe("Phase-44 all-3-slots-on-all-4-surfaces — maximal framework activatio
 // pipeline; bio + reviewNotes + actionRationale default-deny.
 // ---------------------------------------------------------------------------
 
-describe("Phase-45 doi default — rationale surface via PHASE_45_DEFAULT_ENABLED_SURFACES", () => {
+describe("Phase-45 doi consumer — rationale-only baseline (decoupled from constant after Phase-49 expansion)", () => {
   beforeEach(() => {
-    __setRegistryForTests(new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES));
+    // Phase-45 ship through Phase-48 close: doi enabled on `rationale` only.
+    // Phase 49 expanded `PHASE_45_DEFAULT_ENABLED_SURFACES` to all 4 surfaces;
+    // this block is decoupled with an explicit `new Set(["rationale"])` to
+    // preserve Phase-45 baseline coverage. New Phase-49 all-4-surfaces block
+    // uses the constant directly per Phase-44 D-8 precedent.
+    __setRegistryForTests(new DoiExtensionRegistry(new Set(["rationale"])));
     __resetMarkdownCachesForTests();
   });
 
@@ -1560,12 +1565,17 @@ describe("Phase-45 doi default — rationale surface via PHASE_45_DEFAULT_ENABLE
 // reviewNotes + actionRationale, all expanded Phase 44) keep arxiv intact.
 // ---------------------------------------------------------------------------
 
-describe("Phase-45 first-same-slot composition under MARKDOWN_EXTENSIONS=arxiv,doi", () => {
+describe("Phase-45 first-same-slot composition — rationale-only doi baseline (decoupled after Phase-49)", () => {
   beforeEach(() => {
-    // Phase-45 default: arxiv on all 4 surfaces (Phase-44 expansion);
-    // doi on rationale only (Phase-45 first-ship).
+    // Phase-45 baseline: arxiv on all 4 surfaces (Phase-44 expansion);
+    // doi on rationale only (Phase-45 first-ship). Phase 49 expanded doi
+    // to all 4 surfaces via `PHASE_45_DEFAULT_ENABLED_SURFACES`; this
+    // block is decoupled with an explicit `new Set(["rationale"])` for
+    // doi to preserve the Phase-45 "first same-slot composition on a
+    // single surface" baseline coverage. New Phase-49 all-4-surfaces
+    // same-slot block uses the constant directly.
     const arxiv = new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES);
-    const doi = new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES);
+    const doi = new DoiExtensionRegistry(new Set(["rationale"]));
     __setRegistryForTests(new CompositeExtensionRegistry([arxiv, doi]));
     __resetMarkdownCachesForTests();
   });
@@ -1655,12 +1665,18 @@ describe("Phase-45 first-same-slot composition under MARKDOWN_EXTENSIONS=arxiv,d
 // 3 consumers (Phase-44 baseline).
 // ---------------------------------------------------------------------------
 
-describe("Phase-45 first-4-consumer composition — wikilinks,tables,arxiv,doi maximal default", () => {
+describe("Phase-45 first-4-consumer composition — rationale-only doi baseline (decoupled after Phase-49)", () => {
   beforeEach(() => {
+    // Phase-45 baseline: 4-consumer composition with doi on rationale only.
+    // Phase 49 generalized doi to all 4 surfaces; this block is decoupled
+    // with an explicit `new Set(["rationale"])` for doi to preserve the
+    // Phase-45 "first 4-consumer composition under default dispatch" +
+    // "rationale-only DOI participation" baseline coverage. New Phase-49
+    // all-4-surfaces 4-consumer block uses the constant directly.
     const wikilinks = new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES);
     const tables = new TablesExtensionRegistry(PHASE_39_DEFAULT_ENABLED_SURFACES);
     const arxiv = new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES);
-    const doi = new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES);
+    const doi = new DoiExtensionRegistry(new Set(["rationale"]));
     __setRegistryForTests(new CompositeExtensionRegistry([wikilinks, tables, arxiv, doi]));
     __resetMarkdownCachesForTests();
   });
@@ -1861,7 +1877,7 @@ describe("Phase-46 alias under Phase-45 4-way composite — wikilinks,tables,arx
     const wikilinks = new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES);
     const tables = new TablesExtensionRegistry(PHASE_39_DEFAULT_ENABLED_SURFACES);
     const arxiv = new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES);
-    const doi = new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES);
+    const doi = new DoiExtensionRegistry(new Set(["rationale"]));
     __setRegistryForTests(new CompositeExtensionRegistry([wikilinks, tables, arxiv, doi]));
     __resetMarkdownCachesForTests();
   });
@@ -2022,7 +2038,7 @@ describe("Phase-47 arxiv alias under Phase-45 4-way composite — wikilinks,tabl
     const wikilinks = new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES);
     const tables = new TablesExtensionRegistry(PHASE_39_DEFAULT_ENABLED_SURFACES);
     const arxiv = new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES);
-    const doi = new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES);
+    const doi = new DoiExtensionRegistry(new Set(["rationale"]));
     __setRegistryForTests(new CompositeExtensionRegistry([wikilinks, tables, arxiv, doi]));
     __resetMarkdownCachesForTests();
   });
@@ -2093,7 +2109,7 @@ describe("Phase-47 arxiv alias under Phase-45 4-way composite — wikilinks,tabl
 
 describe("Phase-48 doi alias syntax — rationale surface under default dispatch", () => {
   beforeEach(() => {
-    __setRegistryForTests(new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES));
+    __setRegistryForTests(new DoiExtensionRegistry(new Set(["rationale"])));
     __resetMarkdownCachesForTests();
   });
 
@@ -2197,7 +2213,7 @@ describe("Phase-48 doi alias under Phase-45 4-way composite — first triple-ali
     const wikilinks = new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES);
     const tables = new TablesExtensionRegistry(PHASE_39_DEFAULT_ENABLED_SURFACES);
     const arxiv = new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES);
-    const doi = new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES);
+    const doi = new DoiExtensionRegistry(new Set(["rationale"]));
     __setRegistryForTests(new CompositeExtensionRegistry([wikilinks, tables, arxiv, doi]));
     __resetMarkdownCachesForTests();
   });

@@ -136,17 +136,20 @@ describe("getExtensionRegistry (factory) — env-var dispatch", () => {
     expect(getExtensionRegistry()).toBeInstanceOf(DoiExtensionRegistry);
   });
 
-  it("DoiExtensionRegistry dispatch enables doi on rationale only Phase 45 (mirrors Phase-41 arxiv-first-ship demand-signal-first precedent)", () => {
-    // Phase 45 ship: Set(["rationale"]). DOI consumer first-ship pattern
-    // mirrors Phase-41 arxiv first-ship — single-surface scope; curator
-    // paper-citation surface; cross-surface expansion to all 4 surfaces
-    // deferred Phase 46+ per ADR-0018 APPEND-D-AC Phase-46+ deferrals.
+  it("DoiExtensionRegistry dispatch enables doi on all 4 surfaces Phase 49 (cross-surface expansion mirrors Phase-44 arxiv expansion verbatim)", () => {
+    // Phase 45 ship through Phase-48 close: Set(["rationale"]) — single-
+    // surface scope mirroring Phase-41 arxiv-first-ship. Phase 49
+    // expansion: all 4 surfaces per ADR-0018 APPEND-D-AC cross-surface
+    // closure (4-phase carryover Phase 45 → 49; matches Phase-38 → 42 +
+    // Phase-39 → 43 4-phase cadence verbatim). **Fourth real-consumer-
+    // expansion realization** of the "constructor-arg-only zero-rework
+    // expansion" property — completes the per-consumer all-4-surfaces arc.
     process.env["MARKDOWN_EXTENSIONS"] = "doi";
     const r = getExtensionRegistry();
+    expect(r.getExtensions("bio").remarkPlugins).toBeDefined();
+    expect(r.getExtensions("reviewNotes").remarkPlugins).toBeDefined();
     expect(r.getExtensions("rationale").remarkPlugins).toBeDefined();
-    expect(r.getExtensions("bio")).toEqual({});
-    expect(r.getExtensions("reviewNotes")).toEqual({});
-    expect(r.getExtensions("actionRationale")).toEqual({});
+    expect(r.getExtensions("actionRationale").remarkPlugins).toBeDefined();
   });
 
   it("returns CompositeExtensionRegistry when MARKDOWN_EXTENSIONS is 'wikilinks,tables' Phase 40", () => {
@@ -299,16 +302,26 @@ describe("getExtensionRegistry (factory) — env-var dispatch", () => {
     expect(remarkPlugins).toEqual([remarkLinkDoiIds, remarkLinkArxivIds]);
   });
 
-  it("arxiv,doi composite enables only arxiv (not doi) on non-rationale surfaces Phase 45", () => {
+  it("arxiv,doi composite enables BOTH arxiv and doi on all 4 surfaces Phase 49 (first all-4-surfaces same-slot composition)", () => {
     // Phase-44 close: arxiv enabled on all 4 surfaces.
-    // Phase-45 ship: doi enabled on `rationale` only.
-    // Under `arxiv,doi` composite: bio + reviewNotes + actionRationale
-    // get arxiv ONLY (1-element remarkPlugins array); rationale gets BOTH.
+    // Phase-45 ship through Phase-48 close: doi enabled on `rationale` only.
+    // Phase 49 expansion: doi enabled on all 4 surfaces. Under `arxiv,doi`
+    // composite Phase 49: every surface carries `[remarkLinkArxivIds,
+    // remarkLinkDoiIds]` in `remarkPlugins`. **First state where the
+    // regex-disjointness-as-sole-defense discipline (arxiv ID class lacks
+    // `/`; doi ID class requires `/`) is exercised on every surface in
+    // production default**.
     process.env["MARKDOWN_EXTENSIONS"] = "arxiv,doi";
     const r = getExtensionRegistry();
-    expect(r.getExtensions("bio").remarkPlugins).toEqual([remarkLinkArxivIds]);
-    expect(r.getExtensions("reviewNotes").remarkPlugins).toEqual([remarkLinkArxivIds]);
-    expect(r.getExtensions("actionRationale").remarkPlugins).toEqual([remarkLinkArxivIds]);
+    expect(r.getExtensions("bio").remarkPlugins).toEqual([remarkLinkArxivIds, remarkLinkDoiIds]);
+    expect(r.getExtensions("reviewNotes").remarkPlugins).toEqual([
+      remarkLinkArxivIds,
+      remarkLinkDoiIds,
+    ]);
+    expect(r.getExtensions("actionRationale").remarkPlugins).toEqual([
+      remarkLinkArxivIds,
+      remarkLinkDoiIds,
+    ]);
     expect(r.getExtensions("rationale").remarkPlugins).toEqual([
       remarkLinkArxivIds,
       remarkLinkDoiIds,
@@ -320,34 +333,35 @@ describe("getExtensionRegistry (factory) — env-var dispatch", () => {
     expect(getExtensionRegistry()).toBeInstanceOf(CompositeExtensionRegistry);
   });
 
-  it("4-way composite enables ALL 4 CONSUMERS Phase 45 (first 4-consumer composition under default dispatch)", () => {
-    // **First "4-consumer composition under default dispatch" state in
-    // project history.** Pre-Phase-45 max was 3-consumer (Phase-44
-    // maximal-activation `wikilinks,tables,arxiv`). Phase 45 adds DOI
-    // as the fourth consumer.
+  it("4-way composite enables ALL 4 CONSUMERS on ALL 4 SURFACES Phase 49 (maximal multi-consumer all-surfaces composition under default dispatch)", () => {
+    // **First "maximal multi-consumer all-surfaces composition" state
+    // in project history.** Phase 45 introduced the 4-consumer
+    // composition with doi rationale-only; Phase 49 generalizes doi
+    // to all 4 surfaces. Every surface now carries 4 consumers across
+    // 3 slots, with the doubly-occupied `remarkPlugins` slot active
+    // everywhere.
     //
-    // Composition matrix at Phase-45 default:
-    //   bio:             wikilinks(rehype) + tables(schema) + arxiv(remark)
-    //   reviewNotes:     wikilinks(rehype) + tables(schema) + arxiv(remark)
-    //   rationale:       wikilinks(rehype) + tables(schema) + [arxiv, doi](remark) ← first 4-consumer convergent surface
-    //   actionRationale: wikilinks(rehype) + tables(schema) + arxiv(remark)
+    // Composition matrix at Phase-49 default:
+    //   bio:             wikilinks(rehype) + tables(schema) + [arxiv, doi](remark)
+    //   reviewNotes:     wikilinks(rehype) + tables(schema) + [arxiv, doi](remark)
+    //   rationale:       wikilinks(rehype) + tables(schema) + [arxiv, doi](remark) — Phase-45 baseline preserved
+    //   actionRationale: wikilinks(rehype) + tables(schema) + [arxiv, doi](remark)
     //
-    // Conflict-free per APPEND-D-R because (a) wikilinks + tables + arxiv
-    // each occupy distinct slots; (b) within `remarkPlugins` the two
-    // plugins concatenate in registration order per APPEND-D-R rule.
+    // Conflict-free per APPEND-D-R because (a) wikilinks + tables +
+    // {arxiv, doi} each occupy distinct slots cross-pair; (b) within
+    // `remarkPlugins` the arxiv-vs-doi pair is collision-free via
+    // regex-disjointness-as-sole-defense discipline on every surface.
     process.env["MARKDOWN_EXTENSIONS"] = "wikilinks,tables,arxiv,doi";
     const r = getExtensionRegistry();
-    // rationale: the ONLY surface where DOI participates Phase 45.
-    expect(r.getExtensions("rationale").rehypePlugins).toBeDefined();
-    expect(r.getExtensions("rationale").schemaOverrides).toBeDefined();
-    expect(r.getExtensions("rationale").remarkPlugins).toEqual([
-      remarkLinkArxivIds,
-      remarkLinkDoiIds,
-    ]);
-    // Other 3 surfaces: 3-consumer composition (arxiv only in remarkPlugins).
-    expect(r.getExtensions("bio").remarkPlugins).toEqual([remarkLinkArxivIds]);
-    expect(r.getExtensions("reviewNotes").remarkPlugins).toEqual([remarkLinkArxivIds]);
-    expect(r.getExtensions("actionRationale").remarkPlugins).toEqual([remarkLinkArxivIds]);
+    // All 4 surfaces: 4-consumer composition with same-slot in remark.
+    for (const surface of ["bio", "reviewNotes", "rationale", "actionRationale"] as const) {
+      expect(r.getExtensions(surface).rehypePlugins).toBeDefined();
+      expect(r.getExtensions(surface).schemaOverrides).toBeDefined();
+      expect(r.getExtensions(surface).remarkPlugins).toEqual([
+        remarkLinkArxivIds,
+        remarkLinkDoiIds,
+      ]);
+    }
   });
 
   it("__resetRegistryForTests clears the singleton so subsequent calls re-read env", () => {
