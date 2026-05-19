@@ -2470,6 +2470,116 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 55 — Community-adjacent surfaces (**forty-sixth NON-§13 phase**: ORCID display-text alias syntax `[[orcid:NNNN-NNNN-NNNN-NNNN|display]]` via in-place dual-form regex extension on existing `remarkLinkOrcidIds` plugin in `OrcidExtensionRegistry`; **sixth realization of Phase-46 plugin-regex-extension phase-shape pattern** — **first 6-realization phase-shape pattern in project history**; **fourth dual-form regex** in the framework; **fourth plugin-regex-extension on a `remarkPlugins` consumer** — all 4 `remarkPlugins` consumers exhibit dual-form regex post-Phase 55; **second "immediate-successor same-thread-direction phase boundary"** (Phase 54 → 55; first state where the pattern is observed twice); **first quintuple-alias surface**; closes new Phase-54 deferral at **1-phase carryover** — ties Phase-51 pubmed alias 1-phase fastest-closure record; APPEND-D-AM thirteenth two-letter slot; anticipated 5 numbered units; 50th "Continue" override invoked — half-century-of-Continue-overrides milestone)
 
+#### Unit 55.4 — Phase 55 acceptance gate (sixth realization of plugin-regex-extension phase-shape — first 6-realization phase-shape pattern; fourth dual-form regex; all 4 `remarkPlugins` consumers dual-form; second immediate-successor boundary; first quintuple-alias surface; ties 1-phase fastest-closure record; D-AM; 1303/74; 135th consecutive 103 kB unit; 51st "Continue" override opportunity at Phase 55 → 56 boundary)
+
+- Fifth and final Phase-55 numbered unit; gate-only. **Phase 55 CLOSES at this unit's commit**. Phase 56 entry awaits explicit "Continue" override per §12.
+- THINK artifact: `docs/thinking/55.4-phase-55-acceptance-gate.md` (Phase-54 → 55 delta complete; 12 architectural firsts enumerated; Phase-56 entry conditions documented with 10 ranked candidate threads).
+
+##### Phase 55 — what shipped (5 numbered units)
+
+| Unit | Title | Type | Commit |
+|---|---|---|---|
+| 55.0 | Phase 55 prep | docs | `03eceec` |
+| 55.1 | `ORCID_PATTERN` dual-form regex + plugin body + 13 NEW alias tests + ADR-0018 D-G APPEND-D-AM | code+APPEND | `16a042a` |
+| 55.2 | 14 NEW end-to-end Phase-55 tests + first quintuple-alias surface | code | `c51d1f2` |
+| 55.3 | Phase-55 hygiene + new Phase-54 deferral closure documentation | docs | `92e8106` |
+| 55.4 | Phase 55 acceptance gate (this unit) | gate | (this commit) |
+
+Total: **5 numbered units (55.0 through 55.4)**. Mirrors Phase 41-54 5-unit framework shape verbatim.
+
+##### Sixth realization of plugin-regex-extension phase-shape + first 6-realization phase-shape pattern + fourth dual-form regex + first quintuple-alias surface + all 4 `remarkPlugins` consumers dual-form + ties 1-phase closure record + second immediate-successor boundary at HEAD `92e8106`
+
+- `ORCID_PATTERN` evolved in-place: bracketed alternative `\[\[orcid:(\d{4}-\d{4}-\d{4}-\d{3}[\dX])(?:\|([^\]\n]+))?\]\]` added before the Phase-54 bare form. **Fourth dual-form regex** in the framework.
+- `remarkLinkOrcidIds` plugin body branches on `isBracketed`; three display rules.
+- `OrcidExtensionRegistry` class + factory dispatch arm + `PHASE_54_DEFAULT_ENABLED_SURFACES` constant **UNCHANGED**.
+- 13 NEW tests in `orcid.test.ts` (Unit 55.1).
+- 14 NEW end-to-end tests in `lib/markdown/index.test.ts` (Unit 55.2) across 2 describe blocks.
+- ADR-0018 D-G APPEND adds Phase-55 EXTENDED block + **APPEND-D-AM** (thirteenth two-letter slot).
+- New Phase-54 deferral CLOSED at **1-phase carryover** — ties Phase-51 pubmed alias 1-phase fastest-closure record.
+- **First 6-realization phase-shape pattern in project history**.
+- **All 4 `remarkPlugins` consumers exhibit dual-form regex post-Phase 55**.
+- **First quintuple-alias surface** (rationale under 6-way default).
+- **Second "immediate-successor same-thread-direction phase boundary"** — first state where the pattern is observed twice.
+- **4-consumer same-slot regex-disjointness discipline holds under dual-form extension** on the 4th consumer.
+- **50th "Continue" override** invoked at Unit 55.0 — half-century-of-Continue-overrides milestone.
+
+##### Phase 54 → Phase 55 delta
+
+| Metric | Phase 54 close | Phase 55 close | Δ |
+|---|---|---|---|
+| Tests | 1276 / 74 files | **1303 / 74 files** | +27 / 0 |
+| ADRs | 24 | **24** | 0 |
+| ADR-0018 D-G APPEND count | 21 | **22** (project record extends; thirteenth two-letter slot D-AM in use) | +1 |
+| DB tables | 7 | 7 | 0 |
+| Migrations | 9 | 9 | 0 |
+| Env vars | 14 | 14 | 0 |
+| `MARKDOWN_EXTENSIONS` single-value arms | 7 | 7 | 0 |
+| i18n keys per locale | 168 | 168 | 0 |
+| First Load JS shared chunk | 103 kB | **103 kB** | 0 |
+| Middleware bundle | 160 kB | 160 kB | 0 |
+| OPEN_QUESTIONS top-level Q-count | 66 | **66** | 0 |
+| Phase-37+ candidate count | 8 | **8** | 0 |
+| Runtime deps added | — | **0** | 0 |
+| `lib/markdown/extensions/` files | 19 | 19 | 0 |
+| **Phase-37-framework concrete consumers** | **6** | **6** | 0 |
+| **Plugin-regex-extension realizations** | **5** | **6 (+orcid alias)** | **+1** |
+| **Dual-form regex realizations** | **3 (arxiv + doi + pubmed)** | **4 (+orcid)** | **+1** |
+| **`remarkPlugins` consumers with dual-form regex** | **3 of 4** | **4 of 4** | **+1** |
+| **Surfaces with N+ alias-syntax consumers (max cardinality)** | **4 (quadruple-alias; all surfaces)** | **5 (quintuple-alias; rationale)** | **+1** |
+| **Immediate-successor same-thread-direction boundaries** | **1 (Phase 50 → 51)** | **2 (+Phase 54 → 55)** | **+1** |
+| **1-phase APPEND-deferral closures (alias-syntax)** | **1 (Phase 51 pubmed)** | **2 (+Phase 55 orcid)** | **+1** |
+| **APPEND-deferral closure cadence (consecutive phases)** | 13 | **14 (Phase 42-55)** | **+1 (new record)** |
+
+##### Architectural firsts in Phase 55 (12 enumerated)
+
+1. **Sixth realization of the Phase-46 plugin-regex-extension phase-shape pattern**. **First 6-realization phase-shape pattern in project history**.
+2. **Fourth dual-form regex** in the framework. **All 4 `remarkPlugins` consumers exhibit dual-form regex post-Phase 55**.
+3. **Fourth plugin-regex-extension on a `remarkPlugins` consumer** in project history.
+4. **Closes new Phase-54 deferral at 1-phase carryover** — **ties Phase-51 pubmed alias 1-phase fastest-closure record**. **First state where two alias-syntax closures tie at 1-phase carryover**.
+5. **Second "immediate-successor same-thread-direction phase boundary"** in project history. **First state where the immediate-successor pattern has been observed twice**.
+6. **Fourth non-cross-surface-expansion APPEND-deferral closure on the `remarkPlugins` slot kind**. **First state where ALL FOUR `remarkPlugins` consumers have had alias-syntax extensions resolved within the cadence**.
+7. **Fourteenth APPEND-deferral closure** — **APPEND-deferral closure cadence sustained 14 phases** — new longest sustained cadence in project history. **First 14-phase APPEND-deferral closure run**.
+8. **First quintuple-alias surface** in project history. **First surface-with-5-alias-consumers cardinality of 1**.
+9. **22nd APPEND on ADR-0018 D-G** — extends first-ADR-D-clause-with-most-APPENDs record 21 → 22.
+10. **Thirteenth two-letter APPEND letter D-AM** (Excel-spreadsheet column convention sustained).
+11. **First "framework + 6 consumers + composition + 5 expansions + 6 plugin-regex-extensions + 4-consumer same-slot composition + 6-consumer composition + alias syntax × 5 + dual-form regex × 4 + 5-consumer composition × 4 + inner-class disjunction × 1 + 2-evolutions on arxiv" 19-phase cluster** in project history (Phase 37-55). **25th consecutive phase without new B category** — first 25-phase run (extends Phase-54 record 24 → 25). **Forty-sixth NON-§13 phase**. **134th consecutive 103 kB First Load JS unit**.
+12. **50th "Continue" override invocation** at Unit 55.0 — **half-century-of-Continue-overrides milestone** (over Phases 6-55). Marks the durability of the §12-cardinal-rule sign-off discipline across the project's multi-month rhythm.
+
+##### Phase 55 → Phase 56 entry conditions
+
+Per §12, Phase 56 entry requires **explicit human sign-off**.
+
+**Recommended Phase 56 first-thread candidates** (10 ranked; see `docs/thinking/55.4-phase-55-acceptance-gate.md` for full tractability + units breakdown):
+
+1. **ORCID cross-surface expansion** to all 4 surfaces — 1-2 units; **sixth realization of constructor-arg-only zero-rework expansion property** (first 6-realization for that pattern); generalizes 6-consumer composition + quintuple-alias state to all 4 surfaces; closes Phase-54 ORCID cross-surface deferral at 2-phase carryover (ties Phase-52 pubmed cross-surface record).
+2. **Table-specific attributes** (APPEND-D-Q item 3) — 1-2 units; first schema-extension on `schemaOverrides` slot; XSS-audit-required.
+3. **bioRxiv preprint consumer** — 2-3 units; seventh concrete consumer; first 5th-`remarkPlugins` consumer; tests whether regex-disjointness scales 4 → 5 same-slot consumers.
+4. **Cross-entity wikilinks** (APPEND-D-L item 3) — 2-3 units.
+5. **`<a class="wikilink">` styling** (APPEND-D-L item 4) — 1-2 units.
+6. **404 handling for unresolved wikilinks** (APPEND-D-L item 5) — 2-3 units.
+7. **Bare arxiv / DOI / PubMed / ORCID IDs without prefix** — 1-2 units.
+8. **Empty-alias fallback unification** (Phase-48 deferral) — 1 unit.
+9. **OSF preprint consumer** — 2-3 units; alternative to bioRxiv.
+10. **ADR-0025 concrete content-moderation provider** — 3-5 units; NOT autonomous-tractable.
+
+**Operational gates still pending** (6 UNCHANGED): Q54 + Q55 + Q69 + Q73 + Q75 + Q77.
+
+##### Smoke gates
+
+- `pnpm typecheck` — passes.
+- `pnpm test` — **1303 / 74 files**.
+- `pnpm audit-content` — 0 errors / 6 warnings (51 consecutive phases at Q32 baseline).
+- First Load JS — **103 kB UNCHANGED** (135 consecutive units at Unit 55.4 ship).
+- Middleware — **160 kB UNCHANGED**.
+
+##### Anti-scope (Phase 56+ deferrals carried forward)
+
+NOT ORCID cross-surface expansion (Phase 56+ rank 1); NOT table-specific attributes (Phase 56+ rank 2); NOT bioRxiv preprint consumer (Phase 56+ rank 3); NOT cross-entity wikilinks (Phase 56+ rank 4); NOT `<a class="wikilink">` styling (Phase 56+ rank 5); NOT 404 handling (Phase 56+ rank 6); NOT bare arxiv / DOI / PubMed / ORCID IDs without prefix (Phase 56+ rank 7); NOT empty-alias fallback unification (Phase 56+ rank 8); NOT OSF preprint consumer (Phase 56+ rank 9); NOT dx.doi.org legacy host (Phase 56+); NOT stricter trailing-lookahead (Phase 56+); NOT paper-card hover-preview (Phase 56+); NOT plugin parameterization (Phase 56+); NOT auto-trim of alias display whitespace (Phase 56+); NOT `<caption>` (Phase 56+); NOT surface-specific table schemas (Phase 56+); NOT `@mention` (Phase 56+); NOT 3rd regex evolution on `remarkLinkArxivIds` (Phase 56+); NOT 5th-or-later `remarkPlugins` consumer beyond arxiv + doi + pubmed + orcid (Phase 56+ rank 3 ships bioRxiv as 5th candidate); NOT 2nd `rehypePlugins` consumer beyond wikilinks (Phase 56+); NOT 2nd `schemaOverrides` consumer beyond tables (Phase 56+); NOT ADR-0025 concrete moderation provider; NOT Q78/Q79/v2 methodology/pre-commit typecheck/safeAuth/test backfill/account-deletion (each deferred); all Phase-30-through-54 deferrals carry forward.
+
+##### Boundary statement
+
+**Phase 55 CLOSED at this commit after 5 numbered units. Sixth realization of the Phase-46 plugin-regex-extension phase-shape pattern — ORCID display-text alias syntax `[[orcid:NNNN-NNNN-NNNN-NNNN|display]]` via in-place dual-form regex extension on `remarkLinkOrcidIds`. First 6-realization phase-shape pattern in project history. Fourth plugin-regex-extension on a `remarkPlugins` consumer — all 4 `remarkPlugins` consumers exhibit dual-form regex post-Phase 55. Fourth dual-form regex in the framework. Closes new Phase-54 deferral at 1-phase carryover — ties Phase-51 pubmed alias 1-phase fastest-closure record. First state where two alias-syntax closures tie at 1-phase carryover. Second "immediate-successor same-thread-direction phase boundary" — Phase 54 → 55 mirrors Phase 50 → 51; first state where the pattern is observed twice. First quintuple-alias surface in project history — rationale carries wikilinks + arxiv + doi + pubmed + orcid aliases simultaneously under 6-way default. First surface-with-5-alias-consumers cardinality of 1. APPEND-deferral closure cadence sustained 14 phases — new longest sustained cadence in project history (extends Phase-54 record 13 → 14). First 14-phase APPEND-deferral closure run. Fourth non-cross-surface-expansion APPEND-deferral closure on `remarkPlugins` slot kind — first state where ALL FOUR `remarkPlugins` consumers have had alias-syntax extensions resolved within the cadence. 4-consumer same-slot regex-disjointness discipline (Phase 54 established) HOLDS UNDER DUAL-FORM EXTENSION on the 4th consumer. 22nd APPEND on ADR-0018 D-G (project record extends 21 → 22). Thirteenth two-letter APPEND letter D-AM. Forty-sixth NON-§13 phase. First "framework + 6 consumers + composition + 5 expansions + 6 plugin-regex-extensions + 4-consumer same-slot composition + 6-consumer composition + alias syntax × 5 + dual-form regex × 4 + 5-consumer composition × 4 + inner-class disjunction × 1 + 2-evolutions on arxiv" 19-phase cluster in project history (Phase 37-55). 25th consecutive phase without new B category — first 25-phase run (extends Phase-54 record 24 → 25). 134th consecutive 103 kB First Load JS unit (extends from 130 at Phase-54 close). 50th "Continue" override invocation — half-century-of-Continue-overrides milestone. XSS line of defense preserved. 1303 tests across 74 vitest files (+27/0 vs Phase 54). 24 ADRs UNCHANGED. 7 DB tables UNCHANGED. 9 migrations UNCHANGED. 14 env vars UNCHANGED. 168 i18n keys per locale UNCHANGED. First Load JS 103 kB UNCHANGED. Middleware 160 kB UNCHANGED. OPEN_QUESTIONS top-level Q-count 66 UNCHANGED. Phase-37+ candidate count 8 UNCHANGED. `MARKDOWN_EXTENSIONS` recognized single-value arms 7 UNCHANGED. Zero new ADRs / migrations / i18n keys / env vars / operational gates / runtime deps / files. Phase 56 entry requires explicit human sign-off per §12.**
+
 #### Unit 55.3 — Phase-55 hygiene + new Phase-54 deferral closure at 1-phase carryover (ties Phase-51 pubmed alias fastest-closure record) + first quintuple-alias surface + second "immediate-successor same-thread-direction phase boundary" + first state where the immediate-successor pattern observed twice + all 4 `remarkPlugins` consumers exhibit dual-form regex (Q-tally UNCHANGED at 66; Phase-37+ candidate count UNCHANGED at 8; 25-phase no-new-B-category streak EXTENDS to Phase 55; 134th consecutive 103 kB unit)
 
 - Fourth Phase-55 unit; docs-only hygiene. Mirrors Phase 38-54 hygiene shapes (CHANGELOG-only annotation; no separate THINK doc; the Phase-55-prep doc at `docs/thinking/55.0-phase-55-prep.md` already enumerated closures, anti-scope, and architectural firsts).
