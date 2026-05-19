@@ -3853,6 +3853,234 @@ cap):
   — Phase 57+.
 - **3rd regex evolution on `remarkLinkArxivIds`** — Phase 57+.
 
+**EXTENDED Phase 57 Unit 57.1** — **first schema-override
+extension on the `schemaOverrides` slot kind** in project
+history: GFM table cells gain `colSpan` / `rowSpan` (name-only
+allow on `<th>` and `<td>`) and `scope` (literal-enum
+restricted to `row` / `col` / `rowgroup` / `colgroup` on
+`<th>`) via in-place value evolution of
+`GFM_TABLE_SCHEMA_OVERRIDES.attributes`. **First "schema-
+extension" phase-shape pattern in project history** — sibling
+to the established plugin-regex-extension pattern (6
+realizations: Phase 46 + 47 + 48 + 51 + 53 + 55). Demonstrates
+that consumer-extension is slot-kind-agnostic: a Phase-37-
+framework consumer can evolve its `remarkPlugins` body (Phase
+46-55) OR its `schemaOverrides` shape (Phase 57+) without
+architectural rework.
+
+**First evolution of `GFM_TABLE_SCHEMA_OVERRIDES` since Phase
+39 ship** in project history. The constant has been UNCHANGED
+for 18 phases (Phase 39 → Phase 56). Phase 57 evolves the
+VALUE while preserving the name per Phase-42/43/44/49/52/56
+D-8 precedent (audit-trail-preserving constant-name discipline
+generalizes from `PHASE_N_DEFAULT_ENABLED_SURFACES` constants
+to `GFM_TABLE_SCHEMA_OVERRIDES` schema constant).
+
+**First state where all 3 framework slot kinds have been
+evolved post-Phase-39** in project history. `remarkPlugins`:
+5 evolutions (arxiv Phase 47 + 53; doi Phase 48; pubmed Phase
+51; orcid Phase 55). `rehypePlugins`: 1 evolution (wikilinks
+Phase 46). `schemaOverrides`: **1 evolution (tables Phase
+57)**. **First all-3-slots-evolved state**.
+
+**APPEND-D-AO schema-extension shape**:
+
+```ts
+// Before (Phase 39 ship through Phase-56 close):
+export const GFM_TABLE_SCHEMA_OVERRIDES: Partial<Schema> = {
+  tagNames: [/* 17 base + 6 GFM table tags */],
+  attributes: {
+    a: ["href"],
+    input: [["type", "checkbox"], "checked", "disabled"],
+    th: [["align", "left", "center", "right"]],
+    td: [["align", "left", "center", "right"]],
+    "*": [],
+  },
+};
+
+// After (Phase 57 ship):
+export const GFM_TABLE_SCHEMA_OVERRIDES: Partial<Schema> = {
+  tagNames: [/* unchanged */],
+  attributes: {
+    a: ["href"],
+    input: [["type", "checkbox"], "checked", "disabled"],
+    th: [
+      ["align", "left", "center", "right"],
+      "colSpan",
+      "rowSpan",
+      ["scope", "row", "col", "rowgroup", "colgroup"],
+    ],
+    td: [["align", "left", "center", "right"], "colSpan", "rowSpan"],
+    "*": [],
+  },
+};
+```
+
+**Schema entries use PROPERTY names (camelCase JSX-style per
+`property-information`)** rather than HTML attribute names.
+`colSpan` / `rowSpan` are the property names emitted into HAST
+trees; `rehype-stringify` converts them to HTML attribute
+form (`colspan="N"` / `rowspan="N"`) at compile time. `scope`
+has no camelCase distinction (single-word property === HTML
+attribute name).
+
+**XSS audit Phase 57** (APPEND-D-O boundary extension):
+
+- **`colSpan` / `rowSpan`** on `<th>` and `<td>`: name-only
+  allow without value enumeration. HTML5 spec parses these as
+  non-negative-integer values; non-numeric values are treated
+  as `1` by browsers. The attribute value is NOT a script-
+  injection vector — it's not an event handler, URL, or
+  style. **Deliberate departure from APPEND-D-Q item 3
+  "numeric-only restriction for span" anticipatory language**
+  — the actual XSS-audit conclusion supersedes: no value
+  enumeration needed because the attribute value carries no
+  code-execution semantics; `hast-util-sanitize` lacks a
+  built-in numeric-range matcher and enumerating "1" through
+  "20" as literal values would be defensive-overkill given
+  the lack of XSS surface. Documented decision per Phase-57
+  D-12 lean.
+- **`scope`** on `<th>`: literal-enum-restricted to the 4
+  HTML5-spec values `row` / `col` / `rowgroup` / `colgroup`
+  via tuple form `["scope", "row", "col", "rowgroup",
+  "colgroup"]`. Mirrors the Phase-39 `align` value-restriction
+  discipline. Any other value strips the attribute at
+  `rehype-sanitize` (validated by the `<th scope='invalid'>`
+  schema-isolation test).
+- **No new tag-names**; no new URL-protocol surface; no event-
+  handler attribute leakage. Regression-guard test
+  (`<th onclick='alert(1)'>` STRIPS the attribute) validates
+  that the schema-extension does NOT widen the attribute
+  allow-list to include event handlers.
+
+Total new attribute surface: **3 attribute property names**
+(colSpan + rowSpan + scope). All three are well-understood
+HTML5 semantic-structure attributes with no XSS-vector-by-name
+concerns.
+
+**Pipeline-emission caveat (schema-ready-before-plugin
+pattern)**: `remark-gfm` parses GFM tables into HAST `<th>` /
+`<td>` nodes WITHOUT span/scope properties (GFM table syntax
+has no span/scope markup). `remark-rehype` runs with
+`allowDangerousHtml: false` (per Phase-17 D-A pipeline shape),
+which strips raw HTML at the MDAST → HAST boundary. Therefore
+**NO current Phase-37-framework pipeline emits `colSpan` /
+`rowSpan` / `scope`**; the schema-extension prepares the
+framework for hypothetical future plugin authors who may emit
+HAST with these properties (e.g., a MultiMarkdown-table
+plugin, an HTML-table-pass-through plugin, or a custom remark
+transformer). **First "schema-ready-before-plugin" pattern**
+in project history. Schema-isolation tests in `tables.test.ts`
+exercise the new allow-list entries directly via manual HAST
+tree construction + `unified().use(rehypeSanitize,
+GFM_TABLE_SCHEMA_OVERRIDES).use(rehypeStringify)` pipeline,
+avoiding the need for a span-emitting plugin in the test
+fixture.
+
+**Closes APPEND-D-Q item 3** ("Table-specific attributes —
+`colspan` / `rowspan` / `scope` on `<th>` / `<td>` for
+accessibility + multi-cell tables; Phase 40+ if demand. Each
+needs XSS audit (numeric-only restriction for span; literal-
+only restriction for scope)") at **18-phase carryover** (Phase
+39 → Phase 57). **NEW LONGEST ABSOLUTE APPEND-DEFERRAL
+CLOSURE EVER OBSERVED** (beats prior 12-phase Phase 41 → 53
+D-Y item 2 record). **First 18-phase APPEND-deferral closure
+in absolute carryover terms**. **First APPEND-D-Q deferral
+closure since Phase 43** — D-Q now has 4 of 6 items closed
+(item 1 Phase 40 + item 2 Phase 43 + item 5 Phase 41 + item
+3 Phase 57); 2 items remain open (item 4 `<caption>` + item
+6 surface-specific schemas). **D-Q is the first non-D-G +
+non-D-Y D-clause to have 4+ items closed through the closure
+cadence**.
+
+**Sixteenth prep-/APPEND-doc-level deferral closed by a later
+phase**: Phase 42 → 38 D-L item 1; Phase 43 → 39 D-Q item 2;
+Phase 44 → 41 D-Y item 1; Phase 45 → 41 D-Y item 4; Phase 46
+→ 38 D-L item 2; Phase 47 → 41 D-Y item 5; Phase 48 → 45
+D-AC item 2; Phase 49 → 45 D-AC cross-surface; Phase 50 → 45
+D-AC PubMed PMID item; Phase 51 → new Phase-50 deferral;
+Phase 52 → 50 D-AH PubMed cross-surface; Phase 53 → 41 D-Y
+item 2; Phase 54 → 45 D-AC ORCID item; Phase 55 → new Phase-
+54 deferral; Phase 56 → 54 D-AL ORCID cross-surface item;
+**Phase 57 → 39 D-Q item 3 Table-specific attributes**.
+**APPEND-deferral closure cadence sustained 16 phases** —
+**new longest sustained cadence in project history** (extends
+Phase-56 record 15 → 16). **First 16-phase APPEND-deferral
+closure run**.
+
+**First "non-cross-surface non-alias non-sibling non-regex-
+evolution APPEND-deferral closure"** in the cadence. Phase 42
++ 43 + 44 + 49 + 52 + 56 were cross-surface; Phase 46 + 47 +
+48 + 51 + 55 were alias-syntax plugin-regex-extensions; Phase
+53 was inner-class disjunction plugin-regex-extension; Phase
+45 + 50 + 54 were sibling-consumer first-ship. Phase 57 is
+neither — it is the **first schema-extension closure** in the
+cadence. **First closure on the `schemaOverrides` slot kind**.
+
+**Twenty-fourth APPEND on ADR-0018 D-G** — extends the
+**first-ADR-D-clause-with-most-APPENDs record** from 23 → 24
+(Phase 18 + 27 + 29 + 37 + 38 + 39 + 40 + 41 + 42 + 43 + 44
++ 45 + 46 + 47 + 48 + 49 + 50 + 51 + 52 + 53 + 54 + 55 +
+56 + **57**).
+
+**Fifteenth two-letter APPEND letter D-AO** (after Phase-43
+D-AA + Phase-44 D-AB + Phase-45 D-AC + Phase-46 D-AD + Phase-
+47 D-AE + Phase-48 D-AF + Phase-49 D-AG + Phase-50 D-AH +
+Phase-51 D-AI + Phase-52 D-AJ + Phase-53 D-AK + Phase-54
+D-AL + Phase-55 D-AM + Phase-56 D-AN). Excel-spreadsheet
+column convention sustained — D-AP + D-AQ + ... + D-AZ would
+carry Phase 58+ at this cadence (after D-AZ rolls to D-BA).
+
+**Twenty-second consecutive no-new-ADR phase** (Phase 36-57;
+extends Phase-56 record 21 → 22). **Twenty-seventh
+consecutive phase without new B category** (Phase 31-57;
+extends Phase-56 record 26 → 27). **Forty-eighth NON-§13
+phase**.
+
+**Phase 58+ deferrals** (Phase-57 schema-extension scope cap):
+
+- **A future plugin that EMITS `colSpan`/`rowSpan`/`scope`**
+  attributes — Phase 57 ships the schema-ready-before-plugin
+  state ONLY; a follow-on plugin (e.g., MultiMarkdown-table
+  parser, HTML-table-pass-through transformer) would
+  realize end-to-end pipeline emission — Phase 58+ if demand.
+- **bioRxiv preprint consumer** — seventh concrete consumer;
+  first 5th-`remarkPlugins` consumer; tests whether regex-
+  disjointness scales 4 → 5 same-slot consumers — Phase 58+.
+- **OSF preprint consumer** — seventh or later concrete
+  consumer alternative — Phase 58+.
+- **5th-or-later `remarkPlugins` consumer beyond arxiv + doi
+  + pubmed + orcid** — Phase 58+.
+- **2nd `rehypePlugins` consumer beyond wikilinks** — Phase
+  58+.
+- **2nd `schemaOverrides` consumer beyond tables** — Phase
+  58+.
+- **Bare arxiv / DOI / PubMed / ORCID IDs without prefix** —
+  Phase 58+.
+- **Cross-entity wikilinks** (APPEND-D-L item 3 carries) —
+  Phase 58+.
+- **`<a class="wikilink">` styling** (APPEND-D-L item 4
+  carries) — Phase 58+.
+- **404 handling for unresolved wikilinks** (APPEND-D-L item
+  5 carries) — Phase 58+.
+- **Plugin parameterization for wikilink-href-builder**
+  (APPEND-D-L item 6 carries) — Phase 58+.
+- **Auto-trim of alias display whitespace** — Phase 58+.
+- **Empty-alias fallback unification** across consumers —
+  Phase 58+.
+- **`<caption>` element** (APPEND-D-Q item 4 carries; second-
+  remaining D-Q item) — Phase 58+.
+- **Surface-specific table schemas** (APPEND-D-Q item 6
+  carries; second-remaining D-Q item) — Phase 58+.
+- **dx.doi.org legacy host parsing** (APPEND-D-AC carries) —
+  Phase 58+.
+- **Stricter trailing-lookahead for trailing-period DOIs**
+  (APPEND-D-AC carries) — Phase 58+.
+- **Paper-card hover-preview** (APPEND-D-Y item 6 carries) —
+  Phase 58+.
+- **3rd regex evolution on `remarkLinkArxivIds`** — Phase
+  58+.
+
 ### D-H. Phase 18+ deferrals
 
 Phase 17 ships MINIMAL markdown surface. Deferred to Phase 18+:

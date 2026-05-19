@@ -25,6 +25,30 @@ import type { MarkdownExtensionRegistry, MarkdownExtensionSet, MarkdownSurface }
  * restricts `align` values to `"left" | "center" | "right"`
  * via the tuple form to preserve the XSS-audit boundary.
  *
+ * **Phase-57 schema-extension** (since Unit 57.1): adds
+ * `colspan` / `rowspan` (name-only allow; HTML5 parses as
+ * non-negative-integer non-injection-vector) and `scope`
+ * (literal-enum-restricted to `"row" | "col" | "rowgroup" |
+ * "colgroup"` via tuple form) attributes on `<th>` plus
+ * `colspan` / `rowspan` on `<td>`. **First schema-override
+ * extension on the `schemaOverrides` slot kind** in project
+ * history; sibling pattern to the Phase-46/47/48/51/53/55
+ * plugin-regex-extension realizations. Closes ADR-0018
+ * APPEND-D-Q item 3 at **18-phase carryover** (Phase 39 →
+ * Phase 57) — new longest absolute APPEND-deferral closure
+ * ever observed (beats prior 12-phase Phase 41 → 53 D-Y
+ * item 2 record). Pipeline-emission caveat: `remark-gfm`
+ * does NOT emit span/scope (GFM table syntax has no
+ * span/scope markup) and `remark-rehype` with
+ * `allowDangerousHtml: false` strips raw HTML; therefore
+ * NO current Phase-37-framework pipeline emits these
+ * attributes — Phase 57 ships the schema-ready-before-
+ * plugin state for future plugin authors (e.g.,
+ * MultiMarkdown-table, HTML-table-pass-through). Schema-
+ * isolation tests in `tables.test.ts` exercise the new
+ * allow-list entries directly via manual HAST tree
+ * construction.
+ *
  * Server-only: imported by `TablesExtensionRegistry` returned
  * from `getExtensionRegistry()` per the Phase-39 env-var
  * dispatch arm (Unit 39.2). Never include in a `"use client"`
@@ -51,7 +75,11 @@ import type { MarkdownExtensionRegistry, MarkdownExtensionSet, MarkdownSurface }
  * are well-understood HTML semantic structure with no XSS-
  * vector-by-name concerns; `align` attribute is value-
  * restricted to 3 literal values via the
- * `[attrName, ...allowedValues]` tuple form.
+ * `[attrName, ...allowedValues]` tuple form. Phase-57
+ * adds `colspan` / `rowspan` (name-only allow; non-
+ * injection-vector per HTML5 spec) and `scope` (4-literal
+ * enum restriction matching the HTML5 `scope` attribute
+ * spec) per APPEND-D-AO.
  */
 export const GFM_TABLE_SCHEMA_OVERRIDES: Partial<Schema> = {
   tagNames: [
@@ -86,9 +114,17 @@ export const GFM_TABLE_SCHEMA_OVERRIDES: Partial<Schema> = {
     // Phase-17 base attributes (verbatim copy per override-replace)
     a: ["href"],
     input: [["type", "checkbox"], "checked", "disabled"],
-    // Phase-39 GFM column-alignment attributes (value-restricted)
-    th: [["align", "left", "center", "right"]],
-    td: [["align", "left", "center", "right"]],
+    // Phase-39 GFM column-alignment + Phase-57 table-specific attributes.
+    // Schema uses PROPERTY names (camelCase per `property-information`),
+    // not HTML attribute names — `colSpan`/`rowSpan` are the JSX-style
+    // property names emitted into HAST by remark-rehype + future plugins.
+    th: [
+      ["align", "left", "center", "right"],
+      "colSpan",
+      "rowSpan",
+      ["scope", "row", "col", "rowgroup", "colgroup"],
+    ],
+    td: [["align", "left", "center", "right"], "colSpan", "rowSpan"],
     "*": [],
   },
 };
@@ -131,10 +167,14 @@ export const GFM_TABLE_SCHEMA_OVERRIDES: Partial<Schema> = {
  * Composes with `ArxivExtensionRegistry` similarly (arxiv's
  * `remarkPlugins` slot is also distinct).
  *
- * Phase 44+ may add table-specific attributes (`colspan` /
- * `rowspan` / `scope`; APPEND-D-Q item 3) via schemaOverride
- * extension; surface-specific table schemas (APPEND-D-Q item
- * 6) via per-surface enabled-set differentiation.
+ * Phase 57 ships table-specific attributes (`colspan` /
+ * `rowspan` on `<th>` / `<td>`; `scope` on `<th>`; APPEND-
+ * D-Q item 3 closed at 18-phase carryover — new longest
+ * absolute APPEND-deferral closure ever observed) via in-
+ * place schema-extension on `GFM_TABLE_SCHEMA_OVERRIDES`.
+ * Phase 58+ may add `<caption>` element (APPEND-D-Q item 4)
+ * or surface-specific table schemas (APPEND-D-Q item 6)
+ * via per-surface enabled-set differentiation.
  */
 export class TablesExtensionRegistry implements MarkdownExtensionRegistry {
   private readonly enabledSurfaces: ReadonlySet<MarkdownSurface>;

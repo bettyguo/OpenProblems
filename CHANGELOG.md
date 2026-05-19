@@ -2487,6 +2487,50 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - First Load JS = 103 kB UNCHANGED (139 consecutive units at Phase 56.4 ship; this unit docs-only); Middleware = 160 kB UNCHANGED.
 - THINK artifact: `docs/thinking/57.0-phase-57-prep.md`.
 
+#### Unit 57.1 — `GFM_TABLE_SCHEMA_OVERRIDES` schema-extension (colSpan + rowSpan + scope on `<th>` / `<td>`) + parity assertion extension + 9 NEW schema-isolation tests + ADR-0018 D-G APPEND-D-AO (first schema-override extension on `schemaOverrides` slot kind; first schema-extension phase-shape; first evolution of `GFM_TABLE_SCHEMA_OVERRIDES` since Phase 39 ship; first all-3-slots-evolved state; closes APPEND-D-Q item 3 at 18-phase carryover — new longest absolute APPEND-deferral closure ever observed; 24th D-G APPEND extends record 23 → 24; fifteenth two-letter slot D-AO; 1333/74)
+
+- Second Phase-57 unit; code + ADR APPEND.
+- **`GFM_TABLE_SCHEMA_OVERRIDES.attributes` value evolution** (in-place edit of `lib/markdown/extensions/tables.ts`):
+  - Before (Phase 39 ship through Phase-56 close): `th` and `td` each carried only `[["align", "left", "center", "right"]]`.
+  - After (Phase 57 ship): `th` carries `[["align", ...], "colSpan", "rowSpan", ["scope", "row", "col", "rowgroup", "colgroup"]]`; `td` carries `[["align", ...], "colSpan", "rowSpan"]` (no scope per HTML5 spec — scope is th-only).
+  - **Schema entries use PROPERTY names (camelCase JSX-style per `property-information`)** rather than HTML attribute names; `colSpan` / `rowSpan` are the property names emitted into HAST trees; `rehype-stringify` converts them to HTML attribute form (`colspan="N"` / `rowspan="N"`) at compile time. `scope` has no camelCase distinction.
+  - **Schema-extension is constant-VALUE evolution** (mirrors Phase 42-56 constructor-arg value evolutions but generalized from `PHASE_N_DEFAULT_ENABLED_SURFACES` to `GFM_TABLE_SCHEMA_OVERRIDES`). Constant NAME preserved per Phase-42/43/44/49/52/56 D-8 precedent.
+  - **`TablesExtensionRegistry` class + factory dispatch arm + `PHASE_39_DEFAULT_ENABLED_SURFACES` UNCHANGED** — class returns the (evolved) schema unchanged; expansion is schema-internal. **First real-consumer-exercise** of the schema-extension property.
+- **`GFM_TABLE_SCHEMA_OVERRIDES` JSDoc + class doc updated**: documents the Phase-57 evolution (3 new attribute names) + pipeline-emission caveat (no current plugin emits these attributes — `remark-gfm` lacks span/scope markup; `remark-rehype` strips raw HTML; schema-ready-before-plugin pattern documented for future plugin authors).
+- **`tables.test.ts` parity test extension + 9 NEW schema-isolation tests**:
+  - **Updated** "adds th + td align attribute" test to assert the new `th` + `td` tuple shapes including `colSpan` + `rowSpan` + (th-only) `scope`.
+  - **Updated** "Phase-57 table-specific attributes present" test (replacing Phase-39 "does not add other table-specific attributes" anti-test) — asserts `colSpan`/`rowSpan` on both th + td; `scope` on th only.
+  - **9 NEW schema-isolation tests** in new describe block `"GFM_TABLE_SCHEMA_OVERRIDES — Phase-57 schema-isolation behavior (first schema-override extension on schemaOverrides slot kind)"` exercising the schema directly via manual HAST tree construction + `unified().use(rehypeSanitize, GFM_TABLE_SCHEMA_OVERRIDES).use(rehypeStringify)` pipeline (zero new deps; avoids needing a span-emitting plugin in test fixtures):
+    - `<th colspan='3'>` survives sanitize.
+    - `<th rowspan='2'>` survives sanitize.
+    - `<th scope='col'>` survives sanitize.
+    - `<th scope='row'>` survives sanitize.
+    - `<th scope='rowgroup'>` + `<th scope='colgroup'>` survive sanitize (full 4-literal enum coverage).
+    - `<td colspan='2'>` + `<td rowspan='3'>` survive sanitize (no scope on `td` per HTML5 spec).
+    - `<th scope='invalid'>` **STRIPS the scope attribute** — literal-enum XSS-audit defense; mirrors Phase-39 `align` value-restriction discipline.
+    - `<th onclick='alert(1)'>` **STRIPS the onclick attribute** — regression-guard: Phase-57 schema-extension does NOT widen the attribute allow-list to include event-handler attributes; no XSS surface leakage.
+    - `align="center"` + `colspan="2"` + `rowspan="1"` + `scope="col"` all coexist on a single `<th>` — multi-attribute backwards-compat validation.
+- **ADR-0018 D-G** gains **EXTENDED Phase 57 Unit 57.1** block + **APPEND-D-AO** (fifteenth two-letter slot after D-AA … D-AN). Documents:
+  - **First schema-override extension on the `schemaOverrides` slot kind** in project history — pre-Phase-57 only `remarkPlugins` (5 evolutions: arxiv Phase 47 + 53; doi Phase 48; pubmed Phase 51; orcid Phase 55) + `rehypePlugins` (1 evolution: wikilinks Phase 46) had been evolved; **`schemaOverrides` was ARCHITECTURALLY-PRESENT but EVOLUTION-DORMANT for 18 phases** (Phase 39 → Phase 56). Phase 57 activates the third slot kind for consumer-extension.
+  - **First "schema-extension" phase-shape pattern** in project history — sibling to the established plugin-regex-extension pattern (6 realizations). Demonstrates consumer-extension is slot-kind-agnostic.
+  - **First evolution of `GFM_TABLE_SCHEMA_OVERRIDES` since Phase 39 ship** — 18-phase constant stability streak ends. Constant NAME preserved; VALUE evolved per Phase-42/43/44/49/52/56 D-8 precedent generalized to schema constants.
+  - **First state where all 3 framework slot kinds have been evolved post-Phase-39** — `remarkPlugins` 5× + `rehypePlugins` 1× + `schemaOverrides` 1× = all 3/3 framework slot kinds exercised.
+  - **Closes APPEND-D-Q item 3 at 18-phase carryover** (Phase 39 → 57) — **NEW LONGEST ABSOLUTE APPEND-DEFERRAL CLOSURE EVER OBSERVED** (beats prior 12-phase Phase 41 → 53 D-Y item 2 record). **First 18-phase APPEND-deferral closure**.
+  - **Third APPEND-D-Q deferral closure** (Phase 40 item 1 + Phase 43 item 2 + Phase 41 item 5 via arxiv first-ship + Phase 57 item 3). D-Q gains 4th closed item; 2 items remain open (item 4 `<caption>` + item 6 surface-specific schemas). **D-Q is the first non-D-G + non-D-Y D-clause to have 4+ items closed through the closure cadence**.
+  - **First "non-cross-surface non-alias non-sibling non-regex-evolution APPEND-deferral closure"** in the cadence — Phase 57 is the first schema-extension closure. **First closure on the `schemaOverrides` slot kind**.
+  - **First "schema-ready-before-plugin" pattern** in project history — pipeline-emission caveat documented: no current plugin emits these attributes; schema prepares for future plugin authors.
+  - **XSS audit Phase 57**: `colSpan`/`rowSpan` name-only allow (HTML5 non-injection-vector; deliberate departure from APPEND-D-Q "numeric-only restriction" anticipatory language since hast-util-sanitize lacks numeric-range matcher and the attribute carries no code-execution semantics); `scope` literal-enum restricted to 4 HTML5-spec values via tuple form; no new tag-names; no event-handler leakage (regression-guard test validates).
+  - **Sixteenth prep-/APPEND-doc-level deferral closed** — APPEND-deferral closure cadence sustained 16 phases (longest ever; extends Phase-56 record 15 → 16).
+  - **24th APPEND on D-G** — extends first-ADR-D-clause-with-most-APPENDs record 23 → 24. **Fifteenth two-letter APPEND letter D-AO**.
+  - **22nd consecutive no-new-ADR phase** (Phase 36-57; extends Phase-56 record 21 → 22). **27th consecutive phase without new B category** (Phase 31-57; extends Phase-56 record 26 → 27). **Forty-eighth NON-§13 phase**.
+- **Smoke gates**:
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **1333 / 74 files** (+9 NEW schema-isolation tests; net +9 / 0 vs Phase 56 close at 1324).
+  - `pnpm audit-content` → 0 errors / 6 warnings UNCHANGED.
+  - First Load JS = 103 kB UNCHANGED (140 consecutive units at Unit 57.1 ship); Middleware = 160 kB UNCHANGED.
+- **No new ADRs / migrations / i18n keys / env vars / files / runtime deps**.
+- **OPEN_QUESTIONS UNCHANGED** at 28 resolved + 4 lean + 34 open = 66 total.
+
 ### Phase 56 — Community-adjacent surfaces (**forty-seventh NON-§13 phase**: ORCID cross-surface expansion from `rationale`-only to all 4 markdown surfaces via constructor-arg value-only change in `PHASE_54_DEFAULT_ENABLED_SURFACES`; **sixth realization of "constructor-arg-only zero-rework expansion" property** — **first 6-realization for that pattern** (extends Phase-52 record 5 → 6); **first state with TWO coexisting 6-realization framework patterns** (plugin-regex-extension at 6 from Phase 55 + constructor-arg-only-zero-rework-expansion at 6 from Phase 56); generalizes 6-consumer composition + quintuple-alias state to all 4 surfaces; closes ADR-0018 APPEND-D-AL ORCID cross-surface item at **2-phase carryover** — **ties Phase-52 fastest-cross-surface-closure record**; APPEND-D-AN fourteenth two-letter slot; 5 numbered units; 51st "Continue" override invoked — extends half-century milestone)
 
 #### Unit 56.4 — Phase 56 acceptance gate (sixth realization of constructor-arg-only zero-rework expansion — first 6-realization for that pattern; first state with TWO coexisting 6-realization framework patterns; first all-4-surfaces quintuple-alias state; first all-4-surfaces 4-consumer same-slot composition; first all-surfaces-saturated-at-maximum-consumer-cardinality state; ties Phase-52 2-phase fastest cross-surface closure record; D-AN; 1324/74; 139th consecutive 103 kB unit; 52nd "Continue" override opportunity at Phase 56 → 57 boundary)
