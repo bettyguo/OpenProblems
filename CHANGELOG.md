@@ -2468,7 +2468,112 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **Phase-8 scope drift**: HTML shell migration **dropped from scope mid-flight** at Unit 8.1 (parallel session preserved existing `app/layout.tsx`-owns-`<html>` structure with a "this change was intentional" system reminder). Surfaced into Unit 8.4 territory, then deferred indefinitely. No scope additions. Parallel-curator coordination at unprecedented intensity (Unit 8.1 mid-flight file deletions; Unit 8.6 FR content authored by parallel session).
 - THINK artifact: `docs/thinking/8.9-phase-8-acceptance-gate.md`.
 
-### Phase 49 — Community-adjacent surfaces (**fortieth NON-§13 phase**: fourth cross-surface expansion of a Phase-37-framework consumer — doi expands from `rationale`-only to all 4 markdown surfaces via constructor-arg change in `PHASE_45_DEFAULT_ENABLED_SURFACES`; mirrors Phase 42 + 43 + 44 expansion pattern verbatim; **first cross-surface expansion since Phase 44**; **fourth realization of the "constructor-arg-only zero-rework expansion" property** — completes per-consumer all-4-surfaces arc; closes ADR-0018 APPEND-D-AC cross-surface item at 4-phase carryover; APPEND-D-AG seventh two-letter slot; 5 numbered units anticipated; 44th "Continue" override invoked; **IN PROGRESS**)
+### Phase 49 — Community-adjacent surfaces (**fortieth NON-§13 phase**: fourth cross-surface expansion of a Phase-37-framework consumer — doi expands from `rationale`-only to all 4 markdown surfaces via constructor-arg change in `PHASE_45_DEFAULT_ENABLED_SURFACES`; mirrors Phase 42 + 43 + 44 expansion pattern verbatim; **first cross-surface expansion since Phase 44**; **fourth realization of the "constructor-arg-only zero-rework expansion" property** — completes per-consumer all-4-surfaces arc; **first D-clause with BOTH items closed within the closure cadence** (D-AC: item 2 Phase 48; cross-surface Phase 49); closes ADR-0018 APPEND-D-AC cross-surface item at 4-phase carryover; APPEND-D-AG seventh two-letter slot; 5 numbered units; 44th "Continue" override invoked; **CLOSED**)
+
+#### Unit 49.4 — Phase 49 acceptance gate (fourth constructor-arg-only realization; first all-4-surfaces same-slot + triple-alias; first D-clause with both items closed within cadence; D-AG; 1088/72; 106th consecutive 103 kB unit; 45th "Continue" override opportunity at Phase 49 → 50 boundary)
+
+- Fifth and final Phase-49 numbered unit; gate-only. **Phase 49 CLOSES at this unit's commit**. Phase 50 entry awaits explicit "Continue" override per §12.
+- THINK artifact: `docs/thinking/49.4-phase-49-acceptance-gate.md` (Phase-48 → 49 delta complete; 12 architectural firsts enumerated; Phase-50 entry conditions documented with 10 ranked candidate threads).
+
+##### Phase 49 — what shipped (5 numbered units)
+
+| Unit | Title | Type | Commit |
+|---|---|---|---|
+| 49.0 | Phase 49 prep | docs | `0661f90` |
+| 49.1 | `PHASE_45_DEFAULT_ENABLED_SURFACES` cross-surface expansion + dispatch tests + decoupling + ADR-0018 D-G APPEND-D-AG | code+APPEND | `d0c7857` |
+| 49.2 | 19 NEW end-to-end Phase-49 tests + first all-4-surfaces triple-alias + first all-4-surfaces same-slot composition | code | `cac8951` |
+| 49.3 | Phase-49 hygiene + APPEND-D-AC cross-surface item closure documentation | docs | `faafbe3` |
+| 49.4 | Phase 49 acceptance gate (this unit) | gate | (this commit) |
+
+Total: **5 numbered units (49.0 through 49.4)**. Mirrors Phase 41-48 5-unit framework shapes verbatim.
+
+##### Fourth realization of constructor-arg-only zero-rework expansion + first all-4-surfaces same-slot + first all-4-surfaces triple-alias at HEAD `faafbe3`
+
+- `PHASE_45_DEFAULT_ENABLED_SURFACES` value evolved from `Set(["rationale"])` to `Set(["bio", "reviewNotes", "rationale", "actionRationale"])`. **Fourth real-consumer-expansion realization** of the constructor-arg-only zero-rework expansion property — completes the per-consumer all-4-surfaces arc.
+- `DoiExtensionRegistry` class + factory dispatch arm + plugin body + regex **UNCHANGED**.
+- 3 dispatch tests in `lib/markdown/extensions/index.test.ts` flipped to reflect Phase-49 all-4-surfaces dispatch.
+- 4 baseline test blocks in `lib/markdown/index.test.ts` decoupled with explicit `new Set(["rationale"])` constructor args to preserve Phase-45/46/47/48 baseline coverage. **Decoupled-baseline-block pattern** documented as load-bearing convention.
+- **19 NEW end-to-end tests** in `lib/markdown/index.test.ts` across 3 describe blocks (Unit 49.2).
+- ADR-0018 D-G APPEND adds Phase-49 EXTENDED block + **APPEND-D-AG** (Unit 49.1; seventh two-letter slot).
+- ADR-0018 APPEND-D-AC cross-surface item CLOSED at **4-phase carryover** (Phase 45 → 49; matches Phase-38 → 42 + Phase-39 → 43 4-phase cadence verbatim).
+- **First "all 4 surfaces have same-slot composition" state** in project history.
+- **First "all 4 surfaces are triple-alias" state** in project history.
+- **First D-clause with BOTH items closed within the closure cadence** (D-AC).
+- **First cross-surface-expansion closure since Phase 44**.
+- **Maximal multi-consumer all-surfaces composition** under default dispatch achieved.
+
+##### Phase 48 → Phase 49 delta
+
+| Metric | Phase 48 close | Phase 49 close | Δ |
+|---|---|---|---|
+| Tests | 1069 / 72 files | **1088 / 72 files** | +19 / 0 |
+| ADRs | 24 | **24** | 0 |
+| ADR-0018 D-G APPEND count | 15 | **16** (project record extends; seventh two-letter slot D-AG in use) | +1 |
+| DB tables | 7 | 7 | 0 |
+| Migrations | 9 | 9 | 0 |
+| Env vars | 14 | 14 | 0 |
+| `MARKDOWN_EXTENSIONS` single-value arms | 5 | 5 | 0 |
+| i18n keys per locale | 168 | 168 | 0 |
+| First Load JS shared chunk | 103 kB | **103 kB** | 0 |
+| Middleware bundle | 160 kB | 160 kB | 0 |
+| OPEN_QUESTIONS top-level Q-count | 66 | **66** | 0 |
+| Phase-37+ candidate count | 8 | **8** | 0 |
+| Runtime deps added | — | **0** | 0 |
+| `lib/markdown/extensions/` files | 15 | 15 | 0 |
+| **Phase-37-framework concrete consumers** | **4** | **4** | 0 |
+| **Constructor-arg-only zero-rework expansion realizations** | **3 (wikilinks + tables + arxiv)** | **4 (+doi)** | **+1** |
+| **Surfaces with same-slot composition** | **1 (rationale)** | **4 (all surfaces)** | **+3** |
+| **Surfaces with 3+ alias-syntax consumers (triple-alias)** | **1 (rationale)** | **4 (all surfaces)** | **+3** |
+
+##### Architectural firsts in Phase 49 (12 enumerated)
+
+1. **Fourth realization of the "constructor-arg-only zero-rework expansion" property**. **First 4-realization property in project history**. **Completes the per-consumer all-4-surfaces arc**.
+2. **First "all 4 surfaces have same-slot composition" state**. Regex-disjointness-as-sole-defense discipline exercised on every surface in production default.
+3. **First "all 4 surfaces are triple-alias" state**. **First surface-with-3-alias-consumers cardinality of 4**.
+4. **First cross-surface-expansion closure since Phase 44**. 4-phase non-cross-surface-expansion streak (Phase 45-48) ends.
+5. **First D-clause with BOTH items closed within the closure cadence** (D-AC; item 2 Phase 48; cross-surface Phase 49).
+6. **APPEND-D-AC cross-surface item CLOSED at 4-phase carryover** (Phase 45 → 49). Matches Phase-38 → 42 + Phase-39 → 43 cadence verbatim.
+7. **Eighth prep-/APPEND-doc-level deferral closed by a later phase** — APPEND-deferral closure cadence sustained 8 phases.
+8. **Fifth cross-surface-expansion APPEND-deferral closure** in the cadence.
+9. **Sixteenth APPEND on ADR-0018 D-G** — extends first-ADR-D-clause-with-most-APPENDs record 15 → 16.
+10. **Seventh two-letter APPEND letter D-AG** (Excel-spreadsheet column convention sustained).
+11. **First "framework + 4 consumers + composition + 4 expansions + same-slot composition × 4 + alias syntax × 3" 13-phase cluster** in project history (Phase 37-49). **19th consecutive phase without new B category** — first 19-phase run (extends Phase-48 record 18 → 19). **Fortieth NON-§13 phase**. **105th consecutive 103 kB First Load JS unit**.
+12. **Maximal multi-consumer all-surfaces composition under default dispatch** — defines the upper bound for the Phase-37-framework's current capabilities.
+
+##### Phase 49 → Phase 50 entry conditions
+
+Per §12, Phase 50 entry requires **explicit human sign-off**.
+
+**Recommended Phase 50 first-thread candidates** (10 ranked; see `docs/thinking/49.4-phase-49-acceptance-gate.md` for full tractability + units breakdown):
+
+1. **PubMed PMID sibling consumer** — 2-3 units; **fifth concrete consumer**; **first 3rd-`remarkPlugins` consumer** beyond arxiv + doi; tests whether the regex-disjointness-as-sole-defense discipline scales to 3 same-slot consumers.
+2. **Older-style category-prefixed arxiv IDs** (APPEND-D-Y item 2) — 1-2 units; regex extension; closes at 9-phase carryover.
+3. **Table-specific attributes** (APPEND-D-Q item 3) — 1-2 units; XSS-audit-required; first schema-extension on `schemaOverrides` slot.
+4. **Cross-entity wikilinks** (APPEND-D-L item 3) — 2-3 units.
+5. **`<a class="wikilink">` styling** (APPEND-D-L item 4) — 1-2 units; first single-consumer-multi-slot case.
+6. **404 handling for unresolved wikilinks** (APPEND-D-L item 5) — 2-3 units.
+7. **Bare arxiv / DOI IDs without prefix** — 1-2 units; ambiguity-sensitive.
+8. **Empty-alias unification across consumers** (Phase-48 deferral) — 1 unit; smallest scope.
+9. **Plugin parameterization for wikilink-href-builder** (APPEND-D-L item 6) — 1-2 units; gates rank 4.
+10. **ADR-0025 concrete content-moderation provider** — 3-5 units; strongest patience signal; NOT autonomous-tractable.
+
+**Operational gates still pending** (6 UNCHANGED): Q54 + Q55 + Q69 + Q73 + Q75 + Q77.
+
+##### Smoke gates
+
+- `pnpm typecheck` — passes.
+- `pnpm test` — **1088 / 72 files**.
+- `pnpm audit-content` — 0 errors / 6 warnings (45 consecutive phases at Q32 baseline).
+- First Load JS — **103 kB UNCHANGED** (106 consecutive units at Unit 49.4 ship).
+- Middleware — **160 kB UNCHANGED**.
+
+##### Anti-scope (Phase 50+ deferrals carried forward)
+
+NOT PubMed PMID consumer (Phase 50+ rank 1); NOT older-style category-prefixed arxiv IDs (Phase 50+ rank 2); NOT table-specific attributes (Phase 50+ rank 3); NOT cross-entity wikilinks (Phase 50+ rank 4); NOT `<a class="wikilink">` styling (Phase 50+ rank 5); NOT 404 handling (Phase 50+ rank 6); NOT bare arxiv / DOI IDs without prefix (Phase 50+ rank 7); NOT empty-alias unification (Phase 50+ rank 8); NOT plugin parameterization (Phase 50+ rank 9); NOT auto-trim of alias display whitespace (Phase 50+); NOT empty-alias-as-slug-fallback (Phase 50+); NOT empty-alias-as-bare-arxiv-fallback (Phase 50+); NOT empty-alias-as-bare-doi-fallback (Phase 50+); NOT paper-card hover-preview (Phase 50+); NOT `<caption>` (Phase 50+); NOT surface-specific table schemas (Phase 50+); NOT `@mention` resolution (Phase 50+); NOT dx.doi.org legacy host (Phase 50+); NOT stricter trailing-lookahead for trailing-period DOIs (Phase 50+); NOT a 4th-or-later `remarkPlugins` consumer beyond arxiv + doi + PubMed (Phase 50+ rank 1 ships PubMed); NOT a 2nd `rehypePlugins` consumer beyond wikilinks (Phase 50+); NOT a 2nd `schemaOverrides` consumer beyond tables (Phase 50+); NOT ADR-0025 concrete moderation provider; NOT Q78/Q79/v2 methodology/pre-commit typecheck/safeAuth/test backfill/account-deletion (each deferred); all Phase-30-through-48 deferrals carry forward.
+
+##### Boundary statement
+
+**Phase 49 CLOSED at this commit after 5 numbered units. Fourth realization of the "constructor-arg-only zero-rework expansion" property — completes the per-consumer all-4-surfaces arc (Phase 42 wikilinks; Phase 43 tables; Phase 44 arxiv; Phase 49 doi). First 4-realization property in project history. First "all 4 surfaces have same-slot composition" state — the arxiv-vs-doi pair in `remarkPlugins` now active on every surface under 4-way default; regex-disjointness-as-sole-defense discipline (Phase 48 established) exercised everywhere in production default. First "all 4 surfaces are triple-alias" state — every surface carries wikilinks + arxiv + doi aliases simultaneously under 4-way default. First surface-with-3-alias-consumers cardinality of 4 in project history. Maximal multi-consumer all-surfaces composition under default dispatch achieved. First cross-surface-expansion closure since Phase 44. First D-clause with BOTH items closed within the closure cadence (APPEND-D-AC: item 2 Phase 48; cross-surface Phase 49). Closes ADR-0018 APPEND-D-AC cross-surface item at 4-phase carryover (Phase 45 → 49; matches Phase-38 → 42 + Phase-39 → 43 cadence verbatim). APPEND-deferral closure cadence sustained 8 phases (Phase 42-49). Fifth cross-surface-expansion APPEND-deferral closure. Sixteenth APPEND on ADR-0018 D-G (project record extends 15 → 16). Seventh two-letter APPEND letter D-AG. Fortieth NON-§13 phase. First "framework + 4 consumers + composition + 4 expansions + same-slot composition × 4 + alias syntax × 3" 13-phase cluster (Phase 37-49). 19th consecutive phase without new B category (first 19-phase run; extends 18 → 19). 105th consecutive 103 kB First Load JS unit (extends from 100 at Phase-48 close). XSS line of defense preserved. 1088 tests across 72 vitest files (+19/0 vs Phase 48). 24 ADRs UNCHANGED. 7 DB tables UNCHANGED. 9 migrations UNCHANGED. 14 env vars UNCHANGED. 168 i18n keys per locale UNCHANGED. First Load JS 103 kB UNCHANGED. Middleware 160 kB UNCHANGED. OPEN_QUESTIONS top-level Q-count 66 UNCHANGED. Phase-37+ candidate count 8 UNCHANGED. `MARKDOWN_EXTENSIONS` recognized single-value arms 5 UNCHANGED. Zero new ADRs / migrations / i18n keys / env vars / operational gates / runtime deps / files. Phase 50 entry requires explicit human sign-off per §12.**
 
 #### Unit 49.3 — Phase-49 hygiene + ADR-0018 APPEND-D-AC cross-surface item closure documentation + first cross-surface-expansion closure since Phase 44 + first D-clause with both items closed within the cadence (Q-tally UNCHANGED at 66; Phase-37+ candidate count UNCHANGED at 8; 19-phase no-new-B-category streak EXTENDS to Phase 49; 105th consecutive 103 kB unit)
 
