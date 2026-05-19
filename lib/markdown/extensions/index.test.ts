@@ -4,6 +4,7 @@ import { ArxivExtensionRegistry, remarkLinkArxivIds } from "./arxiv";
 import { CompositeExtensionRegistry } from "./composite";
 import { DoiExtensionRegistry, remarkLinkDoiIds } from "./doi";
 import { __resetRegistryForTests, DefaultExtensionRegistry, getExtensionRegistry } from "./index";
+import { OrcidExtensionRegistry, remarkLinkOrcidIds } from "./orcid";
 import { PubmedExtensionRegistry, remarkLinkPubmedIds } from "./pubmed";
 import { TablesExtensionRegistry } from "./tables";
 import { WikilinkExtensionRegistry } from "./wikilinks";
@@ -461,6 +462,121 @@ describe("getExtensionRegistry (factory) — env-var dispatch", () => {
       expect(r.getExtensions(surface).remarkPlugins).toEqual([
         remarkLinkArxivIds,
         remarkLinkDoiIds,
+      ]);
+    }
+  });
+
+  // -----------------------------------------------------------------------
+  // Phase-54 ORCID dispatch tests — sixth concrete consumer; first 4th-
+  // remarkPlugins consumer; first 4-consumer same-slot composition; first
+  // 6-consumer composition under default dispatch (maximum-consumer-
+  // cardinality state).
+  // -----------------------------------------------------------------------
+
+  it("error message lists 'orcid' Phase 54", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "unknown";
+    expect(() => getExtensionRegistry()).toThrow(/orcid/);
+  });
+
+  it("returns OrcidExtensionRegistry when MARKDOWN_EXTENSIONS is 'orcid' Phase 54", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "orcid";
+    expect(getExtensionRegistry()).toBeInstanceOf(OrcidExtensionRegistry);
+  });
+
+  it("OrcidExtensionRegistry dispatch enables orcid on rationale only Phase 54 (mirrors Phase-41/45/50 first-ship demand-signal-first precedent)", () => {
+    // Phase 54 ship: Set(["rationale"]). ORCID consumer first-ship pattern
+    // mirrors Phase-41 arxiv + Phase-45 doi + Phase-50 pubmed — single-
+    // surface scope; curator paper-citation surface; cross-surface
+    // expansion to all 4 surfaces deferred Phase ~56+.
+    process.env["MARKDOWN_EXTENSIONS"] = "orcid";
+    const r = getExtensionRegistry();
+    expect(r.getExtensions("rationale").remarkPlugins).toBeDefined();
+    expect(r.getExtensions("bio")).toEqual({});
+    expect(r.getExtensions("reviewNotes")).toEqual({});
+    expect(r.getExtensions("actionRationale")).toEqual({});
+  });
+
+  it("returns CompositeExtensionRegistry for 'arxiv,doi,pubmed,orcid' Phase 54 (first 4-consumer same-slot composition)", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "arxiv,doi,pubmed,orcid";
+    expect(getExtensionRegistry()).toBeInstanceOf(CompositeExtensionRegistry);
+  });
+
+  it("arxiv,doi,pubmed,orcid composite concatenates ALL 4 plugins in remarkPlugins on rationale (first 4-consumer same-slot Phase 54)", () => {
+    // **First 4-consumer same-slot composition in project history.** Under
+    // `MARKDOWN_EXTENSIONS=arxiv,doi,pubmed,orcid` Phase-54 default the
+    // `remarkPlugins` slot on rationale (the only surface where all 4
+    // consumers share enablement Phase 54 — arxiv + doi + pubmed default-
+    // enabled on shared surfaces post-Phase-52; orcid default-enabled on
+    // rationale only) carries ALL 4 plugins via `CompositeExtensionRegistry`
+    // per APPEND-D-R "concatenated across components in registration
+    // order" rule. **Tests whether the regex-disjointness-as-sole-defense
+    // discipline scales from 3 to 4 same-slot consumers without
+    // architectural change** — the four regex character classes are
+    // pairwise disjoint via distinct literal prefixes (arxiv:, doi:,
+    // pubmed:/pmid:, orcid:).
+    process.env["MARKDOWN_EXTENSIONS"] = "arxiv,doi,pubmed,orcid";
+    const r = getExtensionRegistry();
+    const remarkPlugins = r.getExtensions("rationale").remarkPlugins;
+    expect(remarkPlugins).toEqual([
+      remarkLinkArxivIds,
+      remarkLinkDoiIds,
+      remarkLinkPubmedIds,
+      remarkLinkOrcidIds,
+    ]);
+    // Other 3 surfaces: arxiv + doi + pubmed (Phase 52 all-4); orcid
+    // inactive there per Phase-54 rationale-only default.
+    for (const surface of ["bio", "reviewNotes", "actionRationale"] as const) {
+      expect(r.getExtensions(surface).remarkPlugins).toEqual([
+        remarkLinkArxivIds,
+        remarkLinkDoiIds,
+        remarkLinkPubmedIds,
+      ]);
+    }
+  });
+
+  it("returns CompositeExtensionRegistry for 'wikilinks,tables,arxiv,doi,pubmed,orcid' (first 6-way Phase 54)", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "wikilinks,tables,arxiv,doi,pubmed,orcid";
+    expect(getExtensionRegistry()).toBeInstanceOf(CompositeExtensionRegistry);
+  });
+
+  it("6-way composite enables ALL 6 CONSUMERS on rationale Phase 54 (first 6-consumer composition under default dispatch; new maximum-consumer-cardinality state)", () => {
+    // **First "6-consumer composition under default dispatch" state in
+    // project history.** Pre-Phase-54 max was 5-consumer (Phase-52 all-4-
+    // surfaces 5-way default). Phase 54 adds ORCID as the sixth consumer
+    // on rationale (rationale-only ship per Phase-41/45/50 first-ship
+    // demand-signal-first precedent).
+    //
+    // Composition matrix at Phase-54 6-way default:
+    //   bio:             wikilinks(rehype) + tables(schema) + [arxiv, doi, pubmed](remark) — 5 consumers (Phase-52 baseline)
+    //   reviewNotes:     wikilinks(rehype) + tables(schema) + [arxiv, doi, pubmed](remark) — 5 consumers
+    //   rationale:       wikilinks(rehype) + tables(schema) + [arxiv, doi, pubmed, orcid](remark) — 6 consumers ← maximum cardinality
+    //   actionRationale: wikilinks(rehype) + tables(schema) + [arxiv, doi, pubmed](remark) — 5 consumers
+    //
+    // Conflict-free per APPEND-D-R because (a) wikilinks + tables +
+    // {arxiv, doi, pubmed, orcid} each occupy distinct slots cross-pair;
+    // (b) within `remarkPlugins` the arxiv-doi-pubmed-orcid 4-tuple is
+    // collision-free via regex-disjointness-as-sole-defense (4-consumer
+    // scaling validation).
+    process.env["MARKDOWN_EXTENSIONS"] = "wikilinks,tables,arxiv,doi,pubmed,orcid";
+    const r = getExtensionRegistry();
+    // rationale: 6-consumer composition (4 plugins in remarkPlugins).
+    expect(r.getExtensions("rationale").rehypePlugins).toBeDefined();
+    expect(r.getExtensions("rationale").schemaOverrides).toBeDefined();
+    expect(r.getExtensions("rationale").remarkPlugins).toEqual([
+      remarkLinkArxivIds,
+      remarkLinkDoiIds,
+      remarkLinkPubmedIds,
+      remarkLinkOrcidIds,
+    ]);
+    // Other 3 surfaces: 5-consumer composition (3 plugins in remarkPlugins;
+    // orcid inactive there per rationale-only default).
+    for (const surface of ["bio", "reviewNotes", "actionRationale"] as const) {
+      expect(r.getExtensions(surface).rehypePlugins).toBeDefined();
+      expect(r.getExtensions(surface).schemaOverrides).toBeDefined();
+      expect(r.getExtensions(surface).remarkPlugins).toEqual([
+        remarkLinkArxivIds,
+        remarkLinkDoiIds,
+        remarkLinkPubmedIds,
       ]);
     }
   });
