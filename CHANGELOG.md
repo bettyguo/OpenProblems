@@ -2470,6 +2470,39 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 50 — Community-adjacent surfaces (**forty-first NON-§13 phase**: PubMed PMID sibling consumer in `remarkPlugins` slot — **fifth concrete Phase-37-framework consumer**; **first 3rd-`remarkPlugins` consumer** beyond arxiv + doi; **first 3-consumer same-slot composition** under composition; **first 5-consumer composition** under default dispatch; new `PubmedExtensionRegistry` + `MARKDOWN_EXTENSIONS=pubmed` env-var dispatch arm; **6th single-value arm** (first expansion of recognized-arms set since Phase 45); tests whether regex-disjointness-as-sole-defense discipline scales to 3 same-slot consumers; closes ADR-0018 APPEND-D-AC PubMed PMID item at 5-phase carryover; APPEND-D-AH eighth two-letter slot; 5 numbered units anticipated; 45th "Continue" override invoked; **IN PROGRESS**)
 
+#### Unit 50.1 — `pubmed.ts` + `pubmed.test.ts` (NEW files) + factory dispatch arm `MARKDOWN_EXTENSIONS=pubmed` + dispatch tests + ADR-0018 D-G APPEND-D-AH (fifth concrete Phase-37-framework consumer; first 3rd-`remarkPlugins` consumer; first 3-consumer same-slot composition; first 5-consumer composition under default dispatch; first env-var single-value arm beyond 5; 17th D-G APPEND extends record 16 → 17; 1122/73)
+
+- Second Phase-50 unit; code + ADR APPEND.
+- **NEW file `lib/markdown/extensions/pubmed.ts`** (~230 lines): contains `PUBMED_PATTERN = /\b(?:pubmed|pmid):(\d{1,9})\b/gi` + `remarkLinkPubmedIds` plugin function + `PubmedExtensionRegistry` class + `PHASE_50_DEFAULT_ENABLED_SURFACES = Set(["rationale"])` constant. Mirrors `doi.ts` shape verbatim with PubMed-specific adaptations (prefix alternation handling both `pubmed:` and `pmid:`; pure-digit identifier with no embedded punctuation; trailing-slash canonical URL form `https://pubmed.ncbi.nlm.nih.gov/${id}/`; no trailing-lookahead constraint since `\b` is sufficient for digit-only identifiers; **no alias syntax Phase 50** — bracketed alias form deferred Phase 51+).
+- **NEW file `lib/markdown/extensions/pubmed.test.ts`** (27 tests): plugin behavior (single `pubmed:NNNNNNNN` + `pmid:NNNNNNNN` resolution; case-insensitive prefix; multiple matches; trailing punctuation; bracket-min and max digit-count bounds; mid-word rejection; bare-numeric rejection; nested element preservation; 3-reference paragraph) + class behavior (registry assertions; `PHASE_50_DEFAULT_ENABLED_SURFACES` exposure).
+- **`lib/markdown/extensions/index.ts` factory dispatch arm**: NEW `"pubmed"` case in `buildSingleConsumerRegistry` switch returning `new PubmedExtensionRegistry(PHASE_50_DEFAULT_ENABLED_SURFACES)`. Error message updated to list `"pubmed"` among recognized values + reference APPEND-D-AH for Phase 51+ extension. Docstring updated to describe Phase-50 5-way composition + first 3-consumer same-slot composition + regex-disjointness scaling discipline.
+- **`lib/markdown/extensions/index.test.ts` dispatch tests added** (7 tests):
+  - Error message lists `'pubmed'` Phase 50.
+  - Returns `PubmedExtensionRegistry` when `MARKDOWN_EXTENSIONS=pubmed`.
+  - `PubmedExtensionRegistry` dispatch enables pubmed on rationale only Phase 50 (mirrors Phase-41 arxiv-first-ship + Phase-45 doi-first-ship demand-signal-first precedent).
+  - Returns `CompositeExtensionRegistry` for `arxiv,doi,pubmed` Phase 50 (first 3-consumer same-slot composition).
+  - `arxiv,doi,pubmed` composite concatenates ALL 3 plugins in `remarkPlugins` on rationale (**first 3-consumer same-slot Phase 50**); other 3 surfaces get `[arxiv, doi]` only (pubmed inactive there).
+  - Returns `CompositeExtensionRegistry` for `wikilinks,tables,arxiv,doi,pubmed` (first 5-way Phase 50).
+  - 5-way composite enables ALL 5 CONSUMERS on rationale Phase 50 (**first 5-consumer composition under default dispatch**; **maximum-consumer-cardinality state**).
+- **6th MARKDOWN_EXTENSIONS single-value arm**: `default` / `wikilinks` / `tables` / `arxiv` / `doi` / `pubmed`. **First expansion of recognized-arms set since Phase 45** (`doi`).
+- **ADR-0018 D-G** gains **EXTENDED Phase 50 Unit 50.1** block + **APPEND-D-AH** (eighth two-letter slot after D-AA + D-AB + D-AC + D-AD + D-AE + D-AF + D-AG). Documents:
+  - **Fifth concrete Phase-37-framework consumer**.
+  - **First 3rd-`remarkPlugins` consumer in project history**. Phase 41 arxiv (1st); Phase 45 doi (2nd; first compositional same-slot); Phase 50 pubmed (3rd; **first 3-consumer same-slot composition**).
+  - **Regex-disjointness-as-sole-defense discipline scales from 2 to 3 same-slot consumers** without architectural change. Three regex character classes are pairwise disjoint (arxiv `\d{4}\.\d{4,5}` lacks `:`+`/`; doi `10.<reg>/<suffix>` requires `10.`+`/`; pubmed `(?:pubmed|pmid):\d` requires literal `pubmed:`/`pmid:` prefix). Plugin invocation order is immaterial for the triple.
+  - **Closes APPEND-D-AC PubMed PMID item** at **5-phase carryover** (Phase 45 → 50). Slower than Phase-41 → 45 4-phase doi carryover because intervening Phase 46-49 closed 4 other APPEND items (alias-syntax + cross-surface).
+  - **Ninth prep-/APPEND-doc-level deferral closed**. APPEND-deferral closure cadence sustained 9 phases.
+  - **Second non-cross-surface non-alias APPEND-deferral closure** (Phase 45 doi sibling first; Phase 50 pubmed sibling second).
+  - **17th APPEND on ADR-0018 D-G** — extends first-ADR-D-clause-with-most-APPENDs record 16 → 17.
+  - **Eighth two-letter APPEND letter D-AH**.
+  - **First "5-consumer composition under default dispatch" state**; **maximum-consumer-cardinality state**.
+- **No env-var name beyond `MARKDOWN_EXTENSIONS`**: pubmed dispatch is a new VALUE arm within the existing env-var, not a new env-var. Env-var COUNT unchanged at 14.
+- **Bundle invariants preserved**: server-only consumer; no client bundle impact. 103 kB First Load JS UNCHANGED.
+- **Smoke gates**:
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **1122 / 73 files** (+34 vs Unit 50.0; +27 from new `pubmed.test.ts` + 7 from new dispatch tests in `extensions/index.test.ts`). **First new vitest file since Phase 45** (Phase 45 added `doi.test.ts`; 73rd file is `pubmed.test.ts`).
+  - `pnpm audit-content` → 0 errors / 6 warnings UNCHANGED.
+  - First Load JS = 103 kB UNCHANGED (107 consecutive units); Middleware = 160 kB UNCHANGED.
+
 #### Unit 50.0 — Phase 50 prep (PubMed PMID sibling consumer; fifth Phase-37-framework consumer; first 3rd-`remarkPlugins` consumer; D-1 D-AH; anticipated 5 units; 45th "Continue" override invoked)
 
 - First Phase-50 unit; docs-only. Drafted `docs/thinking/50.0-phase-50-prep.md` (Phase-49 → 50 baseline at HEAD `45fc919`; D-1 first-thread recommendation; D-3 PubMed consumer shape — `PUBMED_PATTERN = /\b(?:pubmed|pmid):(\d{1,9})\b/gi` with prefix alternation handling both scientific-literature conventions; `https://pubmed.ncbi.nlm.nih.gov/${id}/` URL form; `PHASE_50_DEFAULT_ENABLED_SURFACES = Set(["rationale"])` mirroring Phase-41/45 first-ship demand-signal-first precedent; Phase 51+ deferrals; provisional 5-unit breakdown; per-unit decisions D-8..D-13 lean-noted; alternative threads overridable into Unit 50.1; 12 anticipated architectural firsts).

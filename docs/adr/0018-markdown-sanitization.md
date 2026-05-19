@@ -2413,6 +2413,193 @@ extend the dimensions, not the cell density.
 - **2nd `schemaOverrides` consumer beyond tables** — Phase
   50+.
 
+**EXTENDED Phase 50 Unit 50.1** — **fifth concrete Phase-37-
+framework consumer**: PubMed PMID auto-link via new
+`PubmedExtensionRegistry` + `MARKDOWN_EXTENSIONS=pubmed` env-var
+dispatch arm. **First 3rd-`remarkPlugins` consumer in project
+history** (Phase 41 introduced arxiv; Phase 45 introduced doi
+as first compositional same-slot case; Phase 50 introduces
+pubmed). **First 3-consumer same-slot composition** under
+`MARKDOWN_EXTENSIONS=arxiv,doi,pubmed`. Tests whether the
+**regex-disjointness-as-sole-defense discipline** (Phase 48
+established for 2 same-slot consumers; Phase 49 generalized to
+all 4 surfaces) **scales to 3 same-slot consumers** without
+architectural change — the three regex character classes are
+pairwise disjoint.
+
+**Closes APPEND-D-AC PubMed PMID sibling consumer item** (Phase
+45 documented "additional auto-link consumers (e.g., `pubmed:`
+PMID auto-link; `orcid:` ORCID auto-link)") at **5-phase
+carryover** (Phase 45 → Phase 50). Slower than Phase-41 → 45
+4-phase doi carryover because intervening Phase 46-49 closed
+4 other APPEND-D-AC / D-Y / D-L items in cadence (Phase 46
+wikilink alias; Phase 47 arxiv alias; Phase 48 doi alias;
+Phase 49 doi cross-surface).
+
+**Ninth prep-/APPEND-doc-level deferral closed by a later
+phase**: Phase 42 → 38 D-L item 1; Phase 43 → 39 D-Q item 2;
+Phase 44 → 41 D-Y item 1; Phase 45 → 41 D-Y item 4; Phase 46
+→ 38 D-L item 2; Phase 47 → 41 D-Y item 5; Phase 48 → 45 D-AC
+item 2; Phase 49 → 45 D-AC cross-surface item; Phase 50 → 45
+D-AC PubMed PMID item. **APPEND-deferral closure cadence
+sustained 9 phases**.
+
+**Second non-cross-surface non-alias APPEND-deferral closure**
+in the cadence (Phase 45 was first with doi sibling-consumer;
+Phase 50 is second with pubmed sibling-consumer). **APPEND-D-AC
+second item closed by sibling-consumer introduction** — first
+closure for the "additional auto-link consumers" deferral text.
+
+**Seventeenth APPEND on ADR-0018 D-G** — extends the **first-
+ADR-D-clause-with-most-APPENDs record** from 16 → 17 (Phase
+18 + 27 + 29 + 37 + 38 + 39 + 40 + 41 + 42 + 43 + 44 + 45 +
+46 + 47 + 48 + 49 + **50**).
+
+**Eighth two-letter APPEND letter D-AH** (after Phase-43 D-AA
++ Phase-44 D-AB + Phase-45 D-AC + Phase-46 D-AD + Phase-47
+D-AE + Phase-48 D-AF + Phase-49 D-AG). Excel-spreadsheet
+column convention sustained — D-AI + D-AJ + ... + D-AZ would
+carry Phase 51+ at this cadence (after D-AZ rolls to D-BA).
+
+**APPEND-D-AH PubMed PMID consumer shape**:
+
+```ts
+const PUBMED_PATTERN = /\b(?:pubmed|pmid):(\d{1,9})\b/gi;
+```
+
+- **Prefix alternation** `(?:pubmed|pmid):` handles both
+  standard scientific-literature conventions (`pmid:` is more
+  common in formal citations; `pubmed:` is more common in
+  conversational/blog-style prose). Single regex; single
+  plugin emits the same canonical URL form regardless of
+  source prefix.
+- **Identifier class** `\d{1,9}` matches 1-9-digit PubMed IDs.
+  Modern PMIDs are 7-9 digits (as of 2025 the highest assigned
+  is ~38 million, 8 digits); historical PMIDs back to PMID 1
+  (~1960s MEDLINE indexing) are short. 10+ digits rejected —
+  admitting them would risk matching unrelated decimal
+  sequences in prose.
+- **Word-boundary anchors** `\b...\b` prevent mid-word matches.
+  No trailing-lookahead constraint unlike DOI: PubMed IDs are
+  pure digits with no embedded punctuation, so `\b` is
+  sufficient for trailing termination.
+- **Case-insensitive flag** `i` allows mixed-case prefix
+  source casing (`PubMed:` / `PMID:` / `Pmid:`) while
+  preserving display verbatim.
+
+**Emitted host**: canonical `https://pubmed.ncbi.nlm.nih.gov/<id>/`
+with trailing slash (matches official NCBI URL form). Legacy
+`https://www.ncbi.nlm.nih.gov/pubmed/<id>` host redirects to
+the canonical form and is NOT emitted Phase 50.
+
+**`PubmedExtensionRegistry` class + factory dispatch arm** —
+mirrors Phase-41 `ArxivExtensionRegistry` + Phase-45
+`DoiExtensionRegistry` shape verbatim. Constructor accepts
+`ReadonlySet<MarkdownSurface>`; `getExtensions` returns
+`{ remarkPlugins: [remarkLinkPubmedIds] }` for enabled surfaces.
+Default-enabled set: `PHASE_50_DEFAULT_ENABLED_SURFACES = Set(["rationale"])`
+mirroring Phase-41/Phase-45 first-ship demand-signal-first
+precedent.
+
+**`MARKDOWN_EXTENSIONS=pubmed` env-var dispatch arm**: **6th
+single-value arm** for `MARKDOWN_EXTENSIONS` (first expansion
+of the recognized-arms set since Phase 45's `doi` arm).
+Recognized single-value arms now: `default` / `wikilinks` /
+`tables` / `arxiv` / `doi` / `pubmed`. Multi-value composition
+arms grow accordingly to include 5-way `wikilinks,tables,arxiv,doi,pubmed`
++ permutations.
+
+**Collision-freedom for the 3-consumer same-slot composition**
+(arxiv-vs-doi-vs-pubmed all in `remarkPlugins`):
+
+| Pair | Disjointness mechanism |
+|---|---|
+| arxiv-vs-doi | arxiv `\d{4}\.\d{4,5}` lacks `/`; doi `10.<reg>/<suffix>` requires `/`. Distinct character classes. (Phase 48 established.) |
+| arxiv-vs-pubmed | arxiv requires literal `arxiv:` prefix + `\d{4}\.\d{4,5}`; pubmed requires literal `pubmed:` or `pmid:` prefix + `\d{1,9}`. Distinct literal prefixes. |
+| doi-vs-pubmed | doi requires literal `doi:` prefix + `10.<reg>/<suffix>`; pubmed requires literal `pubmed:` or `pmid:` prefix + `\d{1,9}`. Distinct literal prefixes. |
+
+All three pairs are collision-free via regex character class
+disjointness alone — **no string can match more than one** of
+the three regexes. **Plugin invocation order is immaterial**
+for this triple. **Regex-disjointness-as-sole-defense
+discipline scales from 2 to 3 same-slot consumers without
+architectural change**. Sets the precedent for future N-consumer
+same-slot compositions (Phase 51+ candidates may add ORCID,
+bioRxiv, OSF preprint consumers in the same slot).
+
+**Composition matrix at Phase-50 5-way default** under
+`MARKDOWN_EXTENSIONS=wikilinks,tables,arxiv,doi,pubmed`:
+
+| Surface | Composition |
+|---|---|
+| `bio` | wikilinks(rehype) + tables(schema) + [arxiv, doi](remark) — 4 consumers (Phase-49 baseline; pubmed inactive per rationale-only default) |
+| `reviewNotes` | wikilinks(rehype) + tables(schema) + [arxiv, doi](remark) — 4 consumers |
+| `rationale` | wikilinks(rehype) + tables(schema) + [arxiv, doi, pubmed](remark) — **5 consumers** ← maximum cardinality |
+| `actionRationale` | wikilinks(rehype) + tables(schema) + [arxiv, doi](remark) — 4 consumers |
+
+**First "5-consumer composition under default dispatch" state
+in project history.** Pre-Phase-50 max was 4-consumer (Phase-
+49 all-4-surfaces 4-way default). **Maximum-consumer-cardinality
+state**. Conflict-free per APPEND-D-R because (a) wikilinks +
+tables + {arxiv, doi, pubmed} each occupy distinct slots
+cross-pair; (b) within `remarkPlugins` the arxiv-doi-pubmed
+triple is collision-free via regex-disjointness alone.
+
+**Phase 51+ deferrals** (Phase-50 pubmed-consumer scope cap):
+
+- **PubMed PMID display-text alias syntax**
+  `[[pubmed:NNN|display]]` / `[[pmid:NNN|display]]` — mirrors
+  Phase-47 arxiv-alias + Phase-48 doi-alias dual-form regex
+  extension; Phase 51+ analogous extension.
+- **PubMed PMID cross-surface expansion** to bio + reviewNotes
+  + actionRationale — mirrors Phase-44 arxiv + Phase-49 doi
+  cross-surface expansion via `PHASE_50_DEFAULT_ENABLED_SURFACES`
+  constructor-arg change; Phase ~54 at 4-phase-gap cadence
+  (Phase 38→42, Phase 39→43, Phase 41→44, Phase 45→49 each
+  established 4-phase gaps).
+- **ORCID auto-link consumer** (`orcid:NNNN-NNNN-NNNN-NNNN`) —
+  sixth concrete consumer; Phase 51+.
+- **bioRxiv preprint consumer** (`biorxiv:` / DOI-overlap with
+  doi consumer) — sixth or seventh concrete consumer; Phase
+  51+.
+- **OSF preprint consumer** (`osf:` / DOI-overlap with doi
+  consumer) — sixth or later concrete consumer; Phase 51+.
+- **Older-style category-prefixed arxiv IDs** (APPEND-D-Y item
+  2 carries) — Phase 51+.
+- **Bare arxiv / DOI IDs without prefix** (APPEND-D-Y item 3 +
+  APPEND-D-AC carry) — Phase 51+.
+- **dx.doi.org legacy host parsing** (APPEND-D-AC carries) —
+  Phase 51+.
+- **Stricter trailing-lookahead for legitimate trailing-period
+  DOIs** (APPEND-D-AC carries) — Phase 51+.
+- **Paper-card hover-preview** (APPEND-D-Y item 6 carries) —
+  Phase 51+.
+- **Cross-entity wikilinks** (APPEND-D-L item 3 carries) —
+  Phase 51+.
+- **`<a class="wikilink">` styling** (APPEND-D-L item 4
+  carries) — Phase 51+.
+- **404 handling for unresolved wikilinks** (APPEND-D-L item 5
+  carries) — Phase 51+.
+- **Plugin parameterization for wikilink-href-builder** (APPEND-
+  D-L item 6 carries) — Phase 51+.
+- **Auto-trim of alias display whitespace** (Phase-46 deferral
+  carries) — Phase 51+.
+- **Empty-alias fallback unification** across consumers
+  (Phase-46/47/48 deferrals carry) — Phase 51+.
+- **Table-specific attributes** (APPEND-D-Q item 3 carries) —
+  Phase 51+.
+- **`<caption>` element** (APPEND-D-Q item 4 carries) — Phase
+  51+.
+- **Surface-specific table schemas** (APPEND-D-Q item 6
+  carries) — Phase 51+.
+- **4th-or-later `remarkPlugins` consumer beyond arxiv + doi +
+  pubmed** (e.g., bioRxiv DOI overlap; OSF preprint; ORCID if
+  ORCID lives in remarkPlugins) — Phase 51+.
+- **2nd `rehypePlugins` consumer beyond wikilinks** — Phase
+  51+.
+- **2nd `schemaOverrides` consumer beyond tables** — Phase
+  51+.
+
 ### D-H. Phase 18+ deferrals
 
 Phase 17 ships MINIMAL markdown surface. Deferred to Phase 18+:

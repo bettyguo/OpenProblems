@@ -2,6 +2,7 @@ import { ArxivExtensionRegistry, PHASE_41_DEFAULT_ENABLED_SURFACES } from "./arx
 import { CompositeExtensionRegistry } from "./composite";
 import { DefaultExtensionRegistry } from "./default";
 import { DoiExtensionRegistry, PHASE_45_DEFAULT_ENABLED_SURFACES } from "./doi";
+import { PHASE_50_DEFAULT_ENABLED_SURFACES, PubmedExtensionRegistry } from "./pubmed";
 import { PHASE_39_DEFAULT_ENABLED_SURFACES, TablesExtensionRegistry } from "./tables";
 import type { MarkdownExtensionRegistry } from "./types";
 import { PHASE_38_DEFAULT_ENABLED_SURFACES, WikilinkExtensionRegistry } from "./wikilinks";
@@ -16,12 +17,14 @@ function buildSingleConsumerRegistry(name: string): MarkdownExtensionRegistry {
       return new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES);
     case "doi":
       return new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES);
+    case "pubmed":
+      return new PubmedExtensionRegistry(PHASE_50_DEFAULT_ENABLED_SURFACES);
     default:
       throw new Error(
         `Unknown MARKDOWN_EXTENSIONS value: "${name}". ` +
-          `Recognized values at this build: "default" (default), "wikilinks", "tables", "arxiv", "doi", ` +
-          `or a comma-separated combination of non-default values (e.g., "wikilinks,tables,arxiv,doi"). ` +
-          `Phase 46+ values will extend this list — see ADR-0018 D-G APPEND APPEND-D-AC.`,
+          `Recognized values at this build: "default" (default), "wikilinks", "tables", "arxiv", "doi", "pubmed", ` +
+          `or a comma-separated combination of non-default values (e.g., "wikilinks,tables,arxiv,doi,pubmed"). ` +
+          `Phase 51+ values will extend this list — see ADR-0018 D-G APPEND APPEND-D-AH.`,
       );
   }
 }
@@ -63,24 +66,34 @@ function buildSingleConsumerRegistry(name: string): MarkdownExtensionRegistry {
  *     **fourth concrete Phase-37-framework consumer**;
  *     **first second-consumer in any single framework slot** —
  *     DOI joins arxiv in `remarkPlugins`; per ADR-0018 D-G
- *     APPEND APPEND-D-AC).
+ *     APPEND APPEND-D-AC. Phase 49 expanded to all 4 surfaces).
+ *   - `"pubmed"` → `PubmedExtensionRegistry(PHASE_50_DEFAULT_ENABLED_SURFACES)`
+ *     (PubMed PMID auto-link enabled on `rationale` only Phase
+ *     50; **fifth concrete Phase-37-framework consumer**; **first
+ *     3rd-`remarkPlugins` consumer** beyond arxiv + doi — tests
+ *     whether the regex-disjointness-as-sole-defense discipline
+ *     scales to 3 same-slot consumers; per ADR-0018 D-G APPEND
+ *     APPEND-D-AH).
  *
  *   - `"wikilinks,tables"` / `"wikilinks,arxiv"` / `"tables,arxiv"`
  *     / `"wikilinks,tables,arxiv"` / `"arxiv,doi"` /
- *     `"wikilinks,tables,arxiv,doi"` (or any comma-separated
- *     combination of recognized non-default values) →
+ *     `"wikilinks,tables,arxiv,doi"` / `"arxiv,doi,pubmed"` /
+ *     `"wikilinks,tables,arxiv,doi,pubmed"` (or any comma-
+ *     separated combination of recognized non-default values) →
  *     `CompositeExtensionRegistry` wrapping the listed component
  *     registries per ADR-0018 D-G APPEND APPEND-D-R composition
- *     rules. Phase 45 enables **4-way composition** —
- *     `wikilinks` + `tables` + `arxiv` + `doi` coexist on their
- *     respective surfaces. **First compositional same-slot case
- *     Phase 45**: `arxiv,doi` puts two plugins in the
- *     `remarkPlugins` slot on shared-enabled surfaces (Phase 45
- *     default: `rationale`) — APPEND-D-R "concatenated across
- *     components in registration order" rule becomes live with
- *     two real consumers (previously trivially satisfied because
- *     each slot had exactly one consumer Phase 38-44). Duplicates
- *     rejected; `"default"` cannot combine with other values.
+ *     rules. Phase 50 enables **5-way composition** —
+ *     `wikilinks` + `tables` + `arxiv` + `doi` + `pubmed`
+ *     coexist on their respective surfaces. **First 3-consumer
+ *     same-slot composition Phase 50**: `arxiv,doi,pubmed` puts
+ *     three plugins in the `remarkPlugins` slot on shared-enabled
+ *     surfaces (Phase 50 default: `rationale`); the three regex
+ *     character classes are pairwise disjoint, so the regex-
+ *     disjointness-as-sole-defense discipline (Phase 48
+ *     established for 2 same-slot consumers; Phase 49
+ *     generalized to all 4 surfaces) scales to 3 without
+ *     architectural change. Duplicates rejected; `"default"`
+ *     cannot combine with other values.
  *
  * Future Phase 46+ values (not recognized at Phase 45 ship):
  *
