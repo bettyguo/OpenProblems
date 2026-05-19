@@ -93,6 +93,29 @@ import type { MarkdownExtensionRegistry, MarkdownExtensionSet, MarkdownSurface }
  * chained mdast.Root processors that the function-declaration
  * shape avoids.
  *
+ * **Phase 48 alias-syntax extension** (since Unit 48.1; closes
+ * ADR-0018 APPEND-D-AC item 2 at 3-phase carryover, tying the
+ * Phase-44 fastest-closure record): the regex gains a bracketed
+ * alternation `\[\[doi:10.NNNN/xxx(?:\|display)?\]\]` matched
+ * BEFORE the bare form. **Second dual-form regex in the
+ * framework** (after Phase-47 arxiv) — bracketed form (priority)
+ * + bare form (fallback) coexist via alternation. **First
+ * "selectively-applied lookahead in dual-form regex"**:
+ * bracketed alternative has explicit `]]` terminator → no
+ * lookahead needed (full Crossref suffix class permissive
+ * inside brackets); bare alternative preserves the Phase-45
+ * prose-friendly trailing-punctuation lookahead verbatim.
+ * Backwards-compatible: every existing bare `doi:10.NNNN/xxx`
+ * match preserved via the second alternation arm. No collision
+ * with wikilinks plugin (`[a-z0-9-]+` slug class excludes `:`,
+ * `.`, `/`); also distinct pipeline stage (`remarkPlugins` runs
+ * before `rehypePlugins`). No collision with arxiv plugin
+ * (same `remarkPlugins` slot; arxiv requires `\d{4}\.\d{4,5}`
+ * with no `/`; doi requires `10.<reg>/<suffix>` with `/`):
+ * regex character classes literally cannot match the same
+ * string — **regex-disjointness-as-sole-defense discipline** for
+ * same-slot composition.
+ *
  * Server-only: imported by `DoiExtensionRegistry` returned
  * from `getExtensionRegistry()` per the Phase-45 env-var
  * dispatch arm (Unit 45.1). Never include in a `"use client"`
@@ -100,7 +123,8 @@ import type { MarkdownExtensionRegistry, MarkdownExtensionSet, MarkdownSurface }
  * invariant.
  */
 
-const DOI_PATTERN = /\bdoi:(10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+?)(?=[\s,;)]|\.(?:\s|$)|$)/gi;
+const DOI_PATTERN =
+  /\[\[doi:(10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+?)(?:\|([^\]\n]+))?\]\]|\bdoi:(10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+?)(?=[\s,;)]|\.(?:\s|$)|$)/gi;
 
 export function remarkLinkDoiIds() {
   return function transformer(tree: Root): undefined {
@@ -118,9 +142,26 @@ export function remarkLinkDoiIds() {
 
       while ((match = DOI_PATTERN.exec(text)) !== null) {
         const matchStart = match.index;
-        const display = match[0];
-        const id = match[1];
+        const matched = match[0];
+        const isBracketed = matched.startsWith("[[");
+
+        const id = isBracketed ? match[1] : match[3];
+        const alias = match[2]; // only defined for bracketed form
         if (id === undefined) continue;
+
+        let display: string;
+        if (alias !== undefined) {
+          display = alias;
+        } else if (isBracketed) {
+          // Bracketed without alias: drop brackets while preserving
+          // source casing (e.g., `[[DOI:10.1234/abc]]` →
+          // `<a>DOI:10.1234/abc</a>`).
+          display = matched.slice(2, -2);
+        } else {
+          // Bare form (Phase-45 baseline): display source casing
+          // verbatim (e.g., `Doi:10.1234/abc.def`).
+          display = matched;
+        }
 
         if (matchStart > cursor) {
           newNodes.push({ type: "text", value: text.slice(cursor, matchStart) });
@@ -132,7 +173,7 @@ export function remarkLinkDoiIds() {
           children: [{ type: "text", value: display }],
         });
 
-        cursor = matchStart + display.length;
+        cursor = matchStart + matched.length;
       }
 
       if (newNodes.length === 0) return;

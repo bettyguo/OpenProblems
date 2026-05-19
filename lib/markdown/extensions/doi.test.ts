@@ -156,6 +156,112 @@ describe("remarkLinkDoiIds — plugin behavior", () => {
     expect(html).toContain('href="https://doi.org/');
     expect(html).not.toContain('href="https://dx.doi.org/');
   });
+
+  // ---------------------------------------------------------------
+  // Phase-48 alias syntax `[[doi:10.NNNN/xxx|display]]` (Unit 48.1).
+  // Backwards-compatible with Phase-45 bare `doi:10.NNNN/xxx`; the
+  // bracketed form is the priority alternative in a dual-form regex
+  // with the bare form as fallback. Closes ADR-0018 APPEND-D-AC item
+  // 2 at 3-phase carryover (Phase 45 → 48; ties Phase-44 fastest-
+  // closure record). Mirrors Phase-47 arxiv alias regex-extension
+  // verbatim on the doi plugin. Second dual-form regex in the
+  // framework; first "selectively-applied lookahead in dual-form
+  // regex" — bracketed form has explicit `]]` terminator (no
+  // lookahead needed; full Crossref suffix class permissive inside
+  // brackets); bare form preserves the Phase-45 lookahead.
+  // ---------------------------------------------------------------
+
+  it("Phase-48: resolves [[doi:10.NNNN/xxx|display]] to <a href=...>display</a>", () => {
+    expect(runDoiPipeline("[[doi:10.48550/arXiv.2005.14165|Brown et al. 2020]]")).toBe(
+      '<p><a href="https://doi.org/10.48550/arXiv.2005.14165">Brown et al. 2020</a></p>',
+    );
+  });
+
+  it("Phase-48: bracketed without alias renders the doi ref verbatim (brackets stripped)", () => {
+    expect(runDoiPipeline("[[doi:10.1234/abc]]")).toBe(
+      '<p><a href="https://doi.org/10.1234/abc">doi:10.1234/abc</a></p>',
+    );
+  });
+
+  it("Phase-48: bracketed-without-alias preserves source casing (DOI: prefix variant)", () => {
+    expect(runDoiPipeline("[[DOI:10.1234/abc.def]]")).toBe(
+      '<p><a href="https://doi.org/10.1234/abc.def">DOI:10.1234/abc.def</a></p>',
+    );
+  });
+
+  it("Phase-48: backwards-compat — bare doi:10.NNNN/xxx still works (Phase-45 baseline)", () => {
+    expect(runDoiPipeline("doi:10.1234/abc.def")).toBe(
+      '<p><a href="https://doi.org/10.1234/abc.def">doi:10.1234/abc.def</a></p>',
+    );
+  });
+
+  it("Phase-48: aliased + bare doi coexist in same paragraph", () => {
+    const html = runDoiPipeline("compare [[doi:10.1234/abc|first paper]] with doi:10.5678/xyz.001");
+    expect(html).toContain('<a href="https://doi.org/10.1234/abc">first paper</a>');
+    expect(html).toContain('<a href="https://doi.org/10.5678/xyz.001">doi:10.5678/xyz.001</a>');
+  });
+
+  it("Phase-48: empty alias [[doi:10.NNNN/xxx|]] falls through to fully-literal text", () => {
+    // The alias display class is `+` (one-or-more) mirroring Phase-46/47.
+    // Empty alias does not satisfy; the bracketed alternative fails. UNLIKE
+    // Phase-47 arxiv (where the bare alternative's `\b` word-boundary admits
+    // the inner ID match leaving brackets + pipe as literal context), the
+    // Phase-45 bare-DOI lookahead `(?=[\s,;)]|\.(?:\s|$)|$)` requires a
+    // specific terminator class that excludes `|`, so the bare alternative
+    // also fails — the entire `[[doi:10.NNNN/xxx|]]` falls through as
+    // literal text. This divergence is the natural consequence of the
+    // Phase-45 prose-friendly bare-DOI lookahead and is documented at
+    // Unit 48.1 in ADR-0018 APPEND-D-AF as "first selectively-applied
+    // lookahead in dual-form regex" discipline.
+    expect(runDoiPipeline("[[doi:10.1234/abc|]]")).toBe("<p>[[doi:10.1234/abc|]]</p>");
+  });
+
+  it("Phase-48: alias display HTML-escapes via remark-rehype text-node rendering (XSS safety)", () => {
+    const html = runDoiPipeline("[[doi:10.1234/abc|x & y]]");
+    expect(html).toContain('<a href="https://doi.org/10.1234/abc">x &#x26; y</a>');
+  });
+
+  it("Phase-48: case-insensitive prefix in bracketed form; alias preserves source casing", () => {
+    expect(runDoiPipeline("[[DOI:10.1234/abc|Display]]")).toBe(
+      '<p><a href="https://doi.org/10.1234/abc">Display</a></p>',
+    );
+  });
+
+  it("Phase-48: bracketed form permits `;` mid-suffix (lookahead does NOT apply inside brackets)", () => {
+    // Bare-form lookahead `(?=[\s,;)]|\.(?:\s|$)|$)` would truncate at the
+    // `;`; bracketed form uses `]]` as explicit terminator and allows the
+    // full Crossref suffix class verbatim (the "first selectively-applied
+    // lookahead in dual-form regex" discipline).
+    expect(runDoiPipeline("[[doi:10.1234/abc;suffix|display]]")).toBe(
+      '<p><a href="https://doi.org/10.1234/abc;suffix">display</a></p>',
+    );
+  });
+
+  it("Phase-48: bracketed form permits parens mid-suffix (vs bare-form lookahead truncation)", () => {
+    expect(runDoiPipeline("[[doi:10.1234/abc(v1)|display]]")).toBe(
+      '<p><a href="https://doi.org/10.1234/abc(v1)">display</a></p>',
+    );
+  });
+
+  it("Phase-48: multiple aliased doi refs in same paragraph", () => {
+    const html = runDoiPipeline(
+      "see [[doi:10.1234/abc|first]] and [[doi:10.5678/def|second]] for context",
+    );
+    expect(html).toContain('<a href="https://doi.org/10.1234/abc">first</a>');
+    expect(html).toContain('<a href="https://doi.org/10.5678/def">second</a>');
+  });
+
+  it("Phase-48: aliased doi inside bold renders <strong><a>display</a></strong>", () => {
+    expect(runDoiPipeline("**[[doi:10.1234/abc|critical work]]**")).toBe(
+      '<p><strong><a href="https://doi.org/10.1234/abc">critical work</a></strong></p>',
+    );
+  });
+
+  it("Phase-48: aliased doi with multi-word display preserves spaces and punctuation", () => {
+    expect(runDoiPipeline("[[doi:10.48550/arXiv.2005.14165|Brown, Mann, Ryder et al. 2020]]")).toBe(
+      '<p><a href="https://doi.org/10.48550/arXiv.2005.14165">Brown, Mann, Ryder et al. 2020</a></p>',
+    );
+  });
 });
 
 describe("DoiExtensionRegistry — class behavior", () => {

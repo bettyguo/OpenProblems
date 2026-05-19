@@ -2025,6 +2025,240 @@ bracketed forms; other consumers unchanged).
 - **2nd `schemaOverrides` consumer beyond tables** — Phase
   48+.
 
+**EXTENDED Phase 48 Unit 48.1** — **third realization of the
+Phase-46 plugin-regex-extension phase-shape pattern**: DOI alias
+syntax `[[doi:10.NNNN/xxx|display]]` via in-place dual-form regex
+extension on `remarkLinkDoiIds` in `DoiExtensionRegistry`.
+**Second plugin-regex-extension on a `remarkPlugins` consumer**
+in project history (Phase 47 was first). **First "two-
+consecutive-`remarkPlugins`-regex-extension phases" pair**
+(Phase 47 arxiv + Phase 48 doi). **Second dual-form regex** in
+the framework (after Phase-47 arxiv).
+
+**Closes APPEND-D-AC item 2** ("DOI display-text alias syntax
+`[[doi:10.NNNN/xxx|display]]` — Phase 46+ if curator content
+surfaces; mirrors arxiv APPEND-D-Y item 5 deferral.") at **3-
+phase carryover** (Phase 45 → Phase 48). **Ties Phase-44
+fastest-closure record of 3-phase carryover** (Phase 41 → 44
+D-Y item 1 cross-surface arxiv). **Fastest alias-syntax closure
+ever observed**: accelerating cadence Phase-46 wikilinks 8-phase
+→ Phase-47 arxiv 6-phase → Phase-48 doi 3-phase. Each alias-
+syntax realization halves the architectural risk for the next.
+
+**Seventh prep-/APPEND-doc-level deferral closed by a later
+phase**: Phase 42 → 38 D-L item 1; Phase 43 → 39 D-Q item 2;
+Phase 44 → 41 D-Y item 1; Phase 45 → 41 D-Y item 4; Phase 46
+→ 38 D-L item 2; Phase 47 → 41 D-Y item 5; Phase 48 → 45 D-AC
+item 2. **APPEND-deferral closure cadence sustained 7 phases**.
+**Fourth non-cross-surface-expansion APPEND-deferral closure**
+in the cadence (Phase 45 sibling-consumer; Phase 46 rehype-
+regex; Phase 47 remark-regex; Phase 48 remark-regex-second on
+the same slot — first "two-consecutive-same-slot-regex-
+extension" closure-cadence event).
+
+**Fifteenth APPEND on ADR-0018 D-G** — extends the **first-
+ADR-D-clause-with-most-APPENDs record** from 14 → 15 (Phase
+18 + 27 + 29 + 37 + 38 + 39 + 40 + 41 + 42 + 43 + 44 + 45 +
+46 + 47 + **48**).
+
+**Sixth two-letter APPEND letter D-AF** (after Phase-43 D-AA
++ Phase-44 D-AB + Phase-45 D-AC + Phase-46 D-AD + Phase-47
+D-AE). Excel-spreadsheet column convention sustained —
+D-AG + D-AH + ... + D-AZ would carry Phase 49+ at this cadence.
+
+**APPEND-D-AF doi alias regex shape**:
+
+```ts
+// Before (Phase 45 ship through Phase-47 close):
+const DOI_PATTERN =
+  /\bdoi:(10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+?)(?=[\s,;)]|\.(?:\s|$)|$)/gi;
+
+// After (Phase 48 ship):
+const DOI_PATTERN =
+  /\[\[doi:(10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+?)(?:\|([^\]\n]+))?\]\]|\bdoi:(10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+?)(?=[\s,;)]|\.(?:\s|$)|$)/gi;
+```
+
+**Second dual-form regex in the framework**. Alternation between
+bracketed (priority) and bare (fallback). Engine tries the
+bracketed alternative first at each position; if it fails,
+tries the bare alternative.
+
+- **Bracketed form** `\[\[doi:(10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+?)(?:\|([^\]\n]+))?\]\]`:
+  - Group 1 = DOI ID (`10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+?`;
+    Phase-45 baseline character class preserved verbatim).
+  - Group 2 = optional display text (`[^\]\n]+`; mirrors
+    Phase-46 wikilinks + Phase-47 arxiv alias display class).
+  - **No trailing lookahead** — `]]` is the explicit
+    terminator. Full Crossref suffix class permissive inside
+    brackets (`;`, `(`, `)`, `.` all allowed).
+- **Bare form** `\bdoi:(10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+?)(?=[\s,;)]|\.(?:\s|$)|$)`:
+  - Group 3 = DOI ID (Phase-45 baseline preserved verbatim).
+  - Trailing lookahead `(?=[\s,;)]|\.(?:\s|$)|$)` PRESERVED —
+    Phase-45 prose-friendly trailing-punctuation truncation
+    discipline unchanged.
+  - No alias support in bare form (alias requires bracket-
+    wrapping per APPEND-D-AC item 2 deferral text + Phase-48
+    D-3 prep-doc decision).
+
+**First "selectively-applied lookahead in dual-form regex"**
+discipline. Phase-47 arxiv dual-form regex had no lookahead in
+either alternative (arxiv ID class is naturally terminator-free
+via `\b` word-boundary). Phase-48 doi dual-form regex introduces
+the discipline: bracketed alternative has explicit `]]`
+terminator → no lookahead needed; bare alternative preserves
+the Phase-45 prose-friendly trailing-punctuation lookahead.
+Sets the precedent for future dual-form regexes on consumers
+with prior lookahead constraints (e.g., PubMed PMID Phase 49+
+or 3rd-`remarkPlugins`-consumer Phase 49+).
+
+**Plugin body branches on `isBracketed = match[0].startsWith("[[")`**.
+Mirrors Phase-47 `remarkLinkArxivIds` body shape verbatim with
+`arxiv:` → `doi:` substitution + Phase-45
+`https://doi.org/${id}` URL construction preserved + version-
+suffix branch removed (doi IDs have no version-suffix concept).
+Three display rules:
+
+1. `alias` defined → `display = alias` (bracketed form with
+   `|display`).
+2. `isBracketed` AND `alias` undefined → `display = matched.slice(2, -2)`
+   (bracketed form without alias; drop `[[` + `]]` while
+   preserving source casing).
+3. Else (bare form) → `display = matched` (Phase-45 baseline:
+   verbatim source casing).
+
+**Why bracket-wrapping** (mirrors Phase-47 rationale): the doi
+plugin's Phase-45 baseline is the bare `doi:10.NNNN/xxx` form
+with NO brackets — `|display` would have an ambiguous
+terminator in prose context (no `]]` to mark the end, AND the
+bare form's lookahead character class is more restrictive than
+arxiv's `\b`). The bracket-wrapping introduces explicit
+delimiters for the alias form while preserving the bare form
+via dual-form alternation.
+
+**No collision with wikilinks plugin**: wikilinks regex's slug
+class `[a-z0-9-]+` excludes `:`, `.`, `/` — all three present
+in the doi ID inside `[[doi:10.NNNN/xxx]]`. The wikilinks
+plugin's regex would NOT match `[[doi:10.1234/abc]]` or
+`[[doi:10.1234/abc|display]]`. No regex-ambiguity. Additionally,
+the staged execution order resolves any hypothetical collision
+in favor of doi: `remarkPlugins` runs BEFORE `rehypePlugins`,
+so the bracket-wrapped doi form is replaced with a `<a>` link
+element BEFORE wikilinks gets a chance to see the text.
+
+**No collision with arxiv plugin** (same `remarkPlugins` slot
+sibling Phase 45): arxiv ID class `\d{4}\.\d{4,5}` requires
+4-digit prefix + `.` + 4-5-digit suffix; doi ID class
+`10\.\d{4,9}\/...` requires `10.` literal prefix + 4-9-digit
+registrant + `/`. The two regexes literally cannot match the
+same string (arxiv lacks the `/`; doi requires `/`). Same
+`remarkPlugins` slot; distinct regex character classes;
+collision-free via regex-disjointness alone. Establishes the
+**regex-disjointness-as-sole-defense discipline** for same-slot
+composition. The staged-execution-order layer (which protects
+cross-slot pairs like wikilinks-vs-arxiv) is moot for same-slot
+pairs like arxiv-vs-doi; regex-disjointness becomes the sole
+defense. The Phase-45 → Phase-48 evolution shows the discipline
+holds even when one of the pair gains alias-syntax (DOI
+bracketed form does not contain `\d{4}\.\d{4,5}` followed by
+the arxiv suffix shape; remains disjoint).
+
+**Empty alias `[[doi:10.NNNN/xxx|]]` behavior**: mirrors Phase-
+46/47 in spirit (display class `+` quantifier; empty alias
+does not satisfy the bracketed alternative). DIVERGES from
+Phase-47 arxiv in the fallback path: when the bracketed
+alternative fails, the engine tries the bare alternative.
+Phase-47 arxiv's bare `\b` word-boundary admits the inner ID
+match leaving brackets + pipe as literal context (result:
+`[[<a>arxiv:1909.03004</a>|]]`). Phase-48 doi's stricter
+prose-friendly lookahead `(?=[\s,;)]|\.(?:\s|$)|$)` requires
+a specific terminator class that EXCLUDES `|`; the bare
+alternative also fails. Result: the entire `[[doi:10.1234/abc|]]`
+falls through as fully-literal text. This divergence is the
+natural consequence of the Phase-45 prose-friendly bare-DOI
+lookahead and is the **first observed dual-form behavior
+divergence between two consumers using the same dual-form
+pattern**. Documented behavior; Phase 49+ refinement candidate
+(see deferrals below). Test
+"Phase-48: empty alias [[doi:10.NNNN/xxx|]] falls through to
+fully-literal text" asserts the actual fall-through pattern.
+
+**XSS audit Phase 48**: mirrors Phase-47 verbatim. Display text
+becomes mdast `text` node `value` inside an mdast `link` node,
+then transits through `remark-rehype` to a hast `<a>` element
+with text-node children. The text-node value is HTML-escaped
+by `rehype-stringify` per HTML5 spec (`&` → `&#x26;`; `<` →
+`&#x3C;`; `>` → `&#x3E;`). Test "Phase-48: alias display HTML-
+escapes via remark-rehype text-node rendering (XSS safety)"
+asserts `[[doi:10.1234/abc|x & y]]` emits
+`<a href="...">x &#x26; y</a>`. Display is purely cosmetic text-
+content; cannot escape its text-node context. **No new XSS
+surface** introduced beyond Phase-17 sanitize-line-of-defense.
+
+**No env-var change Phase 48**: alias is plugin-internal regex
+evolution. `MARKDOWN_EXTENSIONS=doi` (Phase-45 default-rationale-
+only) and 4-way composite `wikilinks,tables,arxiv,doi` (Phase-45
+default) automatically pick up bracketed alias syntax. Composition
+matrix unchanged. **Rationale becomes first triple-alias surface**
+under 4-way default — carries wikilinks alias (Phase 46) + arxiv
+alias (Phase 47) + doi alias (Phase 48) simultaneously. **First
+surface with 3 alias-syntax consumers active** in project
+history. Other 3 surfaces (bio + reviewNotes + actionRationale)
+remain dual-alias (wikilinks + arxiv) because doi is NOT
+enabled on them per Phase-45
+`PHASE_45_DEFAULT_ENABLED_SURFACES = Set(["rationale"])`.
+
+**Phase 49+ deferrals** (Phase-48 doi-alias scope cap):
+
+- **Older-style category-prefixed arxiv IDs** (APPEND-D-Y item
+  2 carries) — Phase 49+.
+- **Bare arxiv IDs without `arxiv:` prefix** (APPEND-D-Y item
+  3 carries) — Phase 49+.
+- **Bare DOIs without `doi:` prefix** (APPEND-D-AC carries) —
+  Phase 49+.
+- **dx.doi.org legacy host parsing** (APPEND-D-AC carries) —
+  Phase 49+.
+- **Stricter trailing-lookahead for legitimate trailing-period
+  DOIs** (APPEND-D-AC carries) — Phase 49+.
+- **Paper-card hover-preview** (APPEND-D-Y item 6 carries) —
+  Phase 49+.
+- **Cross-entity wikilinks** (APPEND-D-L item 3 carries) —
+  Phase 49+.
+- **`<a class="wikilink">` styling** (APPEND-D-L item 4
+  carries) — Phase 49+.
+- **404 handling for unresolved wikilinks** (APPEND-D-L item 5
+  carries) — Phase 49+.
+- **Plugin parameterization for wikilink-href-builder** (APPEND-
+  D-L item 6 carries) — Phase 49+.
+- **Auto-trim of alias display whitespace** (Phase-46 deferral
+  carries) — Phase 49+.
+- **Empty-alias-as-slug-fallback** (Phase-46 deferral carries)
+  — Phase 49+.
+- **Empty-alias-as-bare-arxiv-fallback** (Phase-47 deferral
+  carries) — Phase 49+.
+- **Empty-alias-as-bare-doi-fallback** — new Phase-48 deferral;
+  unify the bare-form lookahead terminator class across arxiv-
+  doi so empty-alias behavior matches across consumers (would
+  require adding `|` to the DOI bare-form lookahead terminator
+  class). Refinement candidate.
+- **Table-specific attributes** (APPEND-D-Q item 3 carries) —
+  Phase 49+.
+- **`<caption>` element** (APPEND-D-Q item 4 carries) — Phase
+  49+.
+- **Surface-specific table schemas** (APPEND-D-Q item 6
+  carries) — Phase 49+.
+- **DOI cross-surface expansion** (APPEND-D-AC carries) —
+  Phase ~49 at 4-phase-gap cadence (Phase 45 → 49 would extend
+  the per-consumer-expansion 4-phase pattern Phase 38→42,
+  39→43, 41→44 each established).
+- **PubMed PMID sibling consumer** (Phase-45 deferral carries)
+  — Phase 49+.
+- **3rd-or-later `remarkPlugins` consumer beyond arxiv + doi**
+  — Phase 49+.
+- **2nd `rehypePlugins` consumer beyond wikilinks** — Phase
+  49+.
+- **2nd `schemaOverrides` consumer beyond tables** — Phase
+  49+.
+
 ### D-H. Phase 18+ deferrals
 
 Phase 17 ships MINIMAL markdown surface. Deferred to Phase 18+:

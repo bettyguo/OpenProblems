@@ -2470,6 +2470,48 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 48 — Community-adjacent surfaces (**thirty-ninth NON-§13 phase**: DOI alias syntax `[[doi:10.NNNN/xxx|display]]` via dual-form regex extension on existing `remarkLinkDoiIds` plugin in `DoiExtensionRegistry`; **third realization of the Phase-46 plugin-regex-extension phase-shape pattern**; **second plugin-regex-extension on a `remarkPlugins` consumer** in project history; **second dual-form regex** in the framework; **first "two-consecutive-`remarkPlugins`-regex-extension phases" pair** (Phase 47 + 48); closes ADR-0018 APPEND-D-AC item 2 deferral at 3-phase carryover (ties Phase-44 fastest-closure record); APPEND-D-AF sixth two-letter slot; 5 numbered units; 43rd "Continue" override invoked; **IN PROGRESS**)
 
+#### Unit 48.1 — `DOI_PATTERN` dual-form regex (bracketed + bare) + plugin body update + 13 NEW doi.test.ts alias tests + ADR-0018 D-G APPEND-D-AF (third realization of Phase-46 plugin-regex-extension phase-shape; second plugin-regex-extension on `remarkPlugins` consumer; second dual-form regex; first "selectively-applied lookahead in dual-form regex"; first "two-consecutive-`remarkPlugins`-regex-extension phases" pair; 15th D-G APPEND extends record 14 → 15; 1051/72)
+
+- Second Phase-48 unit; code + ADR APPEND.
+- **`DOI_PATTERN` regex evolution** (in-place edit of `lib/markdown/extensions/doi.ts`):
+  - Before (Phase 45 ship through Phase-47 close): `/\bdoi:(10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+?)(?=[\s,;)]|\.(?:\s|$)|$)/gi`.
+  - After (Phase 48 ship): `/\[\[doi:(10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+?)(?:\|([^\]\n]+))?\]\]|\bdoi:(10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+?)(?=[\s,;)]|\.(?:\s|$)|$)/gi`.
+  - **Second dual-form regex** in the framework (after Phase-47 arxiv). Alternation between bracketed (priority) and bare (fallback). Engine tries the bracketed alternative first at each position; if it fails, tries the bare alternative.
+  - **First "selectively-applied lookahead in dual-form regex"**: bracketed alternative has explicit `]]` terminator → no lookahead needed (full Crossref suffix class permissive inside brackets; `;`, `(`, `)`, `.` all allowed); bare alternative preserves the Phase-45 prose-friendly trailing-punctuation lookahead `(?=[\s,;)]|\.(?:\s|$)|$)` verbatim.
+- **Plugin body update** (mirrors Phase-47 `remarkLinkArxivIds` body shape verbatim with `arxiv:` → `doi:` substitution + `https://doi.org/${id}` URL construction preserved + version-suffix branch removed since DOI IDs have no version-suffix concept): branch on `isBracketed = match[0].startsWith("[[")`. Three display rules: `alias` defined → `display = alias`; bracketed without alias → `display = matched.slice(2, -2)` (drops brackets while preserving source casing); bare form → `display = matched` (Phase-45 baseline verbatim source casing).
+- **`DoiExtensionRegistry` class + factory dispatch arm + `PHASE_45_DEFAULT_ENABLED_SURFACES` constant UNCHANGED**.
+- **13 NEW tests** in `lib/markdown/extensions/doi.test.ts` covering plugin-level alias behavior (28 plugin-level tests → 41; class behavior tests UNCHANGED at 6). Each test prefixed `Phase-48:` for audit trail.
+  - Bracketed `[[doi:10.NNNN/xxx|display]]` → `<a href="https://doi.org/...">display</a>`.
+  - Bracketed without alias → verbatim DOI ref with brackets stripped.
+  - Source-casing preservation for `DOI:` prefix in bracketed form.
+  - Backwards-compat: bare `doi:10.NNNN/xxx` (Phase-45 baseline) still works.
+  - Aliased + bare coexist in same paragraph.
+  - Empty alias `[[doi:10.NNNN/xxx|]]` falls through to **fully-literal text** (DIVERGES from Phase-47 arxiv where the inner bare match remained; the DOI bare-form lookahead `(?=[\s,;)]|\.(?:\s|$)|$)` excludes `|` and thus rejects the inner ID match too — first observed dual-form behavior divergence between two consumers using the same dual-form pattern).
+  - Display HTML-escapes via text-node rendering (XSS safety).
+  - Case-insensitive prefix in bracketed form.
+  - Bracketed form permits `;` mid-suffix (lookahead does NOT apply inside brackets).
+  - Bracketed form permits parens mid-suffix (vs bare-form truncation).
+  - Multiple aliased DOI refs in same paragraph.
+  - Aliased DOI inside bold renders correctly.
+  - Multi-word display preserves spaces + punctuation.
+- **ADR-0018 D-G** gains **EXTENDED Phase 48 Unit 48.1** block + **APPEND-D-AF** (sixth two-letter slot after D-AA + D-AB + D-AC + D-AD + D-AE). Documents:
+  - **Third realization of the Phase-46 plugin-regex-extension phase-shape pattern**. Phase 46 wikilinks (rehype); Phase 47 arxiv (remark); Phase 48 doi (remark, second). Within-slot reusability validated.
+  - **Second plugin-regex-extension on a `remarkPlugins` consumer**; **first "two-consecutive-`remarkPlugins`-regex-extension phases" pair** (Phase 47 + 48).
+  - **Closes APPEND-D-AC item 2** at **3-phase carryover** (Phase 45 → 48); **ties Phase-44 fastest-closure record of 3-phase carryover**. **Fastest alias-syntax closure ever** — accelerating cadence Phase-46 8 → Phase-47 6 → Phase-48 3.
+  - **Seventh prep-/APPEND-doc-level deferral closed by a later phase**. **APPEND-deferral closure cadence sustained 7 phases**. **Fourth non-cross-surface-expansion APPEND-deferral closure** in the cadence (Phase 45 sibling-consumer; Phase 46 rehype-regex; Phase 47 remark-regex; Phase 48 remark-regex-second on the same slot — first "two-consecutive-same-slot-regex-extension" closure-cadence event).
+  - **15th APPEND on ADR-0018 D-G** — extends first-ADR-D-clause-with-most-APPENDs record 14 → 15.
+  - **Sixth two-letter APPEND letter D-AF**.
+  - **First "selectively-applied lookahead in dual-form regex"** discipline established. Sets the precedent for future dual-form regexes on consumers with prior lookahead constraints.
+  - **regex-disjointness-as-sole-defense discipline** for same-slot composition documented. The arxiv-vs-doi pair on `remarkPlugins` is collision-free via regex character classes alone (arxiv requires `\d{4}\.\d{4,5}` with no `/`; doi requires `10.<reg>/<suffix>` with `/`); the staged-execution-order defense layer (which protects cross-slot pairs) is moot for same-slot pairs.
+- **No env-var change**: alias is plugin-internal regex evolution. `MARKDOWN_EXTENSIONS=doi` (Phase-45 default-rationale-only) and 4-way composite `wikilinks,tables,arxiv,doi` (Phase-45 default) automatically pick up bracketed alias syntax.
+- **No collision with wikilinks plugin**: wikilinks regex slug class `[a-z0-9-]+` excludes `:`, `.`, `/` — all three present in the doi ID inside `[[doi:10.NNNN/xxx]]`. No regex-ambiguity. Plus staged execution order (`remarkPlugins` before `rehypePlugins`).
+- **No collision with arxiv plugin** (same `remarkPlugins` slot sibling Phase 45): arxiv ID class `\d{4}\.\d{4,5}` vs doi ID class `10\.\d{4,9}\/...` — regexes literally cannot match the same string. Regex-disjointness-as-sole-defense.
+- **Smoke gates**:
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **1051 / 72 files** (+13 vs Unit 48.0; +13 vs Phase-47 close).
+  - `pnpm audit-content` → 0 errors / 6 warnings UNCHANGED (Q32 baseline; 44 consecutive phases).
+  - First Load JS = 103 kB UNCHANGED (97 consecutive units); Middleware = 160 kB UNCHANGED.
+
 #### Unit 48.0 — Phase 48 prep (DOI alias syntax `[[doi:10.NNNN/xxx|display]]`; third realization of Phase-46 plugin-regex-extension phase-shape; D-1 D-AF; anticipated 5 units; 43rd "Continue" override invoked)
 
 - First Phase-48 unit; docs-only. Drafted `docs/thinking/48.0-phase-48-prep.md` (Phase-47 → 48 baseline at HEAD `8465e9c`; D-1 first-thread recommendation; D-3 doi alias regex shape — `DOI_PATTERN` evolves to **second dual-form regex** with alternation between bracketed `[[doi:10.NNNN/xxx|display]]` and bare `doi:10.NNNN/xxx`; plugin body branches on `isBracketed = match[0].startsWith("[[")`; Phase 49+ deferrals; provisional 5-unit breakdown; per-unit decisions D-8..D-14 lean-noted; alternative threads overridable into Unit 48.1; 12 anticipated architectural firsts).
