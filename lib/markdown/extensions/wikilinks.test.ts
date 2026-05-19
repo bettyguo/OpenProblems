@@ -368,3 +368,155 @@ describe("Phase-62 plugin parameterization — buildHref option behavior", () =>
     );
   });
 });
+
+// =============================================================================
+// Phase-62 plugin parameterization — registry-tied integration (Unit 62.2).
+//
+// These tests cover the cross-cut between the framework's `MarkdownExtensionRegistry`
+// abstraction (Phase 37+) and the Phase-62 plugin-option axis. They guard
+// against three failure modes that a Phase-62 refactor could plausibly
+// introduce:
+//
+//   1. Registry-emitted plugin reference drifts from the Phase-38 default-
+//      call shape (e.g., registry starts emitting tuple-form on its own).
+//   2. Tuple-form invocation through unified() fails at runtime (would
+//      block Phase-63 cross-entity wikilinks from working).
+//   3. Default-call and custom-call diverge in structural output beyond
+//      the href value (would silently break alias-syntax / multi-match
+//      shape under custom builders).
+// =============================================================================
+
+describe("Phase-62 plugin parameterization — WikilinkExtensionRegistry integration", () => {
+  it("registry-emitted rehypePlugins is the bare plugin reference (default-call shape preserved)", () => {
+    // WikilinkExtensionRegistry must continue to emit the bare plugin
+    // reference (no tuple form) under Phase 62. If a future refactor
+    // changes the registry to emit tuple-form by default, this test
+    // catches it — Phase 62's contract is "default-fallback preserves
+    // Phase 38-61 behavior verbatim" which requires the registry to NOT
+    // wrap the plugin in a tuple.
+    const r = new WikilinkExtensionRegistry(new Set(["actionRationale"]));
+    const set = r.getExtensions("actionRationale");
+    expect(set.rehypePlugins).toEqual([rehypeResolveWikilinks]);
+    // Identity check (the reference itself, not a copy) — confirms the
+    // registry does not allocate a new function or wrap in a tuple.
+    expect(set.rehypePlugins?.[0]).toBe(rehypeResolveWikilinks);
+  });
+
+  it("registry-tied default-call end-to-end produces Phase-38 hardcoded href on all 4 surfaces", () => {
+    // For each enabled surface, the registry-emitted plugin reference
+    // runs through unified() with no options and produces the Phase-38
+    // hardcoded /problems/{slug} shape. Regression guard for the load-
+    // bearing default-call invariant across the full surface roster.
+    const r = new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES);
+    const surfaces = ["bio", "reviewNotes", "rationale", "actionRationale"] as const;
+    for (const surface of surfaces) {
+      const set = r.getExtensions(surface);
+      const plugin = set.rehypePlugins?.[0];
+      expect(plugin).toBe(rehypeResolveWikilinks);
+      // Drive the registry-emitted plugin through unified() with no
+      // options — must produce the Phase-38 hardcoded href.
+      const html = String(
+        unified()
+          .use(remarkParse)
+          .use(remarkRehype)
+
+          .use(plugin as any)
+          .use(rehypeStringify)
+          .processSync("[[scalable-oversight]]"),
+      );
+      expect(html).toBe('<p><a href="/problems/scalable-oversight">scalable-oversight</a></p>');
+    }
+  });
+
+  it("tuple-form invocation hypothesis: Phase-63 cross-entity consumer COULD compose non-default registry variant", () => {
+    // Demonstrates the Phase-62-shipped affordance is exercisable: a
+    // hypothetical Phase-63 cross-entity consumer constructs a non-default
+    // unified pipeline by tuple-form-wrapping the bare plugin from a
+    // default registry. NO registry rework required — pure unified()
+    // composition.
+    //
+    // This test PROVES the Phase-62 abstraction boundary: registry-state
+    // axis (which surfaces) is orthogonal to plugin-option axis (which
+    // builder). A Phase-63 consumer can pick a registry's surface set and
+    // independently inject a custom builder at the pipeline assembly site.
+    const r = new WikilinkExtensionRegistry(new Set(["bio"]));
+    const plugin = r.getExtensions("bio").rehypePlugins?.[0];
+    expect(plugin).toBe(rehypeResolveWikilinks);
+
+    // Phase-63-style tuple-form composition (NOT what the default registry
+    // does — this is the consumer's choice at pipeline assembly).
+    const html = String(
+      unified()
+        .use(remarkParse)
+        .use(remarkRehype)
+        .use(rehypeResolveWikilinks, {
+          buildHref: (slug) => `/papers/${slug}`,
+        })
+        .use(rehypeStringify)
+        .processSync("[[arxiv-2401]]"),
+    );
+    expect(html).toBe('<p><a href="/papers/arxiv-2401">arxiv-2401</a></p>');
+  });
+
+  it("default-call vs custom-call: same input → same structure, divergent href only", () => {
+    // Structural invariant: the buildHref option changes ONLY the href
+    // value on emitted <a> elements. Alias display text, surrounding
+    // text, multi-match shape, paragraph wrapping — all identical.
+    const input = "see [[a-slug|the alias]] and [[other-slug]] inline";
+    const defaultHtml = runWikilinkPipeline(input);
+    const customHtml = runWikilinkPipelineWithOptions(input, {
+      buildHref: (slug) => `/custom/${slug}`,
+    });
+
+    expect(defaultHtml).toBe(
+      '<p>see <a href="/problems/a-slug">the alias</a> and ' +
+        '<a href="/problems/other-slug">other-slug</a> inline</p>',
+    );
+    expect(customHtml).toBe(
+      '<p>see <a href="/custom/a-slug">the alias</a> and ' +
+        '<a href="/custom/other-slug">other-slug</a> inline</p>',
+    );
+    // Structural divergence is href-only: same number of <a> elements,
+    // same display text, same surrounding text.
+    const defaultAnchorCount = (defaultHtml.match(/<a /g) ?? []).length;
+    const customAnchorCount = (customHtml.match(/<a /g) ?? []).length;
+    expect(defaultAnchorCount).toBe(customAnchorCount);
+    expect(defaultAnchorCount).toBe(2);
+  });
+
+  it("plugin-option axis orthogonal to registry-state axis: vary enabledSurfaces and buildHref independently", () => {
+    // Phase-62 architectural-first assertion: three principal axes of
+    // zero-rework framework extension (registry-state + plugin-body +
+    // plugin-option) compose orthogonally. Two registries with different
+    // enabledSurfaces sets BOTH emit the same bare plugin reference; a
+    // tuple-form invocation at the pipeline site varies the option
+    // axis independently.
+    const narrow = new WikilinkExtensionRegistry(new Set(["bio"]));
+    const broad = new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES);
+
+    // Both emit the same bare plugin reference (registry-state axis
+    // varies surface set; plugin reference is shared).
+    expect(narrow.getExtensions("bio").rehypePlugins?.[0]).toBe(rehypeResolveWikilinks);
+    expect(broad.getExtensions("bio").rehypePlugins?.[0]).toBe(rehypeResolveWikilinks);
+
+    // Narrow registry returns empty for non-enabled surface;
+    // broad returns the plugin for the same surface — orthogonal to
+    // any plugin-option choice.
+    expect(narrow.getExtensions("rationale")).toEqual({});
+    expect(broad.getExtensions("rationale").rehypePlugins?.[0]).toBe(rehypeResolveWikilinks);
+
+    // Plugin-option axis varies independently at the pipeline site,
+    // regardless of which registry emitted the plugin reference.
+    const html = String(
+      unified()
+        .use(remarkParse)
+        .use(remarkRehype)
+        .use(rehypeResolveWikilinks, {
+          buildHref: (slug) => `/x/${slug}`,
+        })
+        .use(rehypeStringify)
+        .processSync("[[a]]"),
+    );
+    expect(html).toBe('<p><a href="/x/a">a</a></p>');
+  });
+});
