@@ -2531,6 +2531,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **No new ADRs / migrations / i18n keys / env vars / files / runtime deps**.
 - **OPEN_QUESTIONS UNCHANGED** at 28 resolved + 4 lean + 34 open = 66 total.
 
+#### Unit 57.2 — NEW Phase-57 multi-attribute + multi-cell schema-isolation edge-case tests (6 NEW tests; 1339/74)
+
+- Third Phase-57 unit; pure test additions exercising multi-attribute combinations, per-element schema scoping (th vs td), legacy-value rejection, regression-guards against attribute allow-list widening, and the name-only-allow semantics for span attributes per Phase-57 D-12 lean.
+- **No source code changes**: Unit 57.1 already shipped the schema-extension + parity test flip + 9 schema-isolation tests + APPEND-D-AO; Unit 57.2 is pure test additions covering edge cases beyond the Unit 57.1 baseline coverage.
+- New describe block added at end of `lib/markdown/extensions/tables.test.ts`: `"GFM_TABLE_SCHEMA_OVERRIDES — Phase-57 multi-attribute + multi-cell edge cases"` with 6 NEW tests:
+  - **`<td colspan='2' rowspan='3'>` with both span attributes** survives sanitize — sparse-data table use case (single cell spanning a 2×3 region); multi-attribute combination on a single element.
+  - **Multi-row table with varying scope + span attributes per row** survives sanitize — real-world multi-row scenario with thead column headers (scope='col' + colspan) and tbody row headers (scope='row' + rowspan); exercises all 4 attribute names + their values across both `<th>` and `<td>`.
+  - **`<th scope='all'>` (HTML4 legacy value) STRIPS the attribute** — HTML5 dropped the `'all'` scope value; the 4-literal tuple form enforces HTML5-only enum. Validates legacy-value rejection.
+  - **`<td scope='col'> STRIPS the scope attribute`** — HTML5 scope is `<th>`-only; td schema entry omits scope even though the literal value `'col'` would be valid on `<th>`. Validates per-element schema scoping (th vs td enforced independently).
+  - **`<th style='color:red'> STRIPS the style attribute`** — regression-guard: Phase-57 schema-extension must NOT widen the attribute allow-list to include style (CSS injection vector pre-CSP era). The legitimate Phase-57 attribute (colspan="2") survives alongside; the disallowed style attribute strips.
+  - **`colSpan='0'` (HTML4 'span all remaining columns' semantics) SURVIVES sanitize** — per Phase-57 D-12 lean, span attributes get name-only allow without value enumeration; non-numeric / edge-case values pass through schema and the browser applies HTML5 parsing semantics. Validates the deliberate departure from APPEND-D-Q item 3 anticipatory "numeric-only restriction" language.
+- **Test count**: 1333 → **1339 / 74 files** (+6 NEW tests; total Phase 57 delta now +15 vs Phase 56 close at 1324).
+- **Smoke gates**:
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **1339 / 74 files** (+6 / 0 vs Unit 57.1).
+  - `pnpm audit-content` → 0 errors / 6 warnings UNCHANGED.
+  - First Load JS = 103 kB UNCHANGED (141 consecutive units at Unit 57.2 ship); Middleware = 160 kB UNCHANGED.
+
 ### Phase 56 — Community-adjacent surfaces (**forty-seventh NON-§13 phase**: ORCID cross-surface expansion from `rationale`-only to all 4 markdown surfaces via constructor-arg value-only change in `PHASE_54_DEFAULT_ENABLED_SURFACES`; **sixth realization of "constructor-arg-only zero-rework expansion" property** — **first 6-realization for that pattern** (extends Phase-52 record 5 → 6); **first state with TWO coexisting 6-realization framework patterns** (plugin-regex-extension at 6 from Phase 55 + constructor-arg-only-zero-rework-expansion at 6 from Phase 56); generalizes 6-consumer composition + quintuple-alias state to all 4 surfaces; closes ADR-0018 APPEND-D-AL ORCID cross-surface item at **2-phase carryover** — **ties Phase-52 fastest-cross-surface-closure record**; APPEND-D-AN fourteenth two-letter slot; 5 numbered units; 51st "Continue" override invoked — extends half-century milestone)
 
 #### Unit 56.4 — Phase 56 acceptance gate (sixth realization of constructor-arg-only zero-rework expansion — first 6-realization for that pattern; first state with TWO coexisting 6-realization framework patterns; first all-4-surfaces quintuple-alias state; first all-4-surfaces 4-consumer same-slot composition; first all-surfaces-saturated-at-maximum-consumer-cardinality state; ties Phase-52 2-phase fastest cross-surface closure record; D-AN; 1324/74; 139th consecutive 103 kB unit; 52nd "Continue" override opportunity at Phase 56 → 57 boundary)

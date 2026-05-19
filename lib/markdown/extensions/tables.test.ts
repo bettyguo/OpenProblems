@@ -373,3 +373,210 @@ describe("TablesExtensionRegistry — class behavior", () => {
     expect(PHASE_39_DEFAULT_ENABLED_SURFACES.size).toBe(4);
   });
 });
+
+describe("GFM_TABLE_SCHEMA_OVERRIDES — Phase-57 multi-attribute + multi-cell edge cases", () => {
+  it("<td colspan='2' rowspan='3'> with both span attributes survives sanitize (multi-attribute combination)", () => {
+    // Sparse-data table use case: single cell spanning a 2x3 region.
+    // Both span attributes on a single <td> must survive sanitize.
+    const html = sanitizeTableHast(
+      [],
+      [
+        {
+          type: "element",
+          tagName: "tr",
+          properties: {},
+          children: [
+            {
+              type: "element",
+              tagName: "td",
+              properties: { colSpan: 2, rowSpan: 3 },
+              children: [{ type: "text", value: "Spanning cell" }],
+            },
+          ],
+        },
+      ],
+    );
+    expect(html).toContain('colspan="2"');
+    expect(html).toContain('rowspan="3"');
+    expect(html).toContain("Spanning cell");
+  });
+
+  it("multi-row table with varying scope + span attributes per row survives sanitize", () => {
+    // Real-world multi-row scenario: thead has column headers with
+    // scope='col' + first cell with rowspan; tbody has row headers with
+    // scope='row' + cells with colspan.
+    const html = sanitizeTableHast(
+      [
+        {
+          type: "element",
+          tagName: "tr",
+          properties: {},
+          children: [
+            {
+              type: "element",
+              tagName: "th",
+              properties: { scope: "col", colSpan: 2 },
+              children: [{ type: "text", value: "Combined header" }],
+            },
+            {
+              type: "element",
+              tagName: "th",
+              properties: { scope: "col" },
+              children: [{ type: "text", value: "C3" }],
+            },
+          ],
+        },
+      ],
+      [
+        {
+          type: "element",
+          tagName: "tr",
+          properties: {},
+          children: [
+            {
+              type: "element",
+              tagName: "th",
+              properties: { scope: "row", rowSpan: 2 },
+              children: [{ type: "text", value: "Group A" }],
+            },
+            {
+              type: "element",
+              tagName: "td",
+              properties: {},
+              children: [{ type: "text", value: "x" }],
+            },
+            {
+              type: "element",
+              tagName: "td",
+              properties: {},
+              children: [{ type: "text", value: "y" }],
+            },
+          ],
+        },
+      ],
+    );
+    // Header row: <th scope="col" colspan="2">Combined header</th>
+    expect(html).toContain('scope="col"');
+    expect(html).toContain('colspan="2"');
+    expect(html).toContain("Combined header");
+    // Body row: <th scope="row" rowspan="2">Group A</th>
+    expect(html).toContain('scope="row"');
+    expect(html).toContain('rowspan="2"');
+    expect(html).toContain("Group A");
+  });
+
+  it("<th scope='all'> (HTML4 legacy value) STRIPS the attribute (HTML5-only literal-enum restriction)", () => {
+    // HTML4 supported scope='all' but HTML5 dropped it. Schema enforces
+    // HTML5-only via the 4-literal tuple form. Validates that legacy
+    // values are rejected.
+    const html = sanitizeTableHast(
+      [
+        {
+          type: "element",
+          tagName: "tr",
+          properties: {},
+          children: [
+            {
+              type: "element",
+              tagName: "th",
+              properties: { scope: "all" },
+              children: [{ type: "text", value: "Cell" }],
+            },
+          ],
+        },
+      ],
+      [],
+    );
+    expect(html).not.toContain('scope="all"');
+    expect(html).not.toContain("scope=");
+    expect(html).toContain("Cell");
+  });
+
+  it("<td scope='col'> STRIPS the scope attribute (td has no scope per HTML5 spec; td schema entry omits scope)", () => {
+    // HTML5 scope attribute is th-only; td schema entry does NOT include
+    // scope. A scope='col' on td gets stripped by the schema even though
+    // the LITERAL VALUE 'col' would be valid on <th>. Validates that the
+    // per-element schema scoping (th vs td) is enforced.
+    const html = sanitizeTableHast(
+      [],
+      [
+        {
+          type: "element",
+          tagName: "tr",
+          properties: {},
+          children: [
+            {
+              type: "element",
+              tagName: "td",
+              properties: { scope: "col" },
+              children: [{ type: "text", value: "Cell" }],
+            },
+          ],
+        },
+      ],
+    );
+    expect(html).not.toContain('scope="col"');
+    expect(html).not.toContain("scope=");
+    expect(html).toContain("Cell");
+  });
+
+  it("<th style='color:red'> STRIPS the style attribute (regression-guard: Phase-57 schema-extension does not widen attribute allow-list beyond colSpan/rowSpan/scope)", () => {
+    // Defense-in-depth: adding colSpan/rowSpan/scope must NOT widen the
+    // allow-list to include style (a known XSS vector via CSS injection
+    // pre-CSP era; defense-in-depth strips at sanitize regardless).
+    const html = sanitizeTableHast(
+      [
+        {
+          type: "element",
+          tagName: "tr",
+          properties: {},
+          children: [
+            {
+              type: "element",
+              tagName: "th",
+              properties: { style: "color:red", colSpan: 2 },
+              children: [{ type: "text", value: "Cell" }],
+            },
+          ],
+        },
+      ],
+      [],
+    );
+    expect(html).not.toContain("style=");
+    expect(html).not.toContain("color:red");
+    // The legitimate Phase-57 attribute survives.
+    expect(html).toContain('colspan="2"');
+    expect(html).toContain("Cell");
+  });
+
+  it("colSpan='0' (HTML4 'span all remaining columns' semantics) SURVIVES sanitize as name-only allow per Phase-57 D-12 lean", () => {
+    // HTML4 colspan='0' meant "span all remaining columns to the end of
+    // the column group"; HTML5 deprecated this semantics (browsers now
+    // treat it as 1). The Phase-57 schema-extension allows name-only
+    // (no value enumeration) per the D-12 XSS-audit conclusion — non-
+    // numeric / edge-case values pass through schema and the browser
+    // applies HTML5 parsing semantics. Validates that the deliberate
+    // departure from APPEND-D-Q "numeric-only restriction" anticipatory
+    // language preserves this flexibility.
+    const html = sanitizeTableHast(
+      [
+        {
+          type: "element",
+          tagName: "tr",
+          properties: {},
+          children: [
+            {
+              type: "element",
+              tagName: "th",
+              properties: { colSpan: 0 },
+              children: [{ type: "text", value: "Span-rest" }],
+            },
+          ],
+        },
+      ],
+      [],
+    );
+    expect(html).toContain("colspan=");
+    expect(html).toContain("Span-rest");
+  });
+});
