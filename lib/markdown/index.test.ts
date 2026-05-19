@@ -3823,3 +3823,183 @@ describe("Phase-54 first 6-consumer composition — wikilinks,tables,arxiv,doi,p
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// Phase-55 — end-to-end ORCID alias syntax `[[orcid:NNNN-NNNN-NNNN-NNNN|display]]`
+// via dual-form regex extension on remarkLinkOrcidIds. Sixth realization of
+// Phase-46 plugin-regex-extension phase-shape pattern — first 6-realization
+// phase-shape pattern in project history. Fourth dual-form regex in the
+// framework; all 4 `remarkPlugins` consumers exhibit dual-form regex post-
+// Phase 55.
+//
+// Closes new Phase-54 deferral at 1-phase carryover — ties Phase-51 pubmed
+// alias fastest-closure record. Second "immediate-successor same-thread-
+// direction phase boundary" in project history (Phase 54 → 55).
+// ---------------------------------------------------------------------------
+
+describe("Phase-55 orcid alias syntax — rationale surface under default dispatch", () => {
+  beforeEach(() => {
+    // Phase 54 first-ship value preserved verbatim (Set(["rationale"])).
+    // Phase 55 alias-syntax extension is plugin-internal regex evolution;
+    // PHASE_54_DEFAULT_ENABLED_SURFACES UNCHANGED.
+    __setRegistryForTests(new OrcidExtensionRegistry(PHASE_54_DEFAULT_ENABLED_SURFACES));
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it("alias renders on rationale: [[orcid:NNNN-NNNN-NNNN-NNNN|display]] → <a>display</a>", () => {
+    expect(renderRationaleMarkdown("see [[orcid:0000-0002-1825-0097|Smith 2024]] here")).toBe(
+      '<p>see <a href="https://orcid.org/0000-0002-1825-0097">Smith 2024</a> here</p>',
+    );
+  });
+
+  it("alias does NOT render on bio (orcid disabled by Phase-54 rationale-only default)", () => {
+    // The factory dispatch routes through the default-deny on bio; the
+    // bracketed alias renders as literal text.
+    const html = renderBioMarkdown("see [[orcid:0000-0002-1825-0097|Smith 2024]] here") ?? "";
+    expect(html).not.toContain('href="https://orcid.org/');
+  });
+
+  it("alias does NOT render on reviewNotes", () => {
+    const html = renderReviewNotesMarkdown("see [[orcid:0000-0002-1825-0097|Smith 2024]] here");
+    expect(html).not.toContain('href="https://orcid.org/');
+  });
+
+  it("alias does NOT render on actionRationale", () => {
+    const html = renderActionRationaleMarkdown("see [[orcid:0000-0002-1825-0097|Smith 2024]] here");
+    expect(html).not.toContain('href="https://orcid.org/');
+  });
+
+  it("Phase-54 backwards-compat: bare orcid:NNNN-NNNN-NNNN-NNNN still renders on rationale", () => {
+    expect(renderRationaleMarkdown("see orcid:0000-0002-1825-0097 here")).toBe(
+      '<p>see <a href="https://orcid.org/0000-0002-1825-0097">orcid:0000-0002-1825-0097</a> here</p>',
+    );
+  });
+
+  it("bracketed without alias renders verbatim ref on rationale (brackets stripped)", () => {
+    expect(renderRationaleMarkdown("see [[orcid:0000-0002-1825-0097]] here")).toBe(
+      '<p>see <a href="https://orcid.org/0000-0002-1825-0097">orcid:0000-0002-1825-0097</a> here</p>',
+    );
+  });
+
+  it("aliased + bare orcid coexist in same rationale paragraph", () => {
+    const html = renderRationaleMarkdown(
+      "see [[orcid:0000-0002-1825-0097|first]] and orcid:0000-0001-5109-3700",
+    );
+    expect(html).toContain('<a href="https://orcid.org/0000-0002-1825-0097">first</a>');
+    expect(html).toContain(
+      '<a href="https://orcid.org/0000-0001-5109-3700">orcid:0000-0001-5109-3700</a>',
+    );
+  });
+
+  it("alias display HTML-escapes via remark-rehype text-node rendering (XSS safety end-to-end)", () => {
+    const html = renderRationaleMarkdown("[[orcid:0000-0002-1825-0097|x & y]]");
+    expect(html).toContain('<a href="https://orcid.org/0000-0002-1825-0097">x &#x26; y</a>');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-55 — first "quintuple-alias surface" state under 6-way
+// MARKDOWN_EXTENSIONS=wikilinks,tables,arxiv,doi,pubmed,orcid Phase-54 default
+// + Phase-46/47/48/51/55 alias extensions. Pre-Phase-55 max-cardinality alias
+// surface was rationale at quadruple-alias (Phase 51 ship). Post-Phase-55,
+// rationale carries 5 alias-syntax consumers simultaneously. First surface-
+// with-5-alias-consumers cardinality of 1 in project history.
+// ---------------------------------------------------------------------------
+
+describe("Phase-55 orcid alias under Phase-54 6-way composite — first quintuple-alias surface", () => {
+  beforeEach(() => {
+    const wikilinks = new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES);
+    const tables = new TablesExtensionRegistry(PHASE_39_DEFAULT_ENABLED_SURFACES);
+    const arxiv = new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES);
+    const doi = new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES);
+    const pubmed = new PubmedExtensionRegistry(PHASE_50_DEFAULT_ENABLED_SURFACES);
+    const orcid = new OrcidExtensionRegistry(PHASE_54_DEFAULT_ENABLED_SURFACES);
+    __setRegistryForTests(
+      new CompositeExtensionRegistry([wikilinks, tables, arxiv, doi, pubmed, orcid]),
+    );
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it("rationale: wikilinks + arxiv + doi + pubmed + orcid aliases ALL render together — FIRST QUINTUPLE-ALIAS SURFACE", () => {
+    // **First "quintuple-alias surface" state in project history.** Pre-
+    // Phase-55 max-cardinality alias surface was rationale at quadruple-
+    // alias (Phase 51 ship). Phase 55 ship adds orcid as the 5th alias-
+    // syntax consumer on rationale.
+    const md =
+      "see [[scalable-oversight|topic]] and [[arxiv:1909.03004|paper]] and [[doi:10.1234/abc|study]] and [[pubmed:12345678|article]] and [[orcid:0000-0002-1825-0097|author]].";
+    const html = renderRationaleMarkdown(md);
+    expect(html).toContain('<a href="/problems/scalable-oversight">topic</a>');
+    expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">paper</a>');
+    expect(html).toContain('<a href="https://doi.org/10.1234/abc">study</a>');
+    expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">article</a>');
+    expect(html).toContain('<a href="https://orcid.org/0000-0002-1825-0097">author</a>');
+  });
+
+  it("bio: wikilinks + arxiv + doi + pubmed aliases render (quadruple-alias; orcid inactive per Phase-54 default)", () => {
+    // bio retains the Phase-52 all-4-surfaces quadruple-alias state;
+    // orcid is rationale-only per Phase-54 default.
+    const md =
+      "see [[scalable-oversight|topic]] and [[arxiv:1909.03004|paper]] and [[doi:10.1234/abc|study]] and [[pubmed:12345678|article]] and [[orcid:0000-0002-1825-0097|author]].";
+    const html = renderBioMarkdown(md) ?? "";
+    expect(html).toContain('<a href="/problems/scalable-oversight">topic</a>');
+    expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">paper</a>');
+    expect(html).toContain('<a href="https://doi.org/10.1234/abc">study</a>');
+    expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">article</a>');
+    expect(html).not.toContain('href="https://orcid.org/');
+  });
+
+  it("reviewNotes: quadruple-alias preserved; orcid alias inactive", () => {
+    const md =
+      "see [[hallucination-reduction|topic]], [[arxiv:2024.01234|paper]], [[doi:10.5678/xyz|study]], [[pmid:99999999|article]], [[orcid:0000-0002-9079-593X|author]].";
+    const html = renderReviewNotesMarkdown(md);
+    expect(html).toContain('<a href="/problems/hallucination-reduction">topic</a>');
+    expect(html).toContain('<a href="https://arxiv.org/abs/2024.01234">paper</a>');
+    expect(html).toContain('<a href="https://doi.org/10.5678/xyz">study</a>');
+    expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/99999999/">article</a>');
+    expect(html).not.toContain('href="https://orcid.org/');
+  });
+
+  it("actionRationale: quadruple-alias preserved; orcid alias inactive", () => {
+    const md =
+      "see [[scalable-oversight|topic]], [[arxiv:1909.03004|paper]], [[doi:10.1234/abc|study]], [[pmid:12345678|article]], [[orcid:0000-0002-1825-0097|author]].";
+    const html = renderActionRationaleMarkdown(md);
+    expect(html).toContain('<a href="/problems/scalable-oversight">topic</a>');
+    expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">paper</a>');
+    expect(html).toContain('<a href="https://doi.org/10.1234/abc">study</a>');
+    expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">article</a>');
+    expect(html).not.toContain('href="https://orcid.org/');
+  });
+
+  it("Backwards-compat under 6-way composite: bare wikilink + bare arxiv + bare doi + bare pubmed + bare orcid all coexist on rationale", () => {
+    // Phase-55 alias is in addition to bare; both forms supported.
+    const md =
+      "see scalable-oversight, arxiv:1909.03004, doi:10.1234/abc, pubmed:12345678, orcid:0000-0002-1825-0097 here";
+    const html = renderRationaleMarkdown(md);
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+    expect(html).toContain('href="https://doi.org/10.1234/abc"');
+    expect(html).toContain('href="https://pubmed.ncbi.nlm.nih.gov/12345678/"');
+    expect(html).toContain('href="https://orcid.org/0000-0002-1825-0097"');
+  });
+
+  it("XSS defenses survive Phase-55 quintuple-alias surface on rationale", () => {
+    const md =
+      "[bad](javascript:alert(1)) [[s|safe slug]] [[arxiv:1909.03004|safe arxiv]] [[doi:10.1234/abc|safe doi]] [[pubmed:12345678|safe pubmed]] [[orcid:0000-0002-1825-0097|safe orcid]].";
+    const html = renderRationaleMarkdown(md);
+    expect(html).not.toContain("javascript:alert");
+    expect(html).toContain('<a href="/problems/s">safe slug</a>');
+    expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">safe arxiv</a>');
+    expect(html).toContain('<a href="https://doi.org/10.1234/abc">safe doi</a>');
+    expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">safe pubmed</a>');
+    expect(html).toContain('<a href="https://orcid.org/0000-0002-1825-0097">safe orcid</a>');
+  });
+});

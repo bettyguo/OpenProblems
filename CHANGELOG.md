@@ -2470,6 +2470,39 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 55 — Community-adjacent surfaces (**forty-sixth NON-§13 phase**: ORCID display-text alias syntax `[[orcid:NNNN-NNNN-NNNN-NNNN|display]]` via in-place dual-form regex extension on existing `remarkLinkOrcidIds` plugin in `OrcidExtensionRegistry`; **sixth realization of Phase-46 plugin-regex-extension phase-shape pattern** — **first 6-realization phase-shape pattern in project history**; **fourth dual-form regex** in the framework; **fourth plugin-regex-extension on a `remarkPlugins` consumer** — all 4 `remarkPlugins` consumers exhibit dual-form regex post-Phase 55; **second "immediate-successor same-thread-direction phase boundary"** (Phase 54 → 55; first state where the pattern is observed twice); **first quintuple-alias surface**; closes new Phase-54 deferral at **1-phase carryover** — ties Phase-51 pubmed alias 1-phase fastest-closure record; APPEND-D-AM thirteenth two-letter slot; anticipated 5 numbered units; 50th "Continue" override invoked — half-century-of-Continue-overrides milestone)
 
+#### Unit 55.2 — NEW end-to-end Phase-55 tests on rationale ORCID alias + first quintuple-alias surface validation under 6-way composite (14 NEW tests; 1303/74)
+
+- Third Phase-55 unit; code-only (test additions to `lib/markdown/index.test.ts`).
+- Two new describe blocks added at end of file.
+- **First describe block** — `Phase-55 orcid alias syntax — rationale surface under default dispatch` (8 tests):
+  - alias renders on rationale via the factory-driven default constant.
+  - alias does NOT render on bio (orcid disabled by Phase-54 rationale-only default).
+  - alias does NOT render on reviewNotes.
+  - alias does NOT render on actionRationale.
+  - Phase-54 backwards-compat: bare `orcid:NNNN-NNNN-NNNN-NNNN` (Phase-54 baseline) still renders on rationale.
+  - Bracketed without alias renders verbatim ref on rationale (brackets stripped).
+  - Aliased + bare orcid coexist in same rationale paragraph.
+  - Alias display HTML-escapes via remark-rehype text-node rendering (XSS safety end-to-end).
+- **Second describe block** — `Phase-55 orcid alias under Phase-54 6-way composite — first quintuple-alias surface` (6 tests):
+  - **rationale: wikilinks + arxiv + doi + pubmed + orcid aliases ALL render together** — **FIRST QUINTUPLE-ALIAS SURFACE** in project history; first surface with 5 alias-syntax consumers active under default dispatch.
+  - bio: quadruple-alias preserved (Phase-52 baseline); orcid alias inactive per Phase-54 rationale-only default.
+  - reviewNotes: quadruple-alias preserved; orcid alias inactive.
+  - actionRationale: quadruple-alias preserved; orcid alias inactive.
+  - Backwards-compat under 6-way composite: bare wikilink + bare arxiv + bare doi + bare pubmed + bare orcid all coexist on rationale.
+  - XSS defenses survive Phase-55 quintuple-alias surface on rationale.
+- **Composition matrix snapshot Phase 55** under `MARKDOWN_EXTENSIONS=wikilinks,tables,arxiv,doi,pubmed,orcid`:
+  - bio: quadruple-alias (wikilinks + arxiv + doi + pubmed) — Phase-52 baseline; orcid alias inactive.
+  - reviewNotes: quadruple-alias — Phase-52 baseline; orcid alias inactive.
+  - rationale: **QUINTUPLE-ALIAS** (wikilinks + arxiv + doi + pubmed + orcid) — first in project history.
+  - actionRationale: quadruple-alias — Phase-52 baseline; orcid alias inactive.
+- **`PHASE_54_DEFAULT_ENABLED_SURFACES` + `OrcidExtensionRegistry` imports** preserved from Phase 54 in `lib/markdown/index.test.ts`.
+- **No source code changes**: Unit 55.1 already shipped the plugin code; Unit 55.2 is pure test additions validating the quintuple-alias surface through the full sanitize pipeline.
+- **Smoke gates**:
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **1303 / 74 files** (+14 vs Unit 55.1; +27 vs Phase-54 close).
+  - `pnpm audit-content` → 0 errors / 6 warnings UNCHANGED.
+  - First Load JS = 103 kB UNCHANGED (133 consecutive units); Middleware = 160 kB UNCHANGED.
+
 #### Unit 55.1 — `ORCID_PATTERN` dual-form regex (bracketed + bare) + plugin body update + 13 NEW orcid.test.ts alias tests + ADR-0018 D-G APPEND-D-AM (sixth realization of Phase-46 plugin-regex-extension phase-shape — first 6-realization phase-shape pattern in project history; fourth dual-form regex; fourth plugin-regex-extension on a `remarkPlugins` consumer — all 4 `remarkPlugins` consumers exhibit dual-form regex; 22nd D-G APPEND extends record 21 → 22; 1289/74)
 
 - Second Phase-55 unit; code + ADR APPEND.
