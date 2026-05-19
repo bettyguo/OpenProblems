@@ -2470,6 +2470,44 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 50 — Community-adjacent surfaces (**forty-first NON-§13 phase**: PubMed PMID sibling consumer in `remarkPlugins` slot — **fifth concrete Phase-37-framework consumer**; **first 3rd-`remarkPlugins` consumer** beyond arxiv + doi; **first 3-consumer same-slot composition** under composition; **first 5-consumer composition** under default dispatch; new `PubmedExtensionRegistry` + `MARKDOWN_EXTENSIONS=pubmed` env-var dispatch arm; **6th single-value arm** (first expansion of recognized-arms set since Phase 45); tests whether regex-disjointness-as-sole-defense discipline scales to 3 same-slot consumers; closes ADR-0018 APPEND-D-AC PubMed PMID item at 5-phase carryover; APPEND-D-AH eighth two-letter slot; 5 numbered units anticipated; 45th "Continue" override invoked; **IN PROGRESS**)
 
+#### Unit 50.2 — 22 NEW end-to-end Phase-50 tests across 3 describe blocks: pubmed default on rationale + first 3-consumer same-slot composition + first 5-consumer composition under default dispatch (1144/73)
+
+- Third Phase-50 unit; code-only (test additions to `lib/markdown/index.test.ts`).
+- **First describe block** — `Phase-50 pubmed default — rationale surface via PHASE_50_DEFAULT_ENABLED_SURFACES` (9 tests):
+  - pubmed renders on rationale via the factory-driven default constant.
+  - pmid alternative prefix renders to the same canonical URL form.
+  - bio surface unaffected by pubmed extension Phase 50 (registry default-deny on non-enabled).
+  - reviewNotes surface unaffected by pubmed extension Phase 50.
+  - actionRationale surface unaffected by pubmed extension Phase 50.
+  - XSS defense survives (javascript: stripped; pubmed still resolves).
+  - Renders pubmed inside emphasized text (nested element preservation).
+  - Non-matching 10-digit ID falls through as literal text.
+  - Emits canonical pubmed.ncbi.nlm.nih.gov host with trailing slash.
+- **Second describe block** — `Phase-50 first 3-consumer same-slot composition under MARKDOWN_EXTENSIONS=arxiv,doi,pubmed` (7 tests):
+  - rationale: ALL 3 consumers (arxiv + doi + pubmed) render together (**first 3-consumer same-slot composition end-to-end**).
+  - arxiv-then-doi-then-pubmed ordering preserved in output text-flow.
+  - Reverse-order text-flow preserved (plugin order is immaterial via regex-disjointness).
+  - bio: arxiv + doi render; pubmed inactive (Phase-49 baseline preserved; pubmed rationale-only per Phase-50 default).
+  - reviewNotes: arxiv + doi render; pubmed inactive.
+  - actionRationale: arxiv + doi render; pubmed inactive.
+  - XSS defenses survive 3-consumer same-slot composition on rationale.
+- **Third describe block** — `Phase-50 first 5-consumer composition — wikilinks,tables,arxiv,doi,pubmed maximal default` (6 tests):
+  - rationale: ALL 5 consumers render together (**first 5-consumer composition end-to-end**; **maximum-consumer-cardinality state**).
+  - bio: 4 consumers render (Phase-49 baseline preserved); pubmed inactive.
+  - reviewNotes: 4 consumers render; pubmed inactive.
+  - actionRationale: 4 consumers render; pubmed inactive.
+  - Backwards-compat: bare wikilink + bare arxiv + bare doi + bare pubmed all coexist on rationale.
+  - XSS defenses survive 5-consumer composition on rationale.
+- **First "5-consumer composition under default dispatch" state** validated end-to-end. **Maximum-consumer-cardinality state** in project history: rationale carries 5 consumers across 3 slots (wikilinks-rehype + tables-schema + [arxiv, doi, pubmed]-remark); other 3 surfaces carry 4 consumers (pubmed inactive per Phase-50 rationale-only default).
+- **First "3-consumer same-slot composition end-to-end"** validated. The arxiv-doi-pubmed triple in `remarkPlugins` is collision-free via regex-disjointness-as-sole-defense discipline (3-consumer scaling validation; pairwise-disjoint regex character classes).
+- **`PHASE_50_DEFAULT_ENABLED_SURFACES` + `PubmedExtensionRegistry` import added** in `lib/markdown/index.test.ts` to wire the new Phase-50 default-dispatch + 3-consumer same-slot + 5-consumer composite blocks.
+- **No source code changes**: Unit 50.1 already shipped the plugin code; Unit 50.2 is pure test additions validating the all-5-consumer behavior through the full sanitize pipeline.
+- **Smoke gates**:
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **1144 / 73 files** (+22 vs Unit 50.1; +56 vs Phase-49 close).
+  - `pnpm audit-content` → 0 errors / 6 warnings UNCHANGED.
+  - First Load JS = 103 kB UNCHANGED (108 consecutive units); Middleware = 160 kB UNCHANGED.
+
 #### Unit 50.1 — `pubmed.ts` + `pubmed.test.ts` (NEW files) + factory dispatch arm `MARKDOWN_EXTENSIONS=pubmed` + dispatch tests + ADR-0018 D-G APPEND-D-AH (fifth concrete Phase-37-framework consumer; first 3rd-`remarkPlugins` consumer; first 3-consumer same-slot composition; first 5-consumer composition under default dispatch; first env-var single-value arm beyond 5; 17th D-G APPEND extends record 16 → 17; 1122/73)
 
 - Second Phase-50 unit; code + ADR APPEND.

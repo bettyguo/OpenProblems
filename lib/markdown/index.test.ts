@@ -13,6 +13,7 @@ import {
 import { ArxivExtensionRegistry, PHASE_41_DEFAULT_ENABLED_SURFACES } from "./extensions/arxiv";
 import { CompositeExtensionRegistry } from "./extensions/composite";
 import { DoiExtensionRegistry, PHASE_45_DEFAULT_ENABLED_SURFACES } from "./extensions/doi";
+import { PHASE_50_DEFAULT_ENABLED_SURFACES, PubmedExtensionRegistry } from "./extensions/pubmed";
 import { PHASE_39_DEFAULT_ENABLED_SURFACES, TablesExtensionRegistry } from "./extensions/tables";
 import {
   PHASE_38_DEFAULT_ENABLED_SURFACES,
@@ -2538,5 +2539,291 @@ describe("Phase-49 first all-4-surfaces same-slot composition (arxiv+doi in rema
       expect(doiIdx).toBeGreaterThan(-1);
       expect(arxivIdx).toBeLessThan(doiIdx);
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-50 — end-to-end PubMed PMID consumer rendering via
+// `PubmedExtensionRegistry`. Fifth concrete Phase-37-framework consumer;
+// first 3rd-`remarkPlugins` consumer beyond arxiv + doi. Ships rationale-
+// only per Phase-41/Phase-45 first-ship demand-signal-first precedent.
+// Tests whether the regex-disjointness-as-sole-defense discipline (Phase
+// 48 established for 2 same-slot consumers; Phase 49 generalized to all
+// 4 surfaces) scales to 3 same-slot consumers under composition.
+//
+// Closes ADR-0018 APPEND-D-AC PubMed PMID item at 5-phase carryover
+// (Phase 45 → 50).
+// ---------------------------------------------------------------------------
+
+describe("Phase-50 pubmed default — rationale surface via PHASE_50_DEFAULT_ENABLED_SURFACES", () => {
+  beforeEach(() => {
+    __setRegistryForTests(new PubmedExtensionRegistry(PHASE_50_DEFAULT_ENABLED_SURFACES));
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it('renders pubmed:NNNNNNNN as <a href="https://pubmed.ncbi.nlm.nih.gov/.../"> in rationale', () => {
+    expect(renderRationaleMarkdown("see pubmed:12345678 for the methodology")).toBe(
+      '<p>see <a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">pubmed:12345678</a> for the methodology</p>',
+    );
+  });
+
+  it("renders pmid:NNNNNNNN (alternative prefix) to the same canonical URL form in rationale", () => {
+    expect(renderRationaleMarkdown("cited as pmid:12345678 in the survey")).toBe(
+      '<p>cited as <a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">pmid:12345678</a> in the survey</p>',
+    );
+  });
+
+  it("bio surface unaffected by pubmed extension Phase 50 (registry default-deny on non-enabled)", () => {
+    expect(renderBioMarkdown("see pubmed:12345678 here") ?? "").toBe(
+      "<p>see pubmed:12345678 here</p>",
+    );
+  });
+
+  it("reviewNotes surface unaffected by pubmed extension Phase 50", () => {
+    expect(renderReviewNotesMarkdown("see pubmed:12345678 here")).toBe(
+      "<p>see pubmed:12345678 here</p>",
+    );
+  });
+
+  it("actionRationale surface unaffected by pubmed extension Phase 50", () => {
+    expect(renderActionRationaleMarkdown("see pubmed:12345678 here")).toBe(
+      "<p>see pubmed:12345678 here</p>",
+    );
+  });
+
+  it("XSS defense survives pubmed extension (javascript: stripped; pubmed still resolves)", () => {
+    const html = renderRationaleMarkdown("[bad](javascript:alert(1)) and see pubmed:12345678");
+    expect(html).not.toContain("javascript:alert");
+    expect(html).toContain('href="https://pubmed.ncbi.nlm.nih.gov/12345678/"');
+  });
+
+  it("renders pubmed inside emphasized text (nested element preservation)", () => {
+    expect(renderRationaleMarkdown("**pubmed:12345678** establishes the result")).toBe(
+      '<p><strong><a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">pubmed:12345678</a></strong> establishes the result</p>',
+    );
+  });
+
+  it("non-matching pattern (10-digit ID) falls through as literal text in rationale", () => {
+    expect(renderRationaleMarkdown("pubmed:1234567890 is too long").startsWith("<p>")).toBe(true);
+    // 10th digit lands outside the link per the regex backoff to 9 digits;
+    // the substring `pubmed:1234567890` should NOT entirely match.
+    expect(renderRationaleMarkdown("pubmed:1234567890 alone")).toBe(
+      "<p>pubmed:1234567890 alone</p>",
+    );
+  });
+
+  it("emits canonical pubmed.ncbi.nlm.nih.gov host with trailing slash", () => {
+    const html = renderRationaleMarkdown("see pubmed:12345678");
+    expect(html).toContain('href="https://pubmed.ncbi.nlm.nih.gov/12345678/"');
+    expect(html).not.toContain('href="https://www.ncbi.nlm.nih.gov/pubmed/');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-50 — first 3-consumer same-slot composition end-to-end. The triple
+// arxiv-doi-pubmed in `remarkPlugins` is collision-free via regex-
+// disjointness-as-sole-defense discipline (3-consumer scaling validation).
+// ---------------------------------------------------------------------------
+
+describe("Phase-50 first 3-consumer same-slot composition under MARKDOWN_EXTENSIONS=arxiv,doi,pubmed", () => {
+  beforeEach(() => {
+    // Phase-50 default: arxiv on all 4 surfaces (Phase-44); doi on all 4
+    // surfaces (Phase-49); pubmed on rationale only (Phase-50 first-ship).
+    const arxiv = new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES);
+    const doi = new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES);
+    const pubmed = new PubmedExtensionRegistry(PHASE_50_DEFAULT_ENABLED_SURFACES);
+    __setRegistryForTests(new CompositeExtensionRegistry([arxiv, doi, pubmed]));
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it("rationale: ALL 3 consumers (arxiv + doi + pubmed) render in the same paragraph (first 3-consumer same-slot)", () => {
+    // **First "three plugins active in the same slot on the same surface
+    // under default dispatch" state in project history.** Under
+    // `MARKDOWN_EXTENSIONS=arxiv,doi,pubmed` Phase-50 default the
+    // remarkPlugins slot on rationale carries [arxiv, doi, pubmed] per
+    // APPEND-D-R concatenation rule. The three regex character classes
+    // are pairwise disjoint — discipline scales from 2 to 3 without
+    // architectural change.
+    const html = renderRationaleMarkdown(
+      "see arxiv:1909.03004, doi:10.1234/abc, and pubmed:12345678 together",
+    );
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+    expect(html).toContain('href="https://doi.org/10.1234/abc"');
+    expect(html).toContain('href="https://pubmed.ncbi.nlm.nih.gov/12345678/"');
+  });
+
+  it("rationale: arxiv-then-doi-then-pubmed ordering preserved in output text-flow", () => {
+    const html = renderRationaleMarkdown(
+      "arxiv:1909.03004 then doi:10.1234/abc then pubmed:12345678",
+    );
+    const arxivIdx = html.indexOf("arxiv.org");
+    const doiIdx = html.indexOf("doi.org");
+    const pubmedIdx = html.indexOf("pubmed.ncbi");
+    expect(arxivIdx).toBeGreaterThan(-1);
+    expect(doiIdx).toBeGreaterThan(-1);
+    expect(pubmedIdx).toBeGreaterThan(-1);
+    expect(arxivIdx).toBeLessThan(doiIdx);
+    expect(doiIdx).toBeLessThan(pubmedIdx);
+  });
+
+  it("rationale: reverse-order (pubmed-then-doi-then-arxiv) text-flow preserved (plugin order is immaterial)", () => {
+    // Verifies that the 3 plugins each scan the mdast tree and emit links
+    // in source order regardless of plugin invocation order. The triple
+    // is collision-free via regex-disjointness alone.
+    const html = renderRationaleMarkdown(
+      "pubmed:12345678 then doi:10.1234/abc then arxiv:1909.03004",
+    );
+    const arxivIdx = html.indexOf("arxiv.org");
+    const doiIdx = html.indexOf("doi.org");
+    const pubmedIdx = html.indexOf("pubmed.ncbi");
+    expect(pubmedIdx).toBeLessThan(doiIdx);
+    expect(doiIdx).toBeLessThan(arxivIdx);
+  });
+
+  it("bio: arxiv + doi render (Phase-49 baseline; pubmed inactive on bio per Phase-50 rationale-only default)", () => {
+    const html =
+      renderBioMarkdown("see arxiv:1909.03004 and doi:10.1234/abc and pubmed:12345678") ?? "";
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+    expect(html).toContain('href="https://doi.org/10.1234/abc"');
+    expect(html).not.toContain("pubmed.ncbi");
+    expect(html).toContain("pubmed:12345678"); // literal text preserved
+  });
+
+  it("reviewNotes: arxiv + doi render; pubmed inactive (Phase-50 rationale-only default)", () => {
+    const html = renderReviewNotesMarkdown(
+      "compare arxiv:2024.01234 with doi:10.5678/xyz and pubmed:99999999",
+    );
+    expect(html).toContain('href="https://arxiv.org/abs/2024.01234"');
+    expect(html).toContain('href="https://doi.org/10.5678/xyz"');
+    expect(html).not.toContain("pubmed.ncbi");
+  });
+
+  it("actionRationale: arxiv + doi render; pubmed inactive (Phase-50 rationale-only default)", () => {
+    const html = renderActionRationaleMarkdown(
+      "see arxiv:1909.03004, doi:10.1234/abc, and pubmed:12345678",
+    );
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+    expect(html).toContain('href="https://doi.org/10.1234/abc"');
+    expect(html).not.toContain("pubmed.ncbi");
+  });
+
+  it("XSS defenses survive 3-consumer same-slot composition on rationale", () => {
+    const html = renderRationaleMarkdown(
+      "[bad](javascript:alert(1)) arxiv:1909.03004 doi:10.1234/abc pubmed:12345678",
+    );
+    expect(html).not.toContain("javascript:alert");
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+    expect(html).toContain('href="https://doi.org/10.1234/abc"');
+    expect(html).toContain('href="https://pubmed.ncbi.nlm.nih.gov/12345678/"');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-50 — first 5-consumer composition under default dispatch via
+// CompositeExtensionRegistry([wikilinks, tables, arxiv, doi, pubmed]) at
+// their respective Phase-50-defaults. Rationale carries 5 consumers across
+// 3 slots; other 3 surfaces carry 4 consumers (pubmed inactive there per
+// Phase-50 rationale-only default). **Maximum-consumer-cardinality state**
+// in project history.
+// ---------------------------------------------------------------------------
+
+describe("Phase-50 first 5-consumer composition — wikilinks,tables,arxiv,doi,pubmed maximal default", () => {
+  beforeEach(() => {
+    const wikilinks = new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES);
+    const tables = new TablesExtensionRegistry(PHASE_39_DEFAULT_ENABLED_SURFACES);
+    const arxiv = new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES);
+    const doi = new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES);
+    const pubmed = new PubmedExtensionRegistry(PHASE_50_DEFAULT_ENABLED_SURFACES);
+    __setRegistryForTests(new CompositeExtensionRegistry([wikilinks, tables, arxiv, doi, pubmed]));
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it("rationale: ALL 5 consumers render together (first 5-consumer composition; maximum-consumer-cardinality state)", () => {
+    // **First "5-consumer composition under default dispatch" state in
+    // project history.** rationale carries: wikilinks(rehype) +
+    // tables(schema) + [arxiv, doi, pubmed](remark). Triple alias-capable
+    // consumers (wikilinks + arxiv + doi) plus the pubmed bare-only
+    // consumer (no alias Phase 50). Conflict-free per APPEND-D-R via
+    // distinct slots cross-pair + regex-disjointness within remarkPlugins.
+    const md =
+      "see [[scalable-oversight|topic]], arxiv:1909.03004, doi:10.1234/abc, and pubmed:12345678.\n\n| A | B |\n|---|---|\n| 1 | 2 |";
+    const html = renderRationaleMarkdown(md);
+    expect(html).toContain('<a href="/problems/scalable-oversight">topic</a>'); // wikilinks alias
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"'); // arxiv
+    expect(html).toContain('href="https://doi.org/10.1234/abc"'); // doi
+    expect(html).toContain('href="https://pubmed.ncbi.nlm.nih.gov/12345678/"'); // pubmed
+    expect(html).toContain("<table>"); // tables
+  });
+
+  it("bio: 4 consumers render (wikilinks + arxiv + doi + tables); pubmed inactive on bio per Phase-50 default", () => {
+    // bio carries 4 consumers Phase 50 (Phase-49 baseline preserved):
+    // wikilinks + arxiv + doi all-4-surfaces; tables all-4-surfaces;
+    // pubmed rationale-only.
+    const md =
+      "I cite [[hallucination-reduction|topic]] in arxiv:1909.03004, doi:10.1234/abc, and pubmed:12345678.";
+    const html = renderBioMarkdown(md) ?? "";
+    expect(html).toContain('<a href="/problems/hallucination-reduction">topic</a>');
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+    expect(html).toContain('href="https://doi.org/10.1234/abc"');
+    expect(html).not.toContain("pubmed.ncbi");
+    expect(html).toContain("pubmed:12345678"); // literal text preserved
+  });
+
+  it("reviewNotes: 4 consumers render; pubmed inactive (Phase-50 rationale-only)", () => {
+    const md = "see [[benchmark-integrity|topic]] arxiv:2024.01234 doi:10.5678/xyz pubmed:99999999";
+    const html = renderReviewNotesMarkdown(md);
+    expect(html).toContain('<a href="/problems/benchmark-integrity">topic</a>');
+    expect(html).toContain('href="https://arxiv.org/abs/2024.01234"');
+    expect(html).toContain('href="https://doi.org/10.5678/xyz"');
+    expect(html).not.toContain("pubmed.ncbi");
+  });
+
+  it("actionRationale: 4 consumers render; pubmed inactive (Phase-50 rationale-only)", () => {
+    const md =
+      "upgrade reflects [[scalable-oversight|the work]] arxiv:1909.03004 doi:10.1234/abc pubmed:12345678";
+    const html = renderActionRationaleMarkdown(md);
+    expect(html).toContain('<a href="/problems/scalable-oversight">the work</a>');
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+    expect(html).toContain('href="https://doi.org/10.1234/abc"');
+    expect(html).not.toContain("pubmed.ncbi");
+  });
+
+  it("backwards-compat: bare wikilink + bare arxiv + bare doi + bare pubmed all coexist on rationale", () => {
+    const md = "see [[scalable-oversight]] arxiv:1909.03004 doi:10.1234/abc pubmed:12345678.";
+    const html = renderRationaleMarkdown(md);
+    expect(html).toContain('<a href="/problems/scalable-oversight">scalable-oversight</a>');
+    expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">arxiv:1909.03004</a>');
+    expect(html).toContain('<a href="https://doi.org/10.1234/abc">doi:10.1234/abc</a>');
+    expect(html).toContain(
+      '<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">pubmed:12345678</a>',
+    );
+  });
+
+  it("XSS defenses survive 5-consumer composition on rationale", () => {
+    const md =
+      "[bad](javascript:alert(1)) [[s|safe slug]] [[arxiv:1909.03004|safe arxiv]] [[doi:10.1234/abc|safe doi]] pubmed:12345678.";
+    const html = renderRationaleMarkdown(md);
+    expect(html).not.toContain("javascript:alert");
+    expect(html).toContain('<a href="/problems/s">safe slug</a>');
+    expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">safe arxiv</a>');
+    expect(html).toContain('<a href="https://doi.org/10.1234/abc">safe doi</a>');
+    expect(html).toContain(
+      '<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">pubmed:12345678</a>',
+    );
   });
 });
