@@ -2470,6 +2470,47 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 52 — Community-adjacent surfaces (**forty-third NON-§13 phase**: PubMed PMID cross-surface expansion from `rationale`-only to all 4 markdown surfaces via constructor-arg change in `PHASE_50_DEFAULT_ENABLED_SURFACES`; mirrors Phase 42 + 43 + 44 + 49 expansion pattern verbatim; **fifth realization of the "constructor-arg-only zero-rework expansion" property** — **first 5-realization property in project history**; **completes the per-consumer all-4-surfaces arc** for ALL 5 Phase-37-framework consumers; closes ADR-0018 APPEND-D-AH PubMed PMID cross-surface item at **2-phase carryover** — **FASTEST CROSS-SURFACE-EXPANSION APPEND-DEFERRAL CLOSURE EVER OBSERVED** (beats prior 3-phase Phase-41 → 44 record); APPEND-D-AJ tenth two-letter slot; anticipated 5 numbered units; 47th "Continue" override invoked)
 
+#### Unit 52.2 — NEW end-to-end Phase-52 tests on bio + reviewNotes + actionRationale + first all-4-surfaces quadruple-alias state validation + first all-4-surfaces 3-consumer same-slot composition validation (pubmed cross-surface expansion end-to-end; 21 NEW tests; 1195 / 73)
+
+- Third Phase-52 unit; code-only (test additions to `lib/markdown/index.test.ts`).
+- Three new describe blocks added at end of file; `PHASE_50_DEFAULT_ENABLED_SURFACES` re-imported from `./extensions/pubmed` (Unit 52.1 had removed the import after decoupling the baseline blocks).
+- **First describe block** — `Phase-52 pubmed default — all 4 surfaces via PHASE_50_DEFAULT_ENABLED_SURFACES` (10 tests; mirrors Phase-49 doi default block verbatim):
+  - pubmed renders on bio (NEW Phase-52 expansion).
+  - pubmed renders on reviewNotes (NEW Phase-52 expansion).
+  - pubmed renders on rationale (Phase-50 baseline preserved through expansion).
+  - pubmed renders on actionRationale (NEW Phase-52 expansion).
+  - pmid alternative prefix renders on bio (NEW Phase-52; prefix-alternation preserved through expansion).
+  - Phase-51 alias renders on bio (NEW Phase-52 — first non-rationale pubmed alias surface).
+  - Phase-51 alias renders on reviewNotes (NEW Phase-52 — alias extension flows through expansion).
+  - Phase-51 alias renders on actionRationale (NEW Phase-52).
+  - XSS defenses survive Phase-52 expansion on every surface.
+  - pubmed renders identically across all 4 surfaces (parity test; both `pubmed:` and `pmid:` prefix variants).
+- **Second describe block** — `Phase-52 first all-4-surfaces quadruple-alias state under 5-way composite` (6 tests; mirrors Phase-49 triple-alias-all-4-surfaces block verbatim with pubmed added as 4th alias):
+  - bio: wikilinks + arxiv + doi + pubmed aliases ALL render together — **FIRST "all 4 surfaces are quadruple-alias" state** in project history; first surface-with-4-alias-consumers cardinality of 4.
+  - reviewNotes: all 4 aliases render together (NEW Phase-52 quadruple-alias).
+  - rationale: all 4 aliases render together (Phase-51 baseline preserved through Phase-52 expansion).
+  - actionRationale: all 4 aliases render together (NEW Phase-52 quadruple-alias).
+  - quadruple-alias + tables + XSS defenses all hold on every surface.
+  - Bare references + aliases coexist on every surface (Phase-50 + Phase-51 + Phase-52 backwards-compat).
+- **Third describe block** — `Phase-52 first all-4-surfaces 3-consumer same-slot composition (arxiv+doi+pubmed in remarkPlugins everywhere)` (5 tests; mirrors Phase-49 same-slot-all-4-surfaces block verbatim with pubmed added as 3rd consumer):
+  - bio: arxiv + doi + pubmed all render in the same paragraph (NEW Phase-52 3-consumer same-slot).
+  - reviewNotes: arxiv + doi + pubmed all render (NEW Phase-52 3-consumer same-slot).
+  - actionRationale: arxiv + doi + pubmed all render (NEW Phase-52 3-consumer same-slot).
+  - rationale: arxiv + doi + pubmed all render (Phase-50 baseline preserved through Phase-52 expansion).
+  - Regex-disjointness-as-sole-defense at 3-consumer cardinality: registration ordering preserved on every surface (arxiv → doi → pubmed source-order respected; collision-free per regex character class disjointness alone).
+- **Composition matrix snapshot Phase 52** under `MARKDOWN_EXTENSIONS=wikilinks,tables,arxiv,doi,pubmed`:
+  - bio: **QUADRUPLE-ALIAS + 5-CONSUMER + 3-CONSUMER-SAME-SLOT** (Phase 52 expansion).
+  - reviewNotes: **QUADRUPLE-ALIAS + 5-CONSUMER + 3-CONSUMER-SAME-SLOT** (Phase 52 expansion).
+  - rationale: **QUADRUPLE-ALIAS + 5-CONSUMER + 3-CONSUMER-SAME-SLOT** (Phase-51 baseline preserved).
+  - actionRationale: **QUADRUPLE-ALIAS + 5-CONSUMER + 3-CONSUMER-SAME-SLOT** (Phase 52 expansion).
+- **Maximum-consumer-cardinality state generalized to all 4 surfaces** under default dispatch — 5 consumers × 4 surfaces × 3 slots = 60 component-surface-slot positions × 20 active.
+- **No source code changes**: Unit 52.1 already shipped the constant-value expansion + dispatch test flips; Unit 52.2 is pure test additions validating the all-4-surfaces quadruple-alias state through the full sanitize pipeline.
+- **Smoke gates**:
+  - `pnpm typecheck` clean.
+  - `pnpm test` → tests pass.
+  - `pnpm audit-content` → 0 errors / 6 warnings UNCHANGED.
+  - First Load JS = 103 kB UNCHANGED; Middleware = 160 kB UNCHANGED.
+
 #### Unit 52.1 — `PHASE_50_DEFAULT_ENABLED_SURFACES` cross-surface expansion to all 4 surfaces + `pubmed.test.ts` registry assertion flip + 3 dispatch tests flipped in `extensions/index.test.ts` + ADR-0018 D-G APPEND-D-AJ (fifth realization of constructor-arg-only zero-rework expansion; first 5-realization property in project history; closes APPEND-D-AH PubMed cross-surface item at 2-phase carryover — fastest cross-surface-expansion APPEND-deferral closure ever observed; 19th D-G APPEND extends record 18 → 19; tenth two-letter slot D-AJ)
 
 - Second Phase-52 unit; code + ADR APPEND.
