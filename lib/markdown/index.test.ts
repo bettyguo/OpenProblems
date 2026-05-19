@@ -12,7 +12,7 @@ import {
 } from "./extensions";
 import { ArxivExtensionRegistry, PHASE_41_DEFAULT_ENABLED_SURFACES } from "./extensions/arxiv";
 import { CompositeExtensionRegistry } from "./extensions/composite";
-import { DoiExtensionRegistry } from "./extensions/doi";
+import { DoiExtensionRegistry, PHASE_45_DEFAULT_ENABLED_SURFACES } from "./extensions/doi";
 import { PHASE_39_DEFAULT_ENABLED_SURFACES, TablesExtensionRegistry } from "./extensions/tables";
 import {
   PHASE_38_DEFAULT_ENABLED_SURFACES,
@@ -2302,5 +2302,241 @@ describe("Phase-48 doi alias under Phase-45 4-way composite — first triple-ali
     const html = renderRationaleMarkdown(md);
     expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">paper A</a>');
     expect(html).toContain('<a href="https://doi.org/10.48550/arXiv.2005.14165">paper B</a>');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-49 — end-to-end DOI cross-surface expansion (constructor-arg value-
+// only change in `PHASE_45_DEFAULT_ENABLED_SURFACES`) generalizes the
+// Phase-45 rationale-only doi consumer to all 4 markdown surfaces. Fourth
+// realization of the "constructor-arg-only zero-rework expansion" property
+// (Phase 42 wikilinks; Phase 43 tables; Phase 44 arxiv; Phase 49 doi).
+// Completes the per-consumer all-4-surfaces arc.
+//
+// Closes ADR-0018 APPEND-D-AC cross-surface item at 4-phase carryover
+// (matches Phase-38 → 42 + Phase-39 → 43 4-phase cadence verbatim).
+// ---------------------------------------------------------------------------
+
+describe("Phase-49 doi default — all 4 surfaces via PHASE_45_DEFAULT_ENABLED_SURFACES", () => {
+  beforeEach(() => {
+    __setRegistryForTests(new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES));
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it("doi renders on bio (NEW Phase-49 expansion)", () => {
+    expect(renderBioMarkdown("see doi:10.1234/abc here") ?? "").toBe(
+      '<p>see <a href="https://doi.org/10.1234/abc">doi:10.1234/abc</a> here</p>',
+    );
+  });
+
+  it("doi renders on reviewNotes (NEW Phase-49 expansion)", () => {
+    expect(renderReviewNotesMarkdown("see doi:10.1234/abc here")).toBe(
+      '<p>see <a href="https://doi.org/10.1234/abc">doi:10.1234/abc</a> here</p>',
+    );
+  });
+
+  it("doi renders on rationale (Phase-45 baseline preserved through expansion)", () => {
+    expect(renderRationaleMarkdown("see doi:10.1234/abc here")).toBe(
+      '<p>see <a href="https://doi.org/10.1234/abc">doi:10.1234/abc</a> here</p>',
+    );
+  });
+
+  it("doi renders on actionRationale (NEW Phase-49 expansion)", () => {
+    expect(renderActionRationaleMarkdown("see doi:10.1234/abc here")).toBe(
+      '<p>see <a href="https://doi.org/10.1234/abc">doi:10.1234/abc</a> here</p>',
+    );
+  });
+
+  it("Phase-48 alias renders on bio (NEW Phase-49 — first non-rationale doi alias surface)", () => {
+    expect(renderBioMarkdown("see [[doi:10.1234/abc|the paper]] here") ?? "").toBe(
+      '<p>see <a href="https://doi.org/10.1234/abc">the paper</a> here</p>',
+    );
+  });
+
+  it("Phase-48 alias renders on reviewNotes (NEW Phase-49 — alias extension flows through expansion)", () => {
+    expect(renderReviewNotesMarkdown("see [[doi:10.1234/abc|the paper]] here")).toBe(
+      '<p>see <a href="https://doi.org/10.1234/abc">the paper</a> here</p>',
+    );
+  });
+
+  it("Phase-48 alias renders on actionRationale (NEW Phase-49)", () => {
+    expect(renderActionRationaleMarkdown("see [[doi:10.1234/abc|the paper]] here")).toBe(
+      '<p>see <a href="https://doi.org/10.1234/abc">the paper</a> here</p>',
+    );
+  });
+
+  it("XSS defenses survive Phase-49 expansion on every surface", () => {
+    for (const renderer of [
+      renderBioMarkdown,
+      renderReviewNotesMarkdown,
+      renderRationaleMarkdown,
+      renderActionRationaleMarkdown,
+    ] as const) {
+      const html = renderer("[bad](javascript:alert(1)) and see doi:10.1234/abc") ?? "";
+      expect(html).not.toContain("javascript:alert");
+      expect(html).toContain('href="https://doi.org/10.1234/abc"');
+    }
+  });
+
+  it("doi renders identically across all 4 surfaces (parity)", () => {
+    const md = "cite doi:10.48550/arXiv.2005.14165 for the methodology";
+    const expected =
+      '<p>cite <a href="https://doi.org/10.48550/arXiv.2005.14165">doi:10.48550/arXiv.2005.14165</a> for the methodology</p>';
+    expect(renderBioMarkdown(md)).toBe(expected);
+    expect(renderReviewNotesMarkdown(md)).toBe(expected);
+    expect(renderRationaleMarkdown(md)).toBe(expected);
+    expect(renderActionRationaleMarkdown(md)).toBe(expected);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-49 — first "all 4 surfaces are triple-alias" state under 4-way
+// `wikilinks,tables,arxiv,doi` Phase-45 default + Phase-46/47/48 alias
+// extensions. Pre-Phase-49 only rationale was triple-alias (wikilinks +
+// arxiv + doi); Phase 49 generalizes via doi cross-surface expansion. First
+// surface-with-3-alias-consumers cardinality of 4 in project history.
+// ---------------------------------------------------------------------------
+
+describe("Phase-49 first all-4-surfaces triple-alias state under 4-way composite", () => {
+  beforeEach(() => {
+    const wikilinks = new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES);
+    const tables = new TablesExtensionRegistry(PHASE_39_DEFAULT_ENABLED_SURFACES);
+    const arxiv = new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES);
+    const doi = new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES);
+    __setRegistryForTests(new CompositeExtensionRegistry([wikilinks, tables, arxiv, doi]));
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it("bio: all 3 aliases (wikilinks + arxiv + doi) render together (NEW Phase-49 triple-alias)", () => {
+    // First time bio has 3 alias-syntax consumers active simultaneously.
+    const md =
+      "see [[scalable-oversight|topic]] and [[arxiv:1909.03004|paper A]] and [[doi:10.1234/abc|paper B]].";
+    const html = renderBioMarkdown(md) ?? "";
+    expect(html).toContain('<a href="/problems/scalable-oversight">topic</a>');
+    expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">paper A</a>');
+    expect(html).toContain('<a href="https://doi.org/10.1234/abc">paper B</a>');
+  });
+
+  it("reviewNotes: all 3 aliases render together (NEW Phase-49 triple-alias)", () => {
+    const md =
+      "see [[hallucination-reduction|topic]], [[arxiv:2024.01234|paper A]], [[doi:10.5678/xyz|paper B]].";
+    const html = renderReviewNotesMarkdown(md);
+    expect(html).toContain('<a href="/problems/hallucination-reduction">topic</a>');
+    expect(html).toContain('<a href="https://arxiv.org/abs/2024.01234">paper A</a>');
+    expect(html).toContain('<a href="https://doi.org/10.5678/xyz">paper B</a>');
+  });
+
+  it("rationale: all 3 aliases render together (Phase-48 baseline preserved through Phase-49 expansion)", () => {
+    const md =
+      "see [[benchmark-integrity|topic]] and [[arxiv:1909.03004|paper A]] and [[doi:10.1234/abc|paper B]].";
+    const html = renderRationaleMarkdown(md);
+    expect(html).toContain('<a href="/problems/benchmark-integrity">topic</a>');
+    expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">paper A</a>');
+    expect(html).toContain('<a href="https://doi.org/10.1234/abc">paper B</a>');
+  });
+
+  it("actionRationale: all 3 aliases render together (NEW Phase-49 triple-alias)", () => {
+    const md =
+      "see [[scalable-oversight|topic]], [[arxiv:1909.03004|the work]], and [[doi:10.1234/abc|cite this]].";
+    const html = renderActionRationaleMarkdown(md);
+    expect(html).toContain('<a href="/problems/scalable-oversight">topic</a>');
+    expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">the work</a>');
+    expect(html).toContain('<a href="https://doi.org/10.1234/abc">cite this</a>');
+  });
+
+  it("triple-alias + tables + XSS defenses all hold on every surface", () => {
+    const md =
+      "[bad](javascript:alert(1)) [[scalable-oversight|safe slug]] [[arxiv:1909.03004|safe arxiv]] [[doi:10.1234/abc|safe doi]].\n\n| A | B |\n|---|---|\n| 1 | 2 |";
+    for (const renderer of [
+      renderBioMarkdown,
+      renderReviewNotesMarkdown,
+      renderRationaleMarkdown,
+      renderActionRationaleMarkdown,
+    ] as const) {
+      const html = renderer(md) ?? "";
+      expect(html).not.toContain("javascript:alert");
+      expect(html).toContain('<a href="/problems/scalable-oversight">safe slug</a>');
+      expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">safe arxiv</a>');
+      expect(html).toContain('<a href="https://doi.org/10.1234/abc">safe doi</a>');
+      expect(html).toContain("<table>");
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-49 — first "all 4 surfaces have same-slot composition" state. The
+// arxiv-vs-doi pair in `remarkPlugins` is now active on every surface under
+// 4-way default. Validates the regex-disjointness-as-sole-defense discipline
+// (Phase 48 established) end-to-end at maximum surface cardinality.
+// ---------------------------------------------------------------------------
+
+describe("Phase-49 first all-4-surfaces same-slot composition (arxiv+doi in remarkPlugins everywhere)", () => {
+  beforeEach(() => {
+    const arxiv = new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES);
+    const doi = new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES);
+    __setRegistryForTests(new CompositeExtensionRegistry([arxiv, doi]));
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it("bio: arxiv + doi both render in the same paragraph (NEW Phase-49 same-slot)", () => {
+    const html =
+      renderBioMarkdown("compare arxiv:1909.03004 with doi:10.1234/abc.def directly") ?? "";
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+    expect(html).toContain('href="https://doi.org/10.1234/abc.def"');
+  });
+
+  it("reviewNotes: arxiv + doi both render in the same paragraph (NEW Phase-49 same-slot)", () => {
+    const html = renderReviewNotesMarkdown("compare arxiv:2024.01234 with doi:10.5678/xyz here");
+    expect(html).toContain('href="https://arxiv.org/abs/2024.01234"');
+    expect(html).toContain('href="https://doi.org/10.5678/xyz"');
+  });
+
+  it("actionRationale: arxiv + doi both render in the same paragraph (NEW Phase-49 same-slot)", () => {
+    const html = renderActionRationaleMarkdown("see arxiv:1909.03004 and doi:10.1234/abc together");
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+    expect(html).toContain('href="https://doi.org/10.1234/abc"');
+  });
+
+  it("rationale: arxiv + doi both render (Phase-45 baseline preserved through Phase-49 expansion)", () => {
+    const html = renderRationaleMarkdown(
+      "compare arxiv:1909.03004 with doi:10.1234/abc.def for context",
+    );
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+    expect(html).toContain('href="https://doi.org/10.1234/abc.def"');
+  });
+
+  it("regex-disjointness-as-sole-defense: arxiv-then-doi ordering preserved on every surface", () => {
+    // The two `remarkPlugins` plugins run in registration order (arxiv
+    // first, then doi). For this pair, plugin ORDER is immaterial
+    // because their regex character classes cannot match the same string
+    // (arxiv lacks `/`; doi requires `/`). Output text-flow follows source.
+    for (const renderer of [
+      renderBioMarkdown,
+      renderReviewNotesMarkdown,
+      renderRationaleMarkdown,
+      renderActionRationaleMarkdown,
+    ] as const) {
+      const html = renderer("arxiv:1909.03004 then doi:10.1234/abc") ?? "";
+      const arxivIdx = html.indexOf("arxiv.org");
+      const doiIdx = html.indexOf("doi.org");
+      expect(arxivIdx).toBeGreaterThan(-1);
+      expect(doiIdx).toBeGreaterThan(-1);
+      expect(arxivIdx).toBeLessThan(doiIdx);
+    }
   });
 });

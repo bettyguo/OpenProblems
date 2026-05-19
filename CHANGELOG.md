@@ -2470,6 +2470,41 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 49 — Community-adjacent surfaces (**fortieth NON-§13 phase**: fourth cross-surface expansion of a Phase-37-framework consumer — doi expands from `rationale`-only to all 4 markdown surfaces via constructor-arg change in `PHASE_45_DEFAULT_ENABLED_SURFACES`; mirrors Phase 42 + 43 + 44 expansion pattern verbatim; **first cross-surface expansion since Phase 44**; **fourth realization of the "constructor-arg-only zero-rework expansion" property** — completes per-consumer all-4-surfaces arc; closes ADR-0018 APPEND-D-AC cross-surface item at 4-phase carryover; APPEND-D-AG seventh two-letter slot; 5 numbered units anticipated; 44th "Continue" override invoked; **IN PROGRESS**)
 
+#### Unit 49.2 — 19 NEW end-to-end Phase-49 tests on all 4 surfaces + first all-4-surfaces triple-alias state validated + first all-4-surfaces same-slot composition validated (1088/72)
+
+- Third Phase-49 unit; code-only (test additions to `lib/markdown/index.test.ts`).
+- **First describe block** — `Phase-49 doi default — all 4 surfaces via PHASE_45_DEFAULT_ENABLED_SURFACES` (9 tests):
+  - doi renders on bio (NEW Phase-49).
+  - doi renders on reviewNotes (NEW).
+  - doi renders on rationale (Phase-45 baseline preserved).
+  - doi renders on actionRationale (NEW).
+  - Phase-48 alias renders on bio (NEW Phase-49 — first non-rationale doi alias surface).
+  - Phase-48 alias renders on reviewNotes (NEW — alias extension flows through expansion).
+  - Phase-48 alias renders on actionRationale (NEW).
+  - XSS defenses survive Phase-49 expansion on every surface.
+  - doi renders identically across all 4 surfaces (parity).
+- **Second describe block** — `Phase-49 first all-4-surfaces triple-alias state under 4-way composite` (5 tests):
+  - bio: all 3 aliases (wikilinks + arxiv + doi) render together (NEW Phase-49 triple-alias).
+  - reviewNotes: all 3 aliases render together (NEW Phase-49 triple-alias).
+  - rationale: all 3 aliases render together (Phase-48 baseline preserved through Phase-49 expansion).
+  - actionRationale: all 3 aliases render together (NEW Phase-49 triple-alias).
+  - triple-alias + tables + XSS defenses all hold on every surface.
+- **Third describe block** — `Phase-49 first all-4-surfaces same-slot composition (arxiv+doi in remarkPlugins everywhere)` (5 tests):
+  - bio: arxiv + doi both render in the same paragraph (NEW Phase-49 same-slot).
+  - reviewNotes: arxiv + doi both render (NEW).
+  - actionRationale: arxiv + doi both render (NEW).
+  - rationale: arxiv + doi both render (Phase-45 baseline preserved through Phase-49 expansion).
+  - regex-disjointness-as-sole-defense: arxiv-then-doi ordering preserved on every surface.
+- **First "all 4 surfaces are triple-alias" state** in project history validated end-to-end. Pre-Phase-49 only rationale was triple-alias; Phase 49 generalizes via doi cross-surface expansion. **First surface-with-3-alias-consumers cardinality of 4**.
+- **First "all 4 surfaces have same-slot composition" state** in project history validated end-to-end. The arxiv-vs-doi pair in `remarkPlugins` is now active on every surface under 4-way default. Regex-disjointness-as-sole-defense discipline (Phase 48 established) exercised at maximum surface cardinality.
+- **`PHASE_45_DEFAULT_ENABLED_SURFACES` import re-added** in `lib/markdown/index.test.ts` to wire the new Phase-49 default-dispatch + 4-way composite + same-slot blocks to the now-all-4-surfaces constant.
+- **No source code changes**: Unit 49.1 already shipped the constant-value change; Unit 49.2 is pure test additions validating the all-4-surfaces behavior through the full sanitize pipeline.
+- **Smoke gates**:
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **1088 / 72 files** (+19 vs Unit 49.1; +50 vs Phase-48 close).
+  - `pnpm audit-content` → 0 errors / 6 warnings UNCHANGED.
+  - First Load JS = 103 kB UNCHANGED (103 consecutive units); Middleware = 160 kB UNCHANGED.
+
 #### Unit 49.1 — `PHASE_45_DEFAULT_ENABLED_SURFACES` cross-surface expansion to all 4 surfaces + dispatch tests updated + decoupling of Phase-45/46/47/48 baseline blocks + ADR-0018 D-G APPEND-D-AG (fourth realization of constructor-arg-only zero-rework expansion property; first all-4-surfaces same-slot composition under default; first all-4-surfaces triple-alias state anticipated at Unit 49.2; 16th D-G APPEND extends record 15 → 16; 1069/72)
 
 - Second Phase-49 unit; code + ADR APPEND.
