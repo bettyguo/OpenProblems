@@ -7,12 +7,26 @@ import { OrcidExtensionRegistry, PHASE_54_DEFAULT_ENABLED_SURFACES } from "./orc
 import { PHASE_50_DEFAULT_ENABLED_SURFACES, PubmedExtensionRegistry } from "./pubmed";
 import { PHASE_39_DEFAULT_ENABLED_SURFACES, TablesExtensionRegistry } from "./tables";
 import type { MarkdownExtensionRegistry } from "./types";
-import { PHASE_38_DEFAULT_ENABLED_SURFACES, WikilinkExtensionRegistry } from "./wikilinks";
+import {
+  CROSS_ENTITY_BUILD_HREF,
+  PHASE_38_DEFAULT_ENABLED_SURFACES,
+  WikilinkExtensionRegistry,
+} from "./wikilinks";
 
 function buildSingleConsumerRegistry(name: string): MarkdownExtensionRegistry {
   switch (name) {
     case "wikilinks":
       return new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES);
+    case "wikilinks-cross-entity":
+      // Phase 63 Unit 63.2 — first new MARKDOWN_EXTENSIONS single-value
+      // arm since Phase 58 bioRxiv. First registry-level realization of
+      // the Phase-62 plugin-option axis: WikilinkExtensionRegistry with
+      // CROSS_ENTITY_BUILD_HREF emits tuple-form rehypePlugins per
+      // ADR-0018 D-G APPEND-D-AU (Phase 63 cross-entity wikilinks;
+      // closes APPEND-D-L item 3 at 25-phase carryover).
+      return new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES, {
+        buildHref: CROSS_ENTITY_BUILD_HREF,
+      });
     case "tables":
       return new TablesExtensionRegistry(PHASE_39_DEFAULT_ENABLED_SURFACES);
     case "arxiv":
@@ -28,9 +42,9 @@ function buildSingleConsumerRegistry(name: string): MarkdownExtensionRegistry {
     default:
       throw new Error(
         `Unknown MARKDOWN_EXTENSIONS value: "${name}". ` +
-          `Recognized values at this build: "default" (default), "wikilinks", "tables", "arxiv", "doi", "pubmed", "orcid", "biorxiv", ` +
+          `Recognized values at this build: "default" (default), "wikilinks", "wikilinks-cross-entity", "tables", "arxiv", "doi", "pubmed", "orcid", "biorxiv", ` +
           `or a comma-separated combination of non-default values (e.g., "wikilinks,tables,arxiv,doi,pubmed,orcid,biorxiv"). ` +
-          `Phase 59+ values will extend this list — see ADR-0018 D-G APPEND APPEND-D-AP.`,
+          `Phase 63+ values will extend this list — see ADR-0018 D-G APPEND APPEND-D-AU.`,
       );
   }
 }

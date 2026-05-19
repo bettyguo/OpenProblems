@@ -308,16 +308,31 @@ export const rehypeResolveWikilinks: Plugin<[ResolveWikilinksOptions?], Root> =
  */
 export class WikilinkExtensionRegistry implements MarkdownExtensionRegistry {
   private readonly enabledSurfaces: ReadonlySet<MarkdownSurface>;
+  private readonly buildHref: ResolveWikilinksOptions["buildHref"];
 
-  constructor(enabledSurfaces: ReadonlySet<MarkdownSurface>) {
+  constructor(
+    enabledSurfaces: ReadonlySet<MarkdownSurface>,
+    options: { buildHref?: ResolveWikilinksOptions["buildHref"] } = {},
+  ) {
     this.enabledSurfaces = enabledSurfaces;
+    this.buildHref = options.buildHref;
   }
 
   getExtensions(surface: MarkdownSurface): MarkdownExtensionSet {
-    if (this.enabledSurfaces.has(surface)) {
+    if (!this.enabledSurfaces.has(surface)) return {};
+    if (this.buildHref === undefined) {
+      // Phase 38-62 bare-form emit preserved when no buildHref is set
+      // (the existing `MARKDOWN_EXTENSIONS=wikilinks` arm behavior is
+      // byte-identical to Phase 62). The Phase-62 Unit 62.2 invariant
+      // "registry-emitted rehypePlugins is the bare plugin reference"
+      // is load-bearing here.
       return { rehypePlugins: [rehypeResolveWikilinks] };
     }
-    return {};
+    // Phase 63+ tuple-form emit when buildHref is set (Phase 63 Unit
+    // 63.2; first registry-level realization of the plugin-option axis;
+    // wired via the `MARKDOWN_EXTENSIONS=wikilinks-cross-entity` arm
+    // with `CROSS_ENTITY_BUILD_HREF`).
+    return { rehypePlugins: [[rehypeResolveWikilinks, { buildHref: this.buildHref }]] };
   }
 }
 

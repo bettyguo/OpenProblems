@@ -650,3 +650,110 @@ describe("Phase-63 cross-entity wikilinks — regex extension + entityType routi
     );
   });
 });
+
+// =============================================================================
+// Phase-63 cross-entity wikilinks — WikilinkExtensionRegistry buildHref ctor
+// arg + tuple-form emit (Unit 63.2).
+//
+// These tests cover the Phase-63 evolution of WikilinkExtensionRegistry:
+// adding an optional `{ buildHref }` constructor arg that switches the
+// registry's emit shape from Phase-38-baseline bare form (no buildHref) to
+// Phase-63 tuple form (buildHref set). They jointly assert:
+//
+//   - Phase-62 Unit-62.2 invariant preserved: default-call (no buildHref)
+//     emits bare plugin reference (identity-equal to rehypeResolveWikilinks).
+//   - Phase-63 tuple-form emit when buildHref is set; tuple shape matches
+//     unified()'s `[plugin, options]` invocation contract.
+//   - Cross-entity routing observable end-to-end via tuple-form emit.
+// =============================================================================
+
+describe("Phase-63 cross-entity wikilinks — WikilinkExtensionRegistry buildHref ctor arg", () => {
+  it("default ctor (no options) emits bare plugin reference (Phase-62 invariant preserved)", () => {
+    // Critical regression guard: existing factory call
+    // `new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES)`
+    // (no second arg) must continue to emit bare form. The
+    // `MARKDOWN_EXTENSIONS=wikilinks` arm depends on this behavior.
+    const r = new WikilinkExtensionRegistry(new Set(["actionRationale"]));
+    const set = r.getExtensions("actionRationale");
+    expect(set.rehypePlugins).toEqual([rehypeResolveWikilinks]);
+    expect(set.rehypePlugins?.[0]).toBe(rehypeResolveWikilinks);
+  });
+
+  it("ctor with options={} (explicit empty options) still emits bare plugin reference", () => {
+    // Defensive check: passing `{}` as the options arg should be
+    // equivalent to omitting it (`buildHref` ends up undefined; bare emit).
+    const r = new WikilinkExtensionRegistry(new Set(["actionRationale"]), {});
+    const set = r.getExtensions("actionRationale");
+    expect(set.rehypePlugins?.[0]).toBe(rehypeResolveWikilinks);
+  });
+
+  it("ctor with buildHref emits tuple form [plugin, {buildHref}]", () => {
+    const customBuilder = (slug: string) => `/custom/${slug}`;
+    const r = new WikilinkExtensionRegistry(new Set(["bio"]), { buildHref: customBuilder });
+    const set = r.getExtensions("bio");
+    expect(set.rehypePlugins).toEqual([[rehypeResolveWikilinks, { buildHref: customBuilder }]]);
+    // The tuple's first element is the bare plugin reference; second is
+    // the options object containing the curator-supplied buildHref.
+    const tuple = set.rehypePlugins?.[0] as [
+      typeof rehypeResolveWikilinks,
+      ResolveWikilinksOptions,
+    ];
+    expect(tuple[0]).toBe(rehypeResolveWikilinks);
+    expect(tuple[1].buildHref).toBe(customBuilder);
+  });
+
+  it("ctor with CROSS_ENTITY_BUILD_HREF emits tuple form wired to cross-entity router", () => {
+    const r = new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES, {
+      buildHref: CROSS_ENTITY_BUILD_HREF,
+    });
+    for (const surface of ["bio", "reviewNotes", "rationale", "actionRationale"] as const) {
+      const set = r.getExtensions(surface);
+      const tuple = set.rehypePlugins?.[0] as [
+        typeof rehypeResolveWikilinks,
+        ResolveWikilinksOptions,
+      ];
+      expect(tuple[0]).toBe(rehypeResolveWikilinks);
+      expect(tuple[1].buildHref).toBe(CROSS_ENTITY_BUILD_HREF);
+    }
+  });
+
+  it("ctor with buildHref returns empty extension set on non-enabled surfaces (Phase-38 surface-disable preserved)", () => {
+    // Surface gating is orthogonal to the plugin-option axis: a surface
+    // not in `enabledSurfaces` returns `{}` regardless of buildHref.
+    const r = new WikilinkExtensionRegistry(new Set(["bio"]), {
+      buildHref: CROSS_ENTITY_BUILD_HREF,
+    });
+    expect(r.getExtensions("reviewNotes")).toEqual({});
+    expect(r.getExtensions("rationale")).toEqual({});
+    expect(r.getExtensions("actionRationale")).toEqual({});
+  });
+
+  it("end-to-end: ctor with CROSS_ENTITY_BUILD_HREF produces /papers/{slug} via tuple-form emit", () => {
+    // Drive a full unified pipeline against a registry-emitted tuple to
+    // verify the cross-entity routing manifests end-to-end via the
+    // registry pathway (not just direct plugin invocation). The tuple
+    // shape `[plugin, options]` is destructured into unified's 2-arg
+    // `.use(plugin, options)` form — passing the tuple itself as a
+    // single arg would trigger unified's list-form interpretation
+    // (which treats element 2 as a separate "plugin" — invalid).
+    const r = new WikilinkExtensionRegistry(new Set(["bio"]), {
+      buildHref: CROSS_ENTITY_BUILD_HREF,
+    });
+    const tuple = r.getExtensions("bio").rehypePlugins?.[0] as [
+      typeof rehypeResolveWikilinks,
+      ResolveWikilinksOptions,
+    ];
+    const html = String(
+      unified()
+        .use(remarkParse)
+        .use(remarkRehype)
+        .use(tuple[0], tuple[1])
+        .use(rehypeStringify)
+        .processSync("[[paper:arxiv-2401]] cited by [[author:jane-doe|Jane Doe]]"),
+    );
+    expect(html).toBe(
+      '<p><a href="/papers/arxiv-2401">arxiv-2401</a> cited by ' +
+        '<a href="/authors/jane-doe">Jane Doe</a></p>',
+    );
+  });
+});

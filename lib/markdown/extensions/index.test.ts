@@ -689,4 +689,63 @@ describe("getExtensionRegistry (factory) — env-var dispatch", () => {
     expect(first).not.toBe(second);
     expect(second).toBeInstanceOf(WikilinkExtensionRegistry);
   });
+
+  // -----------------------------------------------------------------------
+  // Phase-63 wikilinks-cross-entity dispatch tests — first new
+  // MARKDOWN_EXTENSIONS single-value arm since Phase 58 bioRxiv (first
+  // 5-phase gap between single-value-arm additions). First registry-level
+  // realization of the Phase-62 plugin-option axis: factory constructs
+  // WikilinkExtensionRegistry with CROSS_ENTITY_BUILD_HREF, registry emits
+  // tuple-form rehypePlugins per Phase-63 Unit 63.2.
+  // -----------------------------------------------------------------------
+
+  it("error message lists 'wikilinks-cross-entity' Phase 63", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "unknown";
+    expect(() => getExtensionRegistry()).toThrow(/wikilinks-cross-entity/);
+  });
+
+  it("returns WikilinkExtensionRegistry when MARKDOWN_EXTENSIONS is 'wikilinks-cross-entity' Phase 63", () => {
+    // The Phase-63 arm shares the same registry class as the Phase-38
+    // `wikilinks` arm — the difference is the ctor's optional `buildHref`
+    // arg (Unit 63.2 evolution). Both arms instantiate
+    // WikilinkExtensionRegistry; only the emit shape differs (bare form
+    // for `wikilinks` vs tuple form for `wikilinks-cross-entity`).
+    process.env["MARKDOWN_EXTENSIONS"] = "wikilinks-cross-entity";
+    expect(getExtensionRegistry()).toBeInstanceOf(WikilinkExtensionRegistry);
+  });
+
+  it("wikilinks-cross-entity dispatch emits tuple-form rehypePlugins on all 4 surfaces (Phase-63 first registry-level realization of plugin-option axis)", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "wikilinks-cross-entity";
+    const r = getExtensionRegistry();
+    for (const surface of ["bio", "reviewNotes", "rationale", "actionRationale"] as const) {
+      const plugins = r.getExtensions(surface).rehypePlugins;
+      expect(plugins).toBeDefined();
+      expect(plugins).toHaveLength(1);
+      // Tuple-form emit: each element is [plugin, options], not the bare
+      // plugin reference. Distinguishes Phase-63 wikilinks-cross-entity
+      // arm from Phase-38 wikilinks arm (which emits bare form).
+      const entry = plugins?.[0];
+      expect(Array.isArray(entry)).toBe(true);
+    }
+  });
+
+  it("wikilinks (Phase-38 default arm) still emits bare-form rehypePlugins (Phase-62 Unit-62.2 invariant preserved across Phase-63 registry constructor evolution)", () => {
+    // Critical regression guard: the existing `MARKDOWN_EXTENSIONS=wikilinks`
+    // arm MUST continue to emit bare plugin reference (not tuple form),
+    // even after the Phase-63 Unit-63.2 registry constructor evolution.
+    // The Phase-62 Unit-62.2 test "registry-emitted rehypePlugins is the
+    // bare plugin reference (default-call shape preserved)" is load-
+    // bearing for backwards-compat.
+    process.env["MARKDOWN_EXTENSIONS"] = "wikilinks";
+    const r = getExtensionRegistry();
+    for (const surface of ["bio", "reviewNotes", "rationale", "actionRationale"] as const) {
+      const plugins = r.getExtensions(surface).rehypePlugins;
+      expect(plugins).toBeDefined();
+      expect(plugins).toHaveLength(1);
+      // Bare-form emit: the element is the plugin reference itself (not
+      // a tuple). Phase-38-through-Phase-62 behavior preserved.
+      const entry = plugins?.[0];
+      expect(Array.isArray(entry)).toBe(false);
+    }
+  });
 });
