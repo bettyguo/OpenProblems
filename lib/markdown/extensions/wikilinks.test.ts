@@ -5,6 +5,7 @@ import { unified } from "unified";
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  CROSS_ENTITY_BUILD_HREF,
   DEFAULT_BUILD_HREF,
   PHASE_38_DEFAULT_ENABLED_SURFACES,
   rehypeResolveWikilinks,
@@ -308,11 +309,14 @@ describe("Phase-62 plugin parameterization — buildHref option behavior", () =>
       buildHref: builder,
     });
     // Three slug matches → three invocations (no caching, no double-call;
-    // the plugin invokes builder once per regex match).
+    // the plugin invokes builder once per regex match). **Phase 63
+    // extension**: plugin now passes `(slug, entityType)` per the
+    // Phase-63 regex extension; entityType is undefined for bare
+    // `[[slug]]` syntax (no `entity-type:` prefix captured).
     expect(builder).toHaveBeenCalledTimes(3);
-    expect(builder).toHaveBeenNthCalledWith(1, "a");
-    expect(builder).toHaveBeenNthCalledWith(2, "b");
-    expect(builder).toHaveBeenNthCalledWith(3, "a");
+    expect(builder).toHaveBeenNthCalledWith(1, "a", undefined);
+    expect(builder).toHaveBeenNthCalledWith(2, "b", undefined);
+    expect(builder).toHaveBeenNthCalledWith(3, "a", undefined);
   });
 
   it("custom buildHref orthogonal to Phase-46 alias-syntax — href uses builder, display preserves alias", () => {
@@ -518,5 +522,131 @@ describe("Phase-62 plugin parameterization — WikilinkExtensionRegistry integra
         .processSync("[[a]]"),
     );
     expect(html).toBe('<p><a href="/x/a">a</a></p>');
+  });
+});
+
+// =============================================================================
+// Phase-63 cross-entity wikilinks (Unit 63.1).
+//
+// Closes ADR-0018 APPEND-D-L item 3 (Cross-entity wikilinks) at 25-phase
+// carryover (Phase 38 → 63) — NEW LONGEST ABSOLUTE APPEND-DEFERRAL CLOSURE
+// RECORD; third consecutive phase to set the absolute-record; first
+// 3-consecutive-phase absolute-record-extension streak (Phase 61 22-phase
+// → Phase 62 24-phase → Phase 63 25-phase). First consumer of a forward-
+// compat plugin-option affordance shipped in a prior phase (Phase 62
+// buildHref → Phase 63 cross-entity). Extends WIKILINK_PATTERN to capture
+// optional `(entity-type):` prefix; extends ResolveWikilinksOptions.buildHref
+// signature from (slug) => string to (slug, entityType?) => string; adds
+// exported CROSS_ENTITY_BUILD_HREF routing paper / author / institution to
+// /papers / /authors / /institutions (graceful-degradation fallback to
+// /problems for undefined OR unknown entity-types).
+// =============================================================================
+
+describe("Phase-63 cross-entity wikilinks — regex extension + entityType routing", () => {
+  it("regex matches [[paper:slug]] and routes via CROSS_ENTITY_BUILD_HREF to /papers/{slug}", () => {
+    // Display text falls back to the slug portion (NOT the full
+    // `entity-type:slug` combination) per the existing `display = alias
+    // ?? slug` semantic; entity-type is metadata used only for routing.
+    // Curators wanting a richer display can use the alias form
+    // `[[paper:slug|display]]`.
+    expect(
+      runWikilinkPipelineWithOptions("[[paper:arxiv-2401-12345]]", {
+        buildHref: CROSS_ENTITY_BUILD_HREF,
+      }),
+    ).toBe('<p><a href="/papers/arxiv-2401-12345">arxiv-2401-12345</a></p>');
+  });
+
+  it("regex matches [[author:slug|display]] (entity-type + alias) — href uses entity routing, display preserved", () => {
+    expect(
+      runWikilinkPipelineWithOptions("[[author:jane-doe|Jane Doe]]", {
+        buildHref: CROSS_ENTITY_BUILD_HREF,
+      }),
+    ).toBe('<p><a href="/authors/jane-doe">Jane Doe</a></p>');
+  });
+
+  it("regex matches [[institution:slug]] and routes to /institutions/{slug}", () => {
+    // Display = slug ("mit"); entity-type "institution" is metadata only.
+    expect(
+      runWikilinkPipelineWithOptions("[[institution:mit]]", {
+        buildHref: CROSS_ENTITY_BUILD_HREF,
+      }),
+    ).toBe('<p><a href="/institutions/mit">mit</a></p>');
+  });
+
+  it("regex still matches bare [[plain-slug]] under Phase-63 extended pattern (backwards-compat)", () => {
+    // Critical regression guard: extended regex `(?:(entity-type):)?` is
+    // optional; bare slug syntax without `:` continues to match with
+    // entityType=undefined and routes via CROSS_ENTITY_BUILD_HREF fallback
+    // to /problems/{slug}. Pre-Phase-63 wikilink shapes are unaffected.
+    expect(
+      runWikilinkPipelineWithOptions("[[scalable-oversight]]", {
+        buildHref: CROSS_ENTITY_BUILD_HREF,
+      }),
+    ).toBe('<p><a href="/problems/scalable-oversight">scalable-oversight</a></p>');
+  });
+
+  it("CROSS_ENTITY_BUILD_HREF: paper entity-type routes to /papers/{slug}", () => {
+    expect(CROSS_ENTITY_BUILD_HREF("arxiv-2401-12345", "paper")).toBe("/papers/arxiv-2401-12345");
+  });
+
+  it("CROSS_ENTITY_BUILD_HREF: author entity-type routes to /authors/{slug}", () => {
+    expect(CROSS_ENTITY_BUILD_HREF("jane-doe", "author")).toBe("/authors/jane-doe");
+  });
+
+  it("CROSS_ENTITY_BUILD_HREF: institution entity-type routes to /institutions/{slug}", () => {
+    expect(CROSS_ENTITY_BUILD_HREF("mit", "institution")).toBe("/institutions/mit");
+  });
+
+  it("CROSS_ENTITY_BUILD_HREF: undefined entityType routes to /problems/{slug} (bare wikilink fallback)", () => {
+    expect(CROSS_ENTITY_BUILD_HREF("scalable-oversight")).toBe("/problems/scalable-oversight");
+    expect(CROSS_ENTITY_BUILD_HREF("scalable-oversight", undefined)).toBe(
+      "/problems/scalable-oversight",
+    );
+  });
+
+  it("CROSS_ENTITY_BUILD_HREF: unknown entityType gracefully degrades to /problems/{slug}", () => {
+    // Curator typos (e.g., `[[papre:x]]` instead of `[[paper:x]]`) or
+    // unrecognized prefixes (e.g., `[[project:x]]`) fall back to
+    // /problems/{slug} per D-11 lean (graceful degradation). The
+    // entityType prefix is silently dropped; only the slug portion is used.
+    expect(CROSS_ENTITY_BUILD_HREF("x", "papre")).toBe("/problems/x");
+    expect(CROSS_ENTITY_BUILD_HREF("x", "project")).toBe("/problems/x");
+    expect(CROSS_ENTITY_BUILD_HREF("x", "zzz")).toBe("/problems/x");
+  });
+
+  it("DEFAULT_BUILD_HREF byte-identity preserved across Phase-63 (still 1-arg; Phase-62 contract preserved)", () => {
+    // The Phase-62 contract that DEFAULT_BUILD_HREF is "byte-identical to
+    // the Phase-38 hardcoded shape" is PRESERVED at Phase 63. DEFAULT_BUILD_HREF
+    // remains a 1-arg function; the Phase-63 regex extension passes entityType
+    // as a second arg, which TypeScript optional-param widening silently
+    // drops when calling a 1-arg builder. Bare `[[plain-slug]]` under
+    // DEFAULT_BUILD_HREF continues to route to /problems/{slug}.
+    expect(DEFAULT_BUILD_HREF("scalable-oversight")).toBe("/problems/scalable-oversight");
+    expect(DEFAULT_BUILD_HREF.length).toBe(1); // arity assertion
+  });
+
+  it("DEFAULT_BUILD_HREF silently drops entityType under Phase-63 regex (legacy fallback semantics for `wikilinks` arm)", () => {
+    // When `[[paper:x]]` is matched and DEFAULT_BUILD_HREF is the builder
+    // (e.g., under MARKDOWN_EXTENSIONS=wikilinks), the captured entityType
+    // "paper" is silently dropped; only "x" (the slug portion) is used.
+    // Routes to /problems/x. This is the LEGACY fallback semantics that
+    // the existing `wikilinks` arm exhibits at Phase 63; curators who want
+    // cross-entity routing opt INTO the new `wikilinks-cross-entity` arm.
+    expect(runWikilinkPipeline("[[paper:x]]")).toBe('<p><a href="/problems/x">x</a></p>');
+    expect(runWikilinkPipeline("[[author:jane-doe]]")).toBe(
+      '<p><a href="/problems/jane-doe">jane-doe</a></p>',
+    );
+  });
+
+  it("Phase-63 entityType + alias + multi-match coexistence (combinatorial smoke)", () => {
+    const html = runWikilinkPipelineWithOptions(
+      "see [[paper:arxiv-1|the paper]] cited by [[author:jane-doe|Jane Doe]] from [[institution:mit]]",
+      { buildHref: CROSS_ENTITY_BUILD_HREF },
+    );
+    expect(html).toBe(
+      '<p>see <a href="/papers/arxiv-1">the paper</a> cited by ' +
+        '<a href="/authors/jane-doe">Jane Doe</a> from ' +
+        '<a href="/institutions/mit">mit</a></p>',
+    );
   });
 });

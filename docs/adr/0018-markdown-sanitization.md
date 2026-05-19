@@ -5224,6 +5224,259 @@ cap):
 - **ADR-0025 concrete content-moderation provider** — Phase
   63+; not autonomous-tractable.
 
+#### EXTENDED Phase 63 Unit 63.1 — APPEND-D-AU cross-entity wikilinks consuming the Phase-62 `buildHref` affordance (first consumer of a forward-compat plugin-option affordance shipped in a prior phase; first 2-phase forward-compat-affordance prerequisite-fulfillment arc completed; first registry-level realization of the plugin-option axis; first 2-realization for the plugin-option-axis; wikilinks consumer gains 4th evolution post-first-ship; first state where a consumer has 4+ evolutions; closes APPEND-D-L item 3 at 25-phase carryover — NEW LONGEST ABSOLUTE APPEND-DEFERRAL CLOSURE EVER OBSERVED (extends Phase-62 24-phase record by 1 phase — third consecutive phase to set the absolute-record; first 3-consecutive-phase absolute-record-extension streak); D-L becomes first D-clause with 4-of-6 enumerated items closed; first D-clause with 4+ items closed; 22-phase APPEND-deferral closure cadence; 30th D-G APPEND record extends; twenty-first two-letter slot D-AU; fifty-fourth NON-§13 phase; first new `MARKDOWN_EXTENSIONS` single-value arm since Phase 58 bioRxiv (`wikilinks-cross-entity`; 8 → 9 arms))
+
+Phase 63 extends `WIKILINK_PATTERN` to capture optional
+`entity-type:` prefix, extends `ResolveWikilinksOptions.buildHref`
+signature with optional second `entityType?` param, adds new
+exported `CROSS_ENTITY_BUILD_HREF` constant routing per
+entity-type (paper / author / institution → /papers / /authors
+/ /institutions; fallback `/problems`), gives
+`WikilinkExtensionRegistry` an optional `{ buildHref }`
+constructor arg, and adds new `MARKDOWN_EXTENSIONS=wikilinks-cross-entity`
+single-value arm (Unit 63.2). **First consumer of a forward-
+compat plugin-option affordance shipped in a prior phase** —
+Phase 62 shipped the buildHref affordance as plugin-option-
+ready-before-consumer-demand realization; Phase 63 IS the
+first consumer. **First 2-phase forward-compat-affordance
+prerequisite-fulfillment arc completed** in project history
+(Phase 62 prerequisite ship → Phase 63 consumption ship).
+
+**APPEND-D-AU cross-entity-wikilinks shape**:
+
+```ts
+// Before (Phase 46 ship through Phase-62 close):
+const WIKILINK_PATTERN = /\[\[([a-z0-9-]+)(?:\|([^\]\n]+))?\]\]/g;
+export interface ResolveWikilinksOptions {
+  buildHref?: (slug: string) => string;
+}
+
+// After (Phase 63 ship):
+const WIKILINK_PATTERN = /\[\[(?:([a-z0-9-]+):)?([a-z0-9-]+)(?:\|([^\]\n]+))?\]\]/g;
+export interface ResolveWikilinksOptions {
+  buildHref?: (slug: string, entityType?: string) => string;
+}
+
+// New Phase-63 export (colocated with DEFAULT_BUILD_HREF):
+export const CROSS_ENTITY_BUILD_HREF = (slug: string, entityType?: string): string => {
+  if (entityType === "paper") return `/papers/${slug}`;
+  if (entityType === "author") return `/authors/${slug}`;
+  if (entityType === "institution") return `/institutions/${slug}`;
+  return `/problems/${slug}`;
+};
+```
+
+**Regex capture groups (Phase 63)**:
+- Group 1: optional `entity-type` (e.g., `paper`, `author`,
+  `institution`); `undefined` for bare `[[slug]]` syntax.
+- Group 2: `slug` (always defined).
+- Group 3: optional `display` alias (Phase-46 unchanged
+  position; renumbered from group 2 → group 3 by the Phase-63
+  entity-type insertion).
+
+**Backwards-compat preserved**: every Phase-38 / Phase-46
+wikilink shape continues to match the extended regex with
+`entityType = undefined`:
+- `[[plain-slug]]` → entityType undefined, slug = "plain-slug".
+- `[[plain-slug|display]]` → entityType undefined, slug =
+  "plain-slug", alias = "display".
+
+New Phase-63 shapes:
+- `[[paper:arxiv-2401-12345]]` → entityType = "paper", slug =
+  "arxiv-2401-12345".
+- `[[author:jane-doe|Jane Doe]]` → entityType = "author", slug
+  = "jane-doe", alias = "Jane Doe".
+- `[[institution:mit]]` → entityType = "institution", slug =
+  "mit".
+
+**`DEFAULT_BUILD_HREF` UNCHANGED** (Phase-62 byte-identity
+contract preserved): 1-arg signature `(slug: string) => string`
+preserved; entityType silently dropped if plugin passes one
+(TypeScript optional-param widening allows `(slug) => string`
+to satisfy `(slug, entityType?) => string`). Under bare
+`WikilinkExtensionRegistry` default-call (the existing
+`MARKDOWN_EXTENSIONS=wikilinks` arm), `[[paper:x]]` routes to
+`/problems/x` (slug portion only; entityType silently
+dropped). This is the **legacy fallback semantics** that the
+existing `wikilinks` arm exhibits at Phase 63; curators who
+want cross-entity routing opt INTO the new `wikilinks-cross-entity`
+arm.
+
+**`CROSS_ENTITY_BUILD_HREF` routing logic**:
+- `entityType === "paper"` → `/papers/${slug}`.
+- `entityType === "author"` → `/authors/${slug}`.
+- `entityType === "institution"` → `/institutions/${slug}`.
+- `entityType === undefined` (bare `[[slug]]` syntax) →
+  `/problems/${slug}`.
+- `entityType` matches `[a-z0-9-]+` but is none of the above
+  (e.g., curator typo `[[papre:x]]` or unrecognized
+  `[[project:x]]`) → `/problems/${slug}` (graceful degradation
+  per D-11 lean; same fallback as bare wikilinks).
+
+**XSS-safety contract preserved**: both `slug` and `entityType`
+are regex-validated to `[a-z0-9-]+` per APPEND-D-I; both
+`DEFAULT_BUILD_HREF` and `CROSS_ENTITY_BUILD_HREF` interpolate
+them into relative paths only (no external host injection).
+**No new XSS surface** introduced by Phase 63.
+
+**11 NEW Phase-63 tests** in `wikilinks.test.ts` (new `describe`
+block "Phase-63 cross-entity wikilinks — regex extension +
+entityType routing"):
+1. Regex matches `[[paper:slug]]` and routes via
+   `CROSS_ENTITY_BUILD_HREF` to `/papers/{slug}`.
+2. Regex matches `[[author:slug|display]]` (entity-type +
+   alias).
+3. Regex matches `[[institution:slug]]`.
+4. Regex still matches bare `[[plain-slug]]` (backwards-compat
+   regression guard).
+5. `CROSS_ENTITY_BUILD_HREF` paper routing direct invocation.
+6. `CROSS_ENTITY_BUILD_HREF` author routing direct invocation.
+7. `CROSS_ENTITY_BUILD_HREF` institution routing direct
+   invocation.
+8. `CROSS_ENTITY_BUILD_HREF` undefined entityType fallback.
+9. `CROSS_ENTITY_BUILD_HREF` unknown entityType graceful
+   degradation.
+10. `DEFAULT_BUILD_HREF` byte-identity preserved across Phase
+    63 (still 1-arg; Phase-62 contract preserved).
+11. `DEFAULT_BUILD_HREF` silently drops entityType under
+    Phase-63 regex (legacy fallback semantics for `wikilinks`
+    arm).
+12. Combinatorial smoke: entity-type + alias + multi-match
+    coexistence.
+
+Plus one updated Phase-62 spy test (`custom buildHref invoked
+exactly once per matched slug`): expectations updated from
+`(slug)` to `(slug, undefined)` since the plugin now passes
+`(slug, entityType)` per the Phase-63 regex extension.
+
+**First consumer of a forward-compat plugin-option affordance
+shipped in a prior phase** in project history. Phase 62
+shipped the `ResolveWikilinksOptions.buildHref` affordance as
+plugin-option-ready-before-consumer-demand realization
+(forward-compat for an unknown future consumer). Phase 63 IS
+the first consumer via `CROSS_ENTITY_BUILD_HREF`. **First 2-
+phase forward-compat-affordance prerequisite-fulfillment arc
+completed** in project history (Phase 62 prerequisite ship →
+Phase 63 consumption ship).
+
+**First registry-level realization of the plugin-option axis**
+in project history. Phase 62 introduced the axis as a plugin-
+signature affordance (the bare `WikilinkExtensionRegistry`
+continued to emit `rehypePlugins: [rehypeResolveWikilinks]`
+without options). Phase 63 ships the first registry that
+constructs with `{ buildHref: CROSS_ENTITY_BUILD_HREF }` and
+emits tuple-form (via the `wikilinks-cross-entity` arm; Unit
+63.2). **First 2-realization for the plugin-option-axis**
+(Phase 62 affordance + Phase 63 registry consumer).
+
+**Wikilinks consumer gains 4th evolution post-first-ship**
+(Phase 42 cross-surface + Phase 46 alias + Phase 62 plugin
+parameterization + Phase 63 cross-entity). **First state where
+a consumer has 4+ evolutions** in project history. Wikilinks
+becomes the deepest-evolved consumer in the framework (arxiv
++ tables remain at 3 evolutions).
+
+**Closes APPEND-D-L item 3** (Cross-entity wikilinks — Phase
+38 enumerated as a deferral at wikilinks first-ship) at **25-
+phase carryover** (Phase 38 → Phase 63). **NEW LONGEST
+ABSOLUTE APPEND-DEFERRAL CLOSURE EVER OBSERVED** — extends
+Phase-62 24-phase record (Phase 38 → 62 D-L item 6 plugin
+parameterization) by 1 phase. **Third consecutive phase to
+set the absolute-record** — first 3-consecutive-phase
+absolute-record-extension streak in project history.
+APPEND-D-L closure trajectory:
+- Item 1 (cross-surface) → Phase 42 = 4-phase carryover.
+- Item 2 (alias) → Phase 46 = 8-phase carryover.
+- Item 6 (plugin parameterization) → Phase 62 = 24-phase
+  carryover.
+- Item 3 (cross-entity) → Phase 63 = **25-phase carryover
+  (new record)**.
+- Items 4 (`<a class="wikilink">` styling), 5 (404 handling)
+  → still deferred (Phase 64+).
+
+**D-L becomes first D-clause with 4-of-6 enumerated items
+closed** within the cadence in project history. **First
+D-clause with 4+ items closed** in project history. Prior
+multi-item D-clauses reached 3-of-N at Phase 61 (D-Q) and
+Phase 62 (D-L). D-L at 4-of-6 establishes a new depth for
+multi-item D-clause resolution.
+
+**Twenty-second prep-/APPEND-doc-level deferral closed by a
+later phase**: Phase 42 → 38 D-L item 1; …; Phase 61 → 39 D-Q
+item 4 `<caption>`; Phase 62 → 38 D-L item 6 plugin
+parameterization; **Phase 63 → 38 D-L item 3 Cross-entity
+wikilinks**. **APPEND-deferral closure cadence sustained 22
+phases** — **new longest sustained cadence in project
+history** (extends Phase-62 record 21 → 22).
+
+**Thirtieth APPEND on ADR-0018 D-G** — extends the **first-
+ADR-D-clause-with-most-APPENDs record** from 29 → 30 (Phase 18
++ 27 + 29 + 37 + 38 + 39 + 40 + 41 + 42 + 43 + 44 + 45 + 46 +
+47 + 48 + 49 + 50 + 51 + 52 + 53 + 54 + 55 + 56 + 57 + 58 +
+59 + 60 + 61 + 62 + **63**).
+
+**Twenty-first two-letter APPEND letter D-AU** (after Phase-43
+D-AA + … + Phase-62 D-AT). Excel-spreadsheet column convention
+sustained.
+
+**Twenty-eighth consecutive no-new-ADR phase** (Phase 36-63;
+extends Phase-62 record 27 → 28). **Thirty-third consecutive
+phase without new B category** (Phase 31-63; extends Phase-62
+record 32 → 33). **Fifty-fourth NON-§13 phase** (extends
+Phase-62 milestone to 54); first 54-phase ledger-closure
+streak.
+
+**Phase 64+ deferrals** (Phase-63 cross-entity scope cap):
+
+- **`<a class="wikilink">` styling** (APPEND-D-L item 4
+  carries) — Phase 64+; still blocked pending framework
+  decision on multi-source schemaOverrides.
+- **404 handling for unresolved wikilinks** (APPEND-D-L item
+  5 carries) — Phase 64+.
+- **Surface-specific table schemas** (APPEND-D-Q item 6 — last
+  remaining D-Q deferral) — Phase 64+; closure would make D-Q
+  the first D-clause with ALL items closed.
+- **Bare arxiv / DOI / PubMed / ORCID / bioRxiv IDs without
+  prefix** — Phase 64+.
+- **Legacy numeric-only bioRxiv IDs** (pre-2019 format) —
+  Phase 64+.
+- **dx.doi.org legacy host parsing** (APPEND-D-AC carries) —
+  Phase 64+.
+- **Stricter trailing-lookahead for trailing-period DOIs**
+  (APPEND-D-AC carries) — Phase 64+.
+- **Paper-card hover-preview** (APPEND-D-Y item 6 carries) —
+  Phase 64+.
+- **Auto-trim of alias display whitespace** — Phase 64+.
+- **Empty-alias fallback unification** across consumers —
+  Phase 64+.
+- **A future plugin that EMITS `<caption>` or
+  `colSpan`/`rowSpan`/`scope`** to realize the Phase-57 /
+  Phase-61 schema-ready-before-plugin states — Phase 64+.
+- **Curator-facing builder configuration** (locale-prefixed
+  paths, curator-overridable href builders, relative-path
+  variants) — Phase 64+.
+- **Locale-prefixed cross-entity routing** (e.g.,
+  `/{locale}/papers/${slug}`) — Phase 64+.
+- **OSF preprint consumer** — eighth concrete consumer —
+  Phase 64+.
+- **6th-or-later `remarkPlugins` consumer beyond arxiv + doi
+  + pubmed + orcid + biorxiv** — Phase 64+.
+- **2nd `rehypePlugins` consumer beyond wikilinks** — Phase
+  64+.
+- **2nd `schemaOverrides` consumer beyond tables** — Phase
+  64+.
+- **3rd regex evolution on `remarkLinkArxivIds`** — Phase
+  64+.
+- **Cross-entity entity-type expansion beyond paper / author
+  / institution** (e.g., problem-tags, rating-actions,
+  rating-challenges) — Phase 64+.
+- **Build-time validation of captured entity-type against
+  content/papers / content/authors / content/institutions** —
+  Phase 64+; would extend the existing 404-handling deferral
+  to cross-entity routes.
+- **ADR-0025 concrete content-moderation provider** — Phase
+  64+; not autonomous-tractable.
+
 ### D-H. Phase 18+ deferrals
 
 Phase 17 ships MINIMAL markdown surface. Deferred to Phase 18+:
