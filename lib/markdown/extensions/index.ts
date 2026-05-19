@@ -1,4 +1,5 @@
 import { ArxivExtensionRegistry, PHASE_41_DEFAULT_ENABLED_SURFACES } from "./arxiv";
+import { BiorxivExtensionRegistry, PHASE_58_DEFAULT_ENABLED_SURFACES } from "./biorxiv";
 import { CompositeExtensionRegistry } from "./composite";
 import { DefaultExtensionRegistry } from "./default";
 import { DoiExtensionRegistry, PHASE_45_DEFAULT_ENABLED_SURFACES } from "./doi";
@@ -22,12 +23,14 @@ function buildSingleConsumerRegistry(name: string): MarkdownExtensionRegistry {
       return new PubmedExtensionRegistry(PHASE_50_DEFAULT_ENABLED_SURFACES);
     case "orcid":
       return new OrcidExtensionRegistry(PHASE_54_DEFAULT_ENABLED_SURFACES);
+    case "biorxiv":
+      return new BiorxivExtensionRegistry(PHASE_58_DEFAULT_ENABLED_SURFACES);
     default:
       throw new Error(
         `Unknown MARKDOWN_EXTENSIONS value: "${name}". ` +
-          `Recognized values at this build: "default" (default), "wikilinks", "tables", "arxiv", "doi", "pubmed", "orcid", ` +
-          `or a comma-separated combination of non-default values (e.g., "wikilinks,tables,arxiv,doi,pubmed,orcid"). ` +
-          `Phase 55+ values will extend this list — see ADR-0018 D-G APPEND APPEND-D-AL.`,
+          `Recognized values at this build: "default" (default), "wikilinks", "tables", "arxiv", "doi", "pubmed", "orcid", "biorxiv", ` +
+          `or a comma-separated combination of non-default values (e.g., "wikilinks,tables,arxiv,doi,pubmed,orcid,biorxiv"). ` +
+          `Phase 59+ values will extend this list — see ADR-0018 D-G APPEND APPEND-D-AP.`,
       );
   }
 }

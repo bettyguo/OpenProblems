@@ -2486,6 +2486,51 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - First Load JS = 103 kB UNCHANGED (144 consecutive units at Phase 57.4 ship; this unit docs-only); Middleware = 160 kB UNCHANGED.
 - THINK artifact: `docs/thinking/58.0-phase-58-prep.md`.
 
+#### Unit 58.1 — NEW `biorxiv.ts` + NEW `biorxiv.test.ts` (27 tests: 22 plugin + 5 class) + factory dispatch arm + 7 NEW dispatch tests in `extensions/index.test.ts` + ADR-0018 D-G APPEND-D-AP (seventh concrete Phase-37-framework consumer; first 5th-`remarkPlugins` consumer; regex-disjointness-as-sole-defense scales 4 → 5; first 5-consumer same-slot composition; first 7-consumer composition under default dispatch — new maximum-consumer-cardinality state; 8th env-var single-value arm; closes APPEND-D-AL bioRxiv consumer item at 4-phase carryover; 25th D-G APPEND extends record 24 → 25; sixteenth two-letter slot D-AP; 1373/75)
+
+- Second Phase-58 unit; code + ADR APPEND.
+- **NEW `lib/markdown/extensions/biorxiv.ts`** (mirrors `orcid.ts` Phase 54 ship verbatim with bioRxiv-specific substitutions):
+  - `BIORXIV_PATTERN = /\bbiorxiv:(\d{4}\.\d{2}\.\d{2}\.\d{6})(v\d+)?\b/gi` — modern bioRxiv ID format `YYYY.MM.DD.NNNNNN` (8-character date prefix + 6-digit submission number) with optional version suffix `vN`. Older numeric-only IDs from pre-2019 bioRxiv format are NOT matched (Phase 59+ deferral).
+  - `remarkLinkBiorxivIds` plugin walks mdast text nodes and splice-replaces matched `biorxiv:` references with mdast `link` nodes whose url is `https://www.biorxiv.org/content/10.1101/${id}${version ?? ""}` (canonical bioRxiv URL form; `10.1101/` is bioRxiv's stable DOI registrant namespace synthesized server-side).
+  - `BiorxivExtensionRegistry` class accepts `ReadonlySet<MarkdownSurface>` constructor arg; returns `{ remarkPlugins: [remarkLinkBiorxivIds] }` for enabled surfaces, `{}` otherwise.
+  - `PHASE_58_DEFAULT_ENABLED_SURFACES = Set(["rationale"])` — rationale-only per Phase-41/45/50/54 first-ship demand-signal-first precedent.
+- **NEW `lib/markdown/extensions/biorxiv.test.ts`** (mirrors `orcid.test.ts` shape verbatim) with 27 tests:
+  - 22 plugin-level tests covering: basic match + URL emission; case-insensitive prefix preservation; version suffix preservation (`v1`, `v10`); sentence-context match; multiple bioRxiv IDs in same paragraph; mixed-version coexistence; mid-word rejection via word-boundaries; invalid date prefix lengths; invalid month/day formats; invalid submission number lengths; legacy numeric-only ID rejection; missing-prefix rejection; `doi:10.1101/` non-overlap; trailing/preceding punctuation preservation; start/end-of-line positioning; URL contains literal `10.1101/` prefix; non-overlap with arxiv/doi/pubmed/orcid prefix-discriminator validation; raw HTML stripping (allowDangerousHtml: false default); early-return optimization on text-only nodes.
+  - 5 class-level tests covering: enabled-surface returns plugin; non-enabled returns empty; empty enabled set; multiple enabled surfaces (Phase 59+ cross-surface expansion shape); `PHASE_58_DEFAULT_ENABLED_SURFACES = Set(["rationale"])` registry assertion.
+- **`lib/markdown/extensions/index.ts` factory dispatch arm** (in-place edit):
+  - Added `case "biorxiv":` returning `new BiorxivExtensionRegistry(PHASE_58_DEFAULT_ENABLED_SURFACES)`.
+  - Updated error message to list `biorxiv` as a recognized single-value arm (8th arm); updated example composite to include biorxiv; updated future-extension reference to Phase 59+ / APPEND-D-AP.
+- **`lib/markdown/extensions/index.test.ts` 7 NEW dispatch tests**:
+  - `error message lists 'biorxiv' Phase 58`.
+  - `returns BiorxivExtensionRegistry when MARKDOWN_EXTENSIONS is 'biorxiv' Phase 58`.
+  - `BiorxivExtensionRegistry dispatch enables biorxiv on rationale only Phase 58` (mirrors Phase-41/45/50/54 first-ship demand-signal-first precedent).
+  - `returns CompositeExtensionRegistry for 'arxiv,doi,pubmed,orcid,biorxiv' Phase 58 (first 5-consumer same-slot composition)`.
+  - `arxiv,doi,pubmed,orcid,biorxiv composite concatenates ALL 5 plugins in remarkPlugins on rationale (first 5-consumer same-slot Phase 58)`. **First 5-consumer same-slot composition** in project history; **regex-disjointness-as-sole-defense discipline scales from 4 to 5 same-slot consumers**; all 10 pairs of 5 consumers pairwise collision-free via distinct literal prefixes.
+  - `returns CompositeExtensionRegistry for 'wikilinks,tables,arxiv,doi,pubmed,orcid,biorxiv' (first 7-way Phase 58)`.
+  - `7-way composite enables ALL 7 CONSUMERS on rationale Phase 58 (first 7-consumer composition under default dispatch; new maximum-consumer-cardinality state)`. **First 7-consumer composition under default dispatch**; rationale carries 7 consumers across 3 slots; other 3 surfaces carry 6 consumers (orcid all-4 post-Phase-56; biorxiv inactive there per rationale-only first-ship).
+- **ADR-0018 D-G** gains **EXTENDED Phase 58 Unit 58.1** block + **APPEND-D-AP** (sixteenth two-letter slot after D-AA … D-AO). Documents:
+  - **Seventh concrete Phase-37-framework consumer** in project history (extends Phase-54 6-consumer record). `BiorxivExtensionRegistry`.
+  - **First 5th-`remarkPlugins` consumer** beyond arxiv + doi + pubmed + orcid. **Regex-disjointness-as-sole-defense discipline scales from 4 to 5 same-slot consumers** without architectural change. All 10 pairs of 5 consumers (arxiv-doi, arxiv-pubmed, arxiv-orcid, arxiv-biorxiv, doi-pubmed, doi-orcid, doi-biorxiv, pubmed-orcid, pubmed-biorxiv, orcid-biorxiv) collision-free via distinct literal prefixes.
+  - **8th env-var single-value arm** for `MARKDOWN_EXTENSIONS` (adds `biorxiv`; first expansion of recognized-arms set since Phase 54 `orcid`).
+  - **First 5-consumer same-slot composition** in project history (rationale only Phase-58 first-ship; cross-surface expansion deferred Phase 59+).
+  - **First 7-consumer composition under default dispatch** in project history (rationale only). **New maximum-consumer-cardinality state**. 7 consumers × 4 surfaces × 3 slots = 84 component-surface-slot positions (up from Phase-56 maximum of 72).
+  - **Closes APPEND-D-AL bioRxiv preprint consumer item** at 4-phase carryover (Phase 54 → 58). Standard consumer-first-ship gap. **Consumer-first-ship cadence stabilized at 4-to-5-phase gaps** across 4 successive sibling-consumer closures.
+  - **Seventh consumer first-ship closure** in the cadence (Phase 38 wikilinks + Phase 39 tables + Phase 41 arxiv + Phase 45 doi + Phase 50 pubmed + Phase 54 orcid + Phase 58 biorxiv).
+  - **Seventeenth prep-/APPEND-doc-level deferral closed** — APPEND-deferral closure cadence sustained 17 phases (longest ever; extends Phase-57 record 16 → 17).
+  - **25th APPEND on D-G** — extends first-ADR-D-clause-with-most-APPENDs record 24 → 25. **Sixteenth two-letter APPEND letter D-AP**.
+  - **23rd consecutive no-new-ADR phase** (Phase 36-58; extends Phase-57 record 22 → 23). **28th consecutive phase without new B category** (Phase 31-58; extends Phase-57 record 27 → 28). **Forty-ninth NON-§13 phase**.
+  - **DOI-overlap concern resolved via prefix discriminator**: bioRxiv DOIs `10.1101/<id>`; biorxiv-prefix references `biorxiv:<id>` (curator chooses citation form). doi consumer requires literal `doi:` prefix; biorxiv consumer requires literal `biorxiv:` prefix — pairwise-disjoint regex character classes.
+- **Smoke gates**:
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **1373 / 75 files** (+34 NEW tests across +1 new test file `biorxiv.test.ts`).
+  - `pnpm audit-content` → 0 errors / 6 warnings UNCHANGED.
+  - First Load JS = 103 kB UNCHANGED (145 consecutive units at Unit 58.1 ship); Middleware = 160 kB UNCHANGED.
+- **No new ADRs / migrations / i18n keys / operational gates / runtime deps**.
+- **Env vars**: `MARKDOWN_EXTENSIONS` gains 8th single-value arm `biorxiv`; total env-var count UNCHANGED at 14.
+- **`lib/markdown/extensions/` files**: 19 → **21** (+ `biorxiv.ts` + `biorxiv.test.ts`).
+- **Phase-37-framework concrete consumers**: 6 → **7**.
+- **OPEN_QUESTIONS UNCHANGED** at 28 resolved + 4 lean + 34 open = 66 total.
+
 ### Phase 57 — Community-adjacent surfaces (**forty-eighth NON-§13 phase**: first schema-override extension on the `schemaOverrides` slot kind — GFM table cells gain `colspan` / `rowspan` / `scope` attribute allow-list entries via in-place value evolution of `GFM_TABLE_SCHEMA_OVERRIDES`; **first schema-extension phase-shape pattern in project history** — sibling to the established plugin-regex-extension pattern; **first evolution of a Phase-37-framework consumer's `schemaOverrides` slot since Phase 39 ship** (18-phase stability streak ends); **first state where all 3 framework slot kinds have been evolved post-Phase-39**; closes ADR-0018 APPEND-D-Q item 3 at **18-phase carryover** (Phase 39 → Phase 57) — **new longest absolute APPEND-deferral closure ever observed** (beats prior 12-phase Phase 41 → 53 D-Y item 2 record); APPEND-D-AO fifteenth two-letter slot; anticipated 5 numbered units; 52nd "Continue" override invoked — second invocation past half-century threshold)
 
 #### Unit 57.4 — Phase 57 acceptance gate (first schema-override extension on `schemaOverrides` slot kind; first schema-extension phase-shape pattern; first state where all 3 framework slot kinds have been evolved post-Phase-39; first schema-ready-before-plugin pattern; new longest absolute APPEND-deferral closure at 18-phase carryover; D-AO; 1339/74; 144th consecutive 103 kB unit; 53rd "Continue" override opportunity at Phase 57 → 58 boundary)

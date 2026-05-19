@@ -4081,6 +4081,221 @@ phase**.
 - **3rd regex evolution on `remarkLinkArxivIds`** — Phase
   58+.
 
+**EXTENDED Phase 58 Unit 58.1** — **seventh concrete Phase-37-
+framework consumer** in project history: bioRxiv preprint
+auto-link via NEW `BiorxivExtensionRegistry` +
+`MARKDOWN_EXTENSIONS=biorxiv` env-var dispatch arm. **First
+5th-`remarkPlugins` consumer** beyond arxiv (Phase 41) + doi
+(Phase 45) + pubmed (Phase 50) + orcid (Phase 54). **Regex-
+disjointness-as-sole-defense discipline scales from 4 to 5
+same-slot consumers without architectural change** — Phase 48
+established the discipline for 2 same-slot consumers; Phase
+50 scaled to 3; Phase 54 scaled to 4; Phase 58 scales to 5.
+All 10 pairs of 5 consumers (arxiv-doi, arxiv-pubmed, arxiv-
+orcid, arxiv-biorxiv, doi-pubmed, doi-orcid, doi-biorxiv,
+pubmed-orcid, pubmed-biorxiv, orcid-biorxiv) are pairwise
+collision-free via distinct literal prefixes (`arxiv:`,
+`doi:`, `pubmed:`/`pmid:`, `orcid:`, `biorxiv:`).
+
+**APPEND-D-AP bioRxiv consumer shape**:
+
+```ts
+const BIORXIV_PATTERN = /\bbiorxiv:(\d{4}\.\d{2}\.\d{2}\.\d{6})(v\d+)?\b/gi;
+
+export function remarkLinkBiorxivIds() {
+  return function transformer(tree: Root): undefined {
+    // visit text nodes, splice-replace biorxiv: matches with
+    // mdast `link` nodes whose url is
+    // `https://www.biorxiv.org/content/10.1101/${id}${version}`
+  };
+}
+
+export class BiorxivExtensionRegistry implements MarkdownExtensionRegistry {
+  // ... constructor accepts ReadonlySet<MarkdownSurface>
+  // ... getExtensions(surface) returns { remarkPlugins: [remarkLinkBiorxivIds] }
+  //     if enabled, else {}
+}
+
+export const PHASE_58_DEFAULT_ENABLED_SURFACES: ReadonlySet<MarkdownSurface> =
+  new Set(["rationale"]);
+```
+
+**Pattern strictness**: `\d{4}\.\d{2}\.\d{2}\.\d{6}` matches
+the modern bioRxiv ID format `YYYY.MM.DD.NNNNNN` introduced
+~2019 — 8-character date prefix (year.month.day) + 6-digit
+submission number. Example identifiers: `2024.01.15.575678`,
+`2023.12.05.570123`. Optional `(v\d+)?` version suffix
+captures explicit versions (`v1`, `v2`, `v10`, etc.) mirroring
+Phase-41 arxiv version suffix shape. Older numeric-only IDs
+from pre-2019 bioRxiv format are NOT matched by this regex —
+Phase 59+ deferral if curator content surfaces older preprint
+citations (mirrors Phase-53 arxiv legacy ID-class extension
+shape).
+
+**URL emission**: `https://www.biorxiv.org/content/10.1101/${id}${version ?? ""}`.
+The `10.1101/` prefix is bioRxiv's stable DOI registrant
+namespace (synthesized server-side from the curator's bare
+ID). Version suffix appended verbatim when present. Canonical
+URL form per bioRxiv conventions.
+
+**DOI-overlap concern resolution**: bioRxiv preprints have
+DOIs of the form `10.1101/<id>`. However, the curator
+references bioRxiv preprints via `biorxiv:<id>` (literal
+`biorxiv:` prefix + bare YYYY.MM.DD.NNNNNN ID WITHOUT the
+`10.1101/` DOI-namespace prefix). The doi consumer's regex
+requires a literal `doi:` prefix to match — so curators
+writing `doi:10.1101/<id>` get the generic doi.org resolver
+URL (which redirects to bioRxiv via DOI resolution); curators
+writing `biorxiv:<id>` get the direct biorxiv.org URL form.
+No regex collision; curators choose the citation form based
+on URL preference.
+
+**First 5-consumer same-slot composition** under
+`MARKDOWN_EXTENSIONS=arxiv,doi,pubmed,orcid,biorxiv` on
+rationale (Phase 58 first-ship; cross-surface expansion
+deferred Phase 59+). The `remarkPlugins` array becomes
+`[remarkLinkArxivIds, remarkLinkDoiIds, remarkLinkPubmedIds, remarkLinkOrcidIds, remarkLinkBiorxivIds]`
+on rationale.
+
+**First 7-consumer composition under default dispatch** under
+`MARKDOWN_EXTENSIONS=wikilinks,tables,arxiv,doi,pubmed,orcid,biorxiv`
+Phase-58 7-way default (rationale only):
+
+| Surface | Composition |
+|---|---|
+| `bio` | wikilinks(rehype) + tables(schema) + [arxiv, doi, pubmed, orcid](remark) — 6 consumers (Phase-56 baseline preserved; biorxiv inactive there per rationale-only first-ship) |
+| `reviewNotes` | wikilinks(rehype) + tables(schema) + [arxiv, doi, pubmed, orcid](remark) — 6 consumers |
+| `rationale` | wikilinks(rehype) + tables(schema) + [arxiv, doi, pubmed, orcid, biorxiv](remark) — **7 consumers ← new maximum cardinality** |
+| `actionRationale` | wikilinks(rehype) + tables(schema) + [arxiv, doi, pubmed, orcid](remark) — 6 consumers |
+
+**New maximum-consumer-cardinality state**. Mirrors Phase-54
+introduction of 6-consumer cardinality at rationale-only.
+
+**8th env-var single-value arm** for `MARKDOWN_EXTENSIONS`
+(adds `biorxiv`; first expansion of recognized-arms set since
+Phase 54 `orcid`). Mirrors the Phase-54 6-arm-to-7-arm
+expansion. Recognized values at Phase 58: `default`,
+`wikilinks`, `tables`, `arxiv`, `doi`, `pubmed`, `orcid`,
+`biorxiv` + comma-separated compositions.
+
+**XSS audit Phase 58**: bioRxiv plugin emits absolute https://
+URLs (`https://www.biorxiv.org/content/10.1101/...`) with no
+URL-protocol surface beyond the existing `https:` allow-list.
+No new tag-names; no event-handler attribute paths. The
+display text becomes mdast `text` node `value` inside an
+mdast `link` node, then transits through `remark-rehype` to a
+hast `<a>` element with text-node children. The text-node
+value is HTML-escaped by `rehype-stringify` per HTML5 spec
+(no raw HTML leakage). **No new XSS surface**.
+
+**Closes APPEND-D-AL bioRxiv preprint consumer item** ("bioRxiv
+preprint consumer (`biorxiv:` / DOI-overlap with doi consumer)
+— seventh concrete consumer; Phase 55+") at **4-phase
+carryover** (Phase 54 → Phase 58). Standard consumer-first-
+ship gap (Phase 41 → 45 doi 4-phase; Phase 45 → 50 pubmed
+5-phase; Phase 50 → 54 orcid 4-phase; Phase 54 → 58 biorxiv
+**4-phase**). **Consumer-first-ship cadence stabilized at
+4-to-5-phase gaps** across 4 successive sibling-consumer
+closures.
+
+**Seventh consumer first-ship closure** in the cadence (Phase
+38 wikilinks + Phase 39 tables + Phase 41 arxiv + Phase 45
+doi + Phase 50 pubmed + Phase 54 orcid + Phase 58 biorxiv).
+
+**Seventeenth prep-/APPEND-doc-level deferral closed by a
+later phase**: Phase 42 → 38 D-L item 1; Phase 43 → 39 D-Q
+item 2; Phase 44 → 41 D-Y item 1; Phase 45 → 41 D-Y item 4;
+Phase 46 → 38 D-L item 2; Phase 47 → 41 D-Y item 5; Phase
+48 → 45 D-AC item 2; Phase 49 → 45 D-AC cross-surface; Phase
+50 → 45 D-AC PubMed PMID item; Phase 51 → new Phase-50
+deferral; Phase 52 → 50 D-AH PubMed cross-surface; Phase 53
+→ 41 D-Y item 2; Phase 54 → 45 D-AC ORCID item; Phase 55 →
+new Phase-54 deferral; Phase 56 → 54 D-AL ORCID cross-surface
+item; Phase 57 → 39 D-Q item 3 Table-specific attributes;
+**Phase 58 → 54 D-AL bioRxiv preprint consumer item**.
+**APPEND-deferral closure cadence sustained 17 phases** —
+**new longest sustained cadence in project history** (extends
+Phase-57 record 16 → 17). **First 17-phase APPEND-deferral
+closure run**.
+
+**Twenty-fifth APPEND on ADR-0018 D-G** — extends the **first-
+ADR-D-clause-with-most-APPENDs record** from 24 → 25 (Phase
+18 + 27 + 29 + 37 + 38 + 39 + 40 + 41 + 42 + 43 + 44 + 45 +
+46 + 47 + 48 + 49 + 50 + 51 + 52 + 53 + 54 + 55 + 56 + 57 +
+**58**).
+
+**Sixteenth two-letter APPEND letter D-AP** (after Phase-43
+D-AA + Phase-44 D-AB + Phase-45 D-AC + Phase-46 D-AD + Phase-
+47 D-AE + Phase-48 D-AF + Phase-49 D-AG + Phase-50 D-AH +
+Phase-51 D-AI + Phase-52 D-AJ + Phase-53 D-AK + Phase-54
+D-AL + Phase-55 D-AM + Phase-56 D-AN + Phase-57 D-AO). Excel-
+spreadsheet column convention sustained.
+
+**Twenty-third consecutive no-new-ADR phase** (Phase 36-58;
+extends Phase-57 record 22 → 23). **Twenty-eighth
+consecutive phase without new B category** (Phase 31-58;
+extends Phase-57 record 27 → 28). **Forty-ninth NON-§13
+phase**.
+
+**First 7-consumer cardinality in the Phase-37-framework** in
+project history. 7 consumers × 4 surfaces × 3 slots = 84
+component-surface-slot positions; up from Phase-56 maximum of
+72 (6 × 4 × 3).
+
+**Phase 59+ deferrals** (Phase-58 biorxiv-first-ship scope cap):
+
+- **bioRxiv cross-surface expansion** to bio + reviewNotes +
+  actionRationale — Phase 59+ at standard 2-to-4-phase-gap
+  cadence; would be **seventh realization of constructor-arg-
+  only zero-rework expansion property** (extending Phase-56
+  6-realization record to 7).
+- **bioRxiv display-text alias syntax**
+  `[[biorxiv:YYYY.MM.DD.NNNNNN|display]]` — mirrors Phase-47
+  arxiv + Phase-48 doi + Phase-51 pubmed + Phase-55 orcid
+  alias-syntax pattern; Phase 59+ at standard 1-to-3-phase-
+  gap cadence; would be **seventh realization of the Phase-46
+  plugin-regex-extension phase-shape pattern**.
+- **Legacy numeric-only bioRxiv IDs** (pre-2019 format
+  `001234` style) — Phase 59+ if curator content surfaces
+  older preprint citations; mirrors Phase-53 arxiv legacy ID-
+  class extension shape.
+- **OSF preprint consumer** — eighth concrete consumer
+  alternative — Phase 59+.
+- **6th-or-later `remarkPlugins` consumer beyond arxiv + doi
+  + pubmed + orcid + biorxiv** — Phase 59+.
+- **2nd `rehypePlugins` consumer beyond wikilinks** — Phase
+  59+.
+- **2nd `schemaOverrides` consumer beyond tables** — Phase
+  59+.
+- **Bare arxiv / DOI / PubMed / ORCID / bioRxiv IDs without
+  prefix** — Phase 59+.
+- **Cross-entity wikilinks** (APPEND-D-L item 3 carries) —
+  Phase 59+.
+- **`<a class="wikilink">` styling** (APPEND-D-L item 4
+  carries) — Phase 59+.
+- **404 handling for unresolved wikilinks** (APPEND-D-L item
+  5 carries) — Phase 59+.
+- **Plugin parameterization for wikilink-href-builder**
+  (APPEND-D-L item 6 carries) — Phase 59+.
+- **`<caption>` element** (APPEND-D-Q item 4 carries) —
+  Phase 59+.
+- **Surface-specific table schemas** (APPEND-D-Q item 6
+  carries) — Phase 59+.
+- **A future plugin that EMITS `colSpan`/`rowSpan`/`scope`**
+  to realize the Phase-57 schema-ready-before-plugin state —
+  Phase 59+.
+- **dx.doi.org legacy host parsing** (APPEND-D-AC carries) —
+  Phase 59+.
+- **Stricter trailing-lookahead for trailing-period DOIs**
+  (APPEND-D-AC carries) — Phase 59+.
+- **Paper-card hover-preview** (APPEND-D-Y item 6 carries) —
+  Phase 59+.
+- **Auto-trim of alias display whitespace** — Phase 59+.
+- **Empty-alias fallback unification** across consumers —
+  Phase 59+.
+- **3rd regex evolution on `remarkLinkArxivIds`** — Phase
+  59+.
+
 ### D-H. Phase 18+ deferrals
 
 Phase 17 ships MINIMAL markdown surface. Deferred to Phase 18+:
