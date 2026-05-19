@@ -2077,3 +2077,214 @@ describe("Phase-47 arxiv alias under Phase-45 4-way composite — wikilinks,tabl
     expect(html).toContain('href="https://doi.org/10.1234/abc"');
   });
 });
+
+// ---------------------------------------------------------------------------
+// Phase-48 — end-to-end DOI alias syntax `[[doi:10.NNNN/xxx|display]]` via
+// dual-form `DOI_PATTERN` (Unit 48.1) on the rationale surface under
+// `MARKDOWN_EXTENSIONS=doi` Phase-45 default (rationale-only) + within the
+// 4-way `wikilinks,tables,arxiv,doi` Phase-45 default composite. Third
+// realization of the Phase-46 plugin-regex-extension phase-shape pattern;
+// second plugin-regex-extension on a `remarkPlugins` consumer. First
+// "two-consecutive-`remarkPlugins`-regex-extension phases" pair (Phase 47
+// arxiv + Phase 48 doi).
+//
+// Closes ADR-0018 APPEND-D-AC item 2 at 3-phase carryover (Phase 45 → 48).
+// ---------------------------------------------------------------------------
+
+describe("Phase-48 doi alias syntax — rationale surface under default dispatch", () => {
+  beforeEach(() => {
+    __setRegistryForTests(new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES));
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it("alias renders on rationale: [[doi:10.NNNN/xxx|display]] → <a>display</a>", () => {
+    expect(
+      renderRationaleMarkdown(
+        "compare with [[doi:10.48550/arXiv.2005.14165|Brown et al. 2020]] for context",
+      ),
+    ).toBe(
+      '<p>compare with <a href="https://doi.org/10.48550/arXiv.2005.14165">Brown et al. 2020</a> for context</p>',
+    );
+  });
+
+  it("alias does NOT render on bio (doi disabled by Phase-45 default)", () => {
+    // `PHASE_45_DEFAULT_ENABLED_SURFACES = Set(["rationale"])`; bio is
+    // doi-disabled. The `[[doi:...|display]]` text passes through unchanged
+    // via the bio sanitize line of defense (brackets + pipe are literal).
+    const html = renderBioMarkdown("see [[doi:10.1234/abc|display]] here") ?? "";
+    expect(html).not.toContain('href="https://doi.org/');
+    expect(html).not.toContain('<a href="https://doi.org/10.1234/abc">display</a>');
+  });
+
+  it("alias does NOT render on reviewNotes (doi disabled by Phase-45 default)", () => {
+    const html = renderReviewNotesMarkdown("see [[doi:10.1234/abc|display]] here");
+    expect(html).not.toContain('href="https://doi.org/');
+  });
+
+  it("alias does NOT render on actionRationale (doi disabled by Phase-45 default)", () => {
+    const html = renderActionRationaleMarkdown("see [[doi:10.1234/abc|display]] here");
+    expect(html).not.toContain('href="https://doi.org/');
+  });
+
+  it("backwards-compat: bare doi:10.NNNN/xxx renders on rationale (Phase-45 baseline)", () => {
+    expect(renderRationaleMarkdown("see doi:10.1234/abc.def for context")).toBe(
+      '<p>see <a href="https://doi.org/10.1234/abc.def">doi:10.1234/abc.def</a> for context</p>',
+    );
+  });
+
+  it("bracketed without alias renders verbatim doi ref (brackets stripped) on rationale", () => {
+    expect(renderRationaleMarkdown("see [[doi:10.1234/abc]] for context")).toBe(
+      '<p>see <a href="https://doi.org/10.1234/abc">doi:10.1234/abc</a> for context</p>',
+    );
+  });
+
+  it("aliased + bare doi coexist in same rationale paragraph", () => {
+    const html = renderRationaleMarkdown(
+      "compare [[doi:10.1234/abc|first paper]] with doi:10.5678/def directly",
+    );
+    expect(html).toContain('<a href="https://doi.org/10.1234/abc">first paper</a>');
+    expect(html).toContain('<a href="https://doi.org/10.5678/def">doi:10.5678/def</a>');
+  });
+
+  it("alias display HTML-escapes via text-node rendering on rationale (XSS safety)", () => {
+    const html = renderRationaleMarkdown("see [[doi:10.1234/abc|x & y]] math");
+    expect(html).toContain('<a href="https://doi.org/10.1234/abc">x &#x26; y</a>');
+  });
+
+  it("XSS defenses survive Phase-48 alias on rationale (javascript: stripped; alias resolves)", () => {
+    const html = renderRationaleMarkdown(
+      "[bad](javascript:alert(1)) and [[doi:10.1234/abc|safe display]]",
+    );
+    expect(html).not.toContain("javascript:alert");
+    expect(html).toContain('<a href="https://doi.org/10.1234/abc">safe display</a>');
+  });
+
+  it("case-insensitive bracketed prefix preserves source casing of alias", () => {
+    expect(renderRationaleMarkdown("see [[DOI:10.1234/abc|Display Text]]")).toBe(
+      '<p>see <a href="https://doi.org/10.1234/abc">Display Text</a></p>',
+    );
+  });
+
+  it("bracketed form permits `;` mid-suffix on rationale (lookahead does NOT apply inside brackets)", () => {
+    // Bare-form lookahead truncates at `;`; bracketed form allows the
+    // full Crossref suffix class verbatim — the "first selectively-
+    // applied lookahead in dual-form regex" discipline propagates through
+    // the full render pipeline.
+    expect(renderRationaleMarkdown("see [[doi:10.1234/abc;suffix|display]] here")).toBe(
+      '<p>see <a href="https://doi.org/10.1234/abc;suffix">display</a> here</p>',
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-48 — doi alias coexists with Phase-46 wikilinks alias + Phase-47
+// arxiv alias under the Phase-45 maximal 4-consumer composition
+// `wikilinks,tables,arxiv,doi`. Rationale becomes the **first triple-alias
+// surface in project history** — wikilinks alias (rehypePlugins) + arxiv
+// alias (remarkPlugins) + doi alias (remarkPlugins, second) simultaneously
+// active. The two same-slot consumers (arxiv + doi in remarkPlugins) are
+// collision-free via regex-disjointness-as-sole-defense discipline
+// (arxiv ID class lacks `/`; doi ID class requires `/`).
+// ---------------------------------------------------------------------------
+
+describe("Phase-48 doi alias under Phase-45 4-way composite — first triple-alias surface", () => {
+  beforeEach(() => {
+    const wikilinks = new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES);
+    const tables = new TablesExtensionRegistry(PHASE_39_DEFAULT_ENABLED_SURFACES);
+    const arxiv = new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES);
+    const doi = new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES);
+    __setRegistryForTests(new CompositeExtensionRegistry([wikilinks, tables, arxiv, doi]));
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it("rationale: wikilinks + arxiv + doi aliases all render together (first triple-alias surface)", () => {
+    // First surface in project history where three alias-syntax extensions
+    // are simultaneously active under default dispatch. Wikilinks alias
+    // (Phase 46; rehypePlugins) + arxiv alias (Phase 47; remarkPlugins) +
+    // doi alias (Phase 48; remarkPlugins) coexist. Regex disjointness
+    // discipline: wikilinks slug `[a-z0-9-]+` excludes `:`+`.`+`/`;
+    // arxiv ID `\d{4}\.\d{4,5}` lacks `/`; doi ID requires `/`. The
+    // three regexes cannot match the same string.
+    const md =
+      "see [[scalable-oversight|here]], [[arxiv:1909.03004|Smith 2024]], and [[doi:10.48550/arXiv.2005.14165|Brown 2020]].\n\n| A | B |\n|---|---|\n| 1 | 2 |";
+    const html = renderRationaleMarkdown(md);
+    expect(html).toContain('<a href="/problems/scalable-oversight">here</a>'); // wikilinks alias
+    expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">Smith 2024</a>'); // arxiv alias
+    expect(html).toContain('<a href="https://doi.org/10.48550/arXiv.2005.14165">Brown 2020</a>'); // doi alias
+    expect(html).toContain("<table>"); // tables
+  });
+
+  it("bio: wikilinks + arxiv aliases render (dual-alias; doi inactive on bio per Phase-45 default)", () => {
+    // bio is doi-disabled by `PHASE_45_DEFAULT_ENABLED_SURFACES = Set(["rationale"])`.
+    // Phase-46/47 alias-capable consumers remain active (wikilinks all-4
+    // since Phase 42; arxiv all-4 since Phase 44). bio remains a
+    // **dual-alias** surface — NOT triple-alias.
+    const md =
+      "I cite [[arxiv:1909.03004|the original]] for [[hallucination-reduction|this topic]] and [[doi:10.1234/abc|paper]].";
+    const html = renderBioMarkdown(md) ?? "";
+    expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">the original</a>');
+    expect(html).toContain('<a href="/problems/hallucination-reduction">this topic</a>');
+    // doi alias does NOT render on bio; the [[doi:...|paper]] text passes
+    // through. Verify no <a href="https://doi.org/..."> emitted.
+    expect(html).not.toContain('href="https://doi.org/');
+  });
+
+  it("reviewNotes: wikilinks + arxiv aliases render (dual-alias; doi inactive)", () => {
+    const md = "see [[arxiv:2024.01234|the survey]] and [[scalable-oversight|context]] notes.";
+    const html = renderReviewNotesMarkdown(md);
+    expect(html).toContain('<a href="https://arxiv.org/abs/2024.01234">the survey</a>');
+    expect(html).toContain('<a href="/problems/scalable-oversight">context</a>');
+  });
+
+  it("actionRationale: wikilinks + arxiv aliases render (dual-alias; doi inactive)", () => {
+    const md = "upgrade reflects [[arxiv:1909.03004|the work]] on [[benchmark-integrity|this]].";
+    const html = renderActionRationaleMarkdown(md);
+    expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">the work</a>');
+    expect(html).toContain('<a href="/problems/benchmark-integrity">this</a>');
+  });
+
+  it("backwards-compat under 4-way composite: bare doi + bare arxiv + bare [[slug]] still work on rationale", () => {
+    // No alias used; Phase-41 + Phase-45 + Phase-38 baselines preserved
+    // under the 4-way composite + Phase-46/47/48 dual-form regex
+    // extensions.
+    const md = "see [[scalable-oversight]] arxiv:1909.03004 doi:10.1234/abc.";
+    const html = renderRationaleMarkdown(md);
+    expect(html).toContain('<a href="/problems/scalable-oversight">scalable-oversight</a>');
+    expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">arxiv:1909.03004</a>');
+    expect(html).toContain('<a href="https://doi.org/10.1234/abc">doi:10.1234/abc</a>');
+  });
+
+  it("XSS defenses survive Phase-48 doi alias under 4-way composite on rationale", () => {
+    const md =
+      "[bad](javascript:alert(1)) [[s|safe slug]] [[arxiv:1909.03004|safe arxiv]] [[doi:10.1234/abc|safe doi]].";
+    const html = renderRationaleMarkdown(md);
+    expect(html).not.toContain("javascript:alert");
+    expect(html).toContain('<a href="/problems/s">safe slug</a>');
+    expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">safe arxiv</a>');
+    expect(html).toContain('<a href="https://doi.org/10.1234/abc">safe doi</a>');
+  });
+
+  it("regex-disjointness same-slot defense: arxiv-and-doi same paragraph emit distinct hrefs", () => {
+    // The two `remarkPlugins` plugins run in registration order
+    // (CompositeExtensionRegistry concatenation rule from APPEND-D-R).
+    // arxiv ID class `\d{4}\.\d{4,5}` lacks `/`; doi ID class requires
+    // `/`. The two regexes cannot match the same string, so plugin
+    // ORDER is immaterial for this pair — both produce distinct `<a>`
+    // elements without interfering with each other's matches.
+    const md =
+      "cite [[arxiv:1909.03004|paper A]] and [[doi:10.48550/arXiv.2005.14165|paper B]] together";
+    const html = renderRationaleMarkdown(md);
+    expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">paper A</a>');
+    expect(html).toContain('<a href="https://doi.org/10.48550/arXiv.2005.14165">paper B</a>');
+  });
+});

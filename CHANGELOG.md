@@ -2470,6 +2470,41 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 48 — Community-adjacent surfaces (**thirty-ninth NON-§13 phase**: DOI alias syntax `[[doi:10.NNNN/xxx|display]]` via dual-form regex extension on existing `remarkLinkDoiIds` plugin in `DoiExtensionRegistry`; **third realization of the Phase-46 plugin-regex-extension phase-shape pattern**; **second plugin-regex-extension on a `remarkPlugins` consumer** in project history; **second dual-form regex** in the framework; **first "two-consecutive-`remarkPlugins`-regex-extension phases" pair** (Phase 47 + 48); closes ADR-0018 APPEND-D-AC item 2 deferral at 3-phase carryover (ties Phase-44 fastest-closure record); APPEND-D-AF sixth two-letter slot; 5 numbered units; 43rd "Continue" override invoked; **IN PROGRESS**)
 
+#### Unit 48.2 — 18 NEW end-to-end DOI alias tests on rationale + 4-way composite + first triple-alias surface validation (rationale carries wikilinks + arxiv + doi aliases simultaneously; first surface with 3 alias-syntax consumers active in project history; 1069/72)
+
+- Third Phase-48 unit; code-only (test additions to `lib/markdown/index.test.ts`).
+- **First describe block** — `Phase-48 doi alias syntax — rationale surface under default dispatch` (11 tests):
+  - alias renders on rationale: `[[doi:10.48550/arXiv.2005.14165|Brown et al. 2020]]` → `<a href="https://doi.org/...">Brown et al. 2020</a>`.
+  - alias does NOT render on bio (doi disabled by Phase-45 default `PHASE_45_DEFAULT_ENABLED_SURFACES = Set(["rationale"])`).
+  - alias does NOT render on reviewNotes (doi disabled).
+  - alias does NOT render on actionRationale (doi disabled).
+  - backwards-compat: bare `doi:10.NNNN/xxx` renders on rationale (Phase-45 baseline).
+  - bracketed without alias renders verbatim doi ref (brackets stripped) on rationale.
+  - aliased + bare doi coexist in same rationale paragraph.
+  - alias display HTML-escapes via text-node rendering on rationale (XSS safety).
+  - XSS defenses survive Phase-48 alias on rationale (`javascript:` stripped; alias resolves).
+  - case-insensitive bracketed prefix preserves source casing of alias.
+  - bracketed form permits `;` mid-suffix on rationale (lookahead does NOT apply inside brackets — propagates the "first selectively-applied lookahead in dual-form regex" discipline through the full render pipeline).
+- **Second describe block** — `Phase-48 doi alias under Phase-45 4-way composite — first triple-alias surface` (7 tests):
+  - **rationale: wikilinks + arxiv + doi aliases all render together** — **FIRST TRIPLE-ALIAS SURFACE** in project history; first surface with 3 alias-syntax consumers active under default dispatch. Wikilinks alias (Phase 46; `rehypePlugins`) + arxiv alias (Phase 47; `remarkPlugins`) + doi alias (Phase 48; `remarkPlugins`) coexist conflict-free via regex-disjointness discipline (wikilinks slug `[a-z0-9-]+` excludes `:`+`.`+`/`; arxiv ID `\d{4}\.\d{4,5}` lacks `/`; doi ID requires `/`).
+  - bio: wikilinks + arxiv aliases render (dual-alias; doi inactive per Phase-45 default).
+  - reviewNotes: wikilinks + arxiv aliases render (dual-alias; doi inactive).
+  - actionRationale: wikilinks + arxiv aliases render (dual-alias; doi inactive).
+  - backwards-compat under 4-way composite: bare doi + bare arxiv + bare `[[slug]]` still work on rationale.
+  - XSS defenses survive Phase-48 doi alias under 4-way composite on rationale.
+  - **regex-disjointness same-slot defense**: arxiv-and-doi in the same paragraph emit distinct hrefs without interference; plugin ORDER is immaterial for this pair because their regex character classes cannot match the same string. Validates the **regex-disjointness-as-sole-defense discipline** for same-slot composition end-to-end.
+- **Composition matrix snapshot Phase 48** under `MARKDOWN_EXTENSIONS=wikilinks,tables,arxiv,doi` (the Phase-45 4-way default):
+  - bio: wikilinks-alias-capable (rehype) + tables (schema) + arxiv-alias-capable (remark) = **dual-alias surface** (wikilinks + arxiv).
+  - reviewNotes: same as bio = **dual-alias surface**.
+  - rationale: wikilinks-alias-capable (rehype) + tables (schema) + arxiv-alias-capable (remark) + doi-alias-capable (remark, second) = **TRIPLE-ALIAS SURFACE** (wikilinks + arxiv + doi). First in project history.
+  - actionRationale: same as bio = **dual-alias surface**.
+- **No source code changes**: Unit 48.1 already shipped the plugin code; Unit 48.2 is pure test additions validating end-to-end behavior through the full sanitize pipeline.
+- **Smoke gates**:
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **1069 / 72 files** (+18 vs Unit 48.1; +31 vs Phase-47 close).
+  - `pnpm audit-content` → 0 errors / 6 warnings UNCHANGED.
+  - First Load JS = 103 kB UNCHANGED (98 consecutive units); Middleware = 160 kB UNCHANGED.
+
 #### Unit 48.1 — `DOI_PATTERN` dual-form regex (bracketed + bare) + plugin body update + 13 NEW doi.test.ts alias tests + ADR-0018 D-G APPEND-D-AF (third realization of Phase-46 plugin-regex-extension phase-shape; second plugin-regex-extension on `remarkPlugins` consumer; second dual-form regex; first "selectively-applied lookahead in dual-form regex"; first "two-consecutive-`remarkPlugins`-regex-extension phases" pair; 15th D-G APPEND extends record 14 → 15; 1051/72)
 
 - Second Phase-48 unit; code + ADR APPEND.
