@@ -36,18 +36,48 @@ import type { MarkdownExtensionRegistry, MarkdownExtensionSet, MarkdownSurface }
  * plugin-regex-extension realizations. Closes ADR-0018
  * APPEND-D-Q item 3 at **18-phase carryover** (Phase 39 →
  * Phase 57) — new longest absolute APPEND-deferral closure
- * ever observed (beats prior 12-phase Phase 41 → 53 D-Y
- * item 2 record). Pipeline-emission caveat: `remark-gfm`
- * does NOT emit span/scope (GFM table syntax has no
- * span/scope markup) and `remark-rehype` with
+ * ever observed at the time (beats prior 12-phase Phase 41
+ * → 53 D-Y item 2 record).
+ *
+ * **Phase-61 schema-extension** (since Unit 61.1): adds
+ * `caption` to the `tagNames` allow-list, mirroring the
+ * Phase-57 schema-ready-before-plugin discipline. **Second
+ * realization of the Phase-57-derived schema-extension
+ * phase-shape pattern** in project history; **first 2-
+ * realization for that pattern** (extends Phase-57 record
+ * 1 → 2). **First state where the schema-extension
+ * pattern is observed twice within the same consumer**
+ * (tables). **Tables consumer gains 3rd evolution post-
+ * first-ship** (Phase 43 cross-surface + Phase 57
+ * attributes + Phase 61 caption); **first state where
+ * TWO consumers have 3+ evolutions each** (arxiv first via
+ * Phase 44 + 47 + 53; tables joins). Closes ADR-0018
+ * APPEND-D-Q item 4 at **22-phase carryover** (Phase 39 →
+ * Phase 61) — **NEW LONGEST ABSOLUTE APPEND-DEFERRAL
+ * CLOSURE EVER OBSERVED** (extends Phase-57 18-phase
+ * record by 4 phases). **D-Q becomes first D-clause with
+ * 3-of-4 enumerated items closed** (items 1 + 3 + 4;
+ * only item 6 surface-specific table schemas remaining).
+ * **Schema-ready-before-plugin state extended from
+ * attributes (Phase 57) to tags (Phase 61)** — first
+ * TAG-addition schema-ready-before-plugin in project
+ * history. HTML5 `<caption>` has no caption-specific
+ * attributes (the historical `align` attribute is
+ * obsolete); minimal XSS surface — text-only element
+ * with no event-handler attribute paths.
+ *
+ * Pipeline-emission caveat (preserved Phase-57 → Phase-61):
+ * `remark-gfm` does NOT emit `<caption>` (GFM table syntax
+ * has no caption markup) or span/scope (GFM table syntax
+ * has no span/scope markup) and `remark-rehype` with
  * `allowDangerousHtml: false` strips raw HTML; therefore
  * NO current Phase-37-framework pipeline emits these
- * attributes — Phase 57 ships the schema-ready-before-
- * plugin state for future plugin authors (e.g.,
- * MultiMarkdown-table, HTML-table-pass-through). Schema-
- * isolation tests in `tables.test.ts` exercise the new
- * allow-list entries directly via manual HAST tree
- * construction.
+ * attributes or the caption tag — Phase 57 + Phase 61
+ * ship the schema-ready-before-plugin state for future
+ * plugin authors (e.g., MultiMarkdown-table, HTML-table-
+ * pass-through). Schema-isolation tests in
+ * `tables.test.ts` exercise the new allow-list entries
+ * directly via manual HAST tree construction.
  *
  * Server-only: imported by `TablesExtensionRegistry` returned
  * from `getExtensionRegistry()` per the Phase-39 env-var
@@ -71,7 +101,7 @@ import type { MarkdownExtensionRegistry, MarkdownExtensionSet, MarkdownSurface }
  * list expansion that omits this override will surface as a
  * test failure (divergence-detector pattern).
  *
- * Sanitization audit boundary preserved: 6 table tags added
+ * Sanitization audit boundary preserved: 7 table tags added
  * are well-understood HTML semantic structure with no XSS-
  * vector-by-name concerns; `align` attribute is value-
  * restricted to 3 literal values via the
@@ -79,7 +109,10 @@ import type { MarkdownExtensionRegistry, MarkdownExtensionSet, MarkdownSurface }
  * adds `colspan` / `rowspan` (name-only allow; non-
  * injection-vector per HTML5 spec) and `scope` (4-literal
  * enum restriction matching the HTML5 `scope` attribute
- * spec) per APPEND-D-AO.
+ * spec) per APPEND-D-AO. Phase-61 adds `caption` to
+ * `tagNames` (HTML5 `<caption>` has no caption-specific
+ * attributes; text-only element; no XSS-vector-by-name
+ * concerns) per APPEND-D-AS.
  */
 export const GFM_TABLE_SCHEMA_OVERRIDES: Partial<Schema> = {
   tagNames: [
@@ -102,13 +135,14 @@ export const GFM_TABLE_SCHEMA_OVERRIDES: Partial<Schema> = {
     "del",
     "br",
     "input",
-    // Phase-39 GFM table additions
+    // Phase-39 GFM table additions + Phase-61 caption
     "table",
     "thead",
     "tbody",
     "tr",
     "th",
     "td",
+    "caption",
   ],
   attributes: {
     // Phase-17 base attributes (verbatim copy per override-replace)

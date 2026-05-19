@@ -43,7 +43,7 @@ function sanitizeTableHast(thead: Element[], tbody: Element[]): string {
 }
 
 describe("GFM_TABLE_SCHEMA_OVERRIDES — content", () => {
-  it("includes the 6 GFM table tags", () => {
+  it("includes the 7 GFM table tags (Phase-39 6 base tags + Phase-61 caption)", () => {
     const tagNames = GFM_TABLE_SCHEMA_OVERRIDES.tagNames ?? [];
     expect(tagNames).toContain("table");
     expect(tagNames).toContain("thead");
@@ -51,6 +51,27 @@ describe("GFM_TABLE_SCHEMA_OVERRIDES — content", () => {
     expect(tagNames).toContain("tr");
     expect(tagNames).toContain("th");
     expect(tagNames).toContain("td");
+    // Phase-61 schema-extension addition (APPEND-D-AS):
+    expect(tagNames).toContain("caption");
+  });
+
+  it("Phase-61 caption tag added to tagNames per APPEND-D-AS (second schema-extension realization; first 2-realization for that pattern; first state where schema-extension is observed twice within the same consumer)", () => {
+    // **Second realization of the Phase-57-derived schema-extension
+    // phase-shape pattern** in project history (Phase 57 attributes;
+    // Phase 61 caption). First 2-realization for that pattern (extends
+    // Phase-57 record 1 → 2). First state where the schema-extension
+    // pattern is observed twice within the same consumer (tables).
+    // **Tables consumer gains 3rd evolution post-first-ship** (Phase
+    // 43 cross-surface + Phase 57 attributes + Phase 61 caption);
+    // first state where TWO consumers have 3+ evolutions each (arxiv
+    // first via Phase 44 + 47 + 53; tables joins). Closes APPEND-D-Q
+    // item 4 at 22-phase carryover (Phase 39 → 61) — NEW LONGEST
+    // ABSOLUTE APPEND-DEFERRAL CLOSURE EVER OBSERVED (extends Phase-57
+    // 18-phase record by 4 phases). Schema-ready-before-plugin
+    // discipline extended from attributes (Phase 57) to tags (Phase
+    // 61) — first TAG-addition schema-ready-before-plugin.
+    const tagNames = GFM_TABLE_SCHEMA_OVERRIDES.tagNames ?? [];
+    expect(tagNames).toContain("caption");
   });
 
   it("includes the Phase-17 base allow-list verbatim per APPEND-D-C override-replace contract", () => {
@@ -323,6 +344,235 @@ describe("GFM_TABLE_SCHEMA_OVERRIDES — Phase-57 schema-isolation behavior (fir
     expect(html).toContain('align="center"');
     expect(html).toContain('colspan="2"');
     expect(html).toContain('rowspan="1"');
+    expect(html).toContain('scope="col"');
+  });
+});
+
+describe("GFM_TABLE_SCHEMA_OVERRIDES — Phase-61 schema-isolation behavior (second schema-extension realization; <caption> tag schema-ready-before-plugin)", () => {
+  /**
+   * Phase-61 schema-isolation helper: sanitize a manually-constructed
+   * HAST tree containing a `<caption>` element. Mirrors the Phase-57
+   * `sanitizeTableHast` pattern but accepts a caption child of `<table>`
+   * (caption is positioned as the first child of table per HTML5 spec).
+   */
+  function sanitizeTableHastWithCaption(captionText: string): string {
+    const tree: Root = {
+      type: "root",
+      children: [
+        {
+          type: "element",
+          tagName: "table",
+          properties: {},
+          children: [
+            {
+              type: "element",
+              tagName: "caption",
+              properties: {},
+              children: [{ type: "text", value: captionText }],
+            },
+            {
+              type: "element",
+              tagName: "thead",
+              properties: {},
+              children: [],
+            },
+            {
+              type: "element",
+              tagName: "tbody",
+              properties: {},
+              children: [],
+            },
+          ],
+        },
+      ],
+    };
+    const processor = unified()
+      .use(rehypeSanitize, GFM_TABLE_SCHEMA_OVERRIDES)
+      .use(rehypeStringify);
+    const transformed = processor.runSync(tree) as Root;
+    return String(processor.stringify(transformed));
+  }
+
+  it("<caption>Title</caption> child of <table> survives sanitize (NEW Phase-61; second schema-extension realization)", () => {
+    // Phase-61 closes APPEND-D-Q item 4 at 22-phase carryover (Phase 39
+    // → Phase 61) — NEW LONGEST ABSOLUTE APPEND-DEFERRAL CLOSURE EVER
+    // OBSERVED (extends Phase-57 18-phase record by 4 phases). Pipeline-
+    // emission caveat: `remark-gfm` does NOT parse GFM-table captions
+    // (GFM table syntax has no caption markup); `remark-rehype` with
+    // `allowDangerousHtml: false` strips raw HTML. Therefore no current
+    // Phase-37-framework pipeline emits `<caption>` — Phase 61 ships
+    // the schema-ready-before-plugin state. Mirrors Phase-57 caveat
+    // verbatim.
+    const html = sanitizeTableHastWithCaption("Sample Table Title");
+    expect(html).toContain("<caption>Sample Table Title</caption>");
+    expect(html).toContain("<table>");
+  });
+
+  it("<caption> with inline <strong> + <em> survives sanitize (NEW Phase-61; inline elements already allow-listed via Phase-17 base)", () => {
+    // caption with inline children: <caption>Sample <strong>important</strong>
+    // <em>note</em></caption>. The inline tags (strong/em) are in the
+    // Phase-17 base allow-list; caption is the new Phase-61 addition.
+    const tree: Root = {
+      type: "root",
+      children: [
+        {
+          type: "element",
+          tagName: "table",
+          properties: {},
+          children: [
+            {
+              type: "element",
+              tagName: "caption",
+              properties: {},
+              children: [
+                { type: "text", value: "Sample " },
+                {
+                  type: "element",
+                  tagName: "strong",
+                  properties: {},
+                  children: [{ type: "text", value: "important" }],
+                },
+                { type: "text", value: " " },
+                {
+                  type: "element",
+                  tagName: "em",
+                  properties: {},
+                  children: [{ type: "text", value: "note" }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const processor = unified()
+      .use(rehypeSanitize, GFM_TABLE_SCHEMA_OVERRIDES)
+      .use(rehypeStringify);
+    const transformed = processor.runSync(tree) as Root;
+    const html = String(processor.stringify(transformed));
+    expect(html).toContain("<caption>Sample <strong>important</strong> <em>note</em></caption>");
+  });
+
+  it("<caption> with onclick attribute has the attribute stripped (XSS regression guard; no caption-specific attributes allowed per HTML5)", () => {
+    // Phase-61 schema-extension adds `caption` to tagNames but does NOT
+    // add any caption-specific attributes to `attributes`. HTML5 spec
+    // has no caption-specific attributes (the historical `align`
+    // attribute is obsolete). Sanitize strips any caption attribute
+    // including XSS-vector `onclick` per the global `attributes["*"]
+    // = []` rule.
+    const tree: Root = {
+      type: "root",
+      children: [
+        {
+          type: "element",
+          tagName: "table",
+          properties: {},
+          children: [
+            {
+              type: "element",
+              tagName: "caption",
+              properties: { onClick: "alert(1)" },
+              children: [{ type: "text", value: "Title" }],
+            },
+          ],
+        },
+      ],
+    };
+    const processor = unified()
+      .use(rehypeSanitize, GFM_TABLE_SCHEMA_OVERRIDES)
+      .use(rehypeStringify);
+    const transformed = processor.runSync(tree) as Root;
+    const html = String(processor.stringify(transformed));
+    expect(html).toContain("<caption>Title</caption>");
+    expect(html).not.toContain("onclick");
+    expect(html).not.toContain("onClick");
+    expect(html).not.toContain("alert(1)");
+  });
+
+  it("<caption> is STRIPPED under bioSchema baseline (NEW Phase-61 negative control; confirms schema-extension is load-bearing)", () => {
+    // Phase-17 base allow-list (bioSchema) does NOT include `caption` in
+    // tagNames. Without the Phase-61 schemaOverrides addition, the
+    // caption element is stripped by sanitize. Confirms that the Phase-
+    // 61 schema-extension is load-bearing for caption survival — without
+    // it, captions don't survive sanitize.
+    const tree: Root = {
+      type: "root",
+      children: [
+        {
+          type: "element",
+          tagName: "table",
+          properties: {},
+          children: [
+            {
+              type: "element",
+              tagName: "caption",
+              properties: {},
+              children: [{ type: "text", value: "Stripped Title" }],
+            },
+          ],
+        },
+      ],
+    };
+    const processor = unified().use(rehypeSanitize, bioSchema).use(rehypeStringify);
+    const transformed = processor.runSync(tree) as Root;
+    const html = String(processor.stringify(transformed));
+    // bioSchema doesn't allow-list `table` or `caption` either, so both
+    // tags get stripped. The text-node content survives.
+    expect(html).not.toContain("<caption>");
+    expect(html).not.toContain("</caption>");
+    expect(html).toContain("Stripped Title");
+  });
+
+  it("<caption> + Phase-57 attributes coexist (NEW Phase-61; cumulative schema-extension state preserved)", () => {
+    // Validates that Phase-61 caption addition does NOT regress the
+    // Phase-57 schema-extension state. A table with both <caption> and
+    // <th colspan="2" scope="col"> renders correctly under the Phase-
+    // 61 schemaOverrides.
+    const tree: Root = {
+      type: "root",
+      children: [
+        {
+          type: "element",
+          tagName: "table",
+          properties: {},
+          children: [
+            {
+              type: "element",
+              tagName: "caption",
+              properties: {},
+              children: [{ type: "text", value: "Combined Phase-57 + Phase-61" }],
+            },
+            {
+              type: "element",
+              tagName: "thead",
+              properties: {},
+              children: [
+                {
+                  type: "element",
+                  tagName: "tr",
+                  properties: {},
+                  children: [
+                    {
+                      type: "element",
+                      tagName: "th",
+                      properties: { colSpan: 2, scope: "col" },
+                      children: [{ type: "text", value: "Spanning Header" }],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const processor = unified()
+      .use(rehypeSanitize, GFM_TABLE_SCHEMA_OVERRIDES)
+      .use(rehypeStringify);
+    const transformed = processor.runSync(tree) as Root;
+    const html = String(processor.stringify(transformed));
+    expect(html).toContain("<caption>Combined Phase-57 + Phase-61</caption>");
+    expect(html).toContain('colspan="2"');
     expect(html).toContain('scope="col"');
   });
 });

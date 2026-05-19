@@ -4749,6 +4749,236 @@ Phase-59 half-century milestone to 51).
 - **ADR-0025 concrete content-moderation provider** — Phase
   61+; not autonomous-tractable.
 
+#### EXTENDED Phase 61 Unit 61.1 — APPEND-D-AS `<caption>` element schema-extension (second realization of Phase-57-derived schema-extension phase-shape pattern — first 2-realization for that pattern; first state where schema-extension is observed twice within the same consumer (tables); tables consumer gains 3rd evolution post-first-ship; first state where TWO consumers have 3+ evolutions each; closes APPEND-D-Q item 4 at 22-phase carryover — NEW LONGEST ABSOLUTE APPEND-DEFERRAL CLOSURE EVER OBSERVED (extends Phase-57 18-phase record by 4 phases); D-Q becomes first D-clause with 3-of-4 enumerated items closed; first phase to advance framework beyond Phase-60 capability ceiling; schema-ready-before-plugin state extended from attributes (Phase 57) to tags (Phase 61); 20-phase APPEND-deferral closure cadence; 28th D-G APPEND record extends; nineteenth two-letter slot D-AS; fifty-second NON-§13 phase)
+
+Phase 61 extends `GFM_TABLE_SCHEMA_OVERRIDES` with the `caption`
+tag in the `tagNames` allow-list. **Second realization of the
+Phase-57-derived schema-extension phase-shape pattern** — **first
+2-realization for the schema-extension phase-shape pattern in
+project history** (extends Phase-57 record 1 → 2). `attributes`,
+`TablesExtensionRegistry` class, `PHASE_39_DEFAULT_ENABLED_SURFACES`
+constant, factory dispatch arm, and `remark-gfm` parser all
+UNCHANGED. Mirrors Phase-57 shape verbatim with `tagNames` value
+evolution (vs Phase-57 `attributes` value evolution).
+
+**APPEND-D-AS `<caption>` schema-extension shape**:
+
+```ts
+// Before (Phase 39 ship through Phase-60 close; Phase-57 attributes baseline):
+export const GFM_TABLE_SCHEMA_OVERRIDES: Partial<Schema> = {
+  tagNames: [
+    /* Phase-17 base + */
+    "table", "thead", "tbody", "tr", "th", "td",
+  ],
+  attributes: { /* Phase-17 base + Phase-39 align + Phase-57 colSpan/rowSpan/scope */ },
+};
+
+// After (Phase 61 ship):
+export const GFM_TABLE_SCHEMA_OVERRIDES: Partial<Schema> = {
+  tagNames: [
+    /* Phase-17 base + */
+    "table", "thead", "tbody", "tr", "th", "td",
+    "caption", // ← Phase-61 addition
+  ],
+  attributes: { /* UNCHANGED */ },
+};
+```
+
+**`<caption>` attribute discipline**: HTML5 `<caption>` has NO
+caption-specific attributes (the historical `align` attribute is
+obsolete). Phase 61 adds the tag to `tagNames` only; the
+`attributes` map is UNCHANGED. Caption attributes (including
+XSS-vector `onclick`) are stripped by sanitize per the existing
+global `attributes["*"] = []` rule. Minimal XSS surface — text-
+only element with no event-handler attribute paths.
+
+**Pipeline-emission caveat (preserved Phase-57 → Phase-61)**:
+`remark-gfm` does NOT parse GFM-table captions (GFM table syntax
+has no caption markup); `remark-rehype` with
+`allowDangerousHtml: false` strips raw HTML at the MDAST → HAST
+boundary. Therefore **NO current Phase-37-framework pipeline
+emits `<caption>`** — Phase 61 ships the **schema-ready-before-
+plugin state** for future plugin authors (e.g., MultiMarkdown-
+table-syntax extension, HTML-table-pass-through plugin).
+Mirrors Phase-57's schema-ready-before-plugin rationale
+verbatim.
+
+**Schema-isolation tests** in `tables.test.ts` exercise the
+new allow-list entry directly via manual HAST tree construction
+mirroring the Phase-57 `sanitizeTableHast` pattern:
+
+1. `<caption>Title</caption>` child of `<table>` survives
+   sanitize.
+2. `<caption>` with inline `<strong>` + `<em>` survives
+   sanitize.
+3. `<caption>` with `onclick` attribute has the attribute
+   stripped (XSS regression guard).
+4. `<caption>` is STRIPPED under `bioSchema` baseline (negative
+   control; confirms schema-extension is load-bearing).
+5. `<caption>` + Phase-57 attributes coexist (cumulative
+   schema-extension state preserved).
+
+**First state where the schema-extension phase-shape pattern
+is observed twice within the same consumer** (tables). Phase
+57 evolved `GFM_TABLE_SCHEMA_OVERRIDES.attributes` (3 new
+attributes on `<th>`/`<td>`); Phase 61 evolves
+`GFM_TABLE_SCHEMA_OVERRIDES.tagNames` (+1 new tag `caption`).
+Both realizations within tables; both schema-ready-before-
+plugin.
+
+**Tables consumer gains 3rd evolution post-first-ship** (Phase
+43 cross-surface + Phase 57 attributes + Phase 61 caption).
+**First state where TWO consumers have 3+ evolutions each** in
+project history (arxiv was first via Phase 44 cross-surface +
+Phase 47 alias + Phase 53 legacy ID-class = 3 evolutions;
+tables joins at Phase 61). Confirms the 3-evolution depth as a
+recognized framework-evolution shape for consumers with
+sustained demand signal.
+
+**First phase to advance the framework beyond its Phase-60
+capability ceiling**. Phase 60 closed at "framework's current
+capability ceiling for the 7-consumer roster" — all 7 concrete
+consumers had had ALL their applicable extensions resolved
+along both principal axes. Phase 61 advances by extending the
+schema-extension phase-shape pattern from 1 → 2 realizations
+within the existing tables consumer + existing schemaOverrides
+slot — a new realization of an existing phase-shape pattern.
+**First post-capability-ceiling phase to ship a new
+realization**.
+
+**Schema-ready-before-plugin state extended from attributes
+(Phase 57) to tags (Phase 61)**. Phase 57 introduced schema-
+ready-before-plugin for attributes (`colspan`/`rowspan`/`scope`
+allow-listed ahead of any pipeline that emits them); Phase 61
+extends to tag additions (`caption` tag allow-listed ahead of
+any pipeline that emits it). **First state where schema-ready-
+before-plugin applies to a TAG addition** (vs Phase-57
+ATTRIBUTE additions). Confirms the schema-ready-before-plugin
+discipline as the framework's forward-compatibility mechanism
+for sanitize-tag-allow-list expansion ahead of plugin emit.
+
+**Composition preserved**: `CompositeExtensionRegistry`
+single-source schemaOverrides rule per APPEND-D-C (no deep-
+merge) is preserved. Tables remains the only consumer
+providing schemaOverrides; Phase 61 schema-extension is value-
+only evolution on the existing slot. No composite-registry
+conflict introduced.
+
+**XSS audit Phase 61**: `<caption>` is a text-only element
+with no event-handler attribute paths. Phase 61 adds tag-name
+allow-listing; the existing `attributes["*"] = []` global rule
+ensures no attributes survive on caption (including
+`align="left"` historical attribute, `onclick` XSS vector,
+etc.). No new tag-names beyond `caption`; no new attribute
+allow-list entries. **No new XSS surface**.
+
+**Closes APPEND-D-Q item 4** (`<caption>` element — Phase 39
+enumerated as a deferral at tables first-ship) at **22-phase
+carryover** (Phase 39 → Phase 61). **NEW LONGEST ABSOLUTE
+APPEND-DEFERRAL CLOSURE EVER OBSERVED** — extends Phase-57
+18-phase record (Phase 39 → 57 D-Q item 3 table-specific
+attributes) by 4 phases. APPEND-D-Q closure trajectory:
+- Item 1 (cross-surface) → Phase 43 = 4-phase carryover.
+- Item 3 (attributes) → Phase 57 = 18-phase carryover (record
+  at the time).
+- Item 4 (caption) → Phase 61 = **22-phase carryover (new
+  record)**.
+- Item 6 (surface-specific schemas) → still deferred (Phase
+  62+).
+
+**D-Q becomes first D-clause with 3-of-4 enumerated items
+closed** within the cadence in project history. Prior multi-
+item D-clauses had at most 2 items closed (D-AC + D-AH + D-AL
++ D-AP each reached 2-item-both-closed). D-Q at 3-of-4
+establishes a new depth for multi-item D-clause resolution.
+Only D-Q item 6 (surface-specific table schemas) remains
+deferred; closure would create the first D-clause with ALL
+enumerated items closed.
+
+**Twentieth prep-/APPEND-doc-level deferral closed by a later
+phase**: Phase 42 → 38 D-L item 1; Phase 43 → 39 D-Q item 2;
+Phase 44 → 41 D-Y item 1; Phase 45 → 41 D-Y item 4; Phase 46
+→ 38 D-L item 2; Phase 47 → 41 D-Y item 5; Phase 48 → 45 D-AC
+item 2; Phase 49 → 45 D-AC cross-surface; Phase 50 → 45 D-AC
+PubMed PMID item; Phase 51 → new Phase-50 deferral; Phase 52
+→ 50 D-AH PubMed cross-surface; Phase 53 → 41 D-Y item 2;
+Phase 54 → 45 D-AC ORCID item; Phase 55 → new Phase-54
+deferral; Phase 56 → 54 D-AL ORCID cross-surface item; Phase
+57 → 39 D-Q item 3 Table-specific attributes; Phase 58 → 54
+D-AL bioRxiv preprint consumer item; Phase 59 → 58 D-AP
+bioRxiv cross-surface item; Phase 60 → 58 D-AP bioRxiv alias
+item; **Phase 61 → 39 D-Q item 4 `<caption>` element**.
+**APPEND-deferral closure cadence sustained 20 phases** —
+**new longest sustained cadence in project history** (extends
+Phase-60 record 19 → 20). **First 20-phase APPEND-deferral
+closure run**.
+
+**Twenty-eighth APPEND on ADR-0018 D-G** — extends the
+**first-ADR-D-clause-with-most-APPENDs record** from 27 → 28
+(Phase 18 + 27 + 29 + 37 + 38 + 39 + 40 + 41 + 42 + 43 + 44
++ 45 + 46 + 47 + 48 + 49 + 50 + 51 + 52 + 53 + 54 + 55 + 56
++ 57 + 58 + 59 + 60 + **61**).
+
+**Nineteenth two-letter APPEND letter D-AS** (after Phase-43
+D-AA + Phase-44 D-AB + Phase-45 D-AC + Phase-46 D-AD + Phase-
+47 D-AE + Phase-48 D-AF + Phase-49 D-AG + Phase-50 D-AH +
+Phase-51 D-AI + Phase-52 D-AJ + Phase-53 D-AK + Phase-54
+D-AL + Phase-55 D-AM + Phase-56 D-AN + Phase-57 D-AO + Phase-
+58 D-AP + Phase-59 D-AQ + Phase-60 D-AR). Excel-spreadsheet
+column convention sustained.
+
+**Twenty-sixth consecutive no-new-ADR phase** (Phase 36-61;
+extends Phase-60 record 25 → 26). **Thirty-first consecutive
+phase without new B category** (Phase 31-61; extends Phase-
+60 record 30 → 31). **Fifty-second NON-§13 phase** (extends
+Phase-60 half-century milestone to 52); first 52-phase
+ledger-closure streak.
+
+**Phase 62+ deferrals** (Phase-61 caption scope cap):
+
+- **Plugin parameterization for wikilink-href-builder** (APPEND-
+  D-L item 6 carries) — Phase 62+ rank 1; prerequisite for
+  cross-entity wikilinks.
+- **Cross-entity wikilinks** (APPEND-D-L item 3 carries) —
+  Phase 62+ rank 2; depends on plugin parameterization.
+- **`<a class="wikilink">` styling** (APPEND-D-L item 4
+  carries) — Phase 62+; deferred pending framework decision
+  on single-class-attribute pattern (plugin-only emit vs
+  multi-source schemaOverrides framework refactor).
+- **404 handling for unresolved wikilinks** (APPEND-D-L item
+  5 carries) — Phase 62+.
+- **Bare arxiv / DOI / PubMed / ORCID / bioRxiv IDs without
+  prefix** — Phase 62+.
+- **Legacy numeric-only bioRxiv IDs** (pre-2019 format) —
+  Phase 62+.
+- **dx.doi.org legacy host parsing** (APPEND-D-AC carries) —
+  Phase 62+.
+- **Stricter trailing-lookahead for trailing-period DOIs**
+  (APPEND-D-AC carries) — Phase 62+.
+- **Paper-card hover-preview** (APPEND-D-Y item 6 carries) —
+  Phase 62+.
+- **Auto-trim of alias display whitespace** — Phase 62+.
+- **Empty-alias fallback unification** across consumers —
+  Phase 62+.
+- **Surface-specific table schemas** (APPEND-D-Q item 6 — last
+  remaining D-Q deferral) — Phase 62+.
+- **A future plugin that EMITS `<caption>` or
+  `colSpan`/`rowSpan`/`scope`** to realize the Phase-57 /
+  Phase-61 schema-ready-before-plugin states — Phase 62+.
+- **OSF preprint consumer** — eighth concrete consumer —
+  Phase 62+.
+- **6th-or-later `remarkPlugins` consumer beyond arxiv + doi
+  + pubmed + orcid + biorxiv** — Phase 62+.
+- **2nd `rehypePlugins` consumer beyond wikilinks** — Phase
+  62+.
+- **2nd `schemaOverrides` consumer beyond tables** — Phase
+  62+ (requires framework refactor per the composite-registry
+  single-source rule).
+- **3rd regex evolution on `remarkLinkArxivIds`** — Phase
+  62+.
+- **ADR-0025 concrete content-moderation provider** — Phase
+  62+; not autonomous-tractable.
+
 ### D-H. Phase 18+ deferrals
 
 Phase 17 ships MINIMAL markdown surface. Deferred to Phase 18+:
