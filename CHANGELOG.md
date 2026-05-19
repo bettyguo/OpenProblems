@@ -2468,7 +2468,113 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **Phase-8 scope drift**: HTML shell migration **dropped from scope mid-flight** at Unit 8.1 (parallel session preserved existing `app/layout.tsx`-owns-`<html>` structure with a "this change was intentional" system reminder). Surfaced into Unit 8.4 territory, then deferred indefinitely. No scope additions. Parallel-curator coordination at unprecedented intensity (Unit 8.1 mid-flight file deletions; Unit 8.6 FR content authored by parallel session).
 - THINK artifact: `docs/thinking/8.9-phase-8-acceptance-gate.md`.
 
-### Phase 50 — Community-adjacent surfaces (**forty-first NON-§13 phase**: PubMed PMID sibling consumer in `remarkPlugins` slot — **fifth concrete Phase-37-framework consumer**; **first 3rd-`remarkPlugins` consumer** beyond arxiv + doi; **first 3-consumer same-slot composition** under composition; **first 5-consumer composition** under default dispatch; new `PubmedExtensionRegistry` + `MARKDOWN_EXTENSIONS=pubmed` env-var dispatch arm; **6th single-value arm** (first expansion of recognized-arms set since Phase 45); tests whether regex-disjointness-as-sole-defense discipline scales to 3 same-slot consumers; closes ADR-0018 APPEND-D-AC PubMed PMID item at 5-phase carryover; APPEND-D-AH eighth two-letter slot; 5 numbered units anticipated; 45th "Continue" override invoked; **IN PROGRESS**)
+### Phase 50 — Community-adjacent surfaces (**forty-first NON-§13 phase**: PubMed PMID sibling consumer in `remarkPlugins` slot — **fifth concrete Phase-37-framework consumer**; **first 3rd-`remarkPlugins` consumer** beyond arxiv + doi; **first 3-consumer same-slot composition** under composition; **first 5-consumer composition** under default dispatch — **maximum-consumer-cardinality state**; new `PubmedExtensionRegistry` + `MARKDOWN_EXTENSIONS=pubmed` env-var dispatch arm; **6th single-value arm** (first expansion of recognized-arms set since Phase 45); regex-disjointness-as-sole-defense discipline scales from 2 to 3 same-slot consumers without architectural change; closes ADR-0018 APPEND-D-AC PubMed PMID item at 5-phase carryover; APPEND-D-AH eighth two-letter slot; 5 numbered units; 45th "Continue" override invoked; **CLOSED**)
+
+#### Unit 50.4 — Phase 50 acceptance gate (fifth concrete consumer; first 3-consumer same-slot; first 5-consumer composition; maximum-consumer-cardinality state; D-AH; 1144/73; 111th consecutive 103 kB unit; 46th "Continue" override opportunity at Phase 50 → 51 boundary)
+
+- Fifth and final Phase-50 numbered unit; gate-only. **Phase 50 CLOSES at this unit's commit**. Phase 51 entry awaits explicit "Continue" override per §12.
+- THINK artifact: `docs/thinking/50.4-phase-50-acceptance-gate.md` (Phase-49 → 50 delta complete; 12 architectural firsts enumerated; Phase-51 entry conditions documented with 10 ranked candidate threads).
+
+##### Phase 50 — what shipped (5 numbered units)
+
+| Unit | Title | Type | Commit |
+|---|---|---|---|
+| 50.0 | Phase 50 prep | docs | `a068990` |
+| 50.1 | `pubmed.ts` + `pubmed.test.ts` (NEW) + factory dispatch arm + dispatch tests + ADR-0018 D-G APPEND-D-AH | code+APPEND | `68d84d5` |
+| 50.2 | 22 NEW end-to-end Phase-50 tests + first 3-consumer same-slot + first 5-consumer composition | code | `270737f` |
+| 50.3 | Phase-50 hygiene + APPEND-D-AC PubMed PMID item closure documentation | docs | `06f3559` |
+| 50.4 | Phase 50 acceptance gate (this unit) | gate | (this commit) |
+
+Total: **5 numbered units (50.0 through 50.4)**. Mirrors Phase 41-49 5-unit framework shapes verbatim.
+
+##### Fifth concrete Phase-37-framework consumer + first 3-consumer same-slot + first 5-consumer composition at HEAD `06f3559`
+
+- NEW `lib/markdown/extensions/pubmed.ts` (`PUBMED_PATTERN`, `remarkLinkPubmedIds`, `PubmedExtensionRegistry`, `PHASE_50_DEFAULT_ENABLED_SURFACES`).
+- NEW `lib/markdown/extensions/pubmed.test.ts` (27 tests covering plugin + class behavior).
+- `lib/markdown/extensions/index.ts` factory dispatch arm adds `"pubmed"` case + 7 NEW dispatch tests.
+- 22 NEW end-to-end tests in `lib/markdown/index.test.ts` across 3 describe blocks (Unit 50.2).
+- ADR-0018 D-G APPEND adds Phase-50 EXTENDED block + **APPEND-D-AH** (eighth two-letter slot).
+- ADR-0018 APPEND-D-AC PubMed PMID item CLOSED at **5-phase carryover** (Phase 45 → 50).
+- **Fifth concrete Phase-37-framework consumer**.
+- **First 3rd-`remarkPlugins` consumer** in project history.
+- **First 3-consumer same-slot composition** under default dispatch.
+- **First 5-consumer composition** under default dispatch (**maximum-consumer-cardinality state**).
+- **First env-var single-value arm beyond 5** (`pubmed` joins the recognized-arms set; first expansion since Phase 45).
+- **Regex-disjointness-as-sole-defense discipline scales from 2 to 3 same-slot consumers** without architectural change.
+- **First "first-ship after a 5-phase APPEND-deferral carryover"**.
+
+##### Phase 49 → Phase 50 delta
+
+| Metric | Phase 49 close | Phase 50 close | Δ |
+|---|---|---|---|
+| Tests | 1088 / 72 files | **1144 / 73 files** | +56 / +1 |
+| ADRs | 24 | **24** | 0 |
+| ADR-0018 D-G APPEND count | 16 | **17** (project record extends; eighth two-letter slot D-AH in use) | +1 |
+| DB tables | 7 | 7 | 0 |
+| Migrations | 9 | 9 | 0 |
+| Env vars | 14 | 14 | 0 |
+| `MARKDOWN_EXTENSIONS` single-value arms | 5 | **6** (`pubmed` added) | **+1** |
+| i18n keys per locale | 168 | 168 | 0 |
+| First Load JS shared chunk | 103 kB | **103 kB** | 0 |
+| Middleware bundle | 160 kB | 160 kB | 0 |
+| OPEN_QUESTIONS top-level Q-count | 66 | **66** | 0 |
+| Phase-37+ candidate count | 8 | **8** | 0 |
+| Runtime deps added | — | **0** | 0 |
+| `lib/markdown/extensions/` files | 15 | **17** (+`pubmed.ts` + `pubmed.test.ts`) | **+2** |
+| **Phase-37-framework concrete consumers** | **4** | **5 (+pubmed)** | **+1** |
+| **Plugins in `remarkPlugins` slot** | **2 (arxiv + doi)** | **3 (+pubmed)** | **+1** |
+| **3-consumer same-slot compositions** | **0** | **1 (rationale; arxiv+doi+pubmed)** | **+1** |
+| **Maximum-consumer-cardinality on any surface** | **4** | **5 (rationale)** | **+1** |
+
+##### Architectural firsts in Phase 50 (12 enumerated)
+
+1. **Fifth concrete Phase-37-framework consumer**. After Phase 50 the framework has 5 consumers across 3 slots; `remarkPlugins` slot hosts 3 (arxiv + doi + pubmed); other 2 slots remain singleton.
+2. **First 3rd-`remarkPlugins` consumer in project history**.
+3. **First 3-consumer same-slot composition** under default dispatch.
+4. **First 5-consumer composition under default dispatch** — **maximum-consumer-cardinality state**.
+5. **First env-var single-value arm beyond 5** — 6th arm `pubmed`; first expansion of recognized-arms set since Phase 45 (5-phase stability run; longest single-arm-stability run observed).
+6. **First "first-ship after a 5-phase APPEND-deferral carryover"**.
+7. **APPEND-D-AC PubMed PMID item CLOSED at 5-phase carryover** (Phase 45 → 50). Slower than Phase-41 → 45 4-phase doi carryover because intervening Phase 46-49 closed 4 other APPEND items.
+8. **Ninth prep-/APPEND-doc-level deferral closed** — APPEND-deferral closure cadence sustained 9 phases. **Longest sustained closure cadence in project history**.
+9. **Second non-cross-surface non-alias APPEND-deferral closure** (Phase 45 doi sibling; Phase 50 pubmed sibling). **APPEND-D-AC second item closed by sibling-consumer introduction** — first closure for the "additional auto-link consumers" deferral text.
+10. **17th APPEND on ADR-0018 D-G** — extends first-ADR-D-clause-with-most-APPENDs record 16 → 17.
+11. **Eighth two-letter APPEND letter D-AH**.
+12. **First "framework + 5 consumers + composition + 4 expansions + 3-consumer same-slot composition + alias syntax × 3" 14-phase cluster** in project history (Phase 37-50). **20th consecutive phase without new B category** — first **2-decade no-new-B-category run** (extends Phase-49 record 19 → 20). **Forty-first NON-§13 phase**. **111th consecutive 103 kB First Load JS unit**.
+
+##### Phase 50 → Phase 51 entry conditions
+
+Per §12, Phase 51 entry requires **explicit human sign-off**.
+
+**Recommended Phase 51 first-thread candidates** (10 ranked; see `docs/thinking/50.4-phase-50-acceptance-gate.md` for full tractability + units breakdown):
+
+1. **PubMed PMID alias syntax** (`[[pubmed:NNN|display]]` / `[[pmid:NNN|display]]`) — 1-2 units; **fourth realization of Phase-46 plugin-regex-extension phase-shape pattern**; mirrors Phase-47/Phase-48 alias extensions verbatim on the pubmed plugin.
+2. **Older-style category-prefixed arxiv IDs** (APPEND-D-Y item 2) — 1-2 units; regex extension on existing arxiv plugin.
+3. **Table-specific attributes** (APPEND-D-Q item 3) — 1-2 units; first schema-extension on `schemaOverrides` slot; XSS-audit-required.
+4. **ORCID auto-link consumer** — 2-3 units; **sixth concrete consumer**; **first 4th-`remarkPlugins` consumer**; closes APPEND-D-AC third item.
+5. **Cross-entity wikilinks** (APPEND-D-L item 3) — 2-3 units.
+6. **`<a class="wikilink">` styling** (APPEND-D-L item 4) — 1-2 units; first single-consumer-multi-slot case.
+7. **404 handling for unresolved wikilinks** (APPEND-D-L item 5) — 2-3 units.
+8. **PubMed PMID cross-surface expansion** — 1-2 units; **fifth realization of constructor-arg-only zero-rework expansion property**; ~Phase 54 at 4-phase-gap cadence.
+9. **Empty-alias unification across consumers** (Phase-48 deferral) — 1 unit.
+10. **ADR-0025 concrete content-moderation provider** — 3-5 units; strongest patience signal; NOT autonomous-tractable.
+
+**Operational gates still pending** (6 UNCHANGED): Q54 + Q55 + Q69 + Q73 + Q75 + Q77.
+
+##### Smoke gates
+
+- `pnpm typecheck` — passes.
+- `pnpm test` — **1144 / 73 files**.
+- `pnpm audit-content` — 0 errors / 6 warnings (46 consecutive phases at Q32 baseline).
+- First Load JS — **103 kB UNCHANGED** (111 consecutive units at Unit 50.4 ship).
+- Middleware — **160 kB UNCHANGED**.
+
+##### Anti-scope (Phase 51+ deferrals carried forward)
+
+NOT PubMed PMID alias syntax (Phase 51+ rank 1); NOT older-style category-prefixed arxiv IDs (Phase 51+ rank 2); NOT table-specific attributes (Phase 51+ rank 3); NOT ORCID consumer (Phase 51+ rank 4); NOT cross-entity wikilinks (Phase 51+ rank 5); NOT `<a class="wikilink">` styling (Phase 51+ rank 6); NOT 404 handling (Phase 51+ rank 7); NOT PubMed PMID cross-surface expansion (Phase 51+ rank 8; ~Phase 54 at 4-phase cadence); NOT empty-alias unification (Phase 51+ rank 9); NOT bioRxiv consumer (Phase 51+); NOT OSF preprint consumer (Phase 51+); NOT bare arxiv / DOI IDs without prefix (Phase 51+); NOT dx.doi.org legacy host (Phase 51+); NOT stricter trailing-lookahead (Phase 51+); NOT paper-card hover-preview (Phase 51+); NOT plugin parameterization (Phase 51+); NOT auto-trim of alias display whitespace (Phase 51+); NOT empty-alias fallback unification (Phase 51+); NOT empty-alias-as-bare-pubmed-fallback (new Phase-50 deferral candidate); NOT `<caption>` (Phase 51+); NOT surface-specific table schemas (Phase 51+); NOT `@mention` (Phase 51+); NOT a 4th-or-later `remarkPlugins` consumer beyond arxiv + doi + pubmed (Phase 51+ rank 4 ships ORCID as 4th candidate); NOT a 2nd `rehypePlugins` consumer beyond wikilinks (Phase 51+); NOT a 2nd `schemaOverrides` consumer beyond tables (Phase 51+); NOT ADR-0025 concrete moderation provider; NOT Q78/Q79/v2 methodology/pre-commit typecheck/safeAuth/test backfill/account-deletion (each deferred); all Phase-30-through-49 deferrals carry forward.
+
+##### Boundary statement
+
+**Phase 50 CLOSED at this commit after 5 numbered units. Fifth concrete Phase-37-framework consumer in project history (`PubmedExtensionRegistry`). First 3rd-`remarkPlugins` consumer beyond arxiv + doi. First 3-consumer same-slot composition under default dispatch — regex-disjointness-as-sole-defense discipline (Phase 48 established; Phase 49 generalized to all 4 surfaces) scales from 2 to 3 same-slot consumers without architectural change. Three regex character classes pairwise disjoint; plugin invocation order is immaterial. First 5-consumer composition under default dispatch — maximum-consumer-cardinality state. First env-var single-value arm beyond 5 (`pubmed`); first expansion of recognized-arms set since Phase 45. First "first-ship after a 5-phase APPEND-deferral carryover". Closes ADR-0018 APPEND-D-AC PubMed PMID item at 5-phase carryover (Phase 45 → 50). APPEND-deferral closure cadence sustained 9 phases — longest sustained closure cadence. Second non-cross-surface non-alias APPEND-deferral closure. Seventeenth APPEND on ADR-0018 D-G (project record extends 16 → 17). Eighth two-letter APPEND letter D-AH. Forty-first NON-§13 phase. First "framework + 5 consumers + composition + 4 expansions + 3-consumer same-slot composition + alias syntax × 3" 14-phase cluster (Phase 37-50). 20th consecutive phase without new B category — first 2-decade no-new-B-category run. 111th consecutive 103 kB First Load JS unit. XSS line of defense preserved. 1144 tests across 73 vitest files (+56/+1 vs Phase 49). 24 ADRs UNCHANGED. 7 DB tables UNCHANGED. 9 migrations UNCHANGED. 14 env vars UNCHANGED. 168 i18n keys per locale UNCHANGED. First Load JS 103 kB UNCHANGED. Middleware 160 kB UNCHANGED. OPEN_QUESTIONS top-level Q-count 66 UNCHANGED. Phase-37+ candidate count 8 UNCHANGED. `MARKDOWN_EXTENSIONS` recognized single-value arms 6 (+1 vs Phase 49 close). Zero new ADRs / migrations / i18n keys / env vars / operational gates / runtime deps. Phase 51 entry requires explicit human sign-off per §12.**
 
 #### Unit 50.3 — Phase-50 hygiene + ADR-0018 APPEND-D-AC PubMed PMID item closure documentation + regex-disjointness-as-sole-defense scaling validation + 3-consumer same-slot composition + 5-consumer composition under default (Q-tally UNCHANGED at 66; Phase-37+ candidate count UNCHANGED at 8; 20-phase no-new-B-category streak EXTENDS to Phase 50; 108th consecutive 103 kB unit)
 
