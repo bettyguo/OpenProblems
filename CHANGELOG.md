@@ -2470,6 +2470,53 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 55 — Community-adjacent surfaces (**forty-sixth NON-§13 phase**: ORCID display-text alias syntax `[[orcid:NNNN-NNNN-NNNN-NNNN|display]]` via in-place dual-form regex extension on existing `remarkLinkOrcidIds` plugin in `OrcidExtensionRegistry`; **sixth realization of Phase-46 plugin-regex-extension phase-shape pattern** — **first 6-realization phase-shape pattern in project history**; **fourth dual-form regex** in the framework; **fourth plugin-regex-extension on a `remarkPlugins` consumer** — all 4 `remarkPlugins` consumers exhibit dual-form regex post-Phase 55; **second "immediate-successor same-thread-direction phase boundary"** (Phase 54 → 55; first state where the pattern is observed twice); **first quintuple-alias surface**; closes new Phase-54 deferral at **1-phase carryover** — ties Phase-51 pubmed alias 1-phase fastest-closure record; APPEND-D-AM thirteenth two-letter slot; anticipated 5 numbered units; 50th "Continue" override invoked — half-century-of-Continue-overrides milestone)
 
+#### Unit 55.1 — `ORCID_PATTERN` dual-form regex (bracketed + bare) + plugin body update + 13 NEW orcid.test.ts alias tests + ADR-0018 D-G APPEND-D-AM (sixth realization of Phase-46 plugin-regex-extension phase-shape — first 6-realization phase-shape pattern in project history; fourth dual-form regex; fourth plugin-regex-extension on a `remarkPlugins` consumer — all 4 `remarkPlugins` consumers exhibit dual-form regex; 22nd D-G APPEND extends record 21 → 22; 1289/74)
+
+- Second Phase-55 unit; code + ADR APPEND.
+- **`ORCID_PATTERN` regex evolution** (in-place edit of `lib/markdown/extensions/orcid.ts`):
+  - Before (Phase 54 ship): `/\borcid:(\d{4}-\d{4}-\d{4}-\d{3}[\dX])\b/gi`.
+  - After (Phase 55 ship): `/\[\[orcid:(\d{4}-\d{4}-\d{4}-\d{3}[\dX])(?:\|([^\]\n]+))?\]\]|\borcid:(\d{4}-\d{4}-\d{4}-\d{3}[\dX])\b/gi`.
+  - **Fourth dual-form regex** in the framework (after Phase-47 arxiv + Phase-48 doi + Phase-51 pubmed). Alternation between bracketed (priority) and bare (fallback).
+  - **Sixth realization of Phase-46 plugin-regex-extension phase-shape pattern** — **first 6-realization phase-shape pattern in project history** (extends Phase-53 5-realization record to 6).
+  - **Fourth plugin-regex-extension on a `remarkPlugins` consumer** in project history (Phase 47 arxiv first; Phase 48 doi second; Phase 51 pubmed third; Phase 55 ORCID fourth).
+  - **All 4 `remarkPlugins` consumers exhibit dual-form regex post-Phase 55** — first state where every consumer in the 4-consumer-cardinality same-slot has been extended with alias-syntax via the dual-form regex pattern.
+- **Plugin body update**: mirrors Phase-47/Phase-48/Phase-51 body shape verbatim. Three display rules: alias defined → `display = alias`; bracketed without alias → `display = matched.slice(2, -2)` (preserves source casing of prefix); bare form → `display = matched`.
+- **`OrcidExtensionRegistry` class + factory dispatch arm + `PHASE_54_DEFAULT_ENABLED_SURFACES` UNCHANGED**.
+- **`orcid.ts` doc-comments updated**: Phase 55 alias-syntax extension section added; Phase 55+ deferrals footer updated to Phase 56+.
+- **13 NEW tests** in `lib/markdown/extensions/orcid.test.ts` covering plugin-level alias behavior (21 plugin-level tests → 34; class tests UNCHANGED at 5):
+  - Bracketed `[[orcid:NNNN-NNNN-NNNN-NNNN|display]]` → `<a href=...>display</a>`.
+  - Bracketed without alias renders verbatim ref (brackets stripped).
+  - Bracketed without alias preserves source casing of prefix (`[[ORCID:...]]`).
+  - Bracketed alias with X checksum renders correctly.
+  - Backwards-compat: bare `orcid:NNNN-NNNN-NNNN-NNNN` (Phase-54 baseline) still works.
+  - Aliased + bare orcid coexist in same paragraph.
+  - Empty alias `[[orcid:NNNN-NNNN-NNNN-NNNN|]]` falls through; bare alternative admits inner ID — **mirrors Phase-47 arxiv + Phase-51 pubmed pattern** (NOT the Phase-48 doi fully-literal divergence; orcid bare uses `\b` not lookahead).
+  - Alias display HTML-escapes via text-node rendering (XSS safety).
+  - Case-insensitive bracketed prefix preserves source casing of alias.
+  - Multiple aliased ORCIDs in same paragraph.
+  - Aliased ORCID inside bold renders correctly.
+  - Multi-word display preserves spaces + punctuation.
+  - Bracketed ORCID with X checksum + alias preserves both.
+- **ADR-0018 D-G** gains **EXTENDED Phase 55 Unit 55.1** block + **APPEND-D-AM** (thirteenth two-letter slot after D-AA … D-AL). Documents:
+  - **Sixth realization of Phase-46 plugin-regex-extension phase-shape pattern** — **first 6-realization phase-shape pattern in project history**.
+  - **Fourth plugin-regex-extension on a `remarkPlugins` consumer** — **all 4 `remarkPlugins` consumers exhibit dual-form regex post-Phase 55**.
+  - **Fourth dual-form regex** in the framework.
+  - **Closes new Phase-54 deferral at 1-phase carryover** — **ties Phase-51 pubmed alias 1-phase fastest-closure record**. Cadence trajectory: 8 → 6 → 3 → 1 → 1 phases for the five alias-syntax extensions. **First state where two alias-syntax closures tie at 1-phase carryover** — cadence acceleration has reached its theoretical floor.
+  - **Second "immediate-successor same-thread-direction phase boundary"** — Phase 54 → 55 mirrors Phase 50 → 51; first state where the immediate-successor pattern has been observed twice. Sets the precedent that sibling-consumer first-ship + alias-syntax extension form a consistent 2-phase architectural pair.
+  - **Fourteenth APPEND-deferral closure** — cadence sustained 14 phases (longest ever; extends Phase-54 record 13 → 14).
+  - **Fourth non-cross-surface-expansion APPEND-deferral closure on the `remarkPlugins` slot kind** — first state where ALL FOUR `remarkPlugins` consumers have had alias-syntax extensions resolved within the cadence; the alias-syntax phase-shape has exhausted all `remarkPlugins` consumer candidates as of Phase 55 close.
+  - **First quintuple-alias surface** — first surface-with-5-alias-consumers cardinality of 1.
+  - **22nd APPEND on ADR-0018 D-G** — extends first-ADR-D-clause-with-most-APPENDs record 21 → 22.
+  - **Thirteenth two-letter APPEND letter D-AM**.
+  - Empty-alias `[[orcid:NNNN-NNNN-NNNN-NNNN|]]` behavior: mirrors Phase-47 arxiv + Phase-51 pubmed (inner bare match admits via `\b`); diverges from Phase-48 doi (fully-literal via prose-friendly lookahead).
+  - 4-consumer same-slot regex-disjointness discipline (Phase 54 established) HOLDS UNDER DUAL-FORM EXTENSION on the 4th consumer.
+- **No env-var change**: alias is plugin-internal regex evolution. `MARKDOWN_EXTENSIONS=orcid` (Phase-54 default-rationale-only) and 6-way composite (Phase-54 default) automatically pick up bracketed alias syntax.
+- **Smoke gates**:
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **1289 / 74 files** (+13 vs Unit 55.0; +13 from orcid.test.ts alias tests).
+  - `pnpm audit-content` → 0 errors / 6 warnings UNCHANGED.
+  - First Load JS = 103 kB UNCHANGED (132 consecutive units); Middleware = 160 kB UNCHANGED.
+
 #### Unit 55.0 — Phase 55 prep (ORCID alias syntax via dual-form regex extension on `remarkLinkOrcidIds`; sixth realization of plugin-regex-extension phase-shape — first 6-realization phase-shape pattern; D-1 D-AM; anticipated 5 units; 50th "Continue" override invoked — half-century milestone)
 
 - First Phase-55 unit; docs-only. Drafted `docs/thinking/55.0-phase-55-prep.md` (Phase-54 → 55 baseline at HEAD `ce24fa3`; D-1 first-thread recommendation; D-3 ORCID alias regex shape — `ORCID_PATTERN` evolves to **fourth dual-form regex** with bracketed alternation `\[\[orcid:(\d{4}-\d{4}-\d{4}-\d{3}[\dX])(?:\|display)?\]\]` matched BEFORE the bare form; plugin body branches on `isBracketed`; Phase 56+ deferrals; provisional 5-unit breakdown; 12 anticipated architectural firsts).

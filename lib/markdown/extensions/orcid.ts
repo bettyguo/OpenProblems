@@ -78,11 +78,27 @@ import type { MarkdownExtensionRegistry, MarkdownExtensionSet, MarkdownSurface }
  * lookahead constraint: the trailing character is `[\dX]` (word
  * char), and `\b` triggers at non-word boundary.
  *
- * Bare-form only at Phase-54 ship (no bracketed alias
- * alternative). Display-text alias syntax `[[orcid:NNNN-NNNN-NNNN-NNNN|display]]`
- * deferred Phase 55+ per Phase-41 / Phase-45 / Phase-50 first-
- * ship demand-signal-first discipline (each consumer first-ship
- * is bare-form-only; alias is a subsequent phase).
+ * **Phase 55 alias-syntax extension** (since Unit 55.1; closes
+ * new Phase-54 deferral at 1-phase carryover — ties Phase-51
+ * pubmed alias 1-phase fastest-closure record): the regex gains
+ * a bracketed alternation `\[\[orcid:NNNN-NNNN-NNNN-NNNN(?:\|display)?\]\]`
+ * matched BEFORE the bare form. **Fourth dual-form regex in the
+ * framework** (after Phase-47 arxiv + Phase-48 doi + Phase-51
+ * pubmed). **Sixth realization of Phase-46 plugin-regex-
+ * extension phase-shape pattern** — first 6-realization phase-
+ * shape pattern in project history. **All 4 `remarkPlugins`
+ * consumers exhibit dual-form regex post-Phase 55** — first
+ * state where every consumer in the 4-consumer-cardinality
+ * same-slot has been extended with alias-syntax via the dual-
+ * form regex pattern. Backwards-compatible: every existing bare
+ * `orcid:NNNN-NNNN-NNNN-NNNN` match preserved via the second
+ * alternation arm. No collision with wikilinks (`[a-z0-9-]+`
+ * slug class excludes `:`); also distinct pipeline stage
+ * (`remarkPlugins` runs before `rehypePlugins`). No collision
+ * with arxiv/doi/pubmed (same `remarkPlugins` slot; all four
+ * regex character classes are pairwise disjoint per the regex-
+ * disjointness-as-sole-defense discipline Phase 54 established
+ * for 4 same-slot consumers).
  *
  * Plugin declaration style: idiomatic remark-plugin function
  * declaration (factory returning a transformer) rather than
@@ -99,7 +115,8 @@ import type { MarkdownExtensionRegistry, MarkdownExtensionSet, MarkdownSurface }
  * invariant.
  */
 
-const ORCID_PATTERN = /\borcid:(\d{4}-\d{4}-\d{4}-\d{3}[\dX])\b/gi;
+const ORCID_PATTERN =
+  /\[\[orcid:(\d{4}-\d{4}-\d{4}-\d{3}[\dX])(?:\|([^\]\n]+))?\]\]|\borcid:(\d{4}-\d{4}-\d{4}-\d{3}[\dX])\b/gi;
 
 export function remarkLinkOrcidIds() {
   return function transformer(tree: Root): undefined {
@@ -118,8 +135,25 @@ export function remarkLinkOrcidIds() {
       while ((match = ORCID_PATTERN.exec(text)) !== null) {
         const matchStart = match.index;
         const matched = match[0];
-        const id = match[1];
+        const isBracketed = matched.startsWith("[[");
+
+        const id = isBracketed ? match[1] : match[3];
+        const alias = match[2]; // only defined for bracketed form
         if (id === undefined) continue;
+
+        let display: string;
+        if (alias !== undefined) {
+          display = alias;
+        } else if (isBracketed) {
+          // Bracketed without alias: drop brackets while preserving
+          // source casing (e.g., `[[ORCID:0000-0002-1825-0097]]` →
+          // `<a>ORCID:0000-0002-1825-0097</a>`).
+          display = matched.slice(2, -2);
+        } else {
+          // Bare form (Phase-54 baseline): display source casing
+          // verbatim.
+          display = matched;
+        }
 
         if (matchStart > cursor) {
           newNodes.push({ type: "text", value: text.slice(cursor, matchStart) });
@@ -128,7 +162,7 @@ export function remarkLinkOrcidIds() {
         newNodes.push({
           type: "link",
           url: `https://orcid.org/${id}`,
-          children: [{ type: "text", value: matched }],
+          children: [{ type: "text", value: display }],
         });
 
         cursor = matchStart + matched.length;
@@ -199,11 +233,18 @@ export function remarkLinkOrcidIds() {
  * Phase-54 rationale-only default). **New maximum-consumer-
  * cardinality state** in project history.
  *
- * Phase 55+ may add ORCID display-text alias syntax
- * `[[orcid:NNNN-NNNN-NNNN-NNNN|display]]` (mirrors Phase-47 /
- * Phase-48 / Phase-51 alias extensions), ORCID cross-surface
- * expansion to all 4 surfaces (Phase ~56 at 2-or-4-phase-gap
- * cadence), bioRxiv preprint consumer, or OSF preprint consumer.
+ * Phase 55 ships ORCID display-text alias syntax (Unit 55.1;
+ * closes new Phase-54 deferral at 1-phase carryover — ties
+ * Phase-51 pubmed alias fastest-closure record). The regex
+ * dual-form is plugin-internal; class + factory + default-set
+ * unchanged.
+ *
+ * Phase 56+ may add ORCID cross-surface expansion to all 4
+ * surfaces (constructor-arg value-only change in
+ * `PHASE_54_DEFAULT_ENABLED_SURFACES`; sixth realization of
+ * constructor-arg-only zero-rework expansion property),
+ * bioRxiv preprint consumer, OSF preprint consumer, or bare
+ * ORCID IDs without prefix.
  */
 export class OrcidExtensionRegistry implements MarkdownExtensionRegistry {
   private readonly enabledSurfaces: ReadonlySet<MarkdownSurface>;

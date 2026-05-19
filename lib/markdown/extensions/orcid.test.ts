@@ -154,10 +154,111 @@ describe("remarkLinkOrcidIds — plugin behavior", () => {
 
   it("XSS: emits text-node display (HTML-escaping handled by remark-rehype text-node rendering)", () => {
     // Display is verbatim source casing of `orcid:NNN-NNN-NNN-NNN`.
-    // Phase-54 bare form has no user-controlled text in display.
+    // Phase-54 bare form has no user-controlled text in display; Phase-55
+    // bracketed alias form adds `|display` user-controlled text. Both
+    // route through text-node rendering for HTML escaping.
     const html = runOrcidPipeline("orcid:0000-0002-1825-0097");
     expect(html).toContain("<a ");
     expect(html).not.toContain("<script");
+  });
+
+  // ---------------------------------------------------------------
+  // Phase-55 alias syntax `[[orcid:NNNN-NNNN-NNNN-NNNN|display]]`
+  // (Unit 55.1). Backwards-compatible with Phase-54 bare form; bracketed
+  // form is priority alternative in dual-form regex with bare as fallback.
+  // Closes new Phase-54 deferral at 1-phase carryover — ties Phase-51
+  // pubmed alias fastest-closure record. Fourth dual-form regex in the
+  // framework. Sixth realization of Phase-46 plugin-regex-extension
+  // phase-shape pattern — first 6-realization phase-shape pattern in
+  // project history. All 4 `remarkPlugins` consumers exhibit dual-form
+  // regex post-Phase 55.
+  // ---------------------------------------------------------------
+
+  it("Phase-55: resolves [[orcid:NNNN-NNNN-NNNN-NNNN|display]] to <a href=...>display</a>", () => {
+    expect(runOrcidPipeline("[[orcid:0000-0002-1825-0097|Smith et al. 2024]]")).toBe(
+      '<p><a href="https://orcid.org/0000-0002-1825-0097">Smith et al. 2024</a></p>',
+    );
+  });
+
+  it("Phase-55: bracketed without alias renders verbatim ref (brackets stripped)", () => {
+    expect(runOrcidPipeline("[[orcid:0000-0002-1825-0097]]")).toBe(
+      '<p><a href="https://orcid.org/0000-0002-1825-0097">orcid:0000-0002-1825-0097</a></p>',
+    );
+  });
+
+  it("Phase-55: bracketed without alias preserves source casing of prefix (`[[ORCID:...]]`)", () => {
+    expect(runOrcidPipeline("[[ORCID:0000-0002-1825-0097]]")).toBe(
+      '<p><a href="https://orcid.org/0000-0002-1825-0097">ORCID:0000-0002-1825-0097</a></p>',
+    );
+  });
+
+  it("Phase-55: bracketed alias with X checksum renders correctly", () => {
+    expect(runOrcidPipeline("[[orcid:0000-0002-9079-593X|Author X]]")).toBe(
+      '<p><a href="https://orcid.org/0000-0002-9079-593X">Author X</a></p>',
+    );
+  });
+
+  it("Phase-55: backwards-compat — bare orcid:NNNN-NNNN-NNNN-NNNN still works (Phase-54 baseline)", () => {
+    expect(runOrcidPipeline("orcid:0000-0002-1825-0097")).toBe(
+      '<p><a href="https://orcid.org/0000-0002-1825-0097">orcid:0000-0002-1825-0097</a></p>',
+    );
+  });
+
+  it("Phase-55: aliased + bare orcid coexist in same paragraph", () => {
+    const html = runOrcidPipeline(
+      "see [[orcid:0000-0002-1825-0097|first author]] and orcid:0000-0001-5109-3700 here",
+    );
+    expect(html).toContain('<a href="https://orcid.org/0000-0002-1825-0097">first author</a>');
+    expect(html).toContain(
+      '<a href="https://orcid.org/0000-0001-5109-3700">orcid:0000-0001-5109-3700</a>',
+    );
+  });
+
+  it("Phase-55: empty alias [[orcid:NNNN-NNNN-NNNN-NNNN|]] falls through; bare alternative admits inner ID (mirrors Phase-47/51 pattern)", () => {
+    // The alias display class is `+` (one-or-more); empty alias fails the
+    // bracketed alternative. The bare alternative's `\b` word-boundary
+    // (like Phase-47 arxiv + Phase-51 pubmed) admits the inner ID match —
+    // leaves brackets + pipe as literal.
+    expect(runOrcidPipeline("[[orcid:0000-0002-1825-0097|]]")).toBe(
+      '<p>[[<a href="https://orcid.org/0000-0002-1825-0097">orcid:0000-0002-1825-0097</a>|]]</p>',
+    );
+  });
+
+  it("Phase-55: alias display HTML-escapes via remark-rehype text-node rendering (XSS safety)", () => {
+    const html = runOrcidPipeline("[[orcid:0000-0002-1825-0097|x & y]]");
+    expect(html).toContain('<a href="https://orcid.org/0000-0002-1825-0097">x &#x26; y</a>');
+  });
+
+  it("Phase-55: case-insensitive bracketed prefix preserves source casing of alias", () => {
+    expect(runOrcidPipeline("[[Orcid:0000-0002-1825-0097|Display Text]]")).toBe(
+      '<p><a href="https://orcid.org/0000-0002-1825-0097">Display Text</a></p>',
+    );
+  });
+
+  it("Phase-55: multiple aliased ORCIDs in same paragraph", () => {
+    const html = runOrcidPipeline(
+      "see [[orcid:0000-0002-1825-0097|first]] and [[orcid:0000-0001-5109-3700|second]] for context",
+    );
+    expect(html).toContain('<a href="https://orcid.org/0000-0002-1825-0097">first</a>');
+    expect(html).toContain('<a href="https://orcid.org/0000-0001-5109-3700">second</a>');
+  });
+
+  it("Phase-55: aliased ORCID inside bold renders <strong><a>display</a></strong>", () => {
+    expect(runOrcidPipeline("**[[orcid:0000-0002-1825-0097|critical author]]**")).toBe(
+      '<p><strong><a href="https://orcid.org/0000-0002-1825-0097">critical author</a></strong></p>',
+    );
+  });
+
+  it("Phase-55: aliased ORCID with multi-word display preserves spaces and punctuation", () => {
+    expect(runOrcidPipeline("[[orcid:0000-0002-1825-0097|Smith, Jones, and Bell 2024]]")).toBe(
+      '<p><a href="https://orcid.org/0000-0002-1825-0097">Smith, Jones, and Bell 2024</a></p>',
+    );
+  });
+
+  it("Phase-55: bracketed ORCID with X checksum + alias preserves both", () => {
+    expect(runOrcidPipeline("[[orcid:0000-0002-9079-593X|original release author]]")).toBe(
+      '<p><a href="https://orcid.org/0000-0002-9079-593X">original release author</a></p>',
+    );
   });
 });
 

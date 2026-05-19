@@ -3428,6 +3428,209 @@ children. The text-node value is HTML-escaped by
   55+.
 - **3rd regex evolution on `remarkLinkArxivIds`** — Phase 55+.
 
+**EXTENDED Phase 55 Unit 55.1** — **sixth realization of the
+Phase-46 plugin-regex-extension phase-shape pattern**: ORCID
+display-text alias syntax `[[orcid:NNNN-NNNN-NNNN-NNNN|display]]`
+via in-place dual-form regex extension on `remarkLinkOrcidIds`
+in `OrcidExtensionRegistry`. **First 6-realization phase-shape
+pattern in project history** (Phase 46 wikilinks alias + Phase
+47 arxiv alias + Phase 48 doi alias + Phase 51 pubmed alias +
+Phase 53 arxiv legacy ID-class + Phase 55 ORCID alias; extends
+Phase-53 5-realization record to 6). **Fourth plugin-regex-
+extension on a `remarkPlugins` consumer** in project history
+(Phase 47 arxiv first; Phase 48 doi second; Phase 51 pubmed
+third; Phase 55 ORCID fourth). **All 4 `remarkPlugins`
+consumers exhibit dual-form regex post-Phase 55** — first
+state where every consumer in the 4-consumer-cardinality same-
+slot has been extended with alias-syntax via the dual-form
+regex pattern. **Fourth dual-form regex** in the framework.
+
+**Closes new Phase-54 deferral** ("ORCID display-text alias
+syntax — mirrors Phase-47 arxiv-alias + Phase-48 doi-alias +
+Phase-51 pubmed-alias dual-form regex extension; Phase 55+
+analogous extension") at **1-phase carryover** (Phase 54 →
+Phase 55). **Ties Phase-51 pubmed alias 1-phase FASTEST APPEND-
+DEFERRAL CLOSURE EVER OBSERVED**. Cadence trajectory for the
+five alias-syntax extensions: Phase-46 wikilinks alias 8-phase;
+Phase-47 arxiv alias 6-phase; Phase-48 doi alias 3-phase;
+Phase-51 pubmed alias **1-phase**; Phase-55 ORCID alias
+**1-phase**. **First state where two alias-syntax closures tie
+at 1-phase carryover** — the cadence acceleration has reached
+its theoretical floor for the alias-syntax phase-shape.
+
+**Fourteenth prep-/APPEND-doc-level deferral closed by a later
+phase**: Phase 42 → 38 D-L item 1; Phase 43 → 39 D-Q item 2;
+Phase 44 → 41 D-Y item 1; Phase 45 → 41 D-Y item 4; Phase 46
+→ 38 D-L item 2; Phase 47 → 41 D-Y item 5; Phase 48 → 45 D-AC
+item 2; Phase 49 → 45 D-AC cross-surface; Phase 50 → 45 D-AC
+PubMed PMID item; Phase 51 → new Phase-50 deferral; Phase 52
+→ 50 D-AH PubMed cross-surface; Phase 53 → 41 D-Y item 2;
+Phase 54 → 45 D-AC ORCID item; Phase 55 → new Phase-54
+deferral. **APPEND-deferral closure cadence sustained 14
+phases** — **new longest sustained cadence in project history**
+(extends Phase-54 record 13 → 14). **First 14-phase APPEND-
+deferral closure run**.
+
+**Fourth non-cross-surface-expansion APPEND-deferral closure
+on the `remarkPlugins` slot kind** in the cadence (Phase 47
+arxiv alias; Phase 48 doi alias; Phase 51 pubmed alias; Phase
+55 ORCID alias). **First state where ALL FOUR `remarkPlugins`
+consumers have had alias-syntax extensions resolved within the
+cadence** — the alias-syntax phase-shape has exhausted all
+`remarkPlugins` consumer candidates as of Phase 55 close.
+
+**Second "immediate-successor same-thread-direction phase
+boundary"** in project history. Phase 50 → Phase 51 was the
+first (pubmed first-ship → pubmed alias at 1-phase gap). Phase
+54 → Phase 55 is the second (ORCID first-ship → ORCID alias
+at 1-phase gap). **First state where the immediate-successor
+pattern has been observed twice**; sets the precedent that
+sibling-consumer first-ship + alias-syntax extension form a
+consistent 2-phase architectural pair.
+
+**First quintuple-alias surface** in project history. Pre-
+Phase-55, the maximum-cardinality alias surface was rationale
+at quadruple-alias under Phase-52 5-way default (wikilinks +
+arxiv + doi + pubmed). Post-Phase-55, rationale under 6-way
+default carries wikilinks alias (Phase 46) + arxiv alias (Phase
+47) + doi alias (Phase 48) + pubmed alias (Phase 51) + ORCID
+alias (Phase 55) simultaneously. **First surface-with-5-alias-
+consumers cardinality of 1** in project history.
+
+**Twenty-second APPEND on ADR-0018 D-G** — extends the **first-
+ADR-D-clause-with-most-APPENDs record** from 21 → 22 (Phase
+18 + 27 + 29 + 37 + 38 + 39 + 40 + 41 + 42 + 43 + 44 + 45 +
+46 + 47 + 48 + 49 + 50 + 51 + 52 + 53 + 54 + **55**).
+
+**Thirteenth two-letter APPEND letter D-AM** (after Phase-43
+D-AA + Phase-44 D-AB + Phase-45 D-AC + Phase-46 D-AD + Phase-
+47 D-AE + Phase-48 D-AF + Phase-49 D-AG + Phase-50 D-AH +
+Phase-51 D-AI + Phase-52 D-AJ + Phase-53 D-AK + Phase-54
+D-AL). Excel-spreadsheet column convention sustained — D-AN +
+D-AO + ... + D-AZ would carry Phase 56+ at this cadence
+(after D-AZ rolls to D-BA).
+
+**APPEND-D-AM ORCID alias regex shape**:
+
+```ts
+// Before (Phase 54 ship):
+const ORCID_PATTERN = /\borcid:(\d{4}-\d{4}-\d{4}-\d{3}[\dX])\b/gi;
+
+// After (Phase 55 ship):
+const ORCID_PATTERN =
+  /\[\[orcid:(\d{4}-\d{4}-\d{4}-\d{3}[\dX])(?:\|([^\]\n]+))?\]\]|\borcid:(\d{4}-\d{4}-\d{4}-\d{3}[\dX])\b/gi;
+```
+
+**Fourth dual-form regex in the framework**. Alternation
+between bracketed (priority) and bare (fallback). Engine tries
+the bracketed alternative first at each position; if it fails,
+tries the bare alternative.
+
+- **Bracketed form** `\[\[orcid:(\d{4}-\d{4}-\d{4}-\d{3}[\dX])(?:\|([^\]\n]+))?\]\]`:
+  - Group 1 = ORCID iD (Phase-54 baseline ID-class preserved
+    verbatim — 4 groups of 4 digits + checksum char).
+  - Group 2 = optional display text (`[^\]\n]+`; mirrors
+    Phase-46/47/48/51 alias display class).
+  - **No trailing-lookahead** — `]]` is the explicit
+    terminator.
+- **Bare form** `\borcid:(\d{4}-\d{4}-\d{4}-\d{3}[\dX])\b`:
+  - Group 3 = ORCID iD (Phase-54 baseline preserved verbatim).
+  - **Word-boundary anchors** preserved verbatim — no
+    lookahead-vs-`\b` divergence (orcid bare form had no
+    lookahead at Phase-54 ship, mirroring arxiv + pubmed).
+
+**Plugin body branches on `isBracketed = match[0].startsWith("[[")`**.
+Mirrors Phase-47/Phase-48/Phase-51 body shape verbatim with
+`arxiv:`/`doi:`/`(?:pubmed|pmid):` → `orcid:` substitution.
+Three display rules:
+
+1. `alias` defined → `display = alias` (bracketed form with
+   `|display`).
+2. `isBracketed` AND `alias` undefined → `display = matched.slice(2, -2)`
+   (bracketed form without alias; drop `[[` + `]]` while
+   preserving source casing of the prefix).
+3. Else (bare form) → `display = matched` (Phase-54 baseline:
+   verbatim source casing).
+
+**Empty alias `[[orcid:NNNN-NNNN-NNNN-NNNN|]]` behavior**: orcid
+bare form uses `\b` word-boundary (no lookahead constraint).
+When the bracketed alternative fails (empty alias does not
+satisfy `+`), the engine tries the bare alternative — which CAN
+match the inner `orcid:NNNN-NNNN-NNNN-NNNN` portion (digits +
+hyphens are word characters or word-adjacent; `\b` satisfied at
+`[` → `o` boundary). Result: `[[<a>orcid:NNNN-NNNN-NNNN-NNNN</a>|]]`
+— **mirrors Phase-47 arxiv + Phase-51 pubmed empty-alias
+pattern** (NOT the Phase-48 doi fully-literal divergence). ORCID
+sides with arxiv + pubmed in this divergence because all three
+use `\b` rather than DOI's prose-friendly lookahead.
+
+**Collision-freedom inherited from Phase 50 + 54**. No collision
+with wikilinks (`[a-z0-9-]+` slug class excludes `:`). No
+collision with arxiv (regex character classes pairwise disjoint;
+arxiv requires `arxiv:` prefix). No collision with doi (regex
+character classes pairwise disjoint; doi requires `doi:`
+prefix). No collision with pubmed (regex character classes
+pairwise disjoint; pubmed requires `pubmed:`/`pmid:` prefix).
+The 4-consumer same-slot regex-disjointness discipline (Phase
+54 established) HOLDS UNDER DUAL-FORM EXTENSION on the 4th
+consumer — Phase 55 ship is the first state where regex-
+disjointness-as-sole-defense is exercised across a mix of
+single-form (none remaining), arxiv-legacy-extended (Phase 53),
+and dual-form (arxiv + doi + pubmed + orcid) regexes at 4-
+consumer cardinality.
+
+**XSS audit Phase 55**: display text becomes mdast `text` node
+`value` inside an mdast `link` node, then transits through
+`remark-rehype` to a hast `<a>` element with text-node
+children. The text-node value is HTML-escaped by
+`rehype-stringify` per HTML5 spec. Test "Phase-55: alias
+display HTML-escapes" asserts `[[orcid:0000-0002-1825-0097|x & y]]`
+emits `<a href="...">x &#x26; y</a>`. **No new XSS surface**.
+
+**No env-var change Phase 55**: alias is plugin-internal regex
+evolution. `MARKDOWN_EXTENSIONS=orcid` (Phase-54 default-
+rationale-only) and 6-way composite
+`wikilinks,tables,arxiv,doi,pubmed,orcid` (Phase-54 default)
+automatically pick up bracketed alias syntax.
+
+**Phase 56+ deferrals** (Phase-55 ORCID-alias scope cap):
+
+- **ORCID cross-surface expansion** (Phase-54 deferral carries)
+  — Phase 56+ at standard 4-phase-gap cadence or faster.
+- **bioRxiv preprint consumer** — Phase 56+.
+- **OSF preprint consumer** — Phase 56+.
+- **Bare arxiv / DOI / PubMed / ORCID IDs without prefix** —
+  Phase 56+.
+- **dx.doi.org legacy host parsing** — Phase 56+.
+- **Stricter trailing-lookahead for trailing-period DOIs** —
+  Phase 56+.
+- **Paper-card hover-preview** (APPEND-D-Y item 6 carries) —
+  Phase 56+.
+- **Cross-entity wikilinks** (APPEND-D-L item 3 carries) —
+  Phase 56+.
+- **`<a class="wikilink">` styling** (APPEND-D-L item 4
+  carries) — Phase 56+.
+- **404 handling for unresolved wikilinks** (APPEND-D-L item 5
+  carries) — Phase 56+.
+- **Plugin parameterization for wikilink-href-builder** (APPEND-
+  D-L item 6 carries) — Phase 56+.
+- **Auto-trim of alias display whitespace** — Phase 56+.
+- **Empty-alias fallback unification** across consumers — Phase
+  56+.
+- **Table-specific attributes** (APPEND-D-Q item 3 carries) —
+  Phase 56+.
+- **`<caption>` element** (APPEND-D-Q item 4 carries) — Phase
+  56+.
+- **Surface-specific table schemas** (APPEND-D-Q item 6 carries)
+  — Phase 56+.
+- **5th-or-later `remarkPlugins` consumer beyond arxiv + doi +
+  pubmed + orcid** — Phase 56+.
+- **2nd `rehypePlugins` consumer beyond wikilinks** — Phase
+  56+.
+- **2nd `schemaOverrides` consumer beyond tables** — Phase
+  56+.
+- **3rd regex evolution on `remarkLinkArxivIds`** — Phase 56+.
+
 ### D-H. Phase 18+ deferrals
 
 Phase 17 ships MINIMAL markdown surface. Deferred to Phase 18+:
