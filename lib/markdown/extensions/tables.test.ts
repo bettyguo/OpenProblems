@@ -830,3 +830,283 @@ describe("GFM_TABLE_SCHEMA_OVERRIDES — Phase-57 multi-attribute + multi-cell e
     expect(html).toContain("Span-rest");
   });
 });
+
+describe("GFM_TABLE_SCHEMA_OVERRIDES — Phase-61 caption edge cases + cumulative schema-extension state", () => {
+  it("<caption> with inline <a href> link survives sanitize (text + minimal inline link)", () => {
+    // Mirrors the Phase-57 edge-case pattern verbatim. Inline elements in
+    // caption are already allow-listed via the Phase-17 base; Phase-61
+    // adds only the caption tag itself.
+    const tree: Root = {
+      type: "root",
+      children: [
+        {
+          type: "element",
+          tagName: "table",
+          properties: {},
+          children: [
+            {
+              type: "element",
+              tagName: "caption",
+              properties: {},
+              children: [
+                { type: "text", value: "See " },
+                {
+                  type: "element",
+                  tagName: "a",
+                  properties: { href: "https://example.com" },
+                  children: [{ type: "text", value: "source" }],
+                },
+                { type: "text", value: " for details" },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const processor = unified()
+      .use(rehypeSanitize, GFM_TABLE_SCHEMA_OVERRIDES)
+      .use(rehypeStringify);
+    const transformed = processor.runSync(tree) as Root;
+    const html = String(processor.stringify(transformed));
+    expect(html).toContain(
+      '<caption>See <a href="https://example.com">source</a> for details</caption>',
+    );
+  });
+
+  it("multiple <caption> elements in same table all survive sanitize (sanitize allow-list does not enforce HTML5 position semantics)", () => {
+    // HTML5 spec says caption must be the FIRST child of table and there
+    // can be at most one. rehype-sanitize allow-list does not enforce
+    // position or cardinality — it only filters tag names + attributes.
+    // Multiple captions are tag-name-allowed; placement validation is the
+    // responsibility of the upstream parser (which never emits invalid
+    // structure under the current pipeline).
+    const tree: Root = {
+      type: "root",
+      children: [
+        {
+          type: "element",
+          tagName: "table",
+          properties: {},
+          children: [
+            {
+              type: "element",
+              tagName: "caption",
+              properties: {},
+              children: [{ type: "text", value: "First Caption" }],
+            },
+            {
+              type: "element",
+              tagName: "caption",
+              properties: {},
+              children: [{ type: "text", value: "Second Caption" }],
+            },
+          ],
+        },
+      ],
+    };
+    const processor = unified()
+      .use(rehypeSanitize, GFM_TABLE_SCHEMA_OVERRIDES)
+      .use(rehypeStringify);
+    const transformed = processor.runSync(tree) as Root;
+    const html = String(processor.stringify(transformed));
+    expect(html).toContain("<caption>First Caption</caption>");
+    expect(html).toContain("<caption>Second Caption</caption>");
+  });
+
+  it("caption-only table (no thead/tbody) survives sanitize (caption is a standalone allow-listed child of table)", () => {
+    const tree: Root = {
+      type: "root",
+      children: [
+        {
+          type: "element",
+          tagName: "table",
+          properties: {},
+          children: [
+            {
+              type: "element",
+              tagName: "caption",
+              properties: {},
+              children: [{ type: "text", value: "Standalone Caption" }],
+            },
+          ],
+        },
+      ],
+    };
+    const processor = unified()
+      .use(rehypeSanitize, GFM_TABLE_SCHEMA_OVERRIDES)
+      .use(rehypeStringify);
+    const transformed = processor.runSync(tree) as Root;
+    const html = String(processor.stringify(transformed));
+    expect(html).toContain("<table><caption>Standalone Caption</caption></table>");
+  });
+
+  it("<caption> with rich inline content (<strong> + <em> + <code> + <a>) survives sanitize", () => {
+    const tree: Root = {
+      type: "root",
+      children: [
+        {
+          type: "element",
+          tagName: "table",
+          properties: {},
+          children: [
+            {
+              type: "element",
+              tagName: "caption",
+              properties: {},
+              children: [
+                {
+                  type: "element",
+                  tagName: "strong",
+                  properties: {},
+                  children: [{ type: "text", value: "Table 1" }],
+                },
+                { type: "text", value: ": " },
+                {
+                  type: "element",
+                  tagName: "em",
+                  properties: {},
+                  children: [{ type: "text", value: "experimental" }],
+                },
+                { type: "text", value: " results from " },
+                {
+                  type: "element",
+                  tagName: "code",
+                  properties: {},
+                  children: [{ type: "text", value: "v2.0" }],
+                },
+                { type: "text", value: " (" },
+                {
+                  type: "element",
+                  tagName: "a",
+                  properties: { href: "https://example.com/paper" },
+                  children: [{ type: "text", value: "Smith 2024" }],
+                },
+                { type: "text", value: ")" },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const processor = unified()
+      .use(rehypeSanitize, GFM_TABLE_SCHEMA_OVERRIDES)
+      .use(rehypeStringify);
+    const transformed = processor.runSync(tree) as Root;
+    const html = String(processor.stringify(transformed));
+    expect(html).toContain("<caption>");
+    expect(html).toContain("<strong>Table 1</strong>");
+    expect(html).toContain("<em>experimental</em>");
+    expect(html).toContain("<code>v2.0</code>");
+    expect(html).toContain('<a href="https://example.com/paper">Smith 2024</a>');
+    expect(html).toContain("</caption>");
+  });
+
+  it("<caption> + Phase-57 attributes coexist in complex multi-row tbody (cumulative schema-extension state preserved end-to-end)", () => {
+    // Combines:
+    //   - Phase-61: <caption>Multi-criterion Comparison</caption>
+    //   - Phase-57: <th colspan="2" scope="colgroup">, <td rowspan="2">
+    //   - Phase-39: align attributes on td
+    const tree: Root = {
+      type: "root",
+      children: [
+        {
+          type: "element",
+          tagName: "table",
+          properties: {},
+          children: [
+            {
+              type: "element",
+              tagName: "caption",
+              properties: {},
+              children: [{ type: "text", value: "Multi-criterion Comparison" }],
+            },
+            {
+              type: "element",
+              tagName: "thead",
+              properties: {},
+              children: [
+                {
+                  type: "element",
+                  tagName: "tr",
+                  properties: {},
+                  children: [
+                    {
+                      type: "element",
+                      tagName: "th",
+                      properties: { colSpan: 2, scope: "colgroup" },
+                      children: [{ type: "text", value: "Performance" }],
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: "element",
+              tagName: "tbody",
+              properties: {},
+              children: [
+                {
+                  type: "element",
+                  tagName: "tr",
+                  properties: {},
+                  children: [
+                    {
+                      type: "element",
+                      tagName: "td",
+                      properties: { rowSpan: 2, align: "left" },
+                      children: [{ type: "text", value: "Model A" }],
+                    },
+                    {
+                      type: "element",
+                      tagName: "td",
+                      properties: { align: "right" },
+                      children: [{ type: "text", value: "0.95" }],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const processor = unified()
+      .use(rehypeSanitize, GFM_TABLE_SCHEMA_OVERRIDES)
+      .use(rehypeStringify);
+    const transformed = processor.runSync(tree) as Root;
+    const html = String(processor.stringify(transformed));
+    expect(html).toContain("<caption>Multi-criterion Comparison</caption>");
+    expect(html).toContain('colspan="2"');
+    expect(html).toContain('scope="colgroup"');
+    expect(html).toContain('rowspan="2"');
+    expect(html).toContain('align="left"');
+    expect(html).toContain('align="right"');
+  });
+
+  it("empty <caption></caption> survives sanitize (no text content; schema-extension is tag-allow-list only)", () => {
+    const tree: Root = {
+      type: "root",
+      children: [
+        {
+          type: "element",
+          tagName: "table",
+          properties: {},
+          children: [
+            {
+              type: "element",
+              tagName: "caption",
+              properties: {},
+              children: [],
+            },
+          ],
+        },
+      ],
+    };
+    const processor = unified()
+      .use(rehypeSanitize, GFM_TABLE_SCHEMA_OVERRIDES)
+      .use(rehypeStringify);
+    const transformed = processor.runSync(tree) as Root;
+    const html = String(processor.stringify(transformed));
+    expect(html).toContain("<caption></caption>");
+  });
+});
