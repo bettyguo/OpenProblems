@@ -2470,6 +2470,41 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 51 — Community-adjacent surfaces (**forty-second NON-§13 phase**: PubMed PMID alias syntax `[[pubmed:NNN|display]]` / `[[pmid:NNN|display]]` via dual-form regex extension on existing `remarkLinkPubmedIds` plugin in `PubmedExtensionRegistry`; **fourth realization of Phase-46 plugin-regex-extension phase-shape pattern**; **third dual-form regex** in the framework; **third plugin-regex-extension on a `remarkPlugins` consumer**; **first dual-form regex with inner alternation inside the bracketed branch** (`pubmed:` OR `pmid:`); closes new Phase-50 deferral at **1-phase carryover** — **fastest APPEND-deferral closure ever observed**; APPEND-D-AI ninth two-letter slot; 5 numbered units anticipated; 46th "Continue" override invoked; **IN PROGRESS**)
 
+#### Unit 51.2 — 17 NEW end-to-end Phase-51 tests on rationale + 5-way composite + first quadruple-alias surface validation (rationale carries wikilinks + arxiv + doi + pubmed aliases simultaneously; first surface with 4 alias-syntax consumers active in project history; 1174/73)
+
+- Third Phase-51 unit; code-only (test additions to `lib/markdown/index.test.ts`).
+- **First describe block** — `Phase-51 pubmed alias syntax — rationale surface under default dispatch` (11 tests):
+  - alias renders on rationale via the factory-driven default constant.
+  - pmid alternative prefix renders to the same canonical URL form.
+  - alias does NOT render on bio (pubmed disabled by Phase-50 default).
+  - alias does NOT render on reviewNotes.
+  - alias does NOT render on actionRationale.
+  - backwards-compat: bare `pubmed:NNN` (Phase-50 baseline) renders on rationale.
+  - bracketed without alias renders verbatim ref preserving prefix variant.
+  - aliased + bare coexist in same rationale paragraph.
+  - alias display HTML-escapes via text-node rendering (XSS safety).
+  - XSS defenses survive (javascript: stripped; alias resolves).
+  - case-insensitive bracketed prefix preserves source casing of alias.
+- **Second describe block** — `Phase-51 pubmed alias under Phase-50 5-way composite — first quadruple-alias surface` (6 tests):
+  - **rationale: wikilinks + arxiv + doi + pubmed aliases ALL render together** — **FIRST QUADRUPLE-ALIAS SURFACE** in project history; first surface with 4 alias-syntax consumers active under default dispatch.
+  - bio: wikilinks + arxiv + doi aliases render (triple-alias; pubmed inactive per Phase-50 default).
+  - reviewNotes: triple-alias; pubmed inactive.
+  - actionRationale: triple-alias; pubmed inactive.
+  - Backwards-compat under 5-way composite: bare wikilink + bare arxiv + bare doi + bare pubmed all coexist on rationale.
+  - XSS defenses survive Phase-51 quadruple-alias surface on rationale.
+- **Composition matrix snapshot Phase 51** under `MARKDOWN_EXTENSIONS=wikilinks,tables,arxiv,doi,pubmed`:
+  - bio: triple-alias (wikilinks + arxiv + doi) — Phase-49 baseline; pubmed inactive.
+  - reviewNotes: triple-alias — Phase-49 baseline; pubmed inactive.
+  - rationale: **QUADRUPLE-ALIAS** (wikilinks + arxiv + doi + pubmed) — first in project history.
+  - actionRationale: triple-alias — Phase-49 baseline; pubmed inactive.
+- **`PHASE_50_DEFAULT_ENABLED_SURFACES` + `PubmedExtensionRegistry` import** preserved from Phase 50 in `lib/markdown/index.test.ts`.
+- **No source code changes**: Unit 51.1 already shipped the plugin code; Unit 51.2 is pure test additions validating the quadruple-alias surface through the full sanitize pipeline.
+- **Smoke gates**:
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **1174 / 73 files** (+17 vs Unit 51.1; +30 vs Phase-50 close).
+  - `pnpm audit-content` → 0 errors / 6 warnings UNCHANGED.
+  - First Load JS = 103 kB UNCHANGED (113 consecutive units); Middleware = 160 kB UNCHANGED.
+
 #### Unit 51.1 — `PUBMED_PATTERN` dual-form regex (bracketed + bare) + plugin body update + 13 NEW pubmed.test.ts alias tests + ADR-0018 D-G APPEND-D-AI (fourth realization of Phase-46 plugin-regex-extension phase-shape; third dual-form regex; third plugin-regex-extension on `remarkPlugins`; first dual-form regex with inner alternation inside bracketed branch; 18th D-G APPEND extends record 17 → 18; 1157/73)
 
 - Second Phase-51 unit; code + ADR APPEND.

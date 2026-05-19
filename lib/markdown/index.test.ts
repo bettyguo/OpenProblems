@@ -2827,3 +2827,195 @@ describe("Phase-50 first 5-consumer composition — wikilinks,tables,arxiv,doi,p
     );
   });
 });
+
+// ---------------------------------------------------------------------------
+// Phase-51 — end-to-end PubMed PMID alias syntax `[[pubmed:NNN|display]]` /
+// `[[pmid:NNN|display]]` via dual-form `PUBMED_PATTERN` (Unit 51.1) on
+// rationale under `MARKDOWN_EXTENSIONS=pubmed` Phase-50 default + within
+// the 5-way `wikilinks,tables,arxiv,doi,pubmed` Phase-50 default composite.
+// Fourth realization of the Phase-46 plugin-regex-extension phase-shape
+// pattern; third plugin-regex-extension on a `remarkPlugins` consumer;
+// first dual-form regex with inner alternation inside the bracketed branch.
+//
+// Closes new Phase-50 deferral at 1-phase carryover — fastest APPEND-
+// deferral closure ever observed.
+// ---------------------------------------------------------------------------
+
+describe("Phase-51 pubmed alias syntax — rationale surface under default dispatch", () => {
+  beforeEach(() => {
+    __setRegistryForTests(new PubmedExtensionRegistry(PHASE_50_DEFAULT_ENABLED_SURFACES));
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it("alias renders on rationale: [[pubmed:NNN|display]] → <a>display</a>", () => {
+    expect(
+      renderRationaleMarkdown("compare with [[pubmed:12345678|Smith et al. 2024]] for context"),
+    ).toBe(
+      '<p>compare with <a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">Smith et al. 2024</a> for context</p>',
+    );
+  });
+
+  it("alias renders on rationale with pmid alternative prefix", () => {
+    expect(renderRationaleMarkdown("cited as [[pmid:12345678|original work]]")).toBe(
+      '<p>cited as <a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">original work</a></p>',
+    );
+  });
+
+  it("alias does NOT render on bio (pubmed disabled by Phase-50 default)", () => {
+    const html = renderBioMarkdown("see [[pubmed:12345678|display]] here") ?? "";
+    expect(html).not.toContain('href="https://pubmed.ncbi.nlm.nih.gov/');
+  });
+
+  it("alias does NOT render on reviewNotes (pubmed disabled by Phase-50 default)", () => {
+    const html = renderReviewNotesMarkdown("see [[pubmed:12345678|display]] here");
+    expect(html).not.toContain('href="https://pubmed.ncbi.nlm.nih.gov/');
+  });
+
+  it("alias does NOT render on actionRationale (pubmed disabled by Phase-50 default)", () => {
+    const html = renderActionRationaleMarkdown("see [[pubmed:12345678|display]] here");
+    expect(html).not.toContain('href="https://pubmed.ncbi.nlm.nih.gov/');
+  });
+
+  it("backwards-compat: bare pubmed:NNN renders on rationale (Phase-50 baseline)", () => {
+    expect(renderRationaleMarkdown("see pubmed:12345678 for context")).toBe(
+      '<p>see <a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">pubmed:12345678</a> for context</p>',
+    );
+  });
+
+  it("bracketed without alias renders verbatim pubmed ref preserving prefix variant on rationale", () => {
+    expect(renderRationaleMarkdown("see [[pmid:12345678]] here")).toBe(
+      '<p>see <a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">pmid:12345678</a> here</p>',
+    );
+  });
+
+  it("aliased + bare pubmed coexist in same rationale paragraph", () => {
+    const html = renderRationaleMarkdown("see [[pubmed:11111111|first]] and pmid:22222222 also");
+    expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/11111111/">first</a>');
+    expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/22222222/">pmid:22222222</a>');
+  });
+
+  it("alias display HTML-escapes via text-node rendering on rationale (XSS safety)", () => {
+    const html = renderRationaleMarkdown("see [[pubmed:12345678|x & y]] math");
+    expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">x &#x26; y</a>');
+  });
+
+  it("XSS defenses survive Phase-51 alias on rationale (javascript: stripped; alias resolves)", () => {
+    const html = renderRationaleMarkdown(
+      "[bad](javascript:alert(1)) and [[pubmed:12345678|safe display]]",
+    );
+    expect(html).not.toContain("javascript:alert");
+    expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">safe display</a>');
+  });
+
+  it("case-insensitive bracketed prefix preserves source casing of alias", () => {
+    expect(renderRationaleMarkdown("see [[PMID:12345678|Display Text]]")).toBe(
+      '<p>see <a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">Display Text</a></p>',
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-51 — pubmed alias coexists with Phase-46/47/48 alias-syntax
+// extensions under the Phase-50 maximal 5-consumer composition
+// `wikilinks,tables,arxiv,doi,pubmed`. Rationale becomes the **first
+// quadruple-alias surface in project history** — wikilinks alias
+// (rehypePlugins) + arxiv alias (remarkPlugins) + doi alias (remarkPlugins)
+// + pubmed alias (remarkPlugins) simultaneously active. Pubmed is rationale-
+// only per Phase-50 default; other surfaces remain triple-alias.
+// ---------------------------------------------------------------------------
+
+describe("Phase-51 pubmed alias under Phase-50 5-way composite — first quadruple-alias surface", () => {
+  beforeEach(() => {
+    const wikilinks = new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES);
+    const tables = new TablesExtensionRegistry(PHASE_39_DEFAULT_ENABLED_SURFACES);
+    const arxiv = new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES);
+    const doi = new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES);
+    const pubmed = new PubmedExtensionRegistry(PHASE_50_DEFAULT_ENABLED_SURFACES);
+    __setRegistryForTests(new CompositeExtensionRegistry([wikilinks, tables, arxiv, doi, pubmed]));
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it("rationale: wikilinks + arxiv + doi + pubmed aliases ALL render together (first quadruple-alias surface)", () => {
+    // **First quadruple-alias surface in project history.** Wikilinks
+    // alias (Phase 46; rehypePlugins) + arxiv alias (Phase 47;
+    // remarkPlugins) + doi alias (Phase 48; remarkPlugins) + pubmed
+    // alias (Phase 51; remarkPlugins) all active simultaneously under
+    // 5-way default. Conflict-free per regex-disjointness-as-sole-
+    // defense discipline (Phase 50 established for 3 same-slot
+    // consumers; Phase 51 ship is first dual-form-extended scenario at
+    // 3-same-slot cardinality).
+    const md =
+      "see [[scalable-oversight|topic]], [[arxiv:1909.03004|paper A]], [[doi:10.48550/arXiv.2005.14165|paper B]], and [[pubmed:12345678|paper C]].\n\n| A | B |\n|---|---|\n| 1 | 2 |";
+    const html = renderRationaleMarkdown(md);
+    expect(html).toContain('<a href="/problems/scalable-oversight">topic</a>'); // wikilinks alias
+    expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">paper A</a>'); // arxiv alias
+    expect(html).toContain('<a href="https://doi.org/10.48550/arXiv.2005.14165">paper B</a>'); // doi alias
+    expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">paper C</a>'); // pubmed alias
+    expect(html).toContain("<table>"); // tables
+  });
+
+  it("bio: wikilinks + arxiv + doi aliases render (triple-alias; pubmed inactive per Phase-50 default)", () => {
+    // bio is pubmed-disabled by Phase-50 rationale-only default; remains
+    // triple-alias (Phase-49 baseline preserved).
+    const md =
+      "I cite [[arxiv:1909.03004|the original]] for [[hallucination-reduction|this topic]] and [[doi:10.1234/abc|paper]] and [[pubmed:12345678|biomed]].";
+    const html = renderBioMarkdown(md) ?? "";
+    expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">the original</a>');
+    expect(html).toContain('<a href="/problems/hallucination-reduction">this topic</a>');
+    expect(html).toContain('<a href="https://doi.org/10.1234/abc">paper</a>');
+    // pubmed alias does NOT render on bio
+    expect(html).not.toContain('href="https://pubmed.ncbi.nlm.nih.gov/');
+  });
+
+  it("reviewNotes: wikilinks + arxiv + doi aliases render (triple-alias; pubmed inactive)", () => {
+    const md =
+      "see [[arxiv:2024.01234|the survey]] and [[scalable-oversight|context]] and [[doi:10.5678/xyz|related]] and [[pubmed:99999999|biomed]]";
+    const html = renderReviewNotesMarkdown(md);
+    expect(html).toContain('<a href="https://arxiv.org/abs/2024.01234">the survey</a>');
+    expect(html).toContain('<a href="/problems/scalable-oversight">context</a>');
+    expect(html).toContain('<a href="https://doi.org/10.5678/xyz">related</a>');
+    expect(html).not.toContain('href="https://pubmed.ncbi.nlm.nih.gov/');
+  });
+
+  it("actionRationale: wikilinks + arxiv + doi aliases render (triple-alias; pubmed inactive)", () => {
+    const md =
+      "upgrade reflects [[arxiv:1909.03004|the work]] on [[benchmark-integrity|this]] and [[doi:10.1234/abc|paper]] and [[pubmed:12345678|biomed]]";
+    const html = renderActionRationaleMarkdown(md);
+    expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">the work</a>');
+    expect(html).toContain('<a href="/problems/benchmark-integrity">this</a>');
+    expect(html).toContain('<a href="https://doi.org/10.1234/abc">paper</a>');
+    expect(html).not.toContain('href="https://pubmed.ncbi.nlm.nih.gov/');
+  });
+
+  it("backwards-compat under 5-way composite: bare wikilink + bare arxiv + bare doi + bare pubmed all coexist on rationale", () => {
+    const md = "see [[scalable-oversight]] arxiv:1909.03004 doi:10.1234/abc pubmed:12345678.";
+    const html = renderRationaleMarkdown(md);
+    expect(html).toContain('<a href="/problems/scalable-oversight">scalable-oversight</a>');
+    expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">arxiv:1909.03004</a>');
+    expect(html).toContain('<a href="https://doi.org/10.1234/abc">doi:10.1234/abc</a>');
+    expect(html).toContain(
+      '<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">pubmed:12345678</a>',
+    );
+  });
+
+  it("XSS defenses survive Phase-51 quadruple-alias surface on rationale", () => {
+    const md =
+      "[bad](javascript:alert(1)) [[s|safe slug]] [[arxiv:1909.03004|safe arxiv]] [[doi:10.1234/abc|safe doi]] [[pubmed:12345678|safe pubmed]].";
+    const html = renderRationaleMarkdown(md);
+    expect(html).not.toContain("javascript:alert");
+    expect(html).toContain('<a href="/problems/s">safe slug</a>');
+    expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">safe arxiv</a>');
+    expect(html).toContain('<a href="https://doi.org/10.1234/abc">safe doi</a>');
+    expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">safe pubmed</a>');
+  });
+});
