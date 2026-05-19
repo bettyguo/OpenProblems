@@ -2468,7 +2468,116 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **Phase-8 scope drift**: HTML shell migration **dropped from scope mid-flight** at Unit 8.1 (parallel session preserved existing `app/layout.tsx`-owns-`<html>` structure with a "this change was intentional" system reminder). Surfaced into Unit 8.4 territory, then deferred indefinitely. No scope additions. Parallel-curator coordination at unprecedented intensity (Unit 8.1 mid-flight file deletions; Unit 8.6 FR content authored by parallel session).
 - THINK artifact: `docs/thinking/8.9-phase-8-acceptance-gate.md`.
 
-### Phase 48 — Community-adjacent surfaces (**thirty-ninth NON-§13 phase**: DOI alias syntax `[[doi:10.NNNN/xxx|display]]` via dual-form regex extension on existing `remarkLinkDoiIds` plugin in `DoiExtensionRegistry`; **third realization of the Phase-46 plugin-regex-extension phase-shape pattern**; **second plugin-regex-extension on a `remarkPlugins` consumer** in project history; **second dual-form regex** in the framework; **first "two-consecutive-`remarkPlugins`-regex-extension phases" pair** (Phase 47 + 48); closes ADR-0018 APPEND-D-AC item 2 deferral at 3-phase carryover (ties Phase-44 fastest-closure record); APPEND-D-AF sixth two-letter slot; 5 numbered units; 43rd "Continue" override invoked; **IN PROGRESS**)
+### Phase 48 — Community-adjacent surfaces (**thirty-ninth NON-§13 phase**: DOI alias syntax `[[doi:10.NNNN/xxx|display]]` via dual-form regex extension on existing `remarkLinkDoiIds` plugin in `DoiExtensionRegistry`; **third realization of the Phase-46 plugin-regex-extension phase-shape pattern**; **second plugin-regex-extension on a `remarkPlugins` consumer** in project history; **second dual-form regex** in the framework; **first "two-consecutive-`remarkPlugins`-regex-extension phases" pair** (Phase 47 + 48); closes ADR-0018 APPEND-D-AC item 2 deferral at 3-phase carryover (ties Phase-44 fastest-closure record); APPEND-D-AF sixth two-letter slot; 5 numbered units; 43rd "Continue" override invoked; **CLOSED**)
+
+#### Unit 48.4 — Phase 48 acceptance gate (third plugin-regex-extension realization; second remarkPlugins consumer extension; second dual-form regex; first triple-alias surface; D-AF; 1069/72; 101st consecutive 103 kB unit; 44th "Continue" override opportunity at Phase 48 → 49 boundary)
+
+- Fifth and final Phase-48 numbered unit; gate-only. **Phase 48 CLOSES at this unit's commit**. Phase 49 entry awaits explicit "Continue" override per §12.
+- THINK artifact: `docs/thinking/48.4-phase-48-acceptance-gate.md` (Phase-47 → 48 delta complete; 12 architectural firsts enumerated; Phase-49 entry conditions documented with 10 ranked candidate threads).
+
+##### Phase 48 — what shipped (5 numbered units)
+
+| Unit | Title | Type | Commit |
+|---|---|---|---|
+| 48.0 | Phase 48 prep | docs | `04fd58c` |
+| 48.1 | `DOI_PATTERN` dual-form regex + plugin body + 13 NEW alias tests + ADR-0018 D-G APPEND-D-AF | code+APPEND | `7366cc6` |
+| 48.2 | 18 NEW end-to-end DOI alias tests + first triple-alias surface | code | `a650340` |
+| 48.3 | Phase-48 hygiene + APPEND-D-AC item 2 closure documentation | docs | `98ed314` |
+| 48.4 | Phase 48 acceptance gate (this unit) | gate | (this commit) |
+
+Total: **5 numbered units (48.0 through 48.4)**. Mirrors Phase 41-47 5-unit framework shapes verbatim.
+
+##### Third realization of Phase-46 phase-shape + second dual-form regex + first triple-alias surface at HEAD `98ed314`
+
+- `DOI_PATTERN` evolved in-place from `/\bdoi:(10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+?)(?=[\s,;)]|\.(?:\s|$)|$)/gi` to `/\[\[doi:(10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+?)(?:\|([^\]\n]+))?\]\]|\bdoi:(10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+?)(?=[\s,;)]|\.(?:\s|$)|$)/gi`. **Second dual-form regex** in the framework. **First "selectively-applied lookahead in dual-form regex"**: bracketed alternative has explicit `]]` terminator → no lookahead needed; bare alternative preserves the Phase-45 prose-friendly trailing-punctuation lookahead.
+- `remarkLinkDoiIds` plugin body branches on `isBracketed`; three display rules mirror Phase-47 arxiv body verbatim.
+- `DoiExtensionRegistry` class + factory dispatch arm + `PHASE_45_DEFAULT_ENABLED_SURFACES` constant **UNCHANGED**.
+- **13 NEW tests** in `doi.test.ts` covering plugin-level alias behavior (Unit 48.1).
+- **18 NEW end-to-end tests** in `lib/markdown/index.test.ts` covering alias rendering on rationale + dual-alias on non-rationale surfaces + first triple-alias surface under 4-way composite (Unit 48.2).
+- ADR-0018 D-G APPEND adds Phase-48 EXTENDED block + **APPEND-D-AF** (Unit 48.1; sixth two-letter slot).
+- ADR-0018 APPEND-D-AC item 2 deferral CLOSED at **3-phase carryover** (Phase 45 → 48; **ties Phase-44 fastest-closure record**; **fastest alias-syntax closure ever observed**).
+- **Third realization of Phase-46 plugin-regex-extension phase-shape pattern**.
+- **Second plugin-regex-extension on a `remarkPlugins` consumer** in project history. **First "two-consecutive-`remarkPlugins`-regex-extension phases" pair** (Phase 47 + 48).
+- **Second dual-form regex in the framework**.
+- **First "regex-extension on a most-sophisticated-prior-regex consumer"**.
+- **First "selectively-applied lookahead in dual-form regex"** discipline established.
+- **First triple-alias surface** in project history.
+- **Regex-disjointness-as-sole-defense discipline** for same-slot composition established.
+- Backwards-compatibility discipline extended to dual-form regex.
+
+##### Phase 47 → Phase 48 delta
+
+| Metric | Phase 47 close | Phase 48 close | Δ |
+|---|---|---|---|
+| Tests | 1038 / 72 files | **1069 / 72 files** | +31 / 0 |
+| ADRs | 24 | **24** | 0 |
+| ADR-0018 D-G APPEND count | 14 | **15** (project record extends; sixth two-letter slot D-AF in use) | +1 |
+| DB tables | 7 | 7 | 0 |
+| Migrations | 9 | 9 | 0 |
+| Env vars | 14 | 14 | 0 |
+| `MARKDOWN_EXTENSIONS` single-value arms | 5 | 5 | 0 |
+| i18n keys per locale | 168 | 168 | 0 |
+| First Load JS shared chunk | 103 kB | **103 kB** | 0 |
+| Middleware bundle | 160 kB | 160 kB | 0 |
+| OPEN_QUESTIONS top-level Q-count | 66 | **66** | 0 |
+| Phase-37+ candidate count | 8 | **8** | 0 |
+| Runtime deps added | — | **0** | 0 |
+| `lib/markdown/extensions/` files | 15 | 15 | 0 |
+| **Phase-37-framework concrete consumers** | **4** | **4** | 0 |
+| **Plugin-regex-extension realizations** | **2 (wikilinks + arxiv)** | **3 (+doi)** | **+1** |
+| **Dual-form regex realizations** | **1 (arxiv)** | **2 (+doi)** | **+1** |
+| **Plugin-regex-extension on `remarkPlugins` consumers** | **1 (arxiv)** | **2 (+doi)** | **+1** |
+| **Surfaces with 3+ alias-syntax consumers** | **0** | **1 (rationale triple)** | **+1** |
+
+##### Architectural firsts in Phase 48 (12 enumerated)
+
+1. **Third realization of the Phase-46 plugin-regex-extension phase-shape pattern**. Pattern's within-slot reusability validated.
+2. **Second plugin-regex-extension on a `remarkPlugins` consumer** in project history. **First "two-consecutive-`remarkPlugins`-regex-extension phases" pair** (Phase 47 + 48).
+3. **Second dual-form regex in the framework**.
+4. **First "regex-extension on a most-sophisticated-prior-regex consumer"**. Pre-Phase-48 the doi regex was the most-complex via Phase-45 period-in-suffix lookahead.
+5. **First "selectively-applied lookahead in dual-form regex"** discipline.
+6. **First triple-alias surface** in project history. Rationale under 4-way default carries wikilinks + arxiv + doi aliases simultaneously.
+7. **APPEND-D-AC item 2 deferral CLOSED at 3-phase carryover** (Phase 45 → 48). **Ties Phase-44 fastest-closure record**. **Fastest alias-syntax closure ever observed**.
+8. **Seventh prep-/APPEND-doc-level deferral closed by a later phase** — APPEND-deferral closure cadence sustained 7 phases.
+9. **Fourth non-cross-surface-expansion APPEND-deferral closure** in the cadence. **First "two-consecutive-same-slot-regex-extension" closure-cadence event**.
+10. **Fifteenth APPEND on ADR-0018 D-G** — extends first-ADR-D-clause-with-most-APPENDs record 14 → 15.
+11. **Sixth two-letter APPEND letter D-AF** (Excel-spreadsheet column convention sustained).
+12. **First "framework + 4 consumers + composition + 3 expansions + same-slot composition + alias syntax × 3" 12-phase cluster** in project history (Phase 37-48). **18th consecutive phase without new B category** — first 18-phase run (extends Phase-47 record 17 → 18). **Thirty-ninth NON-§13 phase**. **100th consecutive 103 kB First Load JS unit** crossed at Unit 48.3.
+
+##### Phase 48 → Phase 49 entry conditions
+
+Per §12, Phase 49 entry requires **explicit human sign-off**.
+
+**Recommended Phase 49 first-thread candidates** (10 ranked; see `docs/thinking/48.4-phase-48-acceptance-gate.md` "Phase 48 → Phase 49 entry conditions" table for full tractability + units breakdown):
+
+1. **DOI cross-surface expansion** to all 4 surfaces — 1-2 units; **fourth realization of "constructor-arg-only zero-rework expansion"** property; **generalizes triple-alias state across all 4 surfaces**; mirrors Phase-44 arxiv expansion at the 4-phase-gap cadence.
+2. **Older-style category-prefixed arxiv IDs** (APPEND-D-Y item 2) — 1-2 units; regex extension on existing arxiv plugin.
+3. **Table-specific attributes** (`colspan` / `rowspan` / `scope`; APPEND-D-Q item 3) — 1-2 units; XSS-audit-required.
+4. **PubMed PMID sibling consumer** — 2-3 units; fifth concrete consumer; **first 3rd-`remarkPlugins` consumer** beyond arxiv + doi.
+5. **Cross-entity wikilinks** (APPEND-D-L item 3) — 2-3 units.
+6. **`<a class="wikilink">` styling** (APPEND-D-L item 4) — 1-2 units; first single-consumer-multi-slot case.
+7. **404 handling for unresolved wikilinks** (APPEND-D-L item 5) — 2-3 units.
+8. **Bare arxiv / DOI IDs without prefix** — 1-2 units; ambiguity-sensitive.
+9. **Empty-alias unification across consumers** (new Phase-48 deferral) — 1 unit; refines first observed dual-form behavior divergence.
+10. **ADR-0025 concrete content-moderation provider** — 3-5 units; strongest patience signal; NOT autonomous-tractable.
+
+**Operational gates still pending** (6 UNCHANGED): Q54 + Q55 + Q69 + Q73 + Q75 + Q77.
+
+##### Smoke gates
+
+- `pnpm typecheck` — passes.
+- `pnpm test` — **1069 / 72 files**.
+- `pnpm audit-content` — 0 errors / 6 warnings (44 consecutive phases at Q32 baseline).
+- First Load JS — **103 kB UNCHANGED** (101 consecutive units at Unit 48.4 ship; 100-unit threshold crossed at Unit 48.3).
+- Middleware — **160 kB UNCHANGED**.
+
+##### Anti-scope (Phase 49+ deferrals carried forward)
+
+NOT DOI cross-surface expansion (Phase 49+ rank 1; ~Phase 49 at 4-phase cadence); NOT older-style category-prefixed arxiv IDs (Phase 49+ rank 2); NOT bare arxiv / DOI IDs without prefix (Phase 49+ rank 8); NOT cross-entity wikilinks (Phase 49+ rank 5); NOT `<a class="wikilink">` styling (Phase 49+ rank 6); NOT 404 handling (Phase 49+ rank 7); NOT plugin parameterization (Phase 49+); NOT auto-trim of alias display whitespace (Phase 49+); NOT empty-alias-as-slug-fallback (Phase 49+); NOT empty-alias-as-bare-arxiv-fallback (Phase 49+); NOT empty-alias-as-bare-doi-fallback (Phase 49+ rank 9; unifies empty-alias behavior across arxiv-doi); NOT paper-card hover-preview (Phase 49+); NOT table-specific attributes (Phase 49+ rank 3); NOT `<caption>` element (Phase 49+); NOT surface-specific table schemas (Phase 49+); NOT `@mention` resolution (Phase 49+); NOT PubMed PMID consumer (Phase 49+ rank 4); NOT dx.doi.org legacy host (Phase 49+); NOT stricter trailing-lookahead for trailing-period DOIs (Phase 49+); NOT a 3rd-or-later `remarkPlugins` consumer beyond arxiv + doi (Phase 49+); NOT a 2nd `rehypePlugins` consumer beyond wikilinks (Phase 49+); NOT a 2nd `schemaOverrides` consumer beyond tables (Phase 49+); NOT ADR-0025 concrete moderation provider; NOT Q78/Q79/v2 methodology/pre-commit typecheck/safeAuth/test backfill/account-deletion (each deferred); all Phase-30-through-47 deferrals carry forward.
+
+##### Boundary statement
+
+**Phase 48 CLOSED at this commit after 5 numbered units. Third realization of the Phase-46 plugin-regex-extension phase-shape pattern: DOI alias syntax `[[doi:10.NNNN/xxx|display]]` via in-place dual-form regex extension on `remarkLinkDoiIds`. Second plugin-regex-extension on a `remarkPlugins` consumer in project history (Phase 47 was first); pattern's within-slot reusability validated. First "two-consecutive-`remarkPlugins`-regex-extension phases" pair (Phase 47 arxiv + Phase 48 doi). Second dual-form regex in the framework. First "regex-extension on a most-sophisticated-prior-regex consumer". First "selectively-applied lookahead in dual-form regex" discipline. First triple-alias surface in project history — rationale under 4-way `wikilinks,tables,arxiv,doi` default carries wikilinks alias + arxiv alias + doi alias simultaneously. Regex-disjointness-as-sole-defense discipline for same-slot composition established. Backwards-compatibility discipline extended to dual-form regex. Closes ADR-0018 APPEND-D-AC item 2 deferral at 3-phase carryover (Phase 45 → 48; ties Phase-44 fastest-closure record; fastest alias-syntax closure ever observed). APPEND-deferral closure cadence sustained 7 phases. Fourth non-cross-surface-expansion APPEND-deferral closure. First "two-consecutive-same-slot-regex-extension" closure-cadence event. Fifteenth APPEND on ADR-0018 D-G (record extends 14 → 15). Sixth two-letter APPEND letter D-AF. Thirty-ninth NON-§13 phase. First "framework + 4 consumers + composition + 3 expansions + same-slot composition + alias syntax × 3" 12-phase cluster (Phase 37-48). 18th consecutive phase without new B category (first 18-phase run; extends 17 → 18). 100th consecutive 103 kB First Load JS unit (three-digit threshold crossed at Unit 48.3). XSS line of defense preserved. 1069 tests across 72 vitest files (+31/0 vs Phase 47). 24 ADRs UNCHANGED. 7 DB tables UNCHANGED. 9 migrations UNCHANGED. 14 env vars UNCHANGED. 168 i18n keys per locale UNCHANGED. First Load JS 103 kB UNCHANGED. Middleware 160 kB UNCHANGED. OPEN_QUESTIONS top-level Q-count 66 UNCHANGED. Phase-37+ candidate count 8 UNCHANGED. `MARKDOWN_EXTENSIONS` recognized single-value arms 5 UNCHANGED. Zero new ADRs / migrations / i18n keys / env vars / operational gates / runtime deps / files. Phase 49 entry requires explicit human sign-off per §12.**
 
 #### Unit 48.3 — Phase-48 hygiene + ADR-0018 APPEND-D-AC item 2 closure documentation + second plugin-regex-extension on `remarkPlugins` + first selectively-applied lookahead in dual-form regex (Q-tally UNCHANGED at 66; Phase-37+ candidate count UNCHANGED at 8; 18-phase no-new-B-category streak EXTENDS to Phase 48; 99th consecutive 103 kB unit)
 
