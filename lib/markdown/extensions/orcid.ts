@@ -38,11 +38,14 @@ import type { MarkdownExtensionRegistry, MarkdownExtensionSet, MarkdownSurface }
  * absolute https URLs pass `rehypeStripUnsafeHrefs` naturally).
  *
  * **First 4-consumer same-slot composition** in project history
- * (per Phase 54 ship): under
- * `MARKDOWN_EXTENSIONS=arxiv,doi,pubmed,orcid` the `remarkPlugins`
- * slot on shared-enabled surfaces (Phase 54 default: `rationale`;
- * arxiv + doi + pubmed default-enabled on shared surfaces per
- * Phase 44 / Phase 49 / Phase 52) carries
+ * (per Phase 54 ship); **first all-4-surfaces 4-consumer same-
+ * slot composition** post-Phase-56 (per cross-surface expansion
+ * of `PHASE_54_DEFAULT_ENABLED_SURFACES` to all 4 surfaces).
+ * Under `MARKDOWN_EXTENSIONS=arxiv,doi,pubmed,orcid` the
+ * `remarkPlugins` slot on shared-enabled surfaces (Phase 56
+ * default: all 4 surfaces; arxiv + doi + pubmed default-enabled
+ * on shared surfaces per Phase 44 / Phase 49 / Phase 52; orcid
+ * default-enabled on all 4 surfaces per Phase 56) carries
  * `[remarkLinkArxivIds, remarkLinkDoiIds, remarkLinkPubmedIds, remarkLinkOrcidIds]`
  * via `CompositeExtensionRegistry` per APPEND-D-R "concatenated
  * across components in registration order" concatenation rule.
@@ -186,17 +189,18 @@ export function remarkLinkOrcidIds() {
  * ORCID-autolink remark plugin on a curator-specified set of
  * surfaces.
  *
- * **Phase-54 default** (Unit 54.1 ship):
- * `PHASE_54_DEFAULT_ENABLED_SURFACES` = `Set(["rationale"])` —
- * single-surface scope mirroring the Phase-41 arxiv-first-ship
- * + Phase-45 doi-first-ship + Phase-50 pubmed-first-ship demand-
- * signal-first precedent. `rationale` is the curator paper-
- * citation surface (Phase-27 challenge-resolution rationale
- * text); cross-surface expansion to bio + reviewNotes +
- * actionRationale deferred Phase ~56+ per the per-consumer-
- * expansion-as-separate-phase pattern (Phase 38→42, Phase 39→43,
- * Phase 41→44, Phase 45→49, Phase 50→52 each established 4-or-
- * 2-phase gaps).
+ * **Phase-56 default** (Unit 56.1 ship):
+ * `PHASE_54_DEFAULT_ENABLED_SURFACES` = `Set(["bio", "reviewNotes", "rationale", "actionRationale"])` —
+ * all 4 markdown surfaces, post-cross-surface-expansion (sixth
+ * realization of constructor-arg-only zero-rework expansion
+ * property; ties Phase-52 fastest cross-surface-closure record
+ * at 2-phase carryover Phase 54 → Phase 56). Phase-54 ship was
+ * `rationale`-only (single-surface scope mirroring Phase-41
+ * arxiv-first-ship + Phase-45 doi-first-ship + Phase-50 pubmed-
+ * first-ship demand-signal-first precedent). Constant NAME
+ * preserved per Phase-42/43/44/49/52 D-8 precedent — name
+ * encodes the introduction-phase audit trail (Phase 54 = WHEN
+ * the consumer first shipped); VALUE evolves Phase 56.
  *
  * For non-enabled surfaces returns an empty extension set
  * (default-deny). Per-surface differentiation remains the
@@ -226,25 +230,29 @@ export function remarkLinkOrcidIds() {
  * pairwise disjoint via distinct literal prefixes).
  *
  * `MARKDOWN_EXTENSIONS=wikilinks,tables,arxiv,doi,pubmed,orcid`
- * Phase-54 default produces **first 6-consumer composition**
- * under default dispatch — `rationale` carries 6 consumers
- * across 3 slots; other 3 surfaces carry 5 consumers (arxiv +
- * doi + pubmed + wikilinks + tables; orcid inactive there per
- * Phase-54 rationale-only default). **New maximum-consumer-
- * cardinality state** in project history.
+ * Phase-56 default produces **first all-4-surfaces 6-consumer
+ * composition** under default dispatch — every surface carries
+ * 6 consumers across 3 slots (post-cross-surface expansion of
+ * orcid default to all 4 surfaces). Pre-Phase-56 only
+ * `rationale` carried 6-consumer composition; Phase 56
+ * generalizes the maximum-consumer-cardinality state to all
+ * surfaces (Phase-54 asymmetric `[rationale=6, others=5]`
+ * becomes symmetric `[all=6]`). **First "all-surfaces saturated
+ * at maximum-consumer-cardinality" state** in project history.
  *
  * Phase 55 ships ORCID display-text alias syntax (Unit 55.1;
  * closes new Phase-54 deferral at 1-phase carryover — ties
  * Phase-51 pubmed alias fastest-closure record). The regex
  * dual-form is plugin-internal; class + factory + default-set
- * unchanged.
+ * unchanged. Phase 56 ships ORCID cross-surface expansion
+ * (Unit 56.1; closes APPEND-D-AL ORCID cross-surface item at
+ * 2-phase carryover — ties Phase-52 fastest cross-surface-
+ * expansion closure record). Constructor-arg value-only change
+ * in `PHASE_54_DEFAULT_ENABLED_SURFACES`; class + factory +
+ * plugin body + regex `ORCID_PATTERN` unchanged.
  *
- * Phase 56+ may add ORCID cross-surface expansion to all 4
- * surfaces (constructor-arg value-only change in
- * `PHASE_54_DEFAULT_ENABLED_SURFACES`; sixth realization of
- * constructor-arg-only zero-rework expansion property),
- * bioRxiv preprint consumer, OSF preprint consumer, or bare
- * ORCID IDs without prefix.
+ * Phase 57+ may add bioRxiv preprint consumer, OSF preprint
+ * consumer, or bare ORCID IDs without prefix.
  */
 export class OrcidExtensionRegistry implements MarkdownExtensionRegistry {
   private readonly enabledSurfaces: ReadonlySet<MarkdownSurface>;
@@ -263,29 +271,48 @@ export class OrcidExtensionRegistry implements MarkdownExtensionRegistry {
 
 /**
  * Default-enabled-surfaces for `OrcidExtensionRegistry` per
- * ADR-0018 D-G APPEND-D-AL (Phase 54 Unit 54.1).
+ * ADR-0018 D-G APPEND-D-AL (Phase 54 Unit 54.1) + APPEND-D-AN
+ * (Phase 56 Unit 56.1 cross-surface expansion).
  *
- * **Phase 54 ship** — `rationale`-only (Phase-27 challenge-
+ * **Phase 56 ship** — all 4 markdown surfaces (bio, reviewNotes,
+ * rationale, actionRationale). Constructor-arg value-only
+ * change in `PHASE_54_DEFAULT_ENABLED_SURFACES`; **sixth
+ * realization of "constructor-arg-only zero-rework expansion"
+ * property** in project history (Phase 42 wikilinks + Phase 43
+ * tables + Phase 44 arxiv + Phase 49 doi + Phase 52 pubmed +
+ * Phase 56 orcid). **First 6-realization for the constructor-
+ * arg-only-expansion pattern**. **First state with TWO
+ * coexisting 6-realization framework patterns** (plugin-regex-
+ * extension at 6 from Phase 55 + constructor-arg-only-
+ * expansion at 6 from Phase 56). Closes APPEND-D-AL ORCID
+ * cross-surface item at 2-phase carryover (Phase 54 → 56) —
+ * ties Phase-52 pubmed-cross-surface 2-phase fastest-closure
+ * record.
+ *
+ * **Phase 54 ship** was `rationale`-only (Phase-27 challenge-
  * resolution rationale text). Mirrors the Phase-41 arxiv-first-
  * ship + Phase-45 doi-first-ship + Phase-50 pubmed-first-ship
  * demand-signal-first precedent: curator paper-citation prose
- * lives in `rationale`; cross-surface expansion to bio +
- * reviewNotes + actionRationale deferred Phase ~56+ per the
- * per-consumer-expansion-as-separate-phase pattern.
+ * lives in `rationale`; cross-surface expansion deferred Phase
+ * ~56+ per the per-consumer-expansion-as-separate-phase pattern
+ * (closed Phase 56).
  *
  * Constant's NAME encodes the introduction-phase audit trail
- * (Phase 54 = WHEN the orcid consumer first shipped); future
- * cross-surface expansions will evolve the VALUE while
- * preserving the name per Phase-42/43/44/49/52 D-8 precedent.
+ * (Phase 54 = WHEN the orcid consumer first shipped); VALUE
+ * evolves Phase 56 per Phase-42/43/44/49/52 D-8 precedent
+ * (name preservation + value evolution).
  *
  * Imported by the factory dispatch arm
  * `MARKDOWN_EXTENSIONS=orcid` in `./index.ts` — single-value
  * arm + multi-value composition arms all recognized at Phase
  * 54 ship per `buildSingleConsumerRegistry` +
  * `CompositeExtensionRegistry` wrapping. **7th single-value
- * arm** for `MARKDOWN_EXTENSIONS`; first expansion of the
- * recognized-arms set since Phase 50 (`pubmed`).
+ * arm** for `MARKDOWN_EXTENSIONS` (first expansion of the
+ * recognized-arms set since Phase 50 `pubmed`).
  */
 export const PHASE_54_DEFAULT_ENABLED_SURFACES: ReadonlySet<MarkdownSurface> = new Set([
+  "bio",
+  "reviewNotes",
   "rationale",
+  "actionRationale",
 ]);

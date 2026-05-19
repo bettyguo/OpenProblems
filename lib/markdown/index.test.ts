@@ -13,7 +13,7 @@ import {
 import { ArxivExtensionRegistry, PHASE_41_DEFAULT_ENABLED_SURFACES } from "./extensions/arxiv";
 import { CompositeExtensionRegistry } from "./extensions/composite";
 import { DoiExtensionRegistry, PHASE_45_DEFAULT_ENABLED_SURFACES } from "./extensions/doi";
-import { OrcidExtensionRegistry, PHASE_54_DEFAULT_ENABLED_SURFACES } from "./extensions/orcid";
+import { OrcidExtensionRegistry } from "./extensions/orcid";
 import { PHASE_50_DEFAULT_ENABLED_SURFACES, PubmedExtensionRegistry } from "./extensions/pubmed";
 import { PHASE_39_DEFAULT_ENABLED_SURFACES, TablesExtensionRegistry } from "./extensions/tables";
 import {
@@ -3572,7 +3572,7 @@ describe("Phase-53 arxiv legacy + 3-consumer same-slot composition (regex-disjoi
 
 describe("Phase-54 orcid default — rationale surface via PHASE_54_DEFAULT_ENABLED_SURFACES", () => {
   beforeEach(() => {
-    __setRegistryForTests(new OrcidExtensionRegistry(PHASE_54_DEFAULT_ENABLED_SURFACES));
+    __setRegistryForTests(new OrcidExtensionRegistry(new Set(["rationale"])));
     __resetMarkdownCachesForTests();
   });
 
@@ -3644,7 +3644,7 @@ describe("Phase-54 first 4-consumer same-slot composition under MARKDOWN_EXTENSI
     const arxiv = new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES);
     const doi = new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES);
     const pubmed = new PubmedExtensionRegistry(PHASE_50_DEFAULT_ENABLED_SURFACES);
-    const orcid = new OrcidExtensionRegistry(PHASE_54_DEFAULT_ENABLED_SURFACES);
+    const orcid = new OrcidExtensionRegistry(new Set(["rationale"]));
     __setRegistryForTests(new CompositeExtensionRegistry([arxiv, doi, pubmed, orcid]));
     __resetMarkdownCachesForTests();
   });
@@ -3748,7 +3748,7 @@ describe("Phase-54 first 6-consumer composition — wikilinks,tables,arxiv,doi,p
     const arxiv = new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES);
     const doi = new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES);
     const pubmed = new PubmedExtensionRegistry(PHASE_50_DEFAULT_ENABLED_SURFACES);
-    const orcid = new OrcidExtensionRegistry(PHASE_54_DEFAULT_ENABLED_SURFACES);
+    const orcid = new OrcidExtensionRegistry(new Set(["rationale"]));
     __setRegistryForTests(
       new CompositeExtensionRegistry([wikilinks, tables, arxiv, doi, pubmed, orcid]),
     );
@@ -3839,10 +3839,13 @@ describe("Phase-54 first 6-consumer composition — wikilinks,tables,arxiv,doi,p
 
 describe("Phase-55 orcid alias syntax — rationale surface under default dispatch", () => {
   beforeEach(() => {
-    // Phase 54 first-ship value preserved verbatim (Set(["rationale"])).
-    // Phase 55 alias-syntax extension is plugin-internal regex evolution;
-    // PHASE_54_DEFAULT_ENABLED_SURFACES UNCHANGED.
-    __setRegistryForTests(new OrcidExtensionRegistry(PHASE_54_DEFAULT_ENABLED_SURFACES));
+    // Phase 54 first-ship baseline (Set(["rationale"])) preserved verbatim
+    // for this block via explicit constructor arg per D-12 decoupled-
+    // baseline-block pattern (Phase-49 established; Phase-52 second
+    // application; Phase-56 third application). Phase 56 cross-surface
+    // expansion is asserted in the new Phase-56-default describe blocks
+    // added in Unit 56.2.
+    __setRegistryForTests(new OrcidExtensionRegistry(new Set(["rationale"])));
     __resetMarkdownCachesForTests();
   });
 
@@ -3918,7 +3921,7 @@ describe("Phase-55 orcid alias under Phase-54 6-way composite — first quintupl
     const arxiv = new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES);
     const doi = new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES);
     const pubmed = new PubmedExtensionRegistry(PHASE_50_DEFAULT_ENABLED_SURFACES);
-    const orcid = new OrcidExtensionRegistry(PHASE_54_DEFAULT_ENABLED_SURFACES);
+    const orcid = new OrcidExtensionRegistry(new Set(["rationale"]));
     __setRegistryForTests(
       new CompositeExtensionRegistry([wikilinks, tables, arxiv, doi, pubmed, orcid]),
     );

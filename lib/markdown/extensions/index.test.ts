@@ -483,17 +483,19 @@ describe("getExtensionRegistry (factory) — env-var dispatch", () => {
     expect(getExtensionRegistry()).toBeInstanceOf(OrcidExtensionRegistry);
   });
 
-  it("OrcidExtensionRegistry dispatch enables orcid on rationale only Phase 54 (mirrors Phase-41/45/50 first-ship demand-signal-first precedent)", () => {
-    // Phase 54 ship: Set(["rationale"]). ORCID consumer first-ship pattern
-    // mirrors Phase-41 arxiv + Phase-45 doi + Phase-50 pubmed — single-
-    // surface scope; curator paper-citation surface; cross-surface
-    // expansion to all 4 surfaces deferred Phase ~56+.
+  it("OrcidExtensionRegistry dispatch enables orcid on ALL 4 surfaces Phase 56 (cross-surface expansion mirrors Phase-44 arxiv + Phase-49 doi + Phase-52 pubmed expansion verbatim; sixth realization of constructor-arg-only zero-rework expansion property — first 6-realization for that pattern; first state with TWO coexisting 6-realization framework patterns)", () => {
+    // Phase 56 ship: cross-surface expansion to all 4 markdown surfaces.
+    // Constructor-arg value-only change in PHASE_54_DEFAULT_ENABLED_SURFACES;
+    // class + factory + plugin body + regex ORCID_PATTERN UNCHANGED.
+    // Mirrors Phase-44 arxiv + Phase-49 doi + Phase-52 pubmed expansion
+    // pattern verbatim. Closes ADR-0018 APPEND-D-AL ORCID cross-surface
+    // item at 2-phase carryover (Phase 54 → 56) — ties Phase-52 pubmed-
+    // cross-surface 2-phase fastest-closure record.
     process.env["MARKDOWN_EXTENSIONS"] = "orcid";
     const r = getExtensionRegistry();
-    expect(r.getExtensions("rationale").remarkPlugins).toBeDefined();
-    expect(r.getExtensions("bio")).toEqual({});
-    expect(r.getExtensions("reviewNotes")).toEqual({});
-    expect(r.getExtensions("actionRationale")).toEqual({});
+    for (const surface of ["bio", "reviewNotes", "rationale", "actionRationale"] as const) {
+      expect(r.getExtensions(surface).remarkPlugins).toBeDefined();
+    }
   });
 
   it("returns CompositeExtensionRegistry for 'arxiv,doi,pubmed,orcid' Phase 54 (first 4-consumer same-slot composition)", () => {
@@ -501,35 +503,28 @@ describe("getExtensionRegistry (factory) — env-var dispatch", () => {
     expect(getExtensionRegistry()).toBeInstanceOf(CompositeExtensionRegistry);
   });
 
-  it("arxiv,doi,pubmed,orcid composite concatenates ALL 4 plugins in remarkPlugins on rationale (first 4-consumer same-slot Phase 54)", () => {
-    // **First 4-consumer same-slot composition in project history.** Under
-    // `MARKDOWN_EXTENSIONS=arxiv,doi,pubmed,orcid` Phase-54 default the
-    // `remarkPlugins` slot on rationale (the only surface where all 4
-    // consumers share enablement Phase 54 — arxiv + doi + pubmed default-
-    // enabled on shared surfaces post-Phase-52; orcid default-enabled on
-    // rationale only) carries ALL 4 plugins via `CompositeExtensionRegistry`
-    // per APPEND-D-R "concatenated across components in registration
-    // order" rule. **Tests whether the regex-disjointness-as-sole-defense
-    // discipline scales from 3 to 4 same-slot consumers without
-    // architectural change** — the four regex character classes are
-    // pairwise disjoint via distinct literal prefixes (arxiv:, doi:,
-    // pubmed:/pmid:, orcid:).
+  it("arxiv,doi,pubmed,orcid composite concatenates ALL 4 plugins in remarkPlugins on ALL 4 surfaces Phase 56 (first all-4-surfaces 4-consumer same-slot composition)", () => {
+    // **First all-4-surfaces 4-consumer same-slot composition in project
+    // history.** Under `MARKDOWN_EXTENSIONS=arxiv,doi,pubmed,orcid` Phase-
+    // 56 default ALL 4 surfaces carry `[arxiv, doi, pubmed, orcid]` in
+    // `remarkPlugins` via `CompositeExtensionRegistry` per APPEND-D-R
+    // "concatenated across components in registration order" rule. Phase
+    // 54 ship was rationale-only (only surface where all 4 consumers
+    // shared enablement). Phase 56 cross-surface expansion generalizes
+    // the 4-consumer same-slot composition to every surface. **First
+    // state where the regex-disjointness-as-sole-defense discipline at
+    // 4-consumer cardinality (Phase 54 established) is exercised on
+    // every surface in production default** — the four regex character
+    // classes are pairwise disjoint via distinct literal prefixes
+    // (arxiv:, doi:, pubmed:/pmid:, orcid:).
     process.env["MARKDOWN_EXTENSIONS"] = "arxiv,doi,pubmed,orcid";
     const r = getExtensionRegistry();
-    const remarkPlugins = r.getExtensions("rationale").remarkPlugins;
-    expect(remarkPlugins).toEqual([
-      remarkLinkArxivIds,
-      remarkLinkDoiIds,
-      remarkLinkPubmedIds,
-      remarkLinkOrcidIds,
-    ]);
-    // Other 3 surfaces: arxiv + doi + pubmed (Phase 52 all-4); orcid
-    // inactive there per Phase-54 rationale-only default.
-    for (const surface of ["bio", "reviewNotes", "actionRationale"] as const) {
+    for (const surface of ["bio", "reviewNotes", "rationale", "actionRationale"] as const) {
       expect(r.getExtensions(surface).remarkPlugins).toEqual([
         remarkLinkArxivIds,
         remarkLinkDoiIds,
         remarkLinkPubmedIds,
+        remarkLinkOrcidIds,
       ]);
     }
   });
@@ -539,44 +534,36 @@ describe("getExtensionRegistry (factory) — env-var dispatch", () => {
     expect(getExtensionRegistry()).toBeInstanceOf(CompositeExtensionRegistry);
   });
 
-  it("6-way composite enables ALL 6 CONSUMERS on rationale Phase 54 (first 6-consumer composition under default dispatch; new maximum-consumer-cardinality state)", () => {
-    // **First "6-consumer composition under default dispatch" state in
-    // project history.** Pre-Phase-54 max was 5-consumer (Phase-52 all-4-
-    // surfaces 5-way default). Phase 54 adds ORCID as the sixth consumer
-    // on rationale (rationale-only ship per Phase-41/45/50 first-ship
-    // demand-signal-first precedent).
+  it("6-way composite enables ALL 6 CONSUMERS on ALL 4 surfaces Phase 56 (first all-4-surfaces 6-consumer composition under default dispatch; maximum-consumer-cardinality state generalized to all surfaces; first 'all-surfaces saturated at maximum-consumer-cardinality' state)", () => {
+    // **First "all-4-surfaces 6-consumer composition under default
+    // dispatch" state in project history.** Pre-Phase-56 only rationale
+    // carried 6-consumer composition (Phase 54 maximum-consumer-cardinality
+    // state; asymmetric [rationale=6, others=5]). Phase 56 cross-surface
+    // expansion generalizes the maximum-consumer-cardinality state to
+    // every surface (symmetric [all=6]). **First "all-surfaces saturated
+    // at maximum-consumer-cardinality" state** in project history.
     //
-    // Composition matrix at Phase-54 6-way default:
-    //   bio:             wikilinks(rehype) + tables(schema) + [arxiv, doi, pubmed](remark) — 5 consumers (Phase-52 baseline)
-    //   reviewNotes:     wikilinks(rehype) + tables(schema) + [arxiv, doi, pubmed](remark) — 5 consumers
-    //   rationale:       wikilinks(rehype) + tables(schema) + [arxiv, doi, pubmed, orcid](remark) — 6 consumers ← maximum cardinality
-    //   actionRationale: wikilinks(rehype) + tables(schema) + [arxiv, doi, pubmed](remark) — 5 consumers
+    // Composition matrix at Phase-56 6-way default:
+    //   bio:             wikilinks(rehype) + tables(schema) + [arxiv, doi, pubmed, orcid](remark) — 6 consumers
+    //   reviewNotes:     wikilinks(rehype) + tables(schema) + [arxiv, doi, pubmed, orcid](remark) — 6 consumers
+    //   rationale:       wikilinks(rehype) + tables(schema) + [arxiv, doi, pubmed, orcid](remark) — Phase-54 baseline preserved; 6 consumers
+    //   actionRationale: wikilinks(rehype) + tables(schema) + [arxiv, doi, pubmed, orcid](remark) — 6 consumers
     //
     // Conflict-free per APPEND-D-R because (a) wikilinks + tables +
     // {arxiv, doi, pubmed, orcid} each occupy distinct slots cross-pair;
     // (b) within `remarkPlugins` the arxiv-doi-pubmed-orcid 4-tuple is
     // collision-free via regex-disjointness-as-sole-defense (4-consumer
-    // scaling validation).
+    // scaling validation on every surface).
     process.env["MARKDOWN_EXTENSIONS"] = "wikilinks,tables,arxiv,doi,pubmed,orcid";
     const r = getExtensionRegistry();
-    // rationale: 6-consumer composition (4 plugins in remarkPlugins).
-    expect(r.getExtensions("rationale").rehypePlugins).toBeDefined();
-    expect(r.getExtensions("rationale").schemaOverrides).toBeDefined();
-    expect(r.getExtensions("rationale").remarkPlugins).toEqual([
-      remarkLinkArxivIds,
-      remarkLinkDoiIds,
-      remarkLinkPubmedIds,
-      remarkLinkOrcidIds,
-    ]);
-    // Other 3 surfaces: 5-consumer composition (3 plugins in remarkPlugins;
-    // orcid inactive there per rationale-only default).
-    for (const surface of ["bio", "reviewNotes", "actionRationale"] as const) {
+    for (const surface of ["bio", "reviewNotes", "rationale", "actionRationale"] as const) {
       expect(r.getExtensions(surface).rehypePlugins).toBeDefined();
       expect(r.getExtensions(surface).schemaOverrides).toBeDefined();
       expect(r.getExtensions(surface).remarkPlugins).toEqual([
         remarkLinkArxivIds,
         remarkLinkDoiIds,
         remarkLinkPubmedIds,
+        remarkLinkOrcidIds,
       ]);
     }
   });
