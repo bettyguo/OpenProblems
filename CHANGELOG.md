@@ -2470,6 +2470,115 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 53 — Community-adjacent surfaces (**forty-fourth NON-§13 phase**: older-style category-prefixed arxiv IDs `arxiv:math/0211159` / `arxiv:cs.AI/0501001` / `arxiv:hep-th/9711200` via in-place ID-class extension on `remarkLinkArxivIds` regex; **fifth realization of Phase-46 plugin-regex-extension phase-shape pattern** — **first 5-realization phase-shape pattern in project history**; **first non-alias-syntax plugin-regex-extension**; **second regex evolution on `remarkLinkArxivIds`** — first plugin with 2 regex evolutions; closes ADR-0018 APPEND-D-Y item 2 at **12-phase carryover** — **LONGEST ABSOLUTE APPEND-DEFERRAL CLOSURE EVER OBSERVED** (beats prior 8-phase D-L item 2 record from Phase 38 → 46); APPEND-D-AK eleventh two-letter slot; anticipated 5 numbered units; 48th "Continue" override invoked)
 
+#### Unit 53.4 — Phase 53 acceptance gate (fifth realization of plugin-regex-extension phase-shape — first 5-realization phase-shape pattern; first non-alias-syntax plugin-regex-extension; second regex evolution on `remarkLinkArxivIds` — first plugin with 2 regex evolutions; longest absolute APPEND-deferral closure ever observed at 12-phase carryover; D-AK; 1225/73; 125th consecutive 103 kB unit; 49th "Continue" override opportunity at Phase 53 → 54 boundary)
+
+- Fifth and final Phase-53 numbered unit; gate-only. **Phase 53 CLOSES at this unit's commit**. Phase 54 entry awaits explicit "Continue" override per §12.
+- THINK artifact: `docs/thinking/53.4-phase-53-acceptance-gate.md` (Phase-52 → 53 delta complete; 12 architectural firsts enumerated; Phase-54 entry conditions documented with 10 ranked candidate threads).
+
+##### Phase 53 — what shipped (5 numbered units)
+
+| Unit | Title | Type | Commit |
+|---|---|---|---|
+| 53.0 | Phase 53 prep | docs | `ea7f32a` |
+| 53.1 | `ARXIV_PATTERN` inner ID-class disjunction (modern + legacy) + 16 NEW `arxiv.test.ts` tests + ADR-0018 D-G APPEND-D-AK | code+APPEND | `5d5ca31` |
+| 53.2 | 14 NEW end-to-end Phase-53 tests across 3 describe blocks | code | `2af0fb3` |
+| 53.3 | Phase-53 hygiene + APPEND-D-Y item 2 closure documentation at 12-phase carryover | docs | `ba1ec3b` |
+| 53.4 | Phase 53 acceptance gate (this unit) | gate | (this commit) |
+
+Total: **5 numbered units (53.0 through 53.4)**. Mirrors Phase 41-52 5-unit framework shape verbatim.
+
+##### Fifth realization of plugin-regex-extension phase-shape + first 5-realization phase-shape + first non-alias-syntax extension + first plugin with 2 regex evolutions + longest absolute closure record at HEAD `ba1ec3b`
+
+- `ARXIV_PATTERN` evolved in-place: inner ID-class disjunction added in BOTH bracketed and bare alternatives — modern (`\d{4}\.\d{4,5}`) + legacy (`[a-z]+(?:-[a-z]+)*(?:\.[A-Z-]+)?/\d{7}`). **First inner-class disjunction in a dual-form regex** in project history.
+- `remarkLinkArxivIds` plugin body + `ArxivExtensionRegistry` class + factory dispatch arm + `PHASE_41_DEFAULT_ENABLED_SURFACES` constant **UNCHANGED**.
+- 2 existing tests INVERTED from rejection-assertions to match-assertions (Phase-41 rejection of legacy IDs → Phase-53 match).
+- 16 NEW tests in `arxiv.test.ts` (Unit 53.1) covering legacy formats.
+- 14 NEW end-to-end tests in `lib/markdown/index.test.ts` (Unit 53.2) across 3 describe blocks.
+- ADR-0018 D-G APPEND adds Phase-53 EXTENDED block + **APPEND-D-AK** (eleventh two-letter slot).
+- ADR-0018 APPEND-D-Y item 2 CLOSED at **12-phase carryover** (Phase 41 → 53). **LONGEST ABSOLUTE APPEND-DEFERRAL CLOSURE EVER OBSERVED**.
+- **First 5-realization phase-shape pattern in project history**.
+- **First state with TWO 5-realization framework patterns coexisting** (constructor-arg-only from Phase 52 + plugin-regex-extension from Phase 53).
+- **First non-alias-syntax plugin-regex-extension** in project history.
+- **First plugin with 2 regex evolutions** (`remarkLinkArxivIds`: Phase 47 alias + Phase 53 legacy).
+- **First "non-cross-surface non-alias non-sibling APPEND-deferral closure on remarkPlugins slot kind"** — first regex-evolution-only closure on remark.
+- **Regex-disjointness-as-sole-defense discipline holds under ID-class extension** at 3-consumer cardinality on all 4 surfaces.
+
+##### Phase 52 → Phase 53 delta
+
+| Metric | Phase 52 close | Phase 53 close | Δ |
+|---|---|---|---|
+| Tests | 1195 / 73 files | **1225 / 73 files** | +30 / 0 |
+| ADRs | 24 | **24** | 0 |
+| ADR-0018 D-G APPEND count | 19 | **20** (project record extends; eleventh two-letter slot D-AK; two-decade APPEND mark) | +1 |
+| DB tables | 7 | 7 | 0 |
+| Migrations | 9 | 9 | 0 |
+| Env vars | 14 | 14 | 0 |
+| `MARKDOWN_EXTENSIONS` single-value arms | 6 | 6 | 0 |
+| i18n keys per locale | 168 | 168 | 0 |
+| First Load JS shared chunk | 103 kB | **103 kB** | 0 |
+| Middleware bundle | 160 kB | 160 kB | 0 |
+| OPEN_QUESTIONS top-level Q-count | 66 | **66** | 0 |
+| Phase-37+ candidate count | 8 | **8** | 0 |
+| Runtime deps added | — | **0** | 0 |
+| `lib/markdown/extensions/` files | 17 | 17 | 0 |
+| **Phase-37-framework concrete consumers** | **5** | **5** | 0 |
+| **Plugin-regex-extension realizations** | **4** | **5 (+arxiv-legacy)** | **+1** |
+| **5-realization framework patterns** | **1 (constructor-arg-only)** | **2 (+plugin-regex-extension)** | **+1** |
+| **Plugins with 2+ regex evolutions** | **0** | **1 (arxiv: Phase 47 alias + Phase 53 legacy)** | **+1** |
+| **Inner-class disjunctions in dual-form regexes** | **0** | **1 (arxiv: modern + legacy ID-class)** | **+1** |
+| **Longest absolute APPEND-deferral closure (phases)** | 8 (Phase 38 → 46 D-L item 2) | **12 (Phase 41 → 53 D-Y item 2)** | **+4 phases (new longest absolute)** |
+| **APPEND-deferral closure cadence (consecutive phases)** | 11 (Phase 42-52) | **12 (Phase 42-53)** | **+1 (new record)** |
+
+##### Architectural firsts in Phase 53 (12 enumerated)
+
+1. **Fifth realization of the Phase-46 plugin-regex-extension phase-shape pattern**. **First 5-realization phase-shape pattern in project history**.
+2. **First state with TWO 5-realization framework patterns coexisting** post-Phase 53. **Project's first multi-5-realization state**.
+3. **First non-alias-syntax plugin-regex-extension** in project history.
+4. **First regex extension that extends the inner ID-class with a second format**. **First inner-class disjunction in a dual-form regex**.
+5. **Second regex evolution on `remarkLinkArxivIds`** — **first plugin with 2 regex evolutions**.
+6. **First "non-cross-surface non-alias non-sibling APPEND-deferral closure on `remarkPlugins` slot kind"** — first regex-evolution-only closure on remark.
+7. **APPEND-D-Y item 2 CLOSED at 12-phase carryover** (Phase 41 → 53). **LONGEST ABSOLUTE APPEND-DEFERRAL CLOSURE EVER OBSERVED** (beats prior 8-phase D-L item 2 record). **First 12-phase APPEND-deferral closure in absolute carryover terms**.
+8. **Twelfth APPEND-deferral closure** — **APPEND-deferral closure cadence sustained 12 phases** — new longest sustained cadence in project history. **First 12-phase APPEND-deferral closure run**.
+9. **20th APPEND on ADR-0018 D-G** — extends first-ADR-D-clause-with-most-APPENDs record 19 → 20. **Two-decade APPEND mark** on the same D-clause.
+10. **Eleventh two-letter APPEND letter D-AK** (Excel-spreadsheet column convention sustained).
+11. **First "framework + 5 consumers + composition + 5 expansions + 5 plugin-regex-extensions + 3-consumer same-slot composition × 4 + alias syntax × 4 + dual-form regex × 3 + 5-consumer composition × 4 + inner-class disjunction × 1 + 2-evolutions on arxiv" 17-phase cluster** in project history (Phase 37-53). **23rd consecutive phase without new B category** — first 23-phase run (extends Phase-52 record 22 → 23). **Forty-fourth NON-§13 phase**. **124th consecutive 103 kB First Load JS unit**.
+12. **Regex-disjointness-as-sole-defense discipline at 3-consumer cardinality HOLDS UNDER ID-CLASS EXTENSION**. **First state where regex-disjointness is exercised across a mix of single-ID-class (doi + pubmed) and dual-ID-class (arxiv modern + legacy) regexes at 3-consumer cardinality on all 4 surfaces in production default**.
+
+##### Phase 53 → Phase 54 entry conditions
+
+Per §12, Phase 54 entry requires **explicit human sign-off**.
+
+**Recommended Phase 54 first-thread candidates** (10 ranked; see `docs/thinking/53.4-phase-53-acceptance-gate.md` for full tractability + units breakdown):
+
+1. **ORCID auto-link consumer** — 2-3 units; **sixth concrete consumer**; **first 4th-`remarkPlugins` consumer**; tests whether regex-disjointness scales 3 → 4 same-slot consumers.
+2. **Table-specific attributes** (APPEND-D-Q item 3) — 1-2 units; first schema-extension on `schemaOverrides` slot; XSS-audit-required.
+3. **bioRxiv preprint consumer** — 2-3 units; sixth concrete consumer alternative; DOI overlap concern.
+4. **Cross-entity wikilinks** (APPEND-D-L item 3) — 2-3 units.
+5. **`<a class="wikilink">` styling** (APPEND-D-L item 4) — 1-2 units.
+6. **404 handling for unresolved wikilinks** (APPEND-D-L item 5) — 2-3 units.
+7. **Bare arxiv / DOI / PubMed IDs without prefix** — 1-2 units; third regex evolution on `remarkLinkArxivIds` if elected for arxiv.
+8. **Empty-alias fallback unification** (Phase-48 deferral) — 1 unit.
+9. **Plugin parameterization for wikilink-href-builder** — 1-2 units; gates rank 4.
+10. **ADR-0025 concrete content-moderation provider** — 3-5 units; NOT autonomous-tractable.
+
+**Operational gates still pending** (6 UNCHANGED): Q54 + Q55 + Q69 + Q73 + Q75 + Q77.
+
+##### Smoke gates
+
+- `pnpm typecheck` — passes.
+- `pnpm test` — **1225 / 73 files**.
+- `pnpm audit-content` — 0 errors / 6 warnings (49 consecutive phases at Q32 baseline).
+- First Load JS — **103 kB UNCHANGED** (125 consecutive units at Unit 53.4 ship).
+- Middleware — **160 kB UNCHANGED**.
+
+##### Anti-scope (Phase 54+ deferrals carried forward)
+
+NOT ORCID consumer (Phase 54+ rank 1); NOT table-specific attributes (Phase 54+ rank 2); NOT bioRxiv preprint consumer (Phase 54+ rank 3); NOT cross-entity wikilinks (Phase 54+ rank 4); NOT `<a class="wikilink">` styling (Phase 54+ rank 5); NOT 404 handling (Phase 54+ rank 6); NOT bare arxiv / DOI / PubMed IDs without prefix (Phase 54+ rank 7); NOT empty-alias fallback unification (Phase 54+ rank 8); NOT plugin parameterization (Phase 54+ rank 9); NOT OSF preprint consumer (Phase 54+); NOT dx.doi.org legacy host (Phase 54+); NOT stricter trailing-lookahead (Phase 54+); NOT paper-card hover-preview (Phase 54+); NOT auto-trim of alias display whitespace (Phase 54+); NOT `<caption>` (Phase 54+); NOT surface-specific table schemas (Phase 54+); NOT `@mention` (Phase 54+); NOT 3rd regex evolution on `remarkLinkArxivIds` (Phase 54+); NOT 4th-or-later `remarkPlugins` consumer beyond arxiv + doi + pubmed (Phase 54+ rank 1/3 would ship ORCID/bioRxiv); NOT 2nd `rehypePlugins` consumer beyond wikilinks (Phase 54+); NOT 2nd `schemaOverrides` consumer beyond tables (Phase 54+); NOT ADR-0025 concrete moderation provider; NOT Q78/Q79/v2 methodology/pre-commit typecheck/safeAuth/test backfill/account-deletion (each deferred); all Phase-30-through-52 deferrals carry forward.
+
+##### Boundary statement
+
+**Phase 53 CLOSED at this commit after 5 numbered units. Fifth realization of the Phase-46 plugin-regex-extension phase-shape pattern — older-style category-prefixed arxiv IDs `arxiv:math/0211159` / `arxiv:cs.AI/0501001` / `arxiv:hep-th/9711200` via in-place inner-ID-class disjunction extension on `remarkLinkArxivIds`. First 5-realization phase-shape pattern in project history. First state with TWO 5-realization framework patterns coexisting (`constructor-arg-only-zero-rework-expansion` from Phase 52 + `plugin-regex-extension` from Phase 53) — project's first multi-5-realization state. First non-alias-syntax plugin-regex-extension in project history — extends the inner ID-class within the existing dual-form structure rather than adding a bracketed alias alternative. First inner-class disjunction in a dual-form regex. Second regex evolution on `remarkLinkArxivIds` — first plugin with 2 regex evolutions in project history. First "non-cross-surface non-alias non-sibling APPEND-deferral closure on the `remarkPlugins` slot kind" in the cadence — first regex-evolution-only closure on remark. Closes ADR-0018 APPEND-D-Y item 2 at 12-phase carryover (Phase 41 → 53). LONGEST ABSOLUTE APPEND-DEFERRAL CLOSURE EVER OBSERVED (beats prior 8-phase D-L item 2 record from Phase 38 → 46). First 12-phase APPEND-deferral closure in absolute carryover terms. APPEND-deferral closure cadence sustained 12 phases — new longest sustained cadence in project history. First 12-phase APPEND-deferral closure run. 20th APPEND on ADR-0018 D-G (project record extends 19 → 20; two-decade APPEND mark on the same D-clause). Eleventh two-letter APPEND letter D-AK. Regex-disjointness-as-sole-defense discipline at 3-consumer cardinality HOLDS UNDER ID-CLASS EXTENSION — first state where regex-disjointness is exercised across a mix of single-ID-class (doi + pubmed) and dual-ID-class (arxiv modern + legacy) regexes at 3-consumer cardinality on all 4 surfaces in production default. Forty-fourth NON-§13 phase. First "framework + 5 consumers + composition + 5 expansions + 5 plugin-regex-extensions + 3-consumer same-slot composition × 4 + alias syntax × 4 + dual-form regex × 3 + 5-consumer composition × 4 + inner-class disjunction × 1 + 2-evolutions on arxiv" 17-phase cluster in project history (Phase 37-53). 23rd consecutive phase without new B category — first 23-phase run (extends Phase-52 record 22 → 23). 124th consecutive 103 kB First Load JS unit (extends from 120 at Phase-52 close). XSS line of defense preserved. 1225 tests across 73 vitest files (+30/0 vs Phase 52). 24 ADRs UNCHANGED. 7 DB tables UNCHANGED. 9 migrations UNCHANGED. 14 env vars UNCHANGED. 168 i18n keys per locale UNCHANGED. First Load JS 103 kB UNCHANGED. Middleware 160 kB UNCHANGED. OPEN_QUESTIONS top-level Q-count 66 UNCHANGED. Phase-37+ candidate count 8 UNCHANGED. `MARKDOWN_EXTENSIONS` recognized single-value arms 6 UNCHANGED. Zero new ADRs / migrations / i18n keys / env vars / operational gates / runtime deps / files. Phase 54 entry requires explicit human sign-off per §12.**
+
 #### Unit 53.3 — Phase-53 hygiene + ADR-0018 APPEND-D-Y item 2 closure documentation at 12-phase carryover (LONGEST ABSOLUTE APPEND-DEFERRAL CLOSURE EVER OBSERVED; beats prior 8-phase D-L item 2 record) + first non-alias-syntax plugin-regex-extension + first 5-realization phase-shape pattern + first plugin with 2 regex evolutions (Q-tally UNCHANGED at 66; Phase-37+ candidate count UNCHANGED at 8; 23-phase no-new-B-category streak EXTENDS to Phase 53; 124th consecutive 103 kB unit)
 
 - Fourth Phase-53 unit; docs-only hygiene. Mirrors Phase 38-52 hygiene shapes (CHANGELOG-only annotation; no separate THINK doc; the Phase-53-prep doc at `docs/thinking/53.0-phase-53-prep.md` already enumerated closures, anti-scope, and architectural firsts).
