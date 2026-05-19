@@ -39,15 +39,15 @@ import type { MarkdownExtensionRegistry, MarkdownExtensionSet, MarkdownSurface }
  * pubmed + Phase-54 orcid discipline; absolute https URLs pass
  * `rehypeStripUnsafeHrefs` naturally).
  *
- * **First 5-consumer same-slot composition** in project history
- * (per Phase 58 ship; rationale-only initially): under
+ * **First 5-consumer same-slot composition** post-Phase-58
+ * (per Phase 58 ship; rationale-only initially; Phase 59 cross-
+ * surface expansion to all 4 surfaces — **first "all 4 surfaces
+ * have 5-consumer same-slot composition" state**): under
  * `MARKDOWN_EXTENSIONS=arxiv,doi,pubmed,orcid,biorxiv` the
- * `remarkPlugins` slot on `rationale` (the only surface where
- * all 5 consumers share enablement at Phase 58 first-ship —
- * arxiv + doi + pubmed default-enabled all-4 post-Phase-52;
- * orcid default-enabled all-4 post-Phase-56; biorxiv default-
- * enabled on rationale only at Phase 58 first-ship per the
- * demand-signal-first precedent) carries
+ * `remarkPlugins` slot on ALL 4 surfaces post-Phase-59 (arxiv
+ * + doi + pubmed default-enabled all-4 post-Phase-52; orcid
+ * default-enabled all-4 post-Phase-56; biorxiv default-enabled
+ * all-4 post-Phase-59) carries
  * `[remarkLinkArxivIds, remarkLinkDoiIds, remarkLinkPubmedIds, remarkLinkOrcidIds, remarkLinkBiorxivIds]`
  * via `CompositeExtensionRegistry` per APPEND-D-R "concatenated
  * across components in registration order" concatenation rule.
@@ -211,24 +211,25 @@ export function remarkLinkBiorxivIds() {
  * via distinct literal prefixes; all 10 pairs validated).
  *
  * `MARKDOWN_EXTENSIONS=wikilinks,tables,arxiv,doi,pubmed,orcid,biorxiv`
- * Phase-58 default produces **first 7-consumer composition**
- * under default dispatch — `rationale` carries 7 consumers
- * across 3 slots; other 3 surfaces carry 6 consumers (orcid
- * default-enabled all-4 per Phase 56; biorxiv inactive there
- * per Phase-58 rationale-only default). **New maximum-
- * consumer-cardinality state** in project history (mirrors
- * Phase-54 introduction of 6-consumer cardinality).
+ * default produces **7-consumer composition** under default
+ * dispatch on ALL 4 surfaces post-Phase-59 (Phase 58 first
+ * established 7-consumer on rationale-only; Phase 59 generalizes
+ * to all 4 surfaces). **Maximum-consumer-cardinality state
+ * generalized to all surfaces** — Phase-58 asymmetric
+ * `[rationale=7, others=6]` becomes symmetric `[all=7]`.
+ * **Second "all-surfaces saturated at maximum-consumer-
+ * cardinality" state** in project history (first was Phase 56
+ * at 6-consumer; Phase 59 elevates to 7-consumer).
  *
- * Phase 59+ may add bioRxiv cross-surface expansion to all 4
- * surfaces (constructor-arg value-only change in
- * `PHASE_58_DEFAULT_ENABLED_SURFACES`; **seventh realization
- * of constructor-arg-only zero-rework expansion property**;
- * would extend Phase-56 6-realization record to 7), bioRxiv
- * display-text alias syntax (`[[biorxiv:YYYY.MM.DD.NNNNNN|display]]`;
- * mirrors Phase-47/Phase-48/Phase-51/Phase-55 alias-syntax
- * pattern), legacy numeric-only bioRxiv IDs (pre-2019 format),
- * OSF preprint consumer (eighth concrete consumer), or bare
- * bioRxiv IDs without prefix.
+ * Phase 60+ may add bioRxiv display-text alias syntax
+ * (`[[biorxiv:YYYY.MM.DD.NNNNNN|display]]`; mirrors Phase-47/
+ * Phase-48/Phase-51/Phase-55 alias-syntax pattern; **would be
+ * seventh realization of Phase-46 plugin-regex-extension
+ * phase-shape pattern**; would re-equalize plugin-regex-
+ * extension (currently 6) with constructor-arg-only-expansion
+ * (currently 7 post-Phase-59) at 7), legacy numeric-only
+ * bioRxiv IDs (pre-2019 format), OSF preprint consumer (eighth
+ * concrete consumer), or bare bioRxiv IDs without prefix.
  */
 export class BiorxivExtensionRegistry implements MarkdownExtensionRegistry {
   private readonly enabledSurfaces: ReadonlySet<MarkdownSurface>;
@@ -247,22 +248,37 @@ export class BiorxivExtensionRegistry implements MarkdownExtensionRegistry {
 
 /**
  * Default-enabled-surfaces for `BiorxivExtensionRegistry` per
- * ADR-0018 D-G APPEND-D-AP (Phase 58 Unit 58.1).
+ * ADR-0018 D-G APPEND-D-AP (Phase 58 Unit 58.1) + APPEND-D-AQ
+ * (Phase 59 Unit 59.1 cross-surface expansion).
  *
  * **Phase 58 ship** — `rationale`-only (Phase-27 challenge-
  * resolution rationale text). Mirrors the Phase-41 arxiv-first-
  * ship + Phase-45 doi-first-ship + Phase-50 pubmed-first-ship
  * + Phase-54 orcid-first-ship demand-signal-first precedent:
- * curator paper-citation prose lives in `rationale`; cross-
- * surface expansion to bio + reviewNotes + actionRationale
- * deferred Phase ~60+ per the per-consumer-expansion-as-
- * separate-phase pattern.
+ * curator paper-citation prose lives in `rationale`.
+ *
+ * **Phase 59 ship — cross-surface expansion to all 4 markdown
+ * surfaces** (`bio` + `reviewNotes` + `rationale` +
+ * `actionRationale`). **Seventh realization of the
+ * "constructor-arg-only zero-rework expansion" property** —
+ * **first 7-realization for that pattern in project history**
+ * (extends Phase-56 record 6 → 7). Generalizes the per-
+ * consumer all-4-surfaces arc to ALL 7 Phase-37-framework
+ * consumers. Plugin / regex / class / factory dispatch arm all
+ * UNCHANGED — pure constant-value change. Closes ADR-0018
+ * APPEND-D-AP bioRxiv cross-surface item at **1-phase
+ * carryover** (Phase 58 → 59) — **NEW FASTEST cross-surface-
+ * expansion APPEND-deferral closure record** (extends prior
+ * 2-phase record from Phase 52 + 56 by 1 phase; first sub-2-
+ * phase cross-surface closure). **First cross-surface
+ * expansion shipped as immediate-next-thread after first-ship
+ * without intervening alias-syntax** (alias-syntax extension
+ * deferred Phase 60+ rank 1).
  *
  * Constant's NAME encodes the introduction-phase audit trail
- * (Phase 58 = WHEN the biorxiv consumer first shipped); future
- * cross-surface expansions will evolve the VALUE while
- * preserving the name per Phase-42/43/44/49/52/56 D-8
- * precedent.
+ * (Phase 58 = WHEN the biorxiv consumer first shipped); the
+ * VALUE evolves Phase 59 while the NAME is preserved per
+ * Phase-42/43/44/49/52/56 D-8 precedent.
  *
  * Imported by the factory dispatch arm
  * `MARKDOWN_EXTENSIONS=biorxiv` in `./index.ts` — single-value
@@ -273,5 +289,8 @@ export class BiorxivExtensionRegistry implements MarkdownExtensionRegistry {
  * recognized-arms set since Phase 54 (`orcid`).
  */
 export const PHASE_58_DEFAULT_ENABLED_SURFACES: ReadonlySet<MarkdownSurface> = new Set([
+  "bio",
+  "reviewNotes",
   "rationale",
+  "actionRationale",
 ]);

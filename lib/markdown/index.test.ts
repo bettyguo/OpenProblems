@@ -11,7 +11,7 @@ import {
   type MarkdownSurface,
 } from "./extensions";
 import { ArxivExtensionRegistry, PHASE_41_DEFAULT_ENABLED_SURFACES } from "./extensions/arxiv";
-import { BiorxivExtensionRegistry, PHASE_58_DEFAULT_ENABLED_SURFACES } from "./extensions/biorxiv";
+import { BiorxivExtensionRegistry } from "./extensions/biorxiv";
 import { CompositeExtensionRegistry } from "./extensions/composite";
 import { DoiExtensionRegistry, PHASE_45_DEFAULT_ENABLED_SURFACES } from "./extensions/doi";
 import { OrcidExtensionRegistry, PHASE_54_DEFAULT_ENABLED_SURFACES } from "./extensions/orcid";
@@ -4345,7 +4345,14 @@ describe("Phase-56 first all-4-surfaces 4-consumer same-slot composition (arxiv+
 
 describe("Phase-58 biorxiv default — rationale surface via PHASE_58_DEFAULT_ENABLED_SURFACES", () => {
   beforeEach(() => {
-    __setRegistryForTests(new BiorxivExtensionRegistry(PHASE_58_DEFAULT_ENABLED_SURFACES));
+    // D-12 decoupled-baseline-block: Phase 59 expanded
+    // `PHASE_58_DEFAULT_ENABLED_SURFACES` to all 4 surfaces; this Phase-58
+    // baseline block is decoupled with an explicit `new Set(["rationale"])`
+    // to preserve the Phase-58 rationale-only first-ship coverage per
+    // Phase-49/52/56 D-12 precedent (existing Phase-N baseline blocks
+    // asserting N-on-`rationale`-only must use an explicit constructor
+    // arg after Phase-(N+K) flips the constant to all-4).
+    __setRegistryForTests(new BiorxivExtensionRegistry(new Set(["rationale"])));
     __resetMarkdownCachesForTests();
   });
 
@@ -4416,12 +4423,16 @@ describe("Phase-58 first 5-consumer same-slot composition under MARKDOWN_EXTENSI
   beforeEach(() => {
     // Phase-58 default: arxiv + doi + pubmed + orcid on all 4 surfaces
     // (Phase-44 / Phase-49 / Phase-52 / Phase-56 cross-surface expansions);
-    // biorxiv on rationale only (Phase-58 first-ship).
+    // biorxiv on rationale only (Phase-58 first-ship). D-12 decoupled-
+    // baseline-block: Phase 59 expanded `PHASE_58_DEFAULT_ENABLED_SURFACES`
+    // to all 4 surfaces; this Phase-58 baseline block uses an explicit
+    // `new Set(["rationale"])` for biorxiv to preserve the Phase-58
+    // rationale-only first-ship coverage per Phase-49/52/56 D-12 precedent.
     const arxiv = new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES);
     const doi = new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES);
     const pubmed = new PubmedExtensionRegistry(PHASE_50_DEFAULT_ENABLED_SURFACES);
     const orcid = new OrcidExtensionRegistry(PHASE_54_DEFAULT_ENABLED_SURFACES);
-    const biorxiv = new BiorxivExtensionRegistry(PHASE_58_DEFAULT_ENABLED_SURFACES);
+    const biorxiv = new BiorxivExtensionRegistry(new Set(["rationale"]));
     __setRegistryForTests(new CompositeExtensionRegistry([arxiv, doi, pubmed, orcid, biorxiv]));
     __resetMarkdownCachesForTests();
   });
@@ -4528,13 +4539,18 @@ describe("Phase-58 first 5-consumer same-slot composition under MARKDOWN_EXTENSI
 
 describe("Phase-58 first 7-consumer composition — wikilinks,tables,arxiv,doi,pubmed,orcid,biorxiv maximal default", () => {
   beforeEach(() => {
+    // D-12 decoupled-baseline-block: Phase 59 expanded
+    // `PHASE_58_DEFAULT_ENABLED_SURFACES` to all 4 surfaces; this Phase-58
+    // baseline block uses an explicit `new Set(["rationale"])` for biorxiv
+    // to preserve the Phase-58 rationale-only first-ship coverage per
+    // Phase-49/52/56 D-12 precedent.
     const wikilinks = new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES);
     const tables = new TablesExtensionRegistry(PHASE_39_DEFAULT_ENABLED_SURFACES);
     const arxiv = new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES);
     const doi = new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES);
     const pubmed = new PubmedExtensionRegistry(PHASE_50_DEFAULT_ENABLED_SURFACES);
     const orcid = new OrcidExtensionRegistry(PHASE_54_DEFAULT_ENABLED_SURFACES);
-    const biorxiv = new BiorxivExtensionRegistry(PHASE_58_DEFAULT_ENABLED_SURFACES);
+    const biorxiv = new BiorxivExtensionRegistry(new Set(["rationale"]));
     __setRegistryForTests(
       new CompositeExtensionRegistry([wikilinks, tables, arxiv, doi, pubmed, orcid, biorxiv]),
     );

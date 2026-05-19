@@ -4296,6 +4296,223 @@ component-surface-slot positions; up from Phase-56 maximum of
 - **3rd regex evolution on `remarkLinkArxivIds`** — Phase
   59+.
 
+#### EXTENDED Phase 59 Unit 59.1 — APPEND-D-AQ bioRxiv cross-surface expansion (seventh realization of constructor-arg-only zero-rework expansion property — first 7-realization for that pattern; first state where constructor-arg-only-zero-rework-expansion exceeds plugin-regex-extension; first "all 4 surfaces have 5-consumer same-slot composition"; first "all 4 surfaces with 7-consumer composition under default dispatch" — second "all-surfaces saturated at maximum-consumer-cardinality" state; NEW FASTEST cross-surface-expansion closure record at 1-phase carryover; first cross-surface-first post-first-ship arc; eighteenth APPEND-deferral closure; 26th D-G APPEND record extends; seventeenth two-letter slot D-AQ; HALF-CENTURY-OF-NON-§13-PHASES MILESTONE)
+
+Phase 59 expands `BiorxivExtensionRegistry`'s default-enabled
+surfaces from `Set(["rationale"])` to all 4 markdown surfaces
+(`bio` + `reviewNotes` + `rationale` + `actionRationale`) via
+constructor-arg value-only change in
+`PHASE_58_DEFAULT_ENABLED_SURFACES`. **Seventh realization of
+the "constructor-arg-only zero-rework expansion" property** —
+**first 7-realization for that pattern in project history**
+(extends Phase-56 record 6 → 7). Plugin / regex / class /
+factory dispatch arm all UNCHANGED.
+
+**APPEND-D-AQ bioRxiv cross-surface expansion shape**:
+
+```ts
+// Before (Phase 58 ship through Phase-58 close):
+export const PHASE_58_DEFAULT_ENABLED_SURFACES: ReadonlySet<MarkdownSurface> =
+  new Set(["rationale"]);
+
+// After (Phase 59 ship):
+export const PHASE_58_DEFAULT_ENABLED_SURFACES: ReadonlySet<MarkdownSurface> =
+  new Set(["bio", "reviewNotes", "rationale", "actionRationale"]);
+```
+
+**Name discipline preserved** per Phase-42/43/44/49/52/56 D-8
+precedent: constant NAME encodes the introduction-phase audit
+trail (Phase 58 = WHEN the biorxiv consumer first shipped);
+VALUE evolves Phase 59. Surface enumeration follows
+`MarkdownSurface` type-union order per Phase-42/43/44/49/52/56
+D-9 precedent.
+
+**`BiorxivExtensionRegistry` class + factory dispatch arm +
+plugin body + `BIORXIV_PATTERN` regex UNCHANGED**. The class
+accepts a `ReadonlySet<MarkdownSurface>` constructor arg;
+expansion is constructor-arg-only. **Seventh real-consumer-
+expansion realization** of the property.
+
+**Composition matrix at Phase-59 7-way default** under
+`MARKDOWN_EXTENSIONS=wikilinks,tables,arxiv,doi,pubmed,orcid,biorxiv`:
+
+| Surface | Composition |
+|---|---|
+| `bio` | wikilinks(rehype) + tables(schema) + [arxiv, doi, pubmed, orcid, biorxiv](remark) — 7 consumers; quintuple-alias preserved (biorxiv not yet alias-capable) |
+| `reviewNotes` | wikilinks(rehype) + tables(schema) + [arxiv, doi, pubmed, orcid, biorxiv](remark) — 7 consumers; quintuple-alias |
+| `rationale` | wikilinks(rehype) + tables(schema) + [arxiv, doi, pubmed, orcid, biorxiv](remark) — Phase-58 baseline preserved; quintuple-alias |
+| `actionRationale` | wikilinks(rehype) + tables(schema) + [arxiv, doi, pubmed, orcid, biorxiv](remark) — 7 consumers; quintuple-alias |
+
+**All 4 surfaces become 7-consumer + 3-slot + 5-consumer-same-
+slot-in-remark + quintuple-alias** post-Phase-59. **First "all
+4 surfaces have 5-consumer same-slot composition" state** in
+project history (pre-Phase-59 only rationale carried `[arxiv,
+doi, pubmed, orcid, biorxiv]` in `remarkPlugins` per Phase 58
+ship). **First "all 4 surfaces with 7-consumer composition
+under default dispatch" state** (pre-Phase-59 maximum-
+consumer-cardinality was rationale-only per Phase 58 ship).
+**Maximum-consumer-cardinality state generalized to all
+surfaces** — the Phase-58 asymmetric `[rationale=7, others=6]`
+state becomes symmetric `[all=7]`. **Second "all-surfaces
+saturated at maximum-consumer-cardinality" state** in project
+history (first was Phase 56 at 6-consumer; Phase 59 elevates
+to 7-consumer). 7 consumers × 4 surfaces × 3 slots = 84
+component-surface-slot positions; 28 active under 7-way
+default (8 single-occupancy at distinct slots + 20 same-slot
+in remark = arxiv + doi + pubmed + orcid + biorxiv on every
+surface).
+
+**First state where the two principal axes of zero-rework
+framework extension diverge in realization count**. Plugin-
+body axis (plugin-regex-extension) remains at 6 (since Phase
+55; bioRxiv at Phase 58 first-ship is not yet alias-capable).
+Registry-state axis (constructor-arg-only-expansion) advances
+to 7 at Phase 59. **First asymmetric state at the depth-6+
+tier between the two patterns** — inverts the symmetric state
+established at Phase 56 (both at 6). The registry-state axis
+**strictly exceeds** the plugin-body axis for the first time
+at the depth-6+ tier. Phase 60+ alias-syntax extension on
+bioRxiv would re-equalize at 7 (plugin-regex-extension
+advances to 7); Phase 59 establishes the temporary asymmetric
+state.
+
+**Decoupled-baseline-block discipline preserved** per Phase-
+49/52/56 D-12 precedent. Existing Phase-58 baseline test
+blocks in `lib/markdown/index.test.ts` that previously relied
+on the factory-driven `PHASE_58_DEFAULT_ENABLED_SURFACES` =
+`Set(["rationale"])` default are decoupled with explicit
+`new Set(["rationale"])` constructor args at Unit 59.1 to
+preserve the Phase-58 rationale-only first-ship coverage. The
+decoupled blocks continue to assert biorxiv's rationale-only
+behavior even though the framework default now enables all 4
+surfaces.
+
+**XSS audit Phase 59**: bioRxiv plugin emits absolute https://
+URLs unchanged. No new tag-names; no event-handler attribute
+paths; no schemaOverrides additions. **No new XSS surface**.
+Cross-surface expansion is pure registry-state evolution; the
+plugin's URL emission is identical on every surface.
+
+**Closes APPEND-D-AP bioRxiv cross-surface item** ("Phase 59+
+may add bioRxiv cross-surface expansion to bio + reviewNotes +
+actionRationale; seventh realization of constructor-arg-only
+zero-rework expansion property; would extend Phase-56 6-
+realization record to 7") at **1-phase carryover** (Phase 58
+→ Phase 59) — **NEW FASTEST cross-surface-expansion APPEND-
+deferral closure record** (extends prior 2-phase record from
+Phase 52 + Phase 56 by 1 phase). **First sub-2-phase cross-
+surface closure** in project history. Cadence trajectory: 4 →
+4 → 3 → 4 → 2 → 2 → 1 phases (Phase 42 + 43 + 44 + 49 + 52 +
+56 + 59). **First cross-surface expansion shipped as
+immediate-next-thread after first-ship without intervening
+alias-syntax** — D-AC + D-AH + D-AL each had alias-first
+(Phase 48 + 51 + 55) then cross-surface (Phase 49 + 52 + 56);
+**D-AP has cross-surface-first** (Phase 59) — alias-syntax
+deferred Phase 60+. **First reversed-order post-first-ship
+arc** in project history.
+
+**Seventh cross-surface-expansion APPEND-deferral closure**
+in the cadence (Phase 42 wikilinks + Phase 43 tables + Phase
+44 arxiv + Phase 49 doi + Phase 52 pubmed + Phase 56 orcid +
+Phase 59 biorxiv).
+
+**Eighteenth prep-/APPEND-doc-level deferral closed by a later
+phase**: Phase 42 → 38 D-L item 1; Phase 43 → 39 D-Q item 2;
+Phase 44 → 41 D-Y item 1; Phase 45 → 41 D-Y item 4; Phase 46
+→ 38 D-L item 2; Phase 47 → 41 D-Y item 5; Phase 48 → 45 D-AC
+item 2; Phase 49 → 45 D-AC cross-surface; Phase 50 → 45 D-AC
+PubMed PMID item; Phase 51 → new Phase-50 deferral; Phase 52
+→ 50 D-AH PubMed cross-surface; Phase 53 → 41 D-Y item 2;
+Phase 54 → 45 D-AC ORCID item; Phase 55 → new Phase-54
+deferral; Phase 56 → 54 D-AL ORCID cross-surface item; Phase
+57 → 39 D-Q item 3 Table-specific attributes; Phase 58 → 54
+D-AL bioRxiv preprint consumer item; **Phase 59 → 58 D-AP
+bioRxiv cross-surface item**. **APPEND-deferral closure
+cadence sustained 18 phases** — **new longest sustained
+cadence in project history** (extends Phase-58 record 17 →
+18). **First 18-phase APPEND-deferral closure run**.
+
+**Twenty-sixth APPEND on ADR-0018 D-G** — extends the **first-
+ADR-D-clause-with-most-APPENDs record** from 25 → 26 (Phase
+18 + 27 + 29 + 37 + 38 + 39 + 40 + 41 + 42 + 43 + 44 + 45 +
+46 + 47 + 48 + 49 + 50 + 51 + 52 + 53 + 54 + 55 + 56 + 57 +
+58 + **59**).
+
+**Seventeenth two-letter APPEND letter D-AQ** (after Phase-43
+D-AA + Phase-44 D-AB + Phase-45 D-AC + Phase-46 D-AD + Phase-
+47 D-AE + Phase-48 D-AF + Phase-49 D-AG + Phase-50 D-AH +
+Phase-51 D-AI + Phase-52 D-AJ + Phase-53 D-AK + Phase-54
+D-AL + Phase-55 D-AM + Phase-56 D-AN + Phase-57 D-AO + Phase-
+58 D-AP). Excel-spreadsheet column convention sustained.
+
+**Twenty-fourth consecutive no-new-ADR phase** (Phase 36-59;
+extends Phase-58 record 23 → 24). **Twenty-ninth consecutive
+phase without new B category** (Phase 31-59; extends Phase-58
+record 28 → 29). **Fiftieth NON-§13 phase — HALF-CENTURY-OF-
+NON-§13-PHASES MILESTONE**. First 50-NON-§13-phase milestone
+in project history; §13 ledger remains CLOSED across the
+entire 50-phase run (Phase 10 first NON-§13 → Phase 59
+fiftieth NON-§13) — first 50-phase ledger-closure streak.
+
+**Generalizes the per-consumer all-4-surfaces arc to ALL 7
+Phase-37-framework consumers** — every concrete consumer
+(wikilinks Phase 42 + tables Phase 43 + arxiv Phase 44 + doi
+Phase 49 + pubmed Phase 52 + orcid Phase 56 + biorxiv Phase
+59) is now default-enabled on every wired markdown surface.
+
+**Phase 60+ deferrals** (Phase-59 biorxiv-cross-surface scope
+cap):
+
+- **bioRxiv display-text alias syntax**
+  `[[biorxiv:YYYY.MM.DD.NNNNNN|display]]` — mirrors Phase-47
+  arxiv + Phase-48 doi + Phase-51 pubmed + Phase-55 orcid
+  alias-syntax pattern; Phase 60+ at standard 1-to-3-phase-
+  gap cadence; would be **seventh realization of the Phase-46
+  plugin-regex-extension phase-shape pattern** (extending
+  Phase-55 6-realization record to 7); would re-equalize the
+  two principal axes at 7 (constructor-arg-only currently 7
+  post-Phase-59; plugin-regex-extension currently 6); would
+  close the second D-AP enumerated item (cross-surface closed
+  Phase 59; alias remains open).
+- **Legacy numeric-only bioRxiv IDs** (pre-2019 format
+  `001234` style) — Phase 60+ if curator content surfaces.
+- **OSF preprint consumer** — eighth concrete consumer
+  alternative — Phase 60+.
+- **6th-or-later `remarkPlugins` consumer beyond arxiv + doi
+  + pubmed + orcid + biorxiv** — Phase 60+.
+- **2nd `rehypePlugins` consumer beyond wikilinks** — Phase
+  60+.
+- **2nd `schemaOverrides` consumer beyond tables** — Phase
+  60+.
+- **Bare arxiv / DOI / PubMed / ORCID / bioRxiv IDs without
+  prefix** — Phase 60+.
+- **Cross-entity wikilinks** (APPEND-D-L item 3 carries) —
+  Phase 60+.
+- **`<a class="wikilink">` styling** (APPEND-D-L item 4
+  carries) — Phase 60+.
+- **404 handling for unresolved wikilinks** (APPEND-D-L item
+  5 carries) — Phase 60+.
+- **Plugin parameterization for wikilink-href-builder**
+  (APPEND-D-L item 6 carries) — Phase 60+.
+- **`<caption>` element** (APPEND-D-Q item 4 carries) —
+  Phase 60+.
+- **Surface-specific table schemas** (APPEND-D-Q item 6
+  carries) — Phase 60+.
+- **A future plugin that EMITS `colSpan`/`rowSpan`/`scope`**
+  to realize the Phase-57 schema-ready-before-plugin state —
+  Phase 60+.
+- **dx.doi.org legacy host parsing** (APPEND-D-AC carries) —
+  Phase 60+.
+- **Stricter trailing-lookahead for trailing-period DOIs**
+  (APPEND-D-AC carries) — Phase 60+.
+- **Paper-card hover-preview** (APPEND-D-Y item 6 carries) —
+  Phase 60+.
+- **Auto-trim of alias display whitespace** — Phase 60+.
+- **Empty-alias fallback unification** across consumers —
+  Phase 60+.
+- **3rd regex evolution on `remarkLinkArxivIds`** — Phase
+  60+.
+
 ### D-H. Phase 18+ deferrals
 
 Phase 17 ships MINIMAL markdown surface. Deferred to Phase 18+:
