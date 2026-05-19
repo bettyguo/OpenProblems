@@ -2470,6 +2470,44 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 52 — Community-adjacent surfaces (**forty-third NON-§13 phase**: PubMed PMID cross-surface expansion from `rationale`-only to all 4 markdown surfaces via constructor-arg change in `PHASE_50_DEFAULT_ENABLED_SURFACES`; mirrors Phase 42 + 43 + 44 + 49 expansion pattern verbatim; **fifth realization of the "constructor-arg-only zero-rework expansion" property** — **first 5-realization property in project history**; **completes the per-consumer all-4-surfaces arc** for ALL 5 Phase-37-framework consumers; closes ADR-0018 APPEND-D-AH PubMed PMID cross-surface item at **2-phase carryover** — **FASTEST CROSS-SURFACE-EXPANSION APPEND-DEFERRAL CLOSURE EVER OBSERVED** (beats prior 3-phase Phase-41 → 44 record); APPEND-D-AJ tenth two-letter slot; anticipated 5 numbered units; 47th "Continue" override invoked)
 
+#### Unit 52.1 — `PHASE_50_DEFAULT_ENABLED_SURFACES` cross-surface expansion to all 4 surfaces + `pubmed.test.ts` registry assertion flip + 3 dispatch tests flipped in `extensions/index.test.ts` + ADR-0018 D-G APPEND-D-AJ (fifth realization of constructor-arg-only zero-rework expansion; first 5-realization property in project history; closes APPEND-D-AH PubMed cross-surface item at 2-phase carryover — fastest cross-surface-expansion APPEND-deferral closure ever observed; 19th D-G APPEND extends record 18 → 19; tenth two-letter slot D-AJ)
+
+- Second Phase-52 unit; code + ADR APPEND.
+- **`PHASE_50_DEFAULT_ENABLED_SURFACES` value evolution** (in-place edit of `lib/markdown/extensions/pubmed.ts`):
+  - Before (Phase 50 ship through Phase-51 close): `new Set(["rationale"])`.
+  - After (Phase 52 ship): `new Set(["bio", "reviewNotes", "rationale", "actionRationale"])`.
+  - Mirrors Phase-42 (wikilinks) + Phase-43 (tables) + Phase-44 (arxiv) + Phase-49 (doi) value-change shape verbatim. **Constructor-arg-only zero-rework**: `PubmedExtensionRegistry` class + factory dispatch arm + plugin body + `PUBMED_PATTERN` regex UNCHANGED.
+  - **Name discipline preserved** per Phase-42/43/44/49 D-8 precedent: constant NAME encodes the introduction-phase audit trail (Phase 50 = WHEN the pubmed consumer first shipped); VALUE evolves Phase 52. Surface enumeration follows `MarkdownSurface` type-union order per Phase-42/43/44/49 D-9 precedent.
+- **`PubmedExtensionRegistry` class doc-comment updated** to reflect Phase 52 state: `Set(["rationale"])` default-deferred-to-~54 → all-4-surfaces default-realized-at-2-phase-carryover; first all-4-surfaces 3-consumer same-slot composition; first all-4-surfaces 5-consumer composition; Phase 53+ deferrals.
+- **`pubmed.test.ts` registry assertion flipped** (1 test):
+  - Was: `PHASE_50_DEFAULT_ENABLED_SURFACES = Set(["rationale"])` size 1; rationale-only.
+  - Now: `PHASE_50_DEFAULT_ENABLED_SURFACES = all 4 surfaces` size 4; bio + reviewNotes + rationale + actionRationale all present.
+  - Test name + doc-comment updated to credit ADR-0018 APPEND-D-AJ + fifth-realization property.
+- **`extensions/index.test.ts` 3 dispatch tests flipped**:
+  - **Test 1**: "PubmedExtensionRegistry dispatch enables pubmed on rationale only Phase 50" → "PubmedExtensionRegistry dispatch enables pubmed on ALL 4 surfaces Phase 52 (cross-surface expansion mirrors Phase-44 arxiv + Phase-49 doi expansion verbatim; fifth realization of constructor-arg-only zero-rework expansion property)". Asserts `remarkPlugins` defined on all 4 surfaces.
+  - **Test 2**: "arxiv,doi,pubmed composite concatenates ALL 3 plugins in remarkPlugins on rationale (first 3-consumer same-slot Phase 50)" → "arxiv,doi,pubmed composite concatenates ALL 3 plugins in remarkPlugins on ALL 4 surfaces Phase 52 (first all-4-surfaces 3-consumer same-slot composition)". Loop-asserts `[remarkLinkArxivIds, remarkLinkDoiIds, remarkLinkPubmedIds]` on all 4 surfaces. **First "all 4 surfaces have 3-consumer same-slot composition" state** in project history.
+  - **Test 3**: "5-way composite enables ALL 5 CONSUMERS on rationale Phase 50 (first 5-consumer composition; maximum-consumer-cardinality)" → "5-way composite enables ALL 5 CONSUMERS on ALL 4 SURFACES Phase 52 (first all-4-surfaces 5-consumer composition; maximum-consumer-cardinality state generalized to all surfaces)". Loop-asserts rehype + schema + 3-consumer same-slot remark on all 4 surfaces. **First "all 4 surfaces with 5-consumer composition under default dispatch" state** in project history.
+- **ADR-0018 D-G** gains **EXTENDED Phase 52 Unit 52.1** block + **APPEND-D-AJ** (tenth two-letter slot after D-AA … D-AI). Documents:
+  - **Fifth realization of "constructor-arg-only zero-rework expansion" property** (Phase 42 wikilinks + Phase 43 tables + Phase 44 arxiv + Phase 49 doi + Phase 52 pubmed). **First 5-realization property in project history** — extends Phase-49 4-realization record to 5.
+  - **Completes the per-consumer all-4-surfaces arc for ALL 5 Phase-37-framework consumers** — every concrete consumer is now default-enabled on every wired markdown surface.
+  - **Closes APPEND-D-AH PubMed PMID cross-surface item at 2-phase carryover** (Phase 50 → 52) — **FASTEST CROSS-SURFACE-EXPANSION APPEND-DEFERRAL CLOSURE EVER OBSERVED** (beats prior 3-phase Phase-41 → 44 record). Cadence trajectory: 4 → 4 → 3 → 4 → 2 phases. **First cross-surface-expansion closure under the 3-phase floor**.
+  - **Second D-clause with BOTH items closed within the closure cadence** — D-AH (alias closed Phase 51 via D-AI + cross-surface closes Phase 52 via D-AJ). D-AC was first (item 2 Phase 48 + cross-surface Phase 49); D-AH is second.
+  - **Eleventh prep-/APPEND-doc-level deferral closed** — APPEND-deferral closure cadence sustained **11 phases** — **new longest sustained cadence in project history** (extends Phase-51 record 10 → 11).
+  - **Fifth cross-surface-expansion APPEND-deferral closure** in the cadence (Phase 42 + 43 + 44 + 49 + 52). Completes the cross-surface-expansion arc.
+  - **First "all 4 surfaces are quadruple-alias" state** — pre-Phase-52 only rationale was quadruple-alias (Phase 51 ship); post-Phase-52 every surface carries wikilinks + arxiv + doi + pubmed aliases under 5-way default. **First surface-with-4-alias-consumers cardinality of 4**.
+  - **First "all 4 surfaces have 3-consumer same-slot composition" state** — regex-disjointness-as-sole-defense discipline at 3-consumer cardinality exercised on every surface in production default.
+  - **First "all 4 surfaces with 5-consumer composition under default dispatch" state** — maximum-consumer-cardinality state generalized to all surfaces.
+  - **19th APPEND on ADR-0018 D-G** — extends first-ADR-D-clause-with-most-APPENDs record 18 → 19.
+  - **Tenth two-letter APPEND letter D-AJ**.
+  - Maximal multi-consumer all-surfaces composition extended to 5-consumer + 3-consumer-same-slot cardinality — 60 component-surface-slot positions × 20 active under 5-way default.
+  - Phase 53+ deferrals: ORCID consumer (sixth concrete consumer; first 4th-`remarkPlugins` consumer); bioRxiv / OSF preprint consumers; older-style category-prefixed arxiv IDs; bare arxiv / DOI / PubMed IDs without prefix; dx.doi.org legacy host; cross-entity wikilinks; `<a class>` styling; 404 handling; plugin parameterization; auto-trim alias whitespace; empty-alias unification; table-specific attributes; `<caption>`; surface-specific table schemas; 2nd `rehypePlugins` / `schemaOverrides` consumers.
+- **No env-var change**: cross-surface expansion is constant-value-only. `MARKDOWN_EXTENSIONS=pubmed` (Phase-50 single-value arm) and 5-way composite both automatically pick up the all-4-surfaces default via the constructor-arg-only flow.
+- **Smoke gates**:
+  - `pnpm typecheck` clean.
+  - `pnpm test` → tests pass (expected unchanged test count at Unit 52.1; Unit 52.2 will add ~19 new end-to-end tests).
+  - `pnpm audit-content` → 0 errors / 6 warnings UNCHANGED.
+  - First Load JS = 103 kB UNCHANGED; Middleware = 160 kB UNCHANGED.
+
 #### Unit 52.0 — Phase 52 prep (PubMed PMID cross-surface expansion to all 4 surfaces; fifth realization of constructor-arg-only zero-rework expansion property — first 5-realization property in project history; D-1 D-AJ; anticipated 5 units; 47th "Continue" override invoked)
 
 - First Phase-52 unit; docs-only. Drafted `docs/thinking/52.0-phase-52-prep.md` (Phase-51 → 52 baseline at HEAD `7ae4e8e`; D-1 first-thread recommendation; D-3 cross-surface expansion shape — `PHASE_50_DEFAULT_ENABLED_SURFACES` evolves from `Set(["rationale"])` to `Set(["bio", "reviewNotes", "rationale", "actionRationale"])` mirroring Phase 42 + 43 + 44 + 49 verbatim; constructor-arg-only zero-rework expansion; D-12 decoupled-baseline-block pattern per Phase 49; Phase 53+ deferrals; provisional 5-unit breakdown; 12 anticipated architectural firsts).

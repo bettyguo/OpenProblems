@@ -302,19 +302,26 @@ describe("PubmedExtensionRegistry — class behavior", () => {
     expect(r.getExtensions("reviewNotes")).toEqual({});
   });
 
-  it('exposes PHASE_50_DEFAULT_ENABLED_SURFACES = Set(["rationale"]) Phase 50 ship', () => {
-    // Phase 50 ship: rationale-only — mirrors Phase-41 arxiv-first-ship
-    // + Phase-45 doi-first-ship demand-signal-first precedent.
-    // Constant's NAME encodes the introduction-phase audit trail (Phase
-    // 50 = WHEN the pubmed consumer first shipped). Cross-surface
-    // expansion to all 4 surfaces deferred Phase ~54+ per ADR-0018
-    // APPEND-D-AH Phase-51+ deferrals + the 4-phase-gap cadence
-    // (Phase 38→42, Phase 39→43, Phase 41→44, Phase 45→49 each
-    // established).
+  it("exposes PHASE_50_DEFAULT_ENABLED_SURFACES = all 4 surfaces Phase 52 cross-surface expansion", () => {
+    // Phase 50 ship through Phase-51 close: Set(["rationale"]) — single-
+    // surface scope mirroring Phase-41 arxiv-first-ship + Phase-45 doi-
+    // first-ship demand-signal-first precedent. Phase 52 expansion: all 4
+    // surfaces per ADR-0018 APPEND-D-AJ (closes APPEND-D-AH PubMed PMID
+    // cross-surface item at 2-phase carryover — fastest cross-surface-
+    // expansion APPEND-deferral closure ever observed; beats prior 3-phase
+    // Phase-41 → 44 record). **Fifth real-consumer-expansion realization**
+    // of the "constructor-arg-only zero-rework expansion" property (Phase
+    // 42 wikilinks + Phase 43 tables + Phase 44 arxiv + Phase 49 doi +
+    // Phase 52 pubmed); **first 5-realization property in project
+    // history**. Constant's NAME preserves the introduction-phase audit
+    // trail (Phase 50 = WHEN the pubmed consumer first shipped); VALUE
+    // evolves Phase 52 per Phase-42/43/44/49 D-8 precedent. Surface
+    // enumeration follows MarkdownSurface type-union order per
+    // Phase-42/43/44/49 D-9 precedent.
+    expect(PHASE_50_DEFAULT_ENABLED_SURFACES.has("bio")).toBe(true);
+    expect(PHASE_50_DEFAULT_ENABLED_SURFACES.has("reviewNotes")).toBe(true);
     expect(PHASE_50_DEFAULT_ENABLED_SURFACES.has("rationale")).toBe(true);
-    expect(PHASE_50_DEFAULT_ENABLED_SURFACES.has("bio")).toBe(false);
-    expect(PHASE_50_DEFAULT_ENABLED_SURFACES.has("reviewNotes")).toBe(false);
-    expect(PHASE_50_DEFAULT_ENABLED_SURFACES.has("actionRationale")).toBe(false);
-    expect(PHASE_50_DEFAULT_ENABLED_SURFACES.size).toBe(1);
+    expect(PHASE_50_DEFAULT_ENABLED_SURFACES.has("actionRationale")).toBe(true);
+    expect(PHASE_50_DEFAULT_ENABLED_SURFACES.size).toBe(4);
   });
 });

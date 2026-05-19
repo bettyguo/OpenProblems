@@ -13,7 +13,7 @@ import {
 import { ArxivExtensionRegistry, PHASE_41_DEFAULT_ENABLED_SURFACES } from "./extensions/arxiv";
 import { CompositeExtensionRegistry } from "./extensions/composite";
 import { DoiExtensionRegistry, PHASE_45_DEFAULT_ENABLED_SURFACES } from "./extensions/doi";
-import { PHASE_50_DEFAULT_ENABLED_SURFACES, PubmedExtensionRegistry } from "./extensions/pubmed";
+import { PubmedExtensionRegistry } from "./extensions/pubmed";
 import { PHASE_39_DEFAULT_ENABLED_SURFACES, TablesExtensionRegistry } from "./extensions/tables";
 import {
   PHASE_38_DEFAULT_ENABLED_SURFACES,
@@ -2555,9 +2555,14 @@ describe("Phase-49 first all-4-surfaces same-slot composition (arxiv+doi in rema
 // (Phase 45 → 50).
 // ---------------------------------------------------------------------------
 
-describe("Phase-50 pubmed default — rationale surface via PHASE_50_DEFAULT_ENABLED_SURFACES", () => {
+describe("Phase-50 pubmed default — rationale surface via PHASE_50_DEFAULT_ENABLED_SURFACES (Phase 50 ship baseline; decoupled from constant value at Phase 52 per Phase-49 D-12 precedent — Phase 52 cross-surface expansion mutated the constant to all-4-surfaces; this block tests the Phase-50 rationale-only first-ship behavior)", () => {
   beforeEach(() => {
-    __setRegistryForTests(new PubmedExtensionRegistry(PHASE_50_DEFAULT_ENABLED_SURFACES));
+    // Phase 50 first-ship value preserved verbatim (Set(["rationale"])).
+    // Phase 52 cross-surface expansion changed PHASE_50_DEFAULT_ENABLED_SURFACES
+    // to all 4 surfaces; this block decouples from the constant to
+    // preserve Phase-50 baseline coverage per the Phase-49 decoupled-
+    // baseline-block discipline.
+    __setRegistryForTests(new PubmedExtensionRegistry(new Set(["rationale"])));
     __resetMarkdownCachesForTests();
   });
 
@@ -2630,13 +2635,17 @@ describe("Phase-50 pubmed default — rationale surface via PHASE_50_DEFAULT_ENA
 // disjointness-as-sole-defense discipline (3-consumer scaling validation).
 // ---------------------------------------------------------------------------
 
-describe("Phase-50 first 3-consumer same-slot composition under MARKDOWN_EXTENSIONS=arxiv,doi,pubmed", () => {
+describe("Phase-50 first 3-consumer same-slot composition under MARKDOWN_EXTENSIONS=arxiv,doi,pubmed (Phase 50 ship baseline; decoupled from PHASE_50_DEFAULT_ENABLED_SURFACES at Phase 52 per Phase-49 D-12 precedent)", () => {
   beforeEach(() => {
     // Phase-50 default: arxiv on all 4 surfaces (Phase-44); doi on all 4
     // surfaces (Phase-49); pubmed on rationale only (Phase-50 first-ship).
+    // Phase 52 cross-surface expansion changed PHASE_50_DEFAULT_ENABLED_SURFACES
+    // to all 4 surfaces; explicit Set(["rationale"]) here preserves the
+    // Phase-50 first-ship rationale-only-pubmed baseline coverage per the
+    // Phase-49 decoupled-baseline-block discipline.
     const arxiv = new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES);
     const doi = new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES);
-    const pubmed = new PubmedExtensionRegistry(PHASE_50_DEFAULT_ENABLED_SURFACES);
+    const pubmed = new PubmedExtensionRegistry(new Set(["rationale"]));
     __setRegistryForTests(new CompositeExtensionRegistry([arxiv, doi, pubmed]));
     __resetMarkdownCachesForTests();
   });
@@ -2737,13 +2746,17 @@ describe("Phase-50 first 3-consumer same-slot composition under MARKDOWN_EXTENSI
 // in project history.
 // ---------------------------------------------------------------------------
 
-describe("Phase-50 first 5-consumer composition — wikilinks,tables,arxiv,doi,pubmed maximal default", () => {
+describe("Phase-50 first 5-consumer composition — wikilinks,tables,arxiv,doi,pubmed maximal default (Phase 50 ship baseline; decoupled from PHASE_50_DEFAULT_ENABLED_SURFACES at Phase 52 per Phase-49 D-12 precedent)", () => {
   beforeEach(() => {
+    // Phase 52 cross-surface expansion mutated PHASE_50_DEFAULT_ENABLED_SURFACES
+    // to all 4 surfaces; explicit Set(["rationale"]) preserves the Phase-50
+    // first-ship max-cardinality-rationale-only-pubmed baseline coverage per
+    // the Phase-49 decoupled-baseline-block discipline.
     const wikilinks = new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES);
     const tables = new TablesExtensionRegistry(PHASE_39_DEFAULT_ENABLED_SURFACES);
     const arxiv = new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES);
     const doi = new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES);
-    const pubmed = new PubmedExtensionRegistry(PHASE_50_DEFAULT_ENABLED_SURFACES);
+    const pubmed = new PubmedExtensionRegistry(new Set(["rationale"]));
     __setRegistryForTests(new CompositeExtensionRegistry([wikilinks, tables, arxiv, doi, pubmed]));
     __resetMarkdownCachesForTests();
   });
@@ -2841,9 +2854,13 @@ describe("Phase-50 first 5-consumer composition — wikilinks,tables,arxiv,doi,p
 // deferral closure ever observed.
 // ---------------------------------------------------------------------------
 
-describe("Phase-51 pubmed alias syntax — rationale surface under default dispatch", () => {
+describe("Phase-51 pubmed alias syntax — rationale surface under default dispatch (Phase 51 ship baseline; decoupled from PHASE_50_DEFAULT_ENABLED_SURFACES at Phase 52 per Phase-49 D-12 precedent)", () => {
   beforeEach(() => {
-    __setRegistryForTests(new PubmedExtensionRegistry(PHASE_50_DEFAULT_ENABLED_SURFACES));
+    // Phase 52 cross-surface expansion mutated PHASE_50_DEFAULT_ENABLED_SURFACES
+    // to all 4 surfaces; explicit Set(["rationale"]) preserves the Phase-51
+    // alias-syntax rationale-only baseline coverage per the Phase-49
+    // decoupled-baseline-block discipline.
+    __setRegistryForTests(new PubmedExtensionRegistry(new Set(["rationale"])));
     __resetMarkdownCachesForTests();
   });
 
@@ -2929,13 +2946,19 @@ describe("Phase-51 pubmed alias syntax — rationale surface under default dispa
 // only per Phase-50 default; other surfaces remain triple-alias.
 // ---------------------------------------------------------------------------
 
-describe("Phase-51 pubmed alias under Phase-50 5-way composite — first quadruple-alias surface", () => {
+describe("Phase-51 pubmed alias under Phase-50 5-way composite — first quadruple-alias surface (Phase 51 ship baseline; decoupled from PHASE_50_DEFAULT_ENABLED_SURFACES at Phase 52 per Phase-49 D-12 precedent — rationale-only quadruple-alias state preserved here)", () => {
   beforeEach(() => {
+    // Phase 52 cross-surface expansion mutated PHASE_50_DEFAULT_ENABLED_SURFACES
+    // to all 4 surfaces; explicit Set(["rationale"]) preserves the Phase-51
+    // first-quadruple-alias-rationale-only baseline coverage per the
+    // Phase-49 decoupled-baseline-block discipline. The Phase-52 all-4-
+    // surfaces quadruple-alias state is validated in a NEW describe block
+    // added by Unit 52.2.
     const wikilinks = new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES);
     const tables = new TablesExtensionRegistry(PHASE_39_DEFAULT_ENABLED_SURFACES);
     const arxiv = new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES);
     const doi = new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES);
-    const pubmed = new PubmedExtensionRegistry(PHASE_50_DEFAULT_ENABLED_SURFACES);
+    const pubmed = new PubmedExtensionRegistry(new Set(["rationale"]));
     __setRegistryForTests(new CompositeExtensionRegistry([wikilinks, tables, arxiv, doi, pubmed]));
     __resetMarkdownCachesForTests();
   });

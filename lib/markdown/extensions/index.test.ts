@@ -163,19 +163,23 @@ describe("getExtensionRegistry (factory) — env-var dispatch", () => {
     expect(getExtensionRegistry()).toBeInstanceOf(PubmedExtensionRegistry);
   });
 
-  it("PubmedExtensionRegistry dispatch enables pubmed on rationale only Phase 50 (mirrors Phase-41 arxiv-first-ship + Phase-45 doi-first-ship demand-signal-first precedent)", () => {
-    // Phase 50 ship: Set(["rationale"]). PubMed PMID consumer first-ship
-    // pattern mirrors Phase-41 arxiv + Phase-45 doi — single-surface scope;
-    // curator paper-citation surface; cross-surface expansion to all 4
-    // surfaces deferred Phase ~54+ per the 4-phase-gap cadence
-    // (Phase 38→42, Phase 39→43, Phase 41→44, Phase 45→49 each
-    // established).
+  it("PubmedExtensionRegistry dispatch enables pubmed on ALL 4 surfaces Phase 52 (cross-surface expansion mirrors Phase-44 arxiv + Phase-49 doi expansion verbatim; fifth realization of constructor-arg-only zero-rework expansion property)", () => {
+    // Phase 50 ship through Phase-51 close: Set(["rationale"]) — single-
+    // surface scope mirroring Phase-41 arxiv-first-ship + Phase-45 doi-
+    // first-ship demand-signal-first precedent. Phase 52 expansion: all 4
+    // surfaces per ADR-0018 APPEND-D-AJ cross-surface closure (2-phase
+    // carryover Phase 50 → 52 — fastest cross-surface-expansion APPEND-
+    // deferral closure ever observed; beats prior 3-phase Phase-41 → 44
+    // record). **Fifth real-consumer-expansion realization** of the
+    // "constructor-arg-only zero-rework expansion" property — completes
+    // the per-consumer all-4-surfaces arc for ALL 5 Phase-37-framework
+    // consumers. **First 5-realization property in project history**.
     process.env["MARKDOWN_EXTENSIONS"] = "pubmed";
     const r = getExtensionRegistry();
+    expect(r.getExtensions("bio").remarkPlugins).toBeDefined();
+    expect(r.getExtensions("reviewNotes").remarkPlugins).toBeDefined();
     expect(r.getExtensions("rationale").remarkPlugins).toBeDefined();
-    expect(r.getExtensions("bio")).toEqual({});
-    expect(r.getExtensions("reviewNotes")).toEqual({});
-    expect(r.getExtensions("actionRationale")).toEqual({});
+    expect(r.getExtensions("actionRationale").remarkPlugins).toBeDefined();
   });
 
   it("returns CompositeExtensionRegistry for 'arxiv,doi,pubmed' Phase 50 (first 3-consumer same-slot composition)", () => {
@@ -183,36 +187,29 @@ describe("getExtensionRegistry (factory) — env-var dispatch", () => {
     expect(getExtensionRegistry()).toBeInstanceOf(CompositeExtensionRegistry);
   });
 
-  it("arxiv,doi,pubmed composite concatenates ALL 3 plugins in remarkPlugins on rationale (first 3-consumer same-slot Phase 50)", () => {
-    // **First 3-consumer same-slot composition in project history.** Under
-    // `MARKDOWN_EXTENSIONS=arxiv,doi,pubmed` Phase-50 default the
-    // `remarkPlugins` slot on rationale (the only surface where all 3
-    // consumers share enablement Phase 50 — arxiv + doi default-enabled on
-    // all 4 surfaces post-Phase-49; pubmed default-enabled on rationale
-    // only) carries ALL 3 plugins via `CompositeExtensionRegistry` per
-    // APPEND-D-R "concatenated across components in registration order"
-    // rule. **Tests whether the regex-disjointness-as-sole-defense
-    // discipline (Phase 48 established for 2 same-slot consumers; Phase
-    // 49 generalized to all 4 surfaces) scales to 3 same-slot consumers
-    // without architectural change** — the three regex character classes
-    // are pairwise disjoint (arxiv `\d{4}\.\d{4,5}` lacks `:`+`/`; doi
-    // `10.<reg>/<suffix>` requires `10.`+`/`; pubmed `(?:pubmed|pmid):\d`
-    // requires literal `pubmed:` or `pmid:` prefix).
+  it("arxiv,doi,pubmed composite concatenates ALL 3 plugins in remarkPlugins on ALL 4 surfaces Phase 52 (first all-4-surfaces 3-consumer same-slot composition)", () => {
+    // **First "all 4 surfaces have 3-consumer same-slot composition"
+    // state in project history.** Pre-Phase-52 only rationale carried
+    // `[arxiv, doi, pubmed]` in `remarkPlugins` under
+    // `MARKDOWN_EXTENSIONS=arxiv,doi,pubmed` (Phase-50 ship: pubmed
+    // rationale-only; arxiv + doi all-4 post-Phase-49). Phase 52 pubmed
+    // cross-surface expansion generalizes the 3-consumer same-slot
+    // composition to all 4 surfaces. **First state where regex-
+    // disjointness-as-sole-defense discipline at 3-consumer cardinality
+    // (Phase 50 established) is exercised on every surface in production
+    // default**. The three regex character classes are pairwise disjoint
+    // (arxiv `\d{4}\.\d{4,5}` lacks `:`+`/`; doi `10.<reg>/<suffix>`
+    // requires `10.`+`/`; pubmed `(?:pubmed|pmid):\d` requires literal
+    // `pubmed:` or `pmid:` prefix).
     process.env["MARKDOWN_EXTENSIONS"] = "arxiv,doi,pubmed";
     const r = getExtensionRegistry();
-    const remarkPlugins = r.getExtensions("rationale").remarkPlugins;
-    expect(remarkPlugins).toEqual([remarkLinkArxivIds, remarkLinkDoiIds, remarkLinkPubmedIds]);
-    // Other 3 surfaces: arxiv + doi only (pubmed inactive there Phase 50
-    // per rationale-only default).
-    expect(r.getExtensions("bio").remarkPlugins).toEqual([remarkLinkArxivIds, remarkLinkDoiIds]);
-    expect(r.getExtensions("reviewNotes").remarkPlugins).toEqual([
-      remarkLinkArxivIds,
-      remarkLinkDoiIds,
-    ]);
-    expect(r.getExtensions("actionRationale").remarkPlugins).toEqual([
-      remarkLinkArxivIds,
-      remarkLinkDoiIds,
-    ]);
+    for (const surface of ["bio", "reviewNotes", "rationale", "actionRationale"] as const) {
+      expect(r.getExtensions(surface).remarkPlugins).toEqual([
+        remarkLinkArxivIds,
+        remarkLinkDoiIds,
+        remarkLinkPubmedIds,
+      ]);
+    }
   });
 
   it("returns CompositeExtensionRegistry for 'wikilinks,tables,arxiv,doi,pubmed' (first 5-way Phase 50)", () => {
@@ -220,43 +217,38 @@ describe("getExtensionRegistry (factory) — env-var dispatch", () => {
     expect(getExtensionRegistry()).toBeInstanceOf(CompositeExtensionRegistry);
   });
 
-  it("5-way composite enables ALL 5 CONSUMERS on rationale Phase 50 (first 5-consumer composition under default dispatch; maximum-consumer-cardinality state)", () => {
-    // **First "5-consumer composition under default dispatch" state in
-    // project history.** Pre-Phase-50 max was 4-consumer (Phase-49
-    // maximal-activation `wikilinks,tables,arxiv,doi` with all 4
-    // consumers on all 4 surfaces). Phase 50 adds PubMed as the fifth
-    // consumer on rationale (rationale-only ship per Phase-41/45 first-
-    // ship demand-signal-first precedent).
+  it("5-way composite enables ALL 5 CONSUMERS on ALL 4 SURFACES Phase 52 (first all-4-surfaces 5-consumer composition; maximum-consumer-cardinality state generalized to all surfaces)", () => {
+    // **First "all 4 surfaces with 5-consumer composition under default
+    // dispatch" state in project history.** Phase 50 ship first-realized
+    // the 5-consumer composition on rationale only (other 3 surfaces
+    // carried 4 consumers per pubmed rationale-only default). Phase 52
+    // pubmed cross-surface expansion generalizes the 5-consumer
+    // composition to all 4 surfaces — **maximum-consumer-cardinality
+    // state generalized to all surfaces**.
     //
-    // Composition matrix at Phase-50 5-way default:
-    //   bio:             wikilinks(rehype) + tables(schema) + [arxiv, doi](remark) — 4 consumers (Phase-49 baseline)
-    //   reviewNotes:     wikilinks(rehype) + tables(schema) + [arxiv, doi](remark) — 4 consumers
-    //   rationale:       wikilinks(rehype) + tables(schema) + [arxiv, doi, pubmed](remark) — 5 consumers ← maximum cardinality
-    //   actionRationale: wikilinks(rehype) + tables(schema) + [arxiv, doi](remark) — 4 consumers
+    // Composition matrix at Phase-52 5-way default:
+    //   bio:             wikilinks(rehype) + tables(schema) + [arxiv, doi, pubmed](remark) — 5 consumers + quadruple-alias
+    //   reviewNotes:     wikilinks(rehype) + tables(schema) + [arxiv, doi, pubmed](remark) — 5 consumers + quadruple-alias
+    //   rationale:       wikilinks(rehype) + tables(schema) + [arxiv, doi, pubmed](remark) — Phase-50 baseline preserved; quadruple-alias
+    //   actionRationale: wikilinks(rehype) + tables(schema) + [arxiv, doi, pubmed](remark) — 5 consumers + quadruple-alias
     //
     // Conflict-free per APPEND-D-R because (a) wikilinks + tables +
     // {arxiv, doi, pubmed} each occupy distinct slots cross-pair; (b)
     // within `remarkPlugins` the arxiv-doi-pubmed triple is collision-
-    // free via regex-disjointness-as-sole-defense discipline (3-consumer
-    // scaling validation).
+    // free via regex-disjointness-as-sole-defense discipline at 3-
+    // consumer cardinality (Phase 50 established) exercised on every
+    // surface.
     process.env["MARKDOWN_EXTENSIONS"] = "wikilinks,tables,arxiv,doi,pubmed";
     const r = getExtensionRegistry();
-    // rationale: 5-consumer composition (3 plugins in remarkPlugins).
-    expect(r.getExtensions("rationale").rehypePlugins).toBeDefined();
-    expect(r.getExtensions("rationale").schemaOverrides).toBeDefined();
-    expect(r.getExtensions("rationale").remarkPlugins).toEqual([
-      remarkLinkArxivIds,
-      remarkLinkDoiIds,
-      remarkLinkPubmedIds,
-    ]);
-    // Other 3 surfaces: 4-consumer composition (2 plugins in remarkPlugins;
-    // pubmed inactive there per rationale-only default).
-    for (const surface of ["bio", "reviewNotes", "actionRationale"] as const) {
+    // All 4 surfaces: 5-consumer composition with 3-consumer same-slot
+    // in remark.
+    for (const surface of ["bio", "reviewNotes", "rationale", "actionRationale"] as const) {
       expect(r.getExtensions(surface).rehypePlugins).toBeDefined();
       expect(r.getExtensions(surface).schemaOverrides).toBeDefined();
       expect(r.getExtensions(surface).remarkPlugins).toEqual([
         remarkLinkArxivIds,
         remarkLinkDoiIds,
+        remarkLinkPubmedIds,
       ]);
     }
   });
