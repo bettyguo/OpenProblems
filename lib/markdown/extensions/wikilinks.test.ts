@@ -2,11 +2,13 @@ import rehypeStringify from "rehype-stringify";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import { unified } from "unified";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
+  DEFAULT_BUILD_HREF,
   PHASE_38_DEFAULT_ENABLED_SURFACES,
   rehypeResolveWikilinks,
+  type ResolveWikilinksOptions,
   WikilinkExtensionRegistry,
 } from "./wikilinks";
 
@@ -248,5 +250,121 @@ describe("WikilinkExtensionRegistry — class behavior", () => {
     expect(PHASE_38_DEFAULT_ENABLED_SURFACES.has("rationale")).toBe(true);
     expect(PHASE_38_DEFAULT_ENABLED_SURFACES.has("actionRationale")).toBe(true);
     expect(PHASE_38_DEFAULT_ENABLED_SURFACES.size).toBe(4);
+  });
+});
+
+// =============================================================================
+// Phase-62 plugin parameterization (Unit 62.1).
+//
+// Closes ADR-0018 APPEND-D-L item 6 (Plugin parameterization) at 24-phase
+// carryover (Phase 38 → 62) — NEW LONGEST ABSOLUTE APPEND-DEFERRAL CLOSURE
+// RECORD (extends Phase-61 22-phase record by 2 phases). Introduces the
+// **plugin-option axis** as the third principal axis of zero-rework
+// framework extension. Default-fallback DEFAULT_BUILD_HREF preserves
+// Phase-38-through-Phase-61 behavior verbatim under bare-plugin invocation.
+// Prerequisite for Phase 63 cross-entity wikilinks (APPEND-D-L item 3).
+// =============================================================================
+
+/**
+ * Phase-62 variant of `runWikilinkPipeline` that exercises the tuple-form
+ * plugin invocation `unified().use([rehypeResolveWikilinks, options])`.
+ * Bypasses sanitize + strip-unsafe-hrefs like the bare-form pipeline above
+ * — the plugin's behavior with custom options can be verified directly.
+ */
+function runWikilinkPipelineWithOptions(md: string, options: ResolveWikilinksOptions): string {
+  return String(
+    unified()
+      .use(remarkParse)
+      .use(remarkRehype)
+      .use(rehypeResolveWikilinks, options)
+      .use(rehypeStringify)
+      .processSync(md),
+  );
+}
+
+describe("Phase-62 plugin parameterization — buildHref option behavior", () => {
+  it("default-call (no options) produces Phase-38 hardcoded /problems/{slug} href (backwards-compat)", () => {
+    // Regression guard: the bare-plugin invocation
+    // `.use(rehypeResolveWikilinks)` must continue producing the Phase-38
+    // hardcoded shape verbatim — this is the load-bearing default that
+    // `WikilinkExtensionRegistry.getExtensions(...)` relies on. If this
+    // assertion regresses, every existing call site breaks.
+    expect(runWikilinkPipeline("[[scalable-oversight]]")).toBe(
+      '<p><a href="/problems/scalable-oversight">scalable-oversight</a></p>',
+    );
+  });
+
+  it("custom buildHref produces custom href in emitted <a>", () => {
+    expect(
+      runWikilinkPipelineWithOptions("[[arxiv-2401-12345]]", {
+        buildHref: (slug) => `/papers/${slug}`,
+      }),
+    ).toBe('<p><a href="/papers/arxiv-2401-12345">arxiv-2401-12345</a></p>');
+  });
+
+  it("custom buildHref invoked exactly once per matched slug", () => {
+    const builder = vi.fn((slug: string) => `/x/${slug}`);
+    runWikilinkPipelineWithOptions("[[a]] and [[b]] and [[a]]", {
+      buildHref: builder,
+    });
+    // Three slug matches → three invocations (no caching, no double-call;
+    // the plugin invokes builder once per regex match).
+    expect(builder).toHaveBeenCalledTimes(3);
+    expect(builder).toHaveBeenNthCalledWith(1, "a");
+    expect(builder).toHaveBeenNthCalledWith(2, "b");
+    expect(builder).toHaveBeenNthCalledWith(3, "a");
+  });
+
+  it("custom buildHref orthogonal to Phase-46 alias-syntax — href uses builder, display preserves alias", () => {
+    expect(
+      runWikilinkPipelineWithOptions("[[scalable-oversight|the oversight problem]]", {
+        buildHref: (slug) => `https://example.org/problems/${slug}`,
+      }),
+    ).toBe(
+      '<p><a href="https://example.org/problems/scalable-oversight">' +
+        "the oversight problem</a></p>",
+    );
+  });
+
+  it('custom buildHref returning empty string emits href="" (no special handling — trusts builder)', () => {
+    // Document the contract: the framework does NOT validate, sanitize, or
+    // reject builder return values. Builders are responsible for producing
+    // safe URLs — see ResolveWikilinksOptions.buildHref docstring.
+    const html = runWikilinkPipelineWithOptions("[[a]]", {
+      buildHref: () => "",
+    });
+    expect(html).toContain('<a href="">a</a>');
+  });
+
+  it("custom buildHref can dispatch on slug content (slug-prefix-driven routing)", () => {
+    // Demonstrates the Phase-63 cross-entity-wikilinks use case: a builder
+    // that inspects slug shape and routes to a different entity-type URL.
+    // Phase 63 will introduce a richer entity-type disambiguation syntax;
+    // Phase 62 ships the affordance that makes that future work tractable.
+    const html = runWikilinkPipelineWithOptions(
+      "[[paper-arxiv-2401]] and [[author-jane-doe]] and [[plain-slug]]",
+      {
+        buildHref: (slug) => {
+          if (slug.startsWith("paper-")) return `/papers/${slug.slice("paper-".length)}`;
+          if (slug.startsWith("author-")) return `/authors/${slug.slice("author-".length)}`;
+          return `/problems/${slug}`;
+        },
+      },
+    );
+    expect(html).toContain('<a href="/papers/arxiv-2401">paper-arxiv-2401</a>');
+    expect(html).toContain('<a href="/authors/jane-doe">author-jane-doe</a>');
+    expect(html).toContain('<a href="/problems/plain-slug">plain-slug</a>');
+  });
+
+  it("DEFAULT_BUILD_HREF is byte-identical to the Phase-38 hardcoded shape", () => {
+    // The default-fallback constant is the load-bearing backwards-
+    // compatibility anchor. Asserts the shape directly (no plugin
+    // involvement) so a future refactor that re-routes the default through
+    // a different code path still has to satisfy this property.
+    expect(DEFAULT_BUILD_HREF("scalable-oversight")).toBe("/problems/scalable-oversight");
+    expect(DEFAULT_BUILD_HREF("a")).toBe("/problems/a");
+    expect(DEFAULT_BUILD_HREF("multi-word-slug-with-digits-123")).toBe(
+      "/problems/multi-word-slug-with-digits-123",
+    );
   });
 });

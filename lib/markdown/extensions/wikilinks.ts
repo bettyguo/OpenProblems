@@ -13,7 +13,7 @@ import type { MarkdownExtensionRegistry, MarkdownExtensionSet, MarkdownSurface }
  * Walks the post-sanitize HAST tree, finds text-node substrings
  * matching the kebab-case `[[slug]]` pattern (optionally with
  * `|display-text` alias suffix), and splice-replaces each match
- * with an `<a href="/problems/{slug}">{display ?? slug}</a>`
+ * with an `<a href={buildHref(slug)}>{display ?? slug}</a>`
  * element node. Slug regex `[a-z0-9-]+` is restrictive by
  * design — the regex IS the validation per APPEND-D-I XSS-
  * safety contract. Anything not matching falls through as
@@ -27,20 +27,42 @@ import type { MarkdownExtensionRegistry, MarkdownExtensionSet, MarkdownSurface }
  * boundary). When alias present, the emitted `<a>` element's
  * text content is the display string; when absent (or empty
  * after `|`), the text content falls back to the slug. The
- * `href` always points to `/problems/{slug}` — only the
- * displayed anchor text varies. Display text becomes the
- * text-node content of `<a>` (NOT injected HTML); rehype-
- * stringify's text-node escaping handles HTML-special
+ * `href` resolves via `buildHref(slug)` — only the displayed
+ * anchor text varies under default `buildHref`. Display text
+ * becomes the text-node content of `<a>` (NOT injected HTML);
+ * rehype-stringify's text-node escaping handles HTML-special
  * characters (e.g., `&` → `&amp;`) automatically. **No new XSS
  * surface** introduced — the text-node escape is the line of
  * defense.
  *
+ * **Phase 62 plugin parameterization** (since Unit 62.1; closes
+ * ADR-0018 APPEND-D-L item 6 at 24-phase carryover — NEW
+ * LONGEST ABSOLUTE APPEND-DEFERRAL CLOSURE RECORD): plugin
+ * signature evolves from `Plugin<[], Root>` to
+ * `Plugin<[ResolveWikilinksOptions?], Root>`. The new optional
+ * `buildHref?: (slug: string) => string` option lets consumers
+ * inject a non-default URL-builder; default-fallback
+ * `DEFAULT_BUILD_HREF` (= `(slug) => "/problems/${slug}"`)
+ * preserves Phase-38-through-Phase-61 behavior verbatim under
+ * bare-plugin invocation. **Third principal axis of zero-rework
+ * framework extension introduced** — plugin-option axis joins
+ * registry-state axis (Phase 38+) + plugin-body axis (Phase
+ * 46+). **Prerequisite for Phase 63 cross-entity wikilinks**
+ * (APPEND-D-L item 3). XSS-safety contract preserved: the
+ * captured slug remains constrained to `[a-z0-9-]+` per
+ * APPEND-D-I; builders that interpolate the slug into a URL
+ * preserve the XSS-safety contract automatically. Builders
+ * that produce absolute URLs to untrusted hosts would bypass
+ * `rehypeStripUnsafeHrefs` (which runs BEFORE wikilinks per
+ * APPEND-D-D); curator-facing builder configuration is a
+ * **Phase 63+** concern.
+ *
  * Folds AFTER the default `rehype-sanitize` +
  * `rehypeStripUnsafeHrefs` steps per Phase-37 framework's
  * APPEND-D-D plugin-order-after-default discipline. The
- * relative `/problems/{slug}` href bypasses the strip step
- * because the wikilink plugin adds the link AFTER that step
- * runs.
+ * default-built relative `/problems/{slug}` href bypasses the
+ * strip step because the wikilink plugin adds the link AFTER
+ * that step runs.
  *
  * Server-only: imported by `WikilinkExtensionRegistry` returned
  * from `getExtensionRegistry()` per the Phase-38 env-var
@@ -51,55 +73,110 @@ import type { MarkdownExtensionRegistry, MarkdownExtensionSet, MarkdownSurface }
 
 const WIKILINK_PATTERN = /\[\[([a-z0-9-]+)(?:\|([^\]\n]+))?\]\]/g;
 
-export const rehypeResolveWikilinks: Plugin<[], Root> = () => (tree) => {
-  visit(tree, "text", (node, index, parent) => {
-    if (typeof node.value !== "string") return;
-    if (!parent || index === undefined) return;
-    if (!node.value.includes("[[")) return;
+/**
+ * Default href-builder for `rehypeResolveWikilinks` per
+ * ADR-0018 D-G APPEND-D-AT (Phase 62 Unit 62.1). Receives the
+ * kebab-case slug captured from `[[slug]]` or `[[slug|display]]`
+ * syntax; returns the absolute path `/problems/{slug}`.
+ *
+ * Byte-identical to the Phase-38-through-Phase-61 hardcoded
+ * shape `properties: { href: `/problems/${slug}` }`. Hoisted as
+ * an exported constant so tests can assert byte-identity
+ * against the Phase-38 baseline without re-implementing the
+ * builder.
+ */
+export const DEFAULT_BUILD_HREF = (slug: string): string => `/problems/${slug}`;
 
-    const text = node.value;
-    WIKILINK_PATTERN.lastIndex = 0;
+/**
+ * Optional plugin-option interface for `rehypeResolveWikilinks`
+ * per ADR-0018 D-G APPEND-D-AT (Phase 62 Unit 62.1; closes
+ * APPEND-D-L item 6 at 24-phase carryover).
+ *
+ * Phase 62 introduces the **plugin-option axis** as the third
+ * principal axis of zero-rework framework extension (after the
+ * Phase-38+ registry-state axis and Phase-46+ plugin-body
+ * axis). Future Phase-63 cross-entity wikilinks consumer
+ * (APPEND-D-L item 3) will pass a `buildHref` that inspects
+ * slug shape / prefix to route per entity-type (paper / author
+ * / institution / problem).
+ */
+export interface ResolveWikilinksOptions {
+  /**
+   * Optional href-builder. Receives the kebab-case slug
+   * captured from `[[slug]]` or `[[slug|display]]` syntax;
+   * returns the absolute or relative URL string to use as the
+   * emitted `<a href="...">` value.
+   *
+   * Defaults to `DEFAULT_BUILD_HREF` (= `(slug) =>
+   * "/problems/${slug}"`) — byte-identical to the Phase
+   * 38-through-Phase-61 hardcoded shape.
+   *
+   * **XSS-safety contract**: the captured slug is constrained
+   * to `[a-z0-9-]+` per APPEND-D-I; builders that interpolate
+   * the slug into a URL preserve the XSS-safety contract
+   * automatically. Builders that produce absolute URLs to
+   * untrusted hosts would bypass the Phase-37 framework's
+   * `rehypeStripUnsafeHrefs` step (which runs BEFORE this
+   * plugin per APPEND-D-D); curator-facing builder
+   * configuration is therefore a **Phase 63+** concern, NOT a
+   * Phase 62 affordance.
+   */
+  buildHref?: (slug: string) => string;
+}
 
-    const newNodes: Array<Text | Element> = [];
-    let cursor = 0;
-    let match: RegExpExecArray | null;
+export const rehypeResolveWikilinks: Plugin<[ResolveWikilinksOptions?], Root> =
+  (options = {}) =>
+  (tree) => {
+    const buildHref = options.buildHref ?? DEFAULT_BUILD_HREF;
 
-    while ((match = WIKILINK_PATTERN.exec(text)) !== null) {
-      const matchStart = match.index;
-      const slug = match[1];
-      const alias = match[2];
-      if (slug === undefined) continue;
+    visit(tree, "text", (node, index, parent) => {
+      if (typeof node.value !== "string") return;
+      if (!parent || index === undefined) return;
+      if (!node.value.includes("[[")) return;
 
-      if (matchStart > cursor) {
-        newNodes.push({ type: "text", value: text.slice(cursor, matchStart) });
+      const text = node.value;
+      WIKILINK_PATTERN.lastIndex = 0;
+
+      const newNodes: Array<Text | Element> = [];
+      let cursor = 0;
+      let match: RegExpExecArray | null;
+
+      while ((match = WIKILINK_PATTERN.exec(text)) !== null) {
+        const matchStart = match.index;
+        const slug = match[1];
+        const alias = match[2];
+        if (slug === undefined) continue;
+
+        if (matchStart > cursor) {
+          newNodes.push({ type: "text", value: text.slice(cursor, matchStart) });
+        }
+
+        // Display falls back to slug when alias absent. Empty alias
+        // `[[slug|]]` cannot match (display class is `+`, requiring
+        // at least one char); curator-authored whitespace in alias
+        // preserved verbatim (no auto-trim Phase 46).
+        const display = alias ?? slug;
+
+        newNodes.push({
+          type: "element",
+          tagName: "a",
+          properties: { href: buildHref(slug) },
+          children: [{ type: "text", value: display }],
+        });
+
+        cursor = matchStart + match[0].length;
       }
 
-      // Display falls back to slug when alias absent. Empty alias
-      // `[[slug|]]` cannot match (display class is `+`, requiring
-      // at least one char); curator-authored whitespace in alias
-      // preserved verbatim (no auto-trim Phase 46).
-      const display = alias ?? slug;
+      if (newNodes.length === 0) return;
 
-      newNodes.push({
-        type: "element",
-        tagName: "a",
-        properties: { href: `/problems/${slug}` },
-        children: [{ type: "text", value: display }],
-      });
+      if (cursor < text.length) {
+        newNodes.push({ type: "text", value: text.slice(cursor) });
+      }
 
-      cursor = matchStart + match[0].length;
-    }
-
-    if (newNodes.length === 0) return;
-
-    if (cursor < text.length) {
-      newNodes.push({ type: "text", value: text.slice(cursor) });
-    }
-
-    parent.children.splice(index, 1, ...(newNodes as ElementContent[]));
-    return index + newNodes.length;
-  });
-};
+      parent.children.splice(index, 1, ...(newNodes as ElementContent[]));
+      return index + newNodes.length;
+    });
+  };
 
 /**
  * `MarkdownExtensionRegistry` implementation that enables the
@@ -129,10 +206,18 @@ export const rehypeResolveWikilinks: Plugin<[], Root> = () => (tree) => {
  * Per-surface differentiation remains the framework's central
  * value — the class is generic over the enabled set.
  *
- * Phase 43+ may add cross-entity wikilinks (`[[paper-id]]` /
- * `[[author-slug]]` / `[[institution-slug]]`) via plugin
- * parameterization (Phase-38 APPEND-D-L items 3 + 6); the
- * expansion is a plugin-option change (NOT a registry rework).
+ * Phase 62 ships the **plugin parameterization affordance**
+ * (`ResolveWikilinksOptions.buildHref` — closes APPEND-D-L
+ * item 6 at 24-phase carryover); the registry continues to
+ * return `{ rehypePlugins: [rehypeResolveWikilinks] }` (bare
+ * plugin, no tuple form) so the default-fallback
+ * `DEFAULT_BUILD_HREF` preserves Phase-38-through-Phase-61
+ * behavior verbatim. **Phase 63+** cross-entity wikilinks
+ * (`[[paper-id]]` / `[[author-slug]]` / `[[institution-slug]]`;
+ * APPEND-D-L item 3) will compose a non-default registry
+ * variant via tuple-form invocation `[rehypeResolveWikilinks,
+ * { buildHref }]` — pure plugin-option change, NO registry
+ * rework required.
  */
 export class WikilinkExtensionRegistry implements MarkdownExtensionRegistry {
   private readonly enabledSurfaces: ReadonlySet<MarkdownSurface>;

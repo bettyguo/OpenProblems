@@ -4979,6 +4979,251 @@ ledger-closure streak.
 - **ADR-0025 concrete content-moderation provider** — Phase
   62+; not autonomous-tractable.
 
+#### EXTENDED Phase 62 Unit 62.1 — APPEND-D-AT plugin parameterization for wikilink-href-builder (first framework-refactor-only phase in project history; third principal axis of zero-rework framework extension introduced — plugin-option axis joins registry-state + plugin-body axes; first state where the framework has three principal axes of zero-rework extension; closes APPEND-D-L item 6 at 24-phase carryover — NEW LONGEST ABSOLUTE APPEND-DEFERRAL CLOSURE EVER OBSERVED (extends Phase-61 22-phase record by 2 phases — second consecutive phase to set the absolute-record); D-L becomes second D-clause with 3-of-6 enumerated items closed; first state where TWO D-clauses have 3+ items closed each; wikilinks consumer gains 3rd evolution post-first-ship; first state where THREE consumers have 3+ evolutions each; first phase to ship a framework affordance ahead of curator demand signal — plugin-option-ready-before-consumer-demand discipline established; 21-phase APPEND-deferral closure cadence; 29th D-G APPEND record extends; twentieth two-letter slot D-AT; fifty-third NON-§13 phase; prerequisite for Phase 63 cross-entity wikilinks (APPEND-D-L item 3))
+
+Phase 62 extends `rehypeResolveWikilinks` with an optional plugin
+option `buildHref?: (slug: string) => string` and a hoisted
+default-fallback constant `DEFAULT_BUILD_HREF` that preserves the
+Phase-38-through-Phase-61 hardcoded `/problems/${slug}` shape
+byte-identically. **First framework-refactor-only phase in project
+history** — Phase 38-61 each shipped at least one of: a new
+realization of an existing phase-shape pattern, a new consumer, a
+new slot kind, a new phase-shape pattern, OR an APPEND-deferral
+closure on a non-refactor item. Phase 62 ships ONLY a plugin-
+signature refactor that preserves Phase-38-through-Phase-61
+behavior verbatim under default-call invocation. `WikilinkExtensionRegistry`
+class, `PHASE_38_DEFAULT_ENABLED_SURFACES` constant, factory
+dispatch arm, and `WIKILINK_PATTERN` regex all UNCHANGED.
+
+**APPEND-D-AT plugin parameterization shape**:
+
+```ts
+// Before (Phase 38 ship through Phase-61 close):
+export const rehypeResolveWikilinks: Plugin<[], Root> = () => (tree) => {
+  // ...
+  newNodes.push({
+    type: "element",
+    tagName: "a",
+    properties: { href: `/problems/${slug}` },  // hardcoded
+    children: [{ type: "text", value: display }],
+  });
+  // ...
+};
+
+// After (Phase 62 ship):
+export const DEFAULT_BUILD_HREF = (slug: string): string => `/problems/${slug}`;
+
+export interface ResolveWikilinksOptions {
+  buildHref?: (slug: string) => string;
+}
+
+export const rehypeResolveWikilinks: Plugin<[ResolveWikilinksOptions?], Root> =
+  (options = {}) => (tree) => {
+    const buildHref = options.buildHref ?? DEFAULT_BUILD_HREF;
+    // ...
+    newNodes.push({
+      type: "element",
+      tagName: "a",
+      properties: { href: buildHref(slug) },  // parameterized
+      children: [{ type: "text", value: display }],
+    });
+    // ...
+  };
+```
+
+**Default-fallback preserves Phase 38-61 behavior verbatim**: when
+`WikilinkExtensionRegistry.getExtensions(...)` returns
+`{ rehypePlugins: [rehypeResolveWikilinks] }` (no tuple-form
+options), the plugin invocation `() => (tree) => ...` receives
+`options = {}` and the `buildHref ?? DEFAULT_BUILD_HREF`
+coalescing selects the Phase-38 hardcoded shape. **Zero behavior
+change for any existing call site**. `DEFAULT_BUILD_HREF` is
+hoisted as an exported constant so tests can assert byte-identity
+against the Phase-38 baseline without re-implementing the builder
+inline.
+
+**Third principal axis of zero-rework framework extension
+introduced**. Pre-Phase-62, the framework supported two principal
+axes of zero-rework extension: (a) **registry-state axis** (Phase
+38+; constructor-arg evolution of `PHASE_NN_DEFAULT_ENABLED_SURFACES`
+— 7 realizations Phase 42 + 43 + 44 + 49 + 52 + 56 + 59), (b)
+**plugin-body axis** (Phase 46+; in-body regex evolution — 7
+realizations Phase 46 + 47 + 48 + 51 + 53 + 55 + 60). Phase 62
+introduces **plugin-option axis** as a third axis: plugin-
+signature evolution that callers exercise via tuple-form
+`.use([plugin, options])` invocation. **First state where the
+framework has three principal axes of zero-rework extension** in
+project history.
+
+**Plugin-option-ready-before-consumer-demand discipline
+established**. Phase 57 / Phase 61 schema-ready-before-plugin
+shipped schema state ahead of any pipeline emitting the schema'd
+content (forward-compatibility within a single value). Phase 62
+ships a plugin-option signature affordance ahead of any consumer
+using the option (forward-compatibility within plugin signature).
+**Plugin-option-ready-before-consumer-demand** discipline
+established — generalizes the schema-ready-before-plugin
+discipline ONE LAYER UP to plugin signature level. **First phase
+to ship a framework affordance ahead of curator demand signal**
+in project history.
+
+**Wikilinks consumer gains 3rd evolution post-first-ship** (Phase
+42 cross-surface + Phase 46 alias + Phase 62 plugin
+parameterization). **First state where THREE consumers have 3+
+evolutions each** in project history (arxiv was first via Phase
+44 cross-surface + Phase 47 alias + Phase 53 legacy = 3
+evolutions; tables was second via Phase 43 cross-surface + Phase
+57 attributes + Phase 61 caption = 3 evolutions; wikilinks joins
+at Phase 62). Confirms the 3-evolution depth as a generalized
+framework-evolution shape across the consumer roster.
+
+**Backwards-compatibility tests** in `wikilinks.test.ts` exercise
+the plugin signature evolution under all combinations of
+`buildHref` presence × Phase-46 alias-syntax × multi-match input:
+
+1. Default-call (no options) produces Phase-38 hardcoded
+   `/problems/{slug}` href — backwards-compat regression guard.
+2. Custom `buildHref` produces custom href in emitted `<a>`.
+3. Custom `buildHref` invoked exactly once per matched slug (spy-
+   verified; 3 slugs → 3 invocations).
+4. Custom `buildHref` orthogonal to Phase-46 alias-syntax — href
+   uses builder, display preserves alias.
+5. Custom `buildHref` returning empty string emits `href=""` (no
+   special handling — trusts builder; contract documented).
+6. Custom `buildHref` can dispatch on slug content (slug-prefix-
+   driven routing; demonstrates Phase-63 cross-entity use case).
+7. `DEFAULT_BUILD_HREF` byte-identical to Phase-38 hardcoded
+   shape — direct invocation, no plugin involvement; load-bearing
+   anchor.
+
+**XSS-safety contract preserved**: the captured slug remains
+constrained to `[a-z0-9-]+` per APPEND-D-I — the regex IS the
+validation. Builders that interpolate the slug into a URL
+preserve the XSS-safety contract automatically. Builders that
+produce absolute URLs to untrusted hosts would bypass
+`rehypeStripUnsafeHrefs` (which runs BEFORE wikilinks per
+APPEND-D-D); curator-facing builder configuration is therefore a
+**Phase 63+** concern, NOT a Phase 62 affordance.
+
+**Composition preserved**: `CompositeExtensionRegistry`
+plugin-option axis is per-plugin-instance, not composition-level.
+`rehypePlugins` concatenation per APPEND-D-R is unchanged. The
+registry continues to return `rehypePlugins:
+[rehypeResolveWikilinks]` (bare plugin, no tuple form) — the
+composition matrix at Phase 62 default is UNCHANGED from Phase 61
+close (wikilinks default-call on all 4 surfaces; default
+`buildHref = DEFAULT_BUILD_HREF`).
+
+**Closes APPEND-D-L item 6** (Plugin parameterization — Phase 38
+enumerated as a deferral at wikilinks first-ship) at **24-phase
+carryover** (Phase 38 → Phase 62). **NEW LONGEST ABSOLUTE
+APPEND-DEFERRAL CLOSURE EVER OBSERVED** — extends Phase-61
+22-phase record (Phase 39 → 61 D-Q item 4 `<caption>` element) by
+2 phases. **Second consecutive phase to set the absolute-record**
+— first 2-consecutive-phase absolute-record-extension streak in
+project history. APPEND-D-L closure trajectory:
+- Item 1 (cross-surface) → Phase 42 = 4-phase carryover.
+- Item 2 (alias) → Phase 46 = 8-phase carryover.
+- Item 6 (plugin parameterization) → Phase 62 = **24-phase
+  carryover (new record)**.
+- Items 3 (cross-entity), 4 (`<a class="wikilink">` styling), 5
+  (404 handling) → still deferred (Phase 63+).
+
+**D-L becomes second D-clause with 3-of-6 enumerated items
+closed** within the cadence in project history. **First state
+where TWO D-clauses have 3+ items closed each** (D-Q at Phase 61
+with items 1 + 3 + 4 closed; D-L at Phase 62 with items 1 + 2 +
+6 closed). Confirms 3-item depth as a generalized framework-
+evolution shape for multi-item D-clauses.
+
+**Twenty-first prep-/APPEND-doc-level deferral closed by a later
+phase**: Phase 42 → 38 D-L item 1; Phase 43 → 39 D-Q item 2;
+Phase 44 → 41 D-Y item 1; Phase 45 → 41 D-Y item 4; Phase 46 →
+38 D-L item 2; Phase 47 → 41 D-Y item 5; Phase 48 → 45 D-AC item
+2; Phase 49 → 45 D-AC cross-surface; Phase 50 → 45 D-AC PubMed
+PMID item; Phase 51 → new Phase-50 deferral; Phase 52 → 50 D-AH
+PubMed cross-surface; Phase 53 → 41 D-Y item 2; Phase 54 → 45
+D-AC ORCID item; Phase 55 → new Phase-54 deferral; Phase 56 →
+54 D-AL ORCID cross-surface item; Phase 57 → 39 D-Q item 3
+Table-specific attributes; Phase 58 → 54 D-AL bioRxiv preprint
+consumer item; Phase 59 → 58 D-AP bioRxiv cross-surface item;
+Phase 60 → 58 D-AP bioRxiv alias item; Phase 61 → 39 D-Q item 4
+`<caption>` element; **Phase 62 → 38 D-L item 6 Plugin
+parameterization**. **APPEND-deferral closure cadence sustained
+21 phases** — **new longest sustained cadence in project
+history** (extends Phase-61 record 20 → 21). **First 21-phase
+APPEND-deferral closure run**.
+
+**Twenty-ninth APPEND on ADR-0018 D-G** — extends the
+**first-ADR-D-clause-with-most-APPENDs record** from 28 → 29
+(Phase 18 + 27 + 29 + 37 + 38 + 39 + 40 + 41 + 42 + 43 + 44
++ 45 + 46 + 47 + 48 + 49 + 50 + 51 + 52 + 53 + 54 + 55 + 56
++ 57 + 58 + 59 + 60 + 61 + **62**).
+
+**Twentieth two-letter APPEND letter D-AT** (after Phase-43
+D-AA + Phase-44 D-AB + Phase-45 D-AC + Phase-46 D-AD + Phase-
+47 D-AE + Phase-48 D-AF + Phase-49 D-AG + Phase-50 D-AH +
+Phase-51 D-AI + Phase-52 D-AJ + Phase-53 D-AK + Phase-54
+D-AL + Phase-55 D-AM + Phase-56 D-AN + Phase-57 D-AO + Phase-
+58 D-AP + Phase-59 D-AQ + Phase-60 D-AR + Phase-61 D-AS).
+Excel-spreadsheet column convention sustained.
+
+**Twenty-seventh consecutive no-new-ADR phase** (Phase 36-62;
+extends Phase-61 record 26 → 27). **Thirty-second consecutive
+phase without new B category** (Phase 31-62; extends Phase-61
+record 31 → 32). **Fifty-third NON-§13 phase** (extends
+Phase-61 half-century milestone to 53); first 53-phase
+ledger-closure streak.
+
+**Phase 63+ deferrals** (Phase-62 plugin-parameterization scope
+cap):
+
+- **Cross-entity wikilinks** (APPEND-D-L item 3 carries) —
+  Phase 63+ rank 1; now unblocked by Phase 62 plugin
+  parameterization.
+- **`<a class="wikilink">` styling** (APPEND-D-L item 4
+  carries) — Phase 63+; deferred pending framework decision on
+  multi-source schemaOverrides support (CompositeExtensionRegistry
+  throws on conflict per APPEND-D-C).
+- **404 handling for unresolved wikilinks** (APPEND-D-L item 5
+  carries) — Phase 63+.
+- **Surface-specific table schemas** (APPEND-D-Q item 6 — last
+  remaining D-Q deferral) — Phase 63+; closure would make D-Q
+  the first D-clause with ALL enumerated items closed.
+- **Bare arxiv / DOI / PubMed / ORCID / bioRxiv IDs without
+  prefix** — Phase 63+.
+- **Legacy numeric-only bioRxiv IDs** (pre-2019 format) —
+  Phase 63+.
+- **dx.doi.org legacy host parsing** (APPEND-D-AC carries) —
+  Phase 63+.
+- **Stricter trailing-lookahead for trailing-period DOIs**
+  (APPEND-D-AC carries) — Phase 63+.
+- **Paper-card hover-preview** (APPEND-D-Y item 6 carries) —
+  Phase 63+.
+- **Auto-trim of alias display whitespace** — Phase 63+.
+- **Empty-alias fallback unification** across consumers —
+  Phase 63+.
+- **A future plugin that EMITS `<caption>` or
+  `colSpan`/`rowSpan`/`scope`** to realize the Phase-57 /
+  Phase-61 schema-ready-before-plugin states — Phase 63+.
+- **Curator-facing builder configuration** (locale-prefixed
+  paths, curator-overridable href builders, relative-path
+  variants) — Phase 63+; would require XSS-audit per-builder
+  + locale-aware path discipline.
+- **OSF preprint consumer** — eighth concrete consumer —
+  Phase 63+.
+- **6th-or-later `remarkPlugins` consumer beyond arxiv + doi
+  + pubmed + orcid + biorxiv** — Phase 63+.
+- **2nd `rehypePlugins` consumer beyond wikilinks** — Phase
+  63+.
+- **2nd `schemaOverrides` consumer beyond tables** — Phase
+  63+ (requires framework refactor per the composite-registry
+  single-source rule).
+- **3rd regex evolution on `remarkLinkArxivIds`** — Phase
+  63+.
+- **ADR-0025 concrete content-moderation provider** — Phase
+  63+; not autonomous-tractable.
+
 ### D-H. Phase 18+ deferrals
 
 Phase 17 ships MINIMAL markdown surface. Deferred to Phase 18+:
