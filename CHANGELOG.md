@@ -2470,6 +2470,115 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 54 — Community-adjacent surfaces (**forty-fifth NON-§13 phase**: ORCID auto-link consumer `orcid:NNNN-NNNN-NNNN-NNNN` via NEW `OrcidExtensionRegistry` + `MARKDOWN_EXTENSIONS=orcid` env-var dispatch arm; **sixth concrete Phase-37-framework consumer**; **first 4th-`remarkPlugins` consumer** beyond arxiv + doi + pubmed; **first 4-consumer same-slot composition** under composition; **first 6-consumer composition under default dispatch** — new maximum-consumer-cardinality state; **7th single-value arm** (first expansion of recognized-arms set since Phase 50); **regex-disjointness-as-sole-defense discipline scales from 3 to 4 same-slot consumers**; closes ADR-0018 APPEND-D-AC ORCID auto-link consumer item at **9-phase carryover** (Phase 45 → 54) — second-longest absolute APPEND-deferral closure ever observed; APPEND-D-AL twelfth two-letter slot; anticipated 5 numbered units; 49th "Continue" override invoked)
 
+#### Unit 54.4 — Phase 54 acceptance gate (sixth concrete consumer; first 4th-`remarkPlugins` consumer; first 4-consumer same-slot composition; first 6-consumer composition under default dispatch — new maximum-consumer-cardinality state; first "more than 20 APPENDs on a single D-clause" milestone; first D-clause with FOUR items closed within the cadence; second-longest absolute APPEND-deferral closure ever observed at 9-phase carryover; D-AL; 1276/74; 130th consecutive 103 kB unit; 50th "Continue" override opportunity at Phase 54 → 55 boundary)
+
+- Fifth and final Phase-54 numbered unit; gate-only. **Phase 54 CLOSES at this unit's commit**. Phase 55 entry awaits explicit "Continue" override per §12.
+- THINK artifact: `docs/thinking/54.4-phase-54-acceptance-gate.md` (Phase-53 → 54 delta complete; 12 architectural firsts enumerated; Phase-55 entry conditions documented with 10 ranked candidate threads).
+
+##### Phase 54 — what shipped (5 numbered units)
+
+| Unit | Title | Type | Commit |
+|---|---|---|---|
+| 54.0 | Phase 54 prep | docs | `cc55931` |
+| 54.1 | NEW `orcid.ts` + NEW `orcid.test.ts` (26 tests) + factory dispatch arm + 7 NEW dispatch tests + ADR-0018 D-G APPEND-D-AL | code+APPEND | `5dc9b42` |
+| 54.2 | 18 NEW end-to-end Phase-54 tests + first 4-consumer same-slot + first 6-consumer composition | code | `8a6c963` |
+| 54.3 | Phase-54 hygiene + APPEND-D-AC ORCID item closure documentation at 9-phase carryover | docs | `6cf9f8a` |
+| 54.4 | Phase 54 acceptance gate (this unit) | gate | (this commit) |
+
+Total: **5 numbered units (54.0 through 54.4)**. Mirrors Phase 41-53 5-unit framework shape verbatim.
+
+##### Sixth concrete Phase-37-framework consumer + first 4th-`remarkPlugins` consumer + first 4-consumer same-slot + first 6-consumer composition + new maximum-consumer-cardinality state + 21st-APPEND milestone + first 4-items-closed D-clause at HEAD `6cf9f8a`
+
+- NEW `lib/markdown/extensions/orcid.ts` (`OrcidExtensionRegistry` + `remarkLinkOrcidIds` + `ORCID_PATTERN` + `PHASE_54_DEFAULT_ENABLED_SURFACES`).
+- NEW `lib/markdown/extensions/orcid.test.ts` (26 tests; 21 plugin behavior + 5 class behavior).
+- `lib/markdown/extensions/index.ts` factory dispatch arm adds `"orcid"` case + 7 NEW dispatch tests.
+- 18 NEW end-to-end tests in `lib/markdown/index.test.ts` (Unit 54.2) across 3 describe blocks.
+- ADR-0018 D-G APPEND adds Phase-54 EXTENDED block + **APPEND-D-AL** (twelfth two-letter slot).
+- ADR-0018 APPEND-D-AC ORCID auto-link consumer item CLOSED at **9-phase carryover** (Phase 45 → 54).
+- **Sixth concrete Phase-37-framework consumer** — first 6-consumer state.
+- **First 4th-`remarkPlugins` consumer** in project history.
+- **First 4-consumer same-slot composition** under default dispatch.
+- **First 6-consumer composition under default dispatch** — new maximum-consumer-cardinality state.
+- **First env-var single-value arm beyond 6** — 7th arm `orcid`; first expansion of recognized-arms set since Phase 50.
+- **Regex-disjointness-as-sole-defense discipline scales 3 → 4 same-slot consumers** without architectural change.
+- **First D-clause with FOUR items closed within the cadence** (D-AC: alias item 2 Phase 48 + cross-surface Phase 49 + PubMed PMID Phase 50 + ORCID Phase 54).
+- **21st APPEND on ADR-0018 D-G** — **first "more than 20 APPENDs on a single D-clause" milestone**.
+
+##### Phase 53 → Phase 54 delta
+
+| Metric | Phase 53 close | Phase 54 close | Δ |
+|---|---|---|---|
+| Tests | 1225 / 73 files | **1276 / 74 files** | +51 / +1 |
+| ADRs | 24 | **24** | 0 |
+| ADR-0018 D-G APPEND count | 20 | **21** (project record extends; twelfth two-letter slot D-AL; **first "more than 20 APPENDs on a single D-clause" milestone**) | +1 |
+| DB tables | 7 | 7 | 0 |
+| Migrations | 9 | 9 | 0 |
+| Env vars | 14 | 14 | 0 |
+| `MARKDOWN_EXTENSIONS` single-value arms | 6 | **7** (`orcid` added) | **+1** |
+| i18n keys per locale | 168 | 168 | 0 |
+| First Load JS shared chunk | 103 kB | **103 kB** | 0 |
+| Middleware bundle | 160 kB | 160 kB | 0 |
+| OPEN_QUESTIONS top-level Q-count | 66 | **66** | 0 |
+| Phase-37+ candidate count | 8 | **8** | 0 |
+| Runtime deps added | — | **0** | 0 |
+| `lib/markdown/extensions/` files | 17 | **19** (+`orcid.ts` + `orcid.test.ts`) | **+2** |
+| **Phase-37-framework concrete consumers** | **5** | **6 (+orcid)** | **+1** |
+| **Plugins in `remarkPlugins` slot** | **3** | **4 (+orcid)** | **+1** |
+| **4-consumer same-slot compositions** | **0** | **1 (rationale; arxiv+doi+pubmed+orcid)** | **+1** |
+| **Maximum-consumer-cardinality on any surface** | **5 (all surfaces)** | **6 (rationale)** | **+1** |
+| **APPEND-deferral closure cadence (consecutive phases)** | 12 | **13 (Phase 42-54)** | **+1 (new record)** |
+| **D-clauses with 4+ items closed in cadence** | **0** | **1 (D-AC: 4 items)** | **+1** |
+
+##### Architectural firsts in Phase 54 (12 enumerated)
+
+1. **Sixth concrete Phase-37-framework consumer**. **First 6-consumer state** in project history.
+2. **First 4th-`remarkPlugins` consumer** in project history.
+3. **First 4-consumer same-slot composition**. **Regex-disjointness-as-sole-defense discipline scales 3 → 4** without architectural change.
+4. **First 6-consumer composition under default dispatch**. **New maximum-consumer-cardinality state**.
+5. **First env-var single-value arm beyond 6** — 7th arm `orcid`; first expansion since Phase 50. **First 4-phase stability run** of the arms set.
+6. **APPEND-D-AC ORCID item CLOSED at 9-phase carryover** (Phase 45 → 54). **Second-longest absolute APPEND-deferral closure ever observed**.
+7. **Thirteenth APPEND-deferral closure** — **cadence sustained 13 phases** — new longest in project history. **First 13-phase APPEND-deferral closure run**.
+8. **Third sibling-consumer-introduction in the cadence** (Phase 45 doi; Phase 50 pubmed; Phase 54 ORCID). **First state where two non-adjacent sibling-consumer introductions are 4 phases apart**.
+9. **First D-clause with FOUR items closed within the closure cadence** (D-AC items: alias item 2 Phase 48 + cross-surface Phase 49 + PubMed PMID Phase 50 + ORCID Phase 54). **First D-clause to have ≥4 items resolved through the cadence**.
+10. **21st APPEND on ADR-0018 D-G** — extends first-ADR-D-clause-with-most-APPENDs record 20 → 21. **First "more than 20 APPENDs on a single D-clause" milestone** in project history.
+11. **Twelfth two-letter APPEND letter D-AL** (Excel-spreadsheet column convention sustained).
+12. **First "framework + 6 consumers + composition + 5 expansions + 5 plugin-regex-extensions + 4-consumer same-slot composition + 6-consumer composition + alias syntax × 4 + dual-form regex × 3 + 5-consumer composition × 4 + inner-class disjunction × 1 + 2-evolutions on arxiv" 18-phase cluster** in project history (Phase 37-54). **24th consecutive phase without new B category** — first 24-phase run. **Forty-fifth NON-§13 phase**. **129th consecutive 103 kB First Load JS unit**.
+
+##### Phase 54 → Phase 55 entry conditions
+
+Per §12, Phase 55 entry requires **explicit human sign-off**.
+
+**Recommended Phase 55 first-thread candidates** (10 ranked; see `docs/thinking/54.4-phase-54-acceptance-gate.md` for full tractability + units breakdown):
+
+1. **ORCID alias syntax** — 1-2 units; **sixth realization of Phase-46 plugin-regex-extension phase-shape pattern**; mirrors Phase-47/Phase-48/Phase-51 alias extensions verbatim on the orcid plugin; closes new Phase-54 deferral at 1-phase carryover.
+2. **Table-specific attributes** (APPEND-D-Q item 3) — 1-2 units; first schema-extension on `schemaOverrides` slot; XSS-audit-required.
+3. **ORCID cross-surface expansion** to all 4 surfaces — 1-2 units; **sixth realization of constructor-arg-only zero-rework expansion property**; generalizes 6-consumer composition to all 4 surfaces.
+4. **bioRxiv preprint consumer** — 2-3 units; seventh concrete consumer.
+5. **Cross-entity wikilinks** (APPEND-D-L item 3) — 2-3 units.
+6. **`<a class="wikilink">` styling** (APPEND-D-L item 4) — 1-2 units.
+7. **404 handling for unresolved wikilinks** (APPEND-D-L item 5) — 2-3 units.
+8. **Bare arxiv / DOI / PubMed / ORCID IDs without prefix** — 1-2 units.
+9. **Empty-alias fallback unification** (Phase-48 deferral) — 1 unit.
+10. **ADR-0025 concrete content-moderation provider** — 3-5 units; NOT autonomous-tractable.
+
+**Operational gates still pending** (6 UNCHANGED): Q54 + Q55 + Q69 + Q73 + Q75 + Q77.
+
+##### Smoke gates
+
+- `pnpm typecheck` — passes.
+- `pnpm test` — **1276 / 74 files**.
+- `pnpm audit-content` — 0 errors / 6 warnings (50 consecutive phases at Q32 baseline).
+- First Load JS — **103 kB UNCHANGED** (130 consecutive units at Unit 54.4 ship).
+- Middleware — **160 kB UNCHANGED**.
+
+##### Anti-scope (Phase 55+ deferrals carried forward)
+
+NOT ORCID alias syntax (Phase 55+ rank 1); NOT table-specific attributes (Phase 55+ rank 2); NOT ORCID cross-surface expansion (Phase 55+ rank 3); NOT bioRxiv preprint consumer (Phase 55+ rank 4); NOT cross-entity wikilinks (Phase 55+ rank 5); NOT `<a class="wikilink">` styling (Phase 55+ rank 6); NOT 404 handling (Phase 55+ rank 7); NOT bare arxiv / DOI / PubMed / ORCID IDs without prefix (Phase 55+ rank 8); NOT empty-alias fallback unification (Phase 55+ rank 9); NOT OSF preprint consumer (Phase 55+); NOT dx.doi.org legacy host (Phase 55+); NOT stricter trailing-lookahead (Phase 55+); NOT paper-card hover-preview (Phase 55+); NOT plugin parameterization (Phase 55+); NOT auto-trim of alias display whitespace (Phase 55+); NOT `<caption>` (Phase 55+); NOT surface-specific table schemas (Phase 55+); NOT `@mention` (Phase 55+); NOT 3rd regex evolution on `remarkLinkArxivIds` (Phase 55+); NOT 5th-or-later `remarkPlugins` consumer beyond arxiv + doi + pubmed + orcid (Phase 55+); NOT 2nd `rehypePlugins` consumer beyond wikilinks (Phase 55+); NOT 2nd `schemaOverrides` consumer beyond tables (Phase 55+); NOT ADR-0025 concrete moderation provider; NOT Q78/Q79/v2 methodology/pre-commit typecheck/safeAuth/test backfill/account-deletion (each deferred); all Phase-30-through-53 deferrals carry forward.
+
+##### Boundary statement
+
+**Phase 54 CLOSED at this commit after 5 numbered units. Sixth concrete Phase-37-framework consumer in project history (`OrcidExtensionRegistry`). First 4th-`remarkPlugins` consumer beyond arxiv + doi + pubmed. First 4-consumer same-slot composition under default dispatch — the regex-disjointness-as-sole-defense discipline (Phase 48 established for 2 same-slot consumers; Phase 49 generalized to all 4 surfaces; Phase 50 scaled to 3 same-slot consumers; Phase 52 generalized to all 4 surfaces) scales from 3 to 4 same-slot consumers without architectural change. The four regex character classes have distinct literal prefixes (arxiv:, doi:, pubmed:/pmid:, orcid:) — all 6 pairs collision-free; plugin invocation order immaterial for the 4-tuple. First 6-consumer composition under default dispatch — new maximum-consumer-cardinality state in project history (Phase 50 introduced 5-consumer max on rationale only; Phase 52 generalized to all 4; Phase 54 reintroduces the asymmetry with 6-consumer rationale vs 5-consumer elsewhere). First state where one surface (rationale) has strictly more consumers than the other 3 since Phase 50 ship. First env-var single-value arm beyond 6 — 7th arm `orcid`; first expansion of the recognized-arms set since Phase 50. First "first-ship after a 4-phase sibling-consumer cadence" (Phase 50 pubmed first-ship was 5-phase after Phase 45 doi; Phase 54 ORCID first-ship is 4-phase after Phase 50 pubmed — matches Phase 41 → 45 4-phase gap). Closes ADR-0018 APPEND-D-AC ORCID auto-link consumer item at 9-phase carryover (Phase 45 → 54) — second-longest absolute APPEND-deferral closure ever observed. APPEND-deferral closure cadence sustained 13 phases — new longest sustained cadence in project history (extends Phase-53 record 12 → 13). First 13-phase APPEND-deferral closure run. Third sibling-consumer-introduction in the cadence — first state where two non-adjacent sibling-consumer introductions are 4 phases apart. First D-clause with FOUR items closed within the closure cadence — D-AC (Phase 45 first-ship APPEND) carries 4 items closed: alias item 2 (Phase 48); cross-surface (Phase 49); PubMed PMID (Phase 50); ORCID (Phase 54). First D-clause to have ≥4 items resolved through the cadence. Twenty-first APPEND on ADR-0018 D-G (project record extends 20 → 21). First "more than 20 APPENDs on a single D-clause" milestone in project history. Twelfth two-letter APPEND letter D-AL. Forty-fifth NON-§13 phase. First "framework + 6 consumers + composition + 5 expansions + 5 plugin-regex-extensions + 4-consumer same-slot composition + 6-consumer composition + alias syntax × 4 + dual-form regex × 3 + 5-consumer composition × 4 + inner-class disjunction × 1 + 2-evolutions on arxiv" 18-phase cluster in project history (Phase 37-54). 24th consecutive phase without new B category — first 24-phase run (extends Phase-53 record 23 → 24). 129th consecutive 103 kB First Load JS unit (extends from 125 at Phase-53 close). XSS line of defense preserved. 1276 tests across 74 vitest files (+51/+1 vs Phase 53; +26 from new orcid.test.ts + 7 from new dispatch tests + 18 from new end-to-end tests). 24 ADRs UNCHANGED. 7 DB tables UNCHANGED. 9 migrations UNCHANGED. 14 env vars UNCHANGED. 168 i18n keys per locale UNCHANGED. First Load JS 103 kB UNCHANGED. Middleware 160 kB UNCHANGED. OPEN_QUESTIONS top-level Q-count 66 UNCHANGED. Phase-37+ candidate count 8 UNCHANGED. `MARKDOWN_EXTENSIONS` recognized single-value arms 7 (+1 vs Phase 53 close). Zero new ADRs / migrations / i18n keys / env vars / operational gates / runtime deps. Phase 55 entry requires explicit human sign-off per §12.**
+
 #### Unit 54.3 — Phase-54 hygiene + ADR-0018 APPEND-D-AC ORCID auto-link consumer item closure documentation at 9-phase carryover (second-longest absolute APPEND-deferral closure ever observed) + first D-clause with FOUR items closed within the cadence + first 4-consumer same-slot + first 6-consumer composition + new maximum-consumer-cardinality state (Q-tally UNCHANGED at 66; Phase-37+ candidate count UNCHANGED at 8; 24-phase no-new-B-category streak EXTENDS to Phase 54; 129th consecutive 103 kB unit)
 
 - Fourth Phase-54 unit; docs-only hygiene. Mirrors Phase 38-53 hygiene shapes (CHANGELOG-only annotation; no separate THINK doc; the Phase-54-prep doc at `docs/thinking/54.0-phase-54-prep.md` already enumerated closures, anti-scope, and architectural firsts).
