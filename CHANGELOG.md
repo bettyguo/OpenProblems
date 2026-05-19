@@ -2470,6 +2470,50 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 51 — Community-adjacent surfaces (**forty-second NON-§13 phase**: PubMed PMID alias syntax `[[pubmed:NNN|display]]` / `[[pmid:NNN|display]]` via dual-form regex extension on existing `remarkLinkPubmedIds` plugin in `PubmedExtensionRegistry`; **fourth realization of Phase-46 plugin-regex-extension phase-shape pattern**; **third dual-form regex** in the framework; **third plugin-regex-extension on a `remarkPlugins` consumer**; **first dual-form regex with inner alternation inside the bracketed branch** (`pubmed:` OR `pmid:`); closes new Phase-50 deferral at **1-phase carryover** — **fastest APPEND-deferral closure ever observed**; APPEND-D-AI ninth two-letter slot; 5 numbered units anticipated; 46th "Continue" override invoked; **IN PROGRESS**)
 
+#### Unit 51.1 — `PUBMED_PATTERN` dual-form regex (bracketed + bare) + plugin body update + 13 NEW pubmed.test.ts alias tests + ADR-0018 D-G APPEND-D-AI (fourth realization of Phase-46 plugin-regex-extension phase-shape; third dual-form regex; third plugin-regex-extension on `remarkPlugins`; first dual-form regex with inner alternation inside bracketed branch; 18th D-G APPEND extends record 17 → 18; 1157/73)
+
+- Second Phase-51 unit; code + ADR APPEND.
+- **`PUBMED_PATTERN` regex evolution** (in-place edit of `lib/markdown/extensions/pubmed.ts`):
+  - Before (Phase 50 ship): `/\b(?:pubmed|pmid):(\d{1,9})\b/gi`.
+  - After (Phase 51 ship): `/\[\[(?:pubmed|pmid):(\d{1,9})(?:\|([^\]\n]+))?\]\]|\b(?:pubmed|pmid):(\d{1,9})\b/gi`.
+  - **Third dual-form regex** in the framework (after Phase-47 arxiv + Phase-48 doi). Alternation between bracketed (priority) and bare (fallback).
+  - **First "dual-form regex with inner alternation inside the bracketed branch"**: the `(?:pubmed|pmid):` alternation appears in BOTH the bracketed AND bare alternatives, inheriting Phase-50 dual-prefix support. Validates that the dual-form pattern generalizes to inner alternation; sets precedent for future consumers with multiple equivalent prefix variants.
+- **Plugin body update**: mirrors Phase-47/Phase-48 body shape verbatim. Three display rules: alias defined → `display = alias`; bracketed without alias → `display = matched.slice(2, -2)` (preserves source casing of BOTH prefix variant AND mixed-case); bare form → `display = matched`.
+- **`PubmedExtensionRegistry` class + factory dispatch arm UNCHANGED**.
+- **13 NEW tests** in `lib/markdown/extensions/pubmed.test.ts` covering plugin-level alias behavior (28 plugin-level tests → 41; class tests UNCHANGED at 6):
+  - Bracketed `[[pubmed:NNN|display]]` → `<a href=...>display</a>`.
+  - Bracketed `[[pmid:NNN|display]]` (alternative prefix in alias form).
+  - Bracketed without alias renders verbatim ref preserving prefix variant.
+  - Bracketed without alias preserves mixed source casing (`[[PubMed:NNN]]` / `[[PMID:NNN]]`).
+  - Backwards-compat: bare `pubmed:NNN` (Phase-50 baseline) still works.
+  - Aliased + bare coexist in same paragraph.
+  - Bracketed pubmed + bracketed pmid coexist (both prefix variants in alias form).
+  - Empty alias `[[pubmed:NNN|]]` falls through; bare alternative admits inner ID — **mirrors Phase-47 arxiv empty-alias pattern** (NOT the Phase-48 doi fully-literal divergence; pubmed bare uses `\b` not lookahead).
+  - Alias display HTML-escapes via text-node rendering (XSS safety).
+  - Case-insensitive bracketed prefix preserves source casing of alias.
+  - Multiple aliased pubmed refs in same paragraph.
+  - Aliased pubmed inside bold renders correctly.
+  - Multi-word display preserves spaces + punctuation.
+- **ADR-0018 D-G** gains **EXTENDED Phase 51 Unit 51.1** block + **APPEND-D-AI** (ninth two-letter slot after D-AA + D-AB + D-AC + D-AD + D-AE + D-AF + D-AG + D-AH). Documents:
+  - **Fourth realization of Phase-46 plugin-regex-extension phase-shape pattern**.
+  - **Third dual-form regex** in the framework.
+  - **Third plugin-regex-extension on a `remarkPlugins` consumer** — all 3 `remarkPlugins` consumers exhibit dual-form regex post-Phase 51.
+  - **First "dual-form regex with inner alternation inside the bracketed branch"**.
+  - **Closes new Phase-50 deferral at 1-phase carryover** — **FASTEST APPEND-DEFERRAL CLOSURE EVER OBSERVED** (beats prior 3-phase record from Phase 44 + Phase 48). Cadence trajectory: 8 → 6 → 3 → 1 phases for the four alias-syntax extensions.
+  - **First "immediate-successor same-thread-direction phase boundary"** — Phase 50 introduced pubmed; Phase 51 extends pubmed with alias-syntax (consecutive-phase pair where the second extends what the first introduced).
+  - **Tenth APPEND-deferral closure** — cadence sustained 10 phases (longest ever; extends Phase-50 record 9 → 10).
+  - **Third non-cross-surface-expansion APPEND-deferral closure on the `remarkPlugins` slot kind** — first "three consecutive non-CSE closures on the same slot kind" (Phase 47 arxiv + Phase 48 doi + Phase 51 pubmed; all alias-syntax extensions resolved within the cadence).
+  - **18th APPEND on ADR-0018 D-G** — extends first-ADR-D-clause-with-most-APPENDs record 17 → 18.
+  - **Ninth two-letter APPEND letter D-AI**.
+  - Empty-alias `[[pubmed:NNN|]]` behavior: mirrors Phase-47 arxiv (inner bare match admits via `\b`); diverges from Phase-48 doi (fully-literal via prose-friendly lookahead). Pubmed sides with arxiv because both use `\b` rather than DOI's lookahead.
+  - 3-consumer same-slot regex-disjointness discipline (Phase 50 established) HOLDS UNDER DUAL-FORM EXTENSION on one of the three consumers. First state where regex-disjointness-as-sole-defense is exercised across a mix of dual-form and single-form regexes (arxiv + doi bracketed forms have single prefixes; pubmed bracketed form has dual prefix).
+- **No env-var change**: alias is plugin-internal regex evolution. `MARKDOWN_EXTENSIONS=pubmed` (Phase-50 default-rationale-only) and 5-way composite (Phase-50 default) automatically pick up bracketed alias syntax.
+- **Smoke gates**:
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **1157 / 73 files** (+13 vs Unit 51.0; +13 from pubmed.test.ts alias tests).
+  - `pnpm audit-content` → 0 errors / 6 warnings UNCHANGED.
+  - First Load JS = 103 kB UNCHANGED (112 consecutive units); Middleware = 160 kB UNCHANGED.
+
 #### Unit 51.0 — Phase 51 prep (PubMed PMID alias syntax; fourth realization of Phase-46 phase-shape; D-1 D-AI; anticipated 5 units; 46th "Continue" override invoked)
 
 - First Phase-51 unit; docs-only. Drafted `docs/thinking/51.0-phase-51-prep.md` (Phase-50 → 51 baseline at HEAD `9f83be8`; D-1 first-thread recommendation; D-3 pubmed alias regex shape — `PUBMED_PATTERN` evolves to **third dual-form regex** with bracketed alternation `\[\[(?:pubmed|pmid):(\d{1,9})(?:\|display)?\]\]` matched BEFORE the bare form; **first dual-form regex with inner prefix-alternation inside the bracketed branch**; plugin body branches on `isBracketed`; Phase 52+ deferrals; provisional 5-unit breakdown; 12 anticipated architectural firsts).

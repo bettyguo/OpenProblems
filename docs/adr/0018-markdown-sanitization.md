@@ -2600,6 +2600,216 @@ triple is collision-free via regex-disjointness alone.
 - **2nd `schemaOverrides` consumer beyond tables** — Phase
   51+.
 
+**EXTENDED Phase 51 Unit 51.1** — **fourth realization of the
+Phase-46 plugin-regex-extension phase-shape pattern**: PubMed
+PMID alias syntax `[[pubmed:NNN|display]]` /
+`[[pmid:NNN|display]]` via in-place dual-form regex extension
+on `remarkLinkPubmedIds` in `PubmedExtensionRegistry`. **Third
+plugin-regex-extension on a `remarkPlugins` consumer** in
+project history (Phase 47 arxiv first; Phase 48 doi second;
+Phase 51 pubmed third). **All 3 `remarkPlugins` consumers
+exhibit dual-form regex post-Phase 51**. **Third dual-form
+regex** in the framework.
+
+**Closes new Phase-50 deferral** ("PubMed PMID display-text
+alias syntax — mirrors Phase-47 arxiv-alias + Phase-48 doi-
+alias dual-form regex extension; Phase 51+ analogous
+extension") at **1-phase carryover** (Phase 50 → Phase 51).
+**FASTEST APPEND-DEFERRAL CLOSURE EVER OBSERVED**. Cadence
+trajectory: Phase-46 wikilinks alias 8-phase; Phase-47 arxiv
+alias 6-phase; Phase-48 doi alias 3-phase (tied Phase-44
+record); Phase-51 pubmed alias **1-phase** (new record). Each
+alias-syntax realization halves (or better) the architectural
+risk for the next.
+
+**Tenth prep-/APPEND-doc-level deferral closed by a later
+phase**: Phase 42 → 38 D-L item 1; Phase 43 → 39 D-Q item 2;
+Phase 44 → 41 D-Y item 1; Phase 45 → 41 D-Y item 4; Phase 46
+→ 38 D-L item 2; Phase 47 → 41 D-Y item 5; Phase 48 → 45 D-AC
+item 2; Phase 49 → 45 D-AC cross-surface; Phase 50 → 45 D-AC
+PubMed PMID item; Phase 51 → new Phase-50 deferral. **APPEND-
+deferral closure cadence sustained 10 phases** — longest
+sustained cadence in project history (extends Phase-50 record
+9 → 10).
+
+**Third non-cross-surface-expansion APPEND-deferral closure
+on the `remarkPlugins` slot kind** in the cadence (Phase 47
+arxiv alias was first; Phase 48 doi alias was second; Phase
+51 pubmed alias is third). **First "three consecutive non-
+cross-surface-expansion closures on the same slot kind"** —
+all three `remarkPlugins` alias-syntax extensions resolved
+within the cadence.
+
+**First "immediate-successor same-thread-direction phase
+boundary"** in project history. Phase 50 introduced pubmed
+(new consumer); Phase 51 extends pubmed with alias-syntax.
+**First consecutive-phase pair where the second phase
+extends the consumer the first phase introduced**. Pre-
+Phase-51 precedent was 4+ phases between consumer-
+introduction and alias-syntax extension (Phase 38 wikilinks
+→ Phase 46 alias = 8-phase gap; Phase 41 arxiv → Phase 47
+alias = 6-phase gap; Phase 45 doi → Phase 48 alias = 3-phase
+gap; Phase 50 pubmed → Phase 51 alias = **1-phase gap;
+immediate-successor**).
+
+**Eighteenth APPEND on ADR-0018 D-G** — extends the **first-
+ADR-D-clause-with-most-APPENDs record** from 17 → 18 (Phase
+18 + 27 + 29 + 37 + 38 + 39 + 40 + 41 + 42 + 43 + 44 + 45 +
+46 + 47 + 48 + 49 + 50 + **51**).
+
+**Ninth two-letter APPEND letter D-AI** (after Phase-43 D-AA
++ Phase-44 D-AB + Phase-45 D-AC + Phase-46 D-AD + Phase-47
+D-AE + Phase-48 D-AF + Phase-49 D-AG + Phase-50 D-AH). Excel-
+spreadsheet column convention sustained — D-AJ + D-AK + ... +
+D-AZ would carry Phase 52+ at this cadence (after D-AZ rolls
+to D-BA).
+
+**APPEND-D-AI pubmed alias regex shape**:
+
+```ts
+// Before (Phase 50 ship):
+const PUBMED_PATTERN = /\b(?:pubmed|pmid):(\d{1,9})\b/gi;
+
+// After (Phase 51 ship):
+const PUBMED_PATTERN =
+  /\[\[(?:pubmed|pmid):(\d{1,9})(?:\|([^\]\n]+))?\]\]|\b(?:pubmed|pmid):(\d{1,9})\b/gi;
+```
+
+**Third dual-form regex in the framework**. Alternation
+between bracketed (priority) and bare (fallback). Engine tries
+the bracketed alternative first at each position; if it fails,
+tries the bare alternative.
+
+- **Bracketed form** `\[\[(?:pubmed|pmid):(\d{1,9})(?:\|([^\]\n]+))?\]\]`:
+  - **Inner prefix-alternation** `(?:pubmed|pmid):` inherits
+    Phase-50 dual-prefix support. **First dual-form regex
+    with inner alternation inside the bracketed branch** in
+    project history.
+  - Group 1 = PubMed ID (Phase-50 baseline preserved).
+  - Group 2 = optional display text (`[^\]\n]+`; mirrors
+    Phase-46/47/48 alias display class).
+  - **No trailing-lookahead** — `]]` is the explicit
+    terminator.
+- **Bare form** `\b(?:pubmed|pmid):(\d{1,9})\b`:
+  - Group 3 = PubMed ID (Phase-50 baseline preserved
+    verbatim).
+  - **Word-boundary anchors** preserved verbatim — no
+    lookahead-vs-`\b` divergence (pubmed bare form had no
+    lookahead at Phase-50 ship, unlike doi).
+
+**Plugin body branches on `isBracketed = match[0].startsWith("[[")`**.
+Mirrors Phase-47/Phase-48 body shape verbatim with prefix-
+alternation. Three display rules:
+
+1. `alias` defined → `display = alias` (bracketed form with
+   `|display`).
+2. `isBracketed` AND `alias` undefined → `display = matched.slice(2, -2)`
+   (bracketed form without alias; drop `[[` + `]]` while
+   preserving source casing of BOTH the prefix variant
+   (`pubmed:` vs `pmid:`) AND any source-case mixing).
+3. Else (bare form) → `display = matched` (Phase-50 baseline:
+   verbatim source casing).
+
+**First "dual-form regex with inner alternation inside the
+bracketed branch"** discipline. Phase 47 arxiv + Phase 48 doi
+bracketed forms had single literal prefixes (`arxiv:`, `doi:`).
+Phase 51 pubmed bracketed form inherits the Phase-50 dual-
+prefix alternation (`pubmed:` OR `pmid:`) inside the bracketed
+branch. Validates that the dual-form pattern generalizes to
+inner alternation; sets precedent for future consumers with
+multiple equivalent prefix variants (e.g., bioRxiv's `biorxiv:`
+vs `biorXiv:` vs format variants; ORCID's `orcid:` vs
+`https://orcid.org/`).
+
+**Empty alias `[[pubmed:NNN|]]` behavior**: pubmed bare form
+uses `\b` word-boundary (no lookahead constraint). When the
+bracketed alternative fails (empty alias does not satisfy
+`+`), the engine tries the bare alternative — which CAN match
+the inner `pubmed:NNN` portion (digits are word characters; `\b`
+satisfied at start `[` → `p` boundary). Result: `[[<a>pubmed:NNN</a>|]]`
+— **mirrors Phase-47 arxiv empty-alias pattern** (NOT the
+Phase-48 doi fully-literal divergence). Pubmed sides with arxiv
+in this divergence because both use `\b` rather than DOI's
+prose-friendly lookahead.
+
+**Collision-freedom inherited from Phase 48 + 50**. No
+collision with wikilinks (`[a-z0-9-]+` slug class excludes
+`:`, `.`, `/` — all-or-some present in pubmed bracketed form).
+No collision with arxiv (regex character classes pairwise
+disjoint; arxiv `\d{4}\.\d{4,5}` vs pubmed `(?:pubmed|pmid):\d{1,9}`).
+No collision with doi (regex character classes pairwise
+disjoint; doi requires `10.`+`/` vs pubmed pure-digit). The
+3-consumer same-slot regex-disjointness discipline (Phase 50
+established) HOLDS UNDER DUAL-FORM EXTENSION on one of the
+three consumers — Phase 51 ship is the first state where
+regex-disjointness-as-sole-defense is exercised across a mix
+of dual-form (arxiv, doi, pubmed) and single-form regexes
+(arxiv + doi bracketed forms have single prefixes; pubmed
+bracketed form has dual prefix). **Three pubmed-vs-arxiv +
+pubmed-vs-doi + arxiv-vs-doi disjointness pairs all hold for
+dual-form-extended pubmed**.
+
+**XSS audit Phase 51**: display text becomes mdast `text` node
+`value` inside an mdast `link` node, then transits through
+`remark-rehype` to a hast `<a>` element with text-node
+children. The text-node value is HTML-escaped by
+`rehype-stringify` per HTML5 spec. Test "Phase-51: alias
+display HTML-escapes" asserts `[[pubmed:12345678|x & y]]`
+emits `<a href="...">x &#x26; y</a>`. **No new XSS surface**.
+
+**No env-var change Phase 51**: alias is plugin-internal
+regex evolution. `MARKDOWN_EXTENSIONS=pubmed` (Phase-50
+default-rationale-only) and 5-way composite
+`wikilinks,tables,arxiv,doi,pubmed` (Phase-50 default)
+automatically pick up bracketed alias syntax.
+
+**First quadruple-alias surface** in project history (Phase 51
+end-to-end validation at Unit 51.2). Rationale under 5-way
+default carries wikilinks alias (Phase 46) + arxiv alias
+(Phase 47) + doi alias (Phase 48) + pubmed alias (Phase 51)
+simultaneously. **First surface-with-4-alias-consumers
+cardinality of 1** (other surfaces remain triple-alias per
+Phase-50 pubmed rationale-only default; would generalize to
+all 4 surfaces if/when Phase ~54 pubmed cross-surface
+expansion lands).
+
+**Phase 52+ deferrals** (Phase-51 pubmed-alias scope cap):
+
+- **PubMed PMID cross-surface expansion** (Phase-50 deferral
+  carries) — Phase ~54 at 4-phase-gap cadence.
+- **Older-style category-prefixed arxiv IDs** (APPEND-D-Y
+  item 2 carries) — Phase 52+.
+- **Bare arxiv / DOI / PubMed IDs without prefix** — Phase
+  52+.
+- **dx.doi.org legacy host parsing** — Phase 52+.
+- **ORCID auto-link consumer** — sixth concrete consumer;
+  Phase 52+.
+- **bioRxiv preprint consumer** — sixth or later concrete
+  consumer; Phase 52+.
+- **OSF preprint consumer** — sixth or later concrete
+  consumer; Phase 52+.
+- **Cross-entity wikilinks** (APPEND-D-L item 3 carries) —
+  Phase 52+.
+- **`<a class="wikilink">` styling** (APPEND-D-L item 4
+  carries) — Phase 52+.
+- **404 handling for unresolved wikilinks** (APPEND-D-L item
+  5 carries) — Phase 52+.
+- **Plugin parameterization for wikilink-href-builder**
+  (APPEND-D-L item 6 carries) — Phase 52+.
+- **Auto-trim of alias display whitespace** — Phase 52+.
+- **Empty-alias fallback unification** across consumers
+  (carries) — Phase 52+.
+- **Table-specific attributes** (APPEND-D-Q item 3 carries)
+  — Phase 52+.
+- **`<caption>` element** + **Surface-specific table schemas**
+  (APPEND-D-Q items 4 + 6 carry) — Phase 52+.
+- **4th-or-later `remarkPlugins` consumer beyond arxiv + doi
+  + pubmed** — Phase 52+.
+- **2nd `rehypePlugins` consumer beyond wikilinks** — Phase
+  52+.
+- **2nd `schemaOverrides` consumer beyond tables** — Phase
+  52+.
+
 ### D-H. Phase 18+ deferrals
 
 Phase 17 ships MINIMAL markdown surface. Deferred to Phase 18+:

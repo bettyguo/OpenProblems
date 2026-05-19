@@ -80,12 +80,24 @@ import type { MarkdownExtensionRegistry, MarkdownExtensionSet, MarkdownSurface }
  * unlike DOI: PubMed IDs are pure digits with no embedded
  * punctuation, so `\b` is sufficient for trailing termination.
  *
- * **Phase 50 ship is bare-only** — no alias syntax. Mirrors
- * Phase-41 arxiv-first-ship + Phase-45 doi-first-ship demand-
- * signal-first precedent. Bracketed alias form
- * `[[pubmed:NNN|display]]` / `[[pmid:NNN|display]]` is a Phase
- * 51+ candidate (would mirror Phase-47 arxiv + Phase-48 doi
- * dual-form regex extension verbatim).
+ * **Phase 51 alias-syntax extension** (since Unit 51.1; closes
+ * new Phase-50 deferral at 1-phase carryover — fastest APPEND-
+ * deferral closure ever observed): the regex gains a bracketed
+ * alternation `\[\[(?:pubmed|pmid):NNN(?:\|display)?\]\]`
+ * matched BEFORE the bare form. **Third dual-form regex in
+ * the framework** (after Phase-47 arxiv + Phase-48 doi).
+ * **First dual-form regex with inner prefix-alternation inside
+ * the bracketed branch** — the `(?:pubmed|pmid):` alternation
+ * appears in BOTH the bracketed and bare alternatives,
+ * inheriting Phase-50 dual-prefix support. Backwards-compatible:
+ * every existing bare `pubmed:NNN` / `pmid:NNN` match preserved
+ * via the second alternation arm. No collision with wikilinks
+ * (`[a-z0-9-]+` slug class excludes `:`); also distinct
+ * pipeline stage (`remarkPlugins` runs before `rehypePlugins`).
+ * No collision with arxiv/doi (same `remarkPlugins` slot; all
+ * three regex character classes are pairwise disjoint per the
+ * regex-disjointness-as-sole-defense discipline Phase 50
+ * established for 3 same-slot consumers).
  *
  * Plugin declaration style: idiomatic remark-plugin function
  * declaration (factory returning a transformer) rather than
@@ -102,7 +114,8 @@ import type { MarkdownExtensionRegistry, MarkdownExtensionSet, MarkdownSurface }
  * invariant.
  */
 
-const PUBMED_PATTERN = /\b(?:pubmed|pmid):(\d{1,9})\b/gi;
+const PUBMED_PATTERN =
+  /\[\[(?:pubmed|pmid):(\d{1,9})(?:\|([^\]\n]+))?\]\]|\b(?:pubmed|pmid):(\d{1,9})\b/gi;
 
 export function remarkLinkPubmedIds() {
   return function transformer(tree: Root): undefined {
@@ -121,8 +134,25 @@ export function remarkLinkPubmedIds() {
       while ((match = PUBMED_PATTERN.exec(text)) !== null) {
         const matchStart = match.index;
         const matched = match[0];
-        const id = match[1];
+        const isBracketed = matched.startsWith("[[");
+
+        const id = isBracketed ? match[1] : match[3];
+        const alias = match[2]; // only defined for bracketed form
         if (id === undefined) continue;
+
+        let display: string;
+        if (alias !== undefined) {
+          display = alias;
+        } else if (isBracketed) {
+          // Bracketed without alias: drop brackets while preserving
+          // source casing of the prefix variant + identifier (e.g.,
+          // `[[PMID:12345678]]` → `<a>PMID:12345678</a>`).
+          display = matched.slice(2, -2);
+        } else {
+          // Bare form (Phase-50 baseline): display source casing
+          // verbatim.
+          display = matched;
+        }
 
         if (matchStart > cursor) {
           newNodes.push({ type: "text", value: text.slice(cursor, matchStart) });
@@ -131,7 +161,7 @@ export function remarkLinkPubmedIds() {
         newNodes.push({
           type: "link",
           url: `https://pubmed.ncbi.nlm.nih.gov/${id}/`,
-          children: [{ type: "text", value: matched }],
+          children: [{ type: "text", value: display }],
         });
 
         cursor = matchStart + matched.length;

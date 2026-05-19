@@ -158,13 +158,112 @@ describe("remarkLinkPubmedIds — plugin behavior", () => {
 
   it("XSS: emits text-node display (HTML-escaping handled by remark-rehype text-node rendering)", () => {
     // Display is verbatim source casing of `pubmed:NNN` / `pmid:NNN`.
-    // No user-controlled text in display Phase 50 (no alias syntax).
-    // The prefix + digits cannot contain HTML-special characters by
-    // regex construction; XSS surface is moot but the pipeline still
-    // routes through text-node rendering for consistency with arxiv/doi.
+    // Phase-50 bare form has no user-controlled text in display; Phase-51
+    // bracketed alias form adds `|display` user-controlled text. Both
+    // route through text-node rendering for HTML escaping.
     const html = runPubmedPipeline("pubmed:12345678");
     expect(html).toContain("<a ");
     expect(html).not.toContain("<script");
+  });
+
+  // ---------------------------------------------------------------
+  // Phase-51 alias syntax `[[pubmed:NNN|display]]` / `[[pmid:NNN|display]]`
+  // (Unit 51.1). Backwards-compatible with Phase-50 bare form; bracketed
+  // form is priority alternative in dual-form regex with bare as fallback.
+  // Closes new Phase-50 deferral at 1-phase carryover — fastest APPEND-
+  // deferral closure ever observed. Third dual-form regex in framework;
+  // first with inner prefix-alternation inside the bracketed branch.
+  // ---------------------------------------------------------------
+
+  it("Phase-51: resolves [[pubmed:NNN|display]] to <a href=...>display</a>", () => {
+    expect(runPubmedPipeline("[[pubmed:12345678|Smith et al. 2024]]")).toBe(
+      '<p><a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">Smith et al. 2024</a></p>',
+    );
+  });
+
+  it("Phase-51: resolves [[pmid:NNN|display]] (alternative prefix in bracketed alias form)", () => {
+    expect(runPubmedPipeline("[[pmid:12345678|Smith et al. 2024]]")).toBe(
+      '<p><a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">Smith et al. 2024</a></p>',
+    );
+  });
+
+  it("Phase-51: bracketed without alias renders verbatim ref (brackets stripped) preserving prefix variant", () => {
+    expect(runPubmedPipeline("[[pubmed:12345678]]")).toBe(
+      '<p><a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">pubmed:12345678</a></p>',
+    );
+    expect(runPubmedPipeline("[[pmid:12345678]]")).toBe(
+      '<p><a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">pmid:12345678</a></p>',
+    );
+  });
+
+  it("Phase-51: bracketed without alias preserves mixed source casing of prefix variant", () => {
+    expect(runPubmedPipeline("[[PubMed:12345678]]")).toBe(
+      '<p><a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">PubMed:12345678</a></p>',
+    );
+    expect(runPubmedPipeline("[[PMID:12345678]]")).toBe(
+      '<p><a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">PMID:12345678</a></p>',
+    );
+  });
+
+  it("Phase-51: backwards-compat — bare pubmed:NNN still works (Phase-50 baseline)", () => {
+    expect(runPubmedPipeline("pubmed:12345678")).toBe(
+      '<p><a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">pubmed:12345678</a></p>',
+    );
+  });
+
+  it("Phase-51: aliased + bare pubmed coexist in same paragraph", () => {
+    const html = runPubmedPipeline("see [[pubmed:11111111|paper A]] and pmid:22222222 here");
+    expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/11111111/">paper A</a>');
+    expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/22222222/">pmid:22222222</a>');
+  });
+
+  it("Phase-51: bracketed pubmed + bracketed pmid coexist (both prefix variants in alias form)", () => {
+    const html = runPubmedPipeline(
+      "compare [[pubmed:11111111|first]] with [[pmid:22222222|second]]",
+    );
+    expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/11111111/">first</a>');
+    expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/22222222/">second</a>');
+  });
+
+  it("Phase-51: empty alias [[pubmed:NNN|]] falls through; bare alternative admits inner ID (mirrors Phase-47 arxiv pattern)", () => {
+    // The alias display class is `+` (one-or-more); empty alias fails the
+    // bracketed alternative. The bare alternative's `\b` word-boundary
+    // (like Phase-47 arxiv, unlike Phase-48 doi's prose-friendly lookahead)
+    // admits the inner ID match — leaves brackets + pipe as literal.
+    expect(runPubmedPipeline("[[pubmed:12345678|]]")).toBe(
+      '<p>[[<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">pubmed:12345678</a>|]]</p>',
+    );
+  });
+
+  it("Phase-51: alias display HTML-escapes via remark-rehype text-node rendering (XSS safety)", () => {
+    const html = runPubmedPipeline("[[pubmed:12345678|x & y]]");
+    expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">x &#x26; y</a>');
+  });
+
+  it("Phase-51: case-insensitive bracketed prefix preserves source casing of alias", () => {
+    expect(runPubmedPipeline("[[PMID:12345678|Display Text]]")).toBe(
+      '<p><a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">Display Text</a></p>',
+    );
+  });
+
+  it("Phase-51: multiple aliased pubmed refs in same paragraph", () => {
+    const html = runPubmedPipeline(
+      "see [[pubmed:11111111|first]] and [[pmid:22222222|second]] for context",
+    );
+    expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/11111111/">first</a>');
+    expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/22222222/">second</a>');
+  });
+
+  it("Phase-51: aliased pubmed inside bold renders <strong><a>display</a></strong>", () => {
+    expect(runPubmedPipeline("**[[pubmed:12345678|critical work]]**")).toBe(
+      '<p><strong><a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">critical work</a></strong></p>',
+    );
+  });
+
+  it("Phase-51: aliased pubmed with multi-word display preserves spaces and punctuation", () => {
+    expect(runPubmedPipeline("[[pubmed:12345678|Smith, Jones, and Bell 2024]]")).toBe(
+      '<p><a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">Smith, Jones, and Bell 2024</a></p>',
+    );
   });
 });
 
