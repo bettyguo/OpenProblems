@@ -13,7 +13,7 @@ import {
 import { ArxivExtensionRegistry, PHASE_41_DEFAULT_ENABLED_SURFACES } from "./extensions/arxiv";
 import { CompositeExtensionRegistry } from "./extensions/composite";
 import { DoiExtensionRegistry, PHASE_45_DEFAULT_ENABLED_SURFACES } from "./extensions/doi";
-import { OrcidExtensionRegistry } from "./extensions/orcid";
+import { OrcidExtensionRegistry, PHASE_54_DEFAULT_ENABLED_SURFACES } from "./extensions/orcid";
 import { PHASE_50_DEFAULT_ENABLED_SURFACES, PubmedExtensionRegistry } from "./extensions/pubmed";
 import { PHASE_39_DEFAULT_ENABLED_SURFACES, TablesExtensionRegistry } from "./extensions/tables";
 import {
@@ -4004,5 +4004,324 @@ describe("Phase-55 orcid alias under Phase-54 6-way composite — first quintupl
     expect(html).toContain('<a href="https://doi.org/10.1234/abc">safe doi</a>');
     expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">safe pubmed</a>');
     expect(html).toContain('<a href="https://orcid.org/0000-0002-1825-0097">safe orcid</a>');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-56 — end-to-end ORCID cross-surface expansion (constructor-arg
+// value-only change in `PHASE_54_DEFAULT_ENABLED_SURFACES`) generalizes the
+// Phase-54 rationale-only orcid consumer to all 4 markdown surfaces. Sixth
+// realization of the "constructor-arg-only zero-rework expansion" property
+// (Phase 42 wikilinks; Phase 43 tables; Phase 44 arxiv; Phase 49 doi; Phase
+// 52 pubmed; Phase 56 orcid). **First 6-realization for that pattern in
+// project history**. **First state with TWO coexisting 6-realization
+// framework patterns** (plugin-regex-extension at 6 from Phase 55 +
+// constructor-arg-only-expansion at 6 from Phase 56).
+//
+// Closes ADR-0018 APPEND-D-AL ORCID cross-surface item at **2-phase
+// carryover** (Phase 54 → 56) — **ties Phase-52 pubmed-cross-surface 2-
+// phase fastest-closure record**. Second cross-surface-expansion closure
+// at the 2-phase floor.
+// ---------------------------------------------------------------------------
+
+describe("Phase-56 orcid default — all 4 surfaces via PHASE_54_DEFAULT_ENABLED_SURFACES", () => {
+  beforeEach(() => {
+    __setRegistryForTests(new OrcidExtensionRegistry(PHASE_54_DEFAULT_ENABLED_SURFACES));
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it("orcid renders on bio (NEW Phase-56 expansion)", () => {
+    expect(renderBioMarkdown("see orcid:0000-0002-1825-0097 here") ?? "").toBe(
+      '<p>see <a href="https://orcid.org/0000-0002-1825-0097">orcid:0000-0002-1825-0097</a> here</p>',
+    );
+  });
+
+  it("orcid renders on reviewNotes (NEW Phase-56 expansion)", () => {
+    expect(renderReviewNotesMarkdown("see orcid:0000-0002-1825-0097 here")).toBe(
+      '<p>see <a href="https://orcid.org/0000-0002-1825-0097">orcid:0000-0002-1825-0097</a> here</p>',
+    );
+  });
+
+  it("orcid renders on rationale (Phase-54 baseline preserved through expansion)", () => {
+    expect(renderRationaleMarkdown("see orcid:0000-0002-1825-0097 here")).toBe(
+      '<p>see <a href="https://orcid.org/0000-0002-1825-0097">orcid:0000-0002-1825-0097</a> here</p>',
+    );
+  });
+
+  it("orcid renders on actionRationale (NEW Phase-56 expansion)", () => {
+    expect(renderActionRationaleMarkdown("see orcid:0000-0002-1825-0097 here")).toBe(
+      '<p>see <a href="https://orcid.org/0000-0002-1825-0097">orcid:0000-0002-1825-0097</a> here</p>',
+    );
+  });
+
+  it("ORCID uppercase X checksum renders correctly on bio (NEW Phase-56; MOD 11-2 residue-10 case preserved through expansion)", () => {
+    expect(renderBioMarkdown("orcid:0000-0002-9079-593X is the author") ?? "").toBe(
+      '<p><a href="https://orcid.org/0000-0002-9079-593X">orcid:0000-0002-9079-593X</a> is the author</p>',
+    );
+  });
+
+  it("Phase-55 alias renders on bio (NEW Phase-56 — first non-rationale orcid alias surface)", () => {
+    expect(renderBioMarkdown("see [[orcid:0000-0002-1825-0097|Smith 2024]] here") ?? "").toBe(
+      '<p>see <a href="https://orcid.org/0000-0002-1825-0097">Smith 2024</a> here</p>',
+    );
+  });
+
+  it("Phase-55 alias renders on reviewNotes (NEW Phase-56 — alias extension flows through expansion)", () => {
+    expect(renderReviewNotesMarkdown("see [[orcid:0000-0002-1825-0097|Smith 2024]] here")).toBe(
+      '<p>see <a href="https://orcid.org/0000-0002-1825-0097">Smith 2024</a> here</p>',
+    );
+  });
+
+  it("Phase-55 alias renders on actionRationale (NEW Phase-56)", () => {
+    expect(renderActionRationaleMarkdown("see [[orcid:0000-0002-1825-0097|Smith 2024]] here")).toBe(
+      '<p>see <a href="https://orcid.org/0000-0002-1825-0097">Smith 2024</a> here</p>',
+    );
+  });
+
+  it("XSS defenses survive Phase-56 expansion on every surface", () => {
+    for (const renderer of [
+      renderBioMarkdown,
+      renderReviewNotesMarkdown,
+      renderRationaleMarkdown,
+      renderActionRationaleMarkdown,
+    ] as const) {
+      const html = renderer("[bad](javascript:alert(1)) and see orcid:0000-0002-1825-0097") ?? "";
+      expect(html).not.toContain("javascript:alert");
+      expect(html).toContain('href="https://orcid.org/0000-0002-1825-0097"');
+    }
+  });
+
+  it("orcid renders identically across all 4 surfaces (parity; bare + alias forms)", () => {
+    const mdBare = "cite orcid:0000-0001-5109-3700 as primary author";
+    const expectedBare =
+      '<p>cite <a href="https://orcid.org/0000-0001-5109-3700">orcid:0000-0001-5109-3700</a> as primary author</p>';
+    expect(renderBioMarkdown(mdBare)).toBe(expectedBare);
+    expect(renderReviewNotesMarkdown(mdBare)).toBe(expectedBare);
+    expect(renderRationaleMarkdown(mdBare)).toBe(expectedBare);
+    expect(renderActionRationaleMarkdown(mdBare)).toBe(expectedBare);
+
+    const mdAlias = "cite [[orcid:0000-0001-5109-3700|Jane Doe]] as primary author";
+    const expectedAlias =
+      '<p>cite <a href="https://orcid.org/0000-0001-5109-3700">Jane Doe</a> as primary author</p>';
+    expect(renderBioMarkdown(mdAlias)).toBe(expectedAlias);
+    expect(renderReviewNotesMarkdown(mdAlias)).toBe(expectedAlias);
+    expect(renderRationaleMarkdown(mdAlias)).toBe(expectedAlias);
+    expect(renderActionRationaleMarkdown(mdAlias)).toBe(expectedAlias);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-56 — first "all 4 surfaces are quintuple-alias" state under 6-way
+// `wikilinks,tables,arxiv,doi,pubmed,orcid` Phase-56 default + Phase-46/47/
+// 48/51/55 alias extensions. Pre-Phase-56 only rationale was quintuple-alias
+// (wikilinks + arxiv + doi + pubmed + orcid aliases simultaneously per
+// Phase 55 ship); Phase 56 generalizes via orcid cross-surface expansion.
+// First surface-with-5-alias-consumers cardinality of 4 in project history.
+// ---------------------------------------------------------------------------
+
+describe("Phase-56 first all-4-surfaces quintuple-alias state under 6-way composite", () => {
+  beforeEach(() => {
+    const wikilinks = new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES);
+    const tables = new TablesExtensionRegistry(PHASE_39_DEFAULT_ENABLED_SURFACES);
+    const arxiv = new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES);
+    const doi = new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES);
+    const pubmed = new PubmedExtensionRegistry(PHASE_50_DEFAULT_ENABLED_SURFACES);
+    const orcid = new OrcidExtensionRegistry(PHASE_54_DEFAULT_ENABLED_SURFACES);
+    __setRegistryForTests(
+      new CompositeExtensionRegistry([wikilinks, tables, arxiv, doi, pubmed, orcid]),
+    );
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it("bio: all 5 aliases (wikilinks + arxiv + doi + pubmed + orcid) render together (NEW Phase-56 quintuple-alias)", () => {
+    // First time bio has 5 alias-syntax consumers active simultaneously.
+    const md =
+      "see [[scalable-oversight|topic]] and [[arxiv:1909.03004|paper A]] and [[doi:10.1234/abc|paper B]] and [[pubmed:12345678|paper C]] and [[orcid:0000-0002-1825-0097|author A]].";
+    const html = renderBioMarkdown(md) ?? "";
+    expect(html).toContain('<a href="/problems/scalable-oversight">topic</a>');
+    expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">paper A</a>');
+    expect(html).toContain('<a href="https://doi.org/10.1234/abc">paper B</a>');
+    expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">paper C</a>');
+    expect(html).toContain('<a href="https://orcid.org/0000-0002-1825-0097">author A</a>');
+  });
+
+  it("reviewNotes: all 5 aliases render together (NEW Phase-56 quintuple-alias)", () => {
+    const md =
+      "see [[hallucination-reduction|topic]], [[arxiv:2024.01234|paper A]], [[doi:10.5678/xyz|paper B]], [[pmid:99999999|paper C]], [[orcid:0000-0001-5109-3700|author B]].";
+    const html = renderReviewNotesMarkdown(md);
+    expect(html).toContain('<a href="/problems/hallucination-reduction">topic</a>');
+    expect(html).toContain('<a href="https://arxiv.org/abs/2024.01234">paper A</a>');
+    expect(html).toContain('<a href="https://doi.org/10.5678/xyz">paper B</a>');
+    expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/99999999/">paper C</a>');
+    expect(html).toContain('<a href="https://orcid.org/0000-0001-5109-3700">author B</a>');
+  });
+
+  it("rationale: all 5 aliases render together (Phase-55 baseline preserved through Phase-56 expansion)", () => {
+    const md =
+      "see [[benchmark-integrity|topic]] and [[arxiv:1909.03004|paper A]] and [[doi:10.1234/abc|paper B]] and [[pubmed:12345678|paper C]] and [[orcid:0000-0002-9079-593X|author C]].";
+    const html = renderRationaleMarkdown(md);
+    expect(html).toContain('<a href="/problems/benchmark-integrity">topic</a>');
+    expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">paper A</a>');
+    expect(html).toContain('<a href="https://doi.org/10.1234/abc">paper B</a>');
+    expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">paper C</a>');
+    expect(html).toContain('<a href="https://orcid.org/0000-0002-9079-593X">author C</a>');
+  });
+
+  it("actionRationale: all 5 aliases render together (NEW Phase-56 quintuple-alias)", () => {
+    const md =
+      "see [[scalable-oversight|topic]], [[arxiv:1909.03004|the work]], [[doi:10.1234/abc|cite this]], [[pmid:12345678|biomed paper]], and [[orcid:0000-0002-1825-0097|primary author]].";
+    const html = renderActionRationaleMarkdown(md);
+    expect(html).toContain('<a href="/problems/scalable-oversight">topic</a>');
+    expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">the work</a>');
+    expect(html).toContain('<a href="https://doi.org/10.1234/abc">cite this</a>');
+    expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">biomed paper</a>');
+    expect(html).toContain('<a href="https://orcid.org/0000-0002-1825-0097">primary author</a>');
+  });
+
+  it("quintuple-alias + tables + XSS defenses all hold on every surface", () => {
+    const md =
+      "[bad](javascript:alert(1)) [[scalable-oversight|safe slug]] [[arxiv:1909.03004|safe arxiv]] [[doi:10.1234/abc|safe doi]] [[pubmed:12345678|safe pubmed]] [[orcid:0000-0002-1825-0097|safe orcid]].\n\n| A | B |\n|---|---|\n| 1 | 2 |";
+    for (const renderer of [
+      renderBioMarkdown,
+      renderReviewNotesMarkdown,
+      renderRationaleMarkdown,
+      renderActionRationaleMarkdown,
+    ] as const) {
+      const html = renderer(md) ?? "";
+      expect(html).not.toContain("javascript:alert");
+      expect(html).toContain('<a href="/problems/scalable-oversight">safe slug</a>');
+      expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">safe arxiv</a>');
+      expect(html).toContain('<a href="https://doi.org/10.1234/abc">safe doi</a>');
+      expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">safe pubmed</a>');
+      expect(html).toContain('<a href="https://orcid.org/0000-0002-1825-0097">safe orcid</a>');
+      expect(html).toContain("<table>");
+    }
+  });
+
+  it("bare references + aliases coexist on every surface (Phase-54 + Phase-55 + Phase-56 backwards-compat)", () => {
+    // All 4 surfaces post-Phase-56 carry the full quintuple-alias-capable
+    // composition; bare wikilink + bare arxiv + bare doi + bare pubmed +
+    // bare orcid continue to render alongside their alias forms.
+    const md =
+      "see scalable-oversight, arxiv:1909.03004, doi:10.1234/abc, pubmed:12345678, and orcid:0000-0002-1825-0097 here";
+    for (const renderer of [
+      renderBioMarkdown,
+      renderReviewNotesMarkdown,
+      renderRationaleMarkdown,
+      renderActionRationaleMarkdown,
+    ] as const) {
+      const html = renderer(md) ?? "";
+      expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+      expect(html).toContain('href="https://doi.org/10.1234/abc"');
+      expect(html).toContain('href="https://pubmed.ncbi.nlm.nih.gov/12345678/"');
+      expect(html).toContain('href="https://orcid.org/0000-0002-1825-0097"');
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase-56 — first "all 4 surfaces have 4-consumer same-slot composition"
+// state. The arxiv-doi-pubmed-orcid quadruple in `remarkPlugins` is now
+// active on every surface under `arxiv,doi,pubmed,orcid` composite (Phase
+// 54 ship realized the 4-consumer same-slot on rationale only; Phase 56
+// generalizes via orcid cross-surface expansion). Validates the regex-
+// disjointness-as-sole-defense discipline at 4-consumer cardinality (Phase
+// 54 established) end-to-end at maximum surface cardinality.
+// ---------------------------------------------------------------------------
+
+describe("Phase-56 first all-4-surfaces 4-consumer same-slot composition (arxiv+doi+pubmed+orcid in remarkPlugins everywhere)", () => {
+  beforeEach(() => {
+    const arxiv = new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES);
+    const doi = new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES);
+    const pubmed = new PubmedExtensionRegistry(PHASE_50_DEFAULT_ENABLED_SURFACES);
+    const orcid = new OrcidExtensionRegistry(PHASE_54_DEFAULT_ENABLED_SURFACES);
+    __setRegistryForTests(new CompositeExtensionRegistry([arxiv, doi, pubmed, orcid]));
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it("bio: arxiv + doi + pubmed + orcid all render in the same paragraph (NEW Phase-56 4-consumer same-slot)", () => {
+    const html =
+      renderBioMarkdown(
+        "compare arxiv:1909.03004 with doi:10.1234/abc and pubmed:12345678 by orcid:0000-0002-1825-0097",
+      ) ?? "";
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+    expect(html).toContain('href="https://doi.org/10.1234/abc"');
+    expect(html).toContain('href="https://pubmed.ncbi.nlm.nih.gov/12345678/"');
+    expect(html).toContain('href="https://orcid.org/0000-0002-1825-0097"');
+  });
+
+  it("reviewNotes: arxiv + doi + pubmed + orcid all render (NEW Phase-56 4-consumer same-slot)", () => {
+    const html = renderReviewNotesMarkdown(
+      "compare arxiv:2024.01234 with doi:10.5678/xyz and pmid:99999999 by orcid:0000-0001-5109-3700",
+    );
+    expect(html).toContain('href="https://arxiv.org/abs/2024.01234"');
+    expect(html).toContain('href="https://doi.org/10.5678/xyz"');
+    expect(html).toContain('href="https://pubmed.ncbi.nlm.nih.gov/99999999/"');
+    expect(html).toContain('href="https://orcid.org/0000-0001-5109-3700"');
+  });
+
+  it("actionRationale: arxiv + doi + pubmed + orcid all render (NEW Phase-56 4-consumer same-slot)", () => {
+    const html = renderActionRationaleMarkdown(
+      "see arxiv:1909.03004 and doi:10.1234/abc and pubmed:38123456 by orcid:0000-0002-9079-593X together",
+    );
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+    expect(html).toContain('href="https://doi.org/10.1234/abc"');
+    expect(html).toContain('href="https://pubmed.ncbi.nlm.nih.gov/38123456/"');
+    expect(html).toContain('href="https://orcid.org/0000-0002-9079-593X"');
+  });
+
+  it("rationale: arxiv + doi + pubmed + orcid all render (Phase-54 baseline preserved through Phase-56 expansion)", () => {
+    const html = renderRationaleMarkdown(
+      "compare arxiv:1909.03004 with doi:10.1234/abc.def and pubmed:12345678 and orcid:0000-0002-1825-0097 for context",
+    );
+    expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
+    expect(html).toContain('href="https://doi.org/10.1234/abc.def"');
+    expect(html).toContain('href="https://pubmed.ncbi.nlm.nih.gov/12345678/"');
+    expect(html).toContain('href="https://orcid.org/0000-0002-1825-0097"');
+  });
+
+  it("regex-disjointness-as-sole-defense at 4-consumer cardinality: registration ordering preserved on every surface (NEW Phase-56)", () => {
+    // The four `remarkPlugins` plugins run in registration order (arxiv,
+    // doi, pubmed, orcid). For this 4-tuple, plugin ORDER is immaterial
+    // because their regex literal prefixes are pairwise disjoint (arxiv:,
+    // doi:, pubmed:/pmid:, orcid:). Output text-flow follows source on
+    // every surface, not just rationale.
+    for (const renderer of [
+      renderBioMarkdown,
+      renderReviewNotesMarkdown,
+      renderRationaleMarkdown,
+      renderActionRationaleMarkdown,
+    ] as const) {
+      const html =
+        renderer(
+          "arxiv:1909.03004 then doi:10.1234/abc then pubmed:12345678 then orcid:0000-0002-1825-0097",
+        ) ?? "";
+      const arxivIdx = html.indexOf("arxiv.org");
+      const doiIdx = html.indexOf("doi.org");
+      const pubmedIdx = html.indexOf("pubmed.ncbi.nlm.nih.gov");
+      const orcidIdx = html.indexOf("orcid.org");
+      expect(arxivIdx).toBeGreaterThan(-1);
+      expect(doiIdx).toBeGreaterThan(-1);
+      expect(pubmedIdx).toBeGreaterThan(-1);
+      expect(orcidIdx).toBeGreaterThan(-1);
+      expect(arxivIdx).toBeLessThan(doiIdx);
+      expect(doiIdx).toBeLessThan(pubmedIdx);
+      expect(pubmedIdx).toBeLessThan(orcidIdx);
+    }
   });
 });
