@@ -2470,6 +2470,118 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 52 — Community-adjacent surfaces (**forty-third NON-§13 phase**: PubMed PMID cross-surface expansion from `rationale`-only to all 4 markdown surfaces via constructor-arg change in `PHASE_50_DEFAULT_ENABLED_SURFACES`; mirrors Phase 42 + 43 + 44 + 49 expansion pattern verbatim; **fifth realization of the "constructor-arg-only zero-rework expansion" property** — **first 5-realization property in project history**; **completes the per-consumer all-4-surfaces arc** for ALL 5 Phase-37-framework consumers; closes ADR-0018 APPEND-D-AH PubMed PMID cross-surface item at **2-phase carryover** — **FASTEST CROSS-SURFACE-EXPANSION APPEND-DEFERRAL CLOSURE EVER OBSERVED** (beats prior 3-phase Phase-41 → 44 record); APPEND-D-AJ tenth two-letter slot; anticipated 5 numbered units; 47th "Continue" override invoked)
 
+#### Unit 52.4 — Phase 52 acceptance gate (fifth realization of constructor-arg-only zero-rework expansion property — first 5-realization in project history; completes per-consumer all-4-surfaces arc for all 5 framework consumers; first all-4-surfaces quadruple-alias + 3-consumer same-slot + 5-consumer composition; fastest cross-surface-expansion APPEND-deferral closure ever observed at 2-phase carryover; D-AJ; 1195/73; 120th consecutive 103 kB unit; 48th "Continue" override opportunity at Phase 52 → 53 boundary)
+
+- Fifth and final Phase-52 numbered unit; gate-only. **Phase 52 CLOSES at this unit's commit**. Phase 53 entry awaits explicit "Continue" override per §12.
+- THINK artifact: `docs/thinking/52.4-phase-52-acceptance-gate.md` (Phase-51 → 52 delta complete; 12 architectural firsts enumerated; Phase-53 entry conditions documented with 10 ranked candidate threads).
+
+##### Phase 52 — what shipped (5 numbered units)
+
+| Unit | Title | Type | Commit |
+|---|---|---|---|
+| 52.0 | Phase 52 prep | docs | `4275717` |
+| 52.1 | `PHASE_50_DEFAULT_ENABLED_SURFACES` cross-surface expansion + dispatch tests + decoupling + ADR-0018 D-G APPEND-D-AJ | code+APPEND | `88397b7` |
+| 52.2 | 21 NEW end-to-end Phase-52 tests + first all-4-surfaces quadruple-alias + first all-4-surfaces 3-consumer same-slot composition | code | `c440e9a` |
+| 52.3 | Phase-52 hygiene + APPEND-D-AH PubMed cross-surface item closure documentation | docs | `a1e964e` |
+| 52.4 | Phase 52 acceptance gate (this unit) | gate | (this commit) |
+
+Total: **5 numbered units (52.0 through 52.4)**. Mirrors Phase 41-51 5-unit framework shape verbatim.
+
+##### Fifth realization of constructor-arg-only zero-rework expansion + first 5-realization property + completes per-consumer all-4-surfaces arc + first all-4-surfaces quadruple-alias + fastest cross-surface closure record at HEAD `a1e964e`
+
+- `PHASE_50_DEFAULT_ENABLED_SURFACES` evolved in-place from `new Set(["rationale"])` (Phase 50 ship through Phase-51 close) to `new Set(["bio", "reviewNotes", "rationale", "actionRationale"])` (Phase 52 ship). **Fifth real-consumer-expansion realization** of the "constructor-arg-only zero-rework expansion" property.
+- `PubmedExtensionRegistry` class + factory dispatch arm + plugin body + `PUBMED_PATTERN` regex **UNCHANGED**. Pure constructor-arg-only change.
+- 3 dispatch tests in `lib/markdown/extensions/index.test.ts` flipped (Phase-50/51 rationale-only → Phase-52 all-4-surfaces; first all-4-surfaces 3-consumer same-slot; first all-4-surfaces 5-consumer composition).
+- 4 baseline test blocks in `lib/markdown/index.test.ts` decoupled with explicit `new Set(["rationale"])` constructor args (D-12 pattern per Phase-49; second application of the discipline).
+- **21 NEW end-to-end tests** in `lib/markdown/index.test.ts` (Unit 52.2): 10 + 6 + 5 across 3 describe blocks.
+- ADR-0018 D-G APPEND adds Phase-52 EXTENDED block + **APPEND-D-AJ** (tenth two-letter slot).
+- ADR-0018 APPEND-D-AH PubMed PMID cross-surface item CLOSED at **2-phase carryover** (Phase 50 → 52). **FASTEST CROSS-SURFACE-EXPANSION APPEND-DEFERRAL CLOSURE EVER OBSERVED**.
+- **First 5-realization property in project history** (extends Phase-49 4-realization record to 5).
+- **Completes the per-consumer all-4-surfaces arc for ALL 5 Phase-37-framework consumers**.
+- **First "all 4 surfaces are quadruple-alias" state**; first surface-with-4-alias-consumers cardinality of 4.
+- **First "all 4 surfaces have 3-consumer same-slot composition" state**.
+- **First "all 4 surfaces with 5-consumer composition under default dispatch" state**.
+- **Second D-clause with BOTH items closed within the closure cadence** (D-AC first; D-AH second).
+- **Maximal multi-consumer all-surfaces composition extended to 5-consumer + 3-consumer-same-slot cardinality**.
+
+##### Phase 51 → Phase 52 delta
+
+| Metric | Phase 51 close | Phase 52 close | Δ |
+|---|---|---|---|
+| Tests | 1174 / 73 files | **1195 / 73 files** | +21 / 0 |
+| ADRs | 24 | **24** | 0 |
+| ADR-0018 D-G APPEND count | 18 | **19** (project record extends; tenth two-letter slot D-AJ in use) | +1 |
+| DB tables | 7 | 7 | 0 |
+| Migrations | 9 | 9 | 0 |
+| Env vars | 14 | 14 | 0 |
+| `MARKDOWN_EXTENSIONS` single-value arms | 6 | 6 | 0 |
+| i18n keys per locale | 168 | 168 | 0 |
+| First Load JS shared chunk | 103 kB | **103 kB** | 0 |
+| Middleware bundle | 160 kB | 160 kB | 0 |
+| OPEN_QUESTIONS top-level Q-count | 66 | **66** | 0 |
+| Phase-37+ candidate count | 8 | **8** | 0 |
+| Runtime deps added | — | **0** | 0 |
+| `lib/markdown/extensions/` files | 17 | 17 | 0 |
+| **Phase-37-framework concrete consumers** | **5** | **5** | 0 |
+| **Constructor-arg-only zero-rework expansion realizations** | **4** | **5 (+pubmed)** | **+1** |
+| **Surfaces with 3-consumer same-slot composition** | **1 (rationale)** | **4 (all surfaces)** | **+3** |
+| **Surfaces with quadruple-alias (4+ alias-syntax consumers)** | **1 (rationale)** | **4 (all surfaces)** | **+3** |
+| **Surfaces with 5-consumer composition under default dispatch** | **1 (rationale)** | **4 (all surfaces)** | **+3** |
+| **Component-surface-slot active positions under 5-way default** | **17** | **20** | **+3** |
+| **Fastest cross-surface-expansion closure (phases)** | 3 (Phase 41 → 44 arxiv) | **2 (Phase 50 → 52 pubmed)** | **-1 phase (new record)** |
+| **APPEND-deferral closure cadence (consecutive phases)** | 10 (Phase 42-51) | **11 (Phase 42-52)** | **+1 (new record)** |
+| **D-clauses with all items closed within the cadence** | **1 (D-AC)** | **2 (+D-AH)** | **+1** |
+
+##### Architectural firsts in Phase 52 (12 enumerated)
+
+1. **Fifth realization of the "constructor-arg-only zero-rework expansion" property** (Phase 42 wikilinks + Phase 43 tables + Phase 44 arxiv + Phase 49 doi + Phase 52 pubmed). **First 5-realization property in project history**. **Completes the per-consumer all-4-surfaces arc for ALL 5 framework consumers**.
+2. **First "all 4 surfaces are quadruple-alias" state**. First surface-with-4-alias-consumers cardinality of 4.
+3. **First "all 4 surfaces have 3-consumer same-slot composition" state**. Regex-disjointness-as-sole-defense discipline at 3-consumer cardinality exercised on every surface in production default.
+4. **First "all 4 surfaces with 5-consumer composition under default dispatch" state**. Maximum-consumer-cardinality state generalized to all surfaces.
+5. **Fastest cross-surface-expansion APPEND-deferral closure ever observed** at 2-phase carryover (Phase 50 → 52). Beats prior 3-phase record from Phase-41 → 44. **First cross-surface-expansion closure under the 3-phase floor**.
+6. **Fifth cross-surface-expansion APPEND-deferral closure** in the cadence (Phase 42 + 43 + 44 + 49 + 52). Completes the cross-surface-expansion arc.
+7. **Second D-clause with BOTH items closed within the closure cadence** (D-AC first; D-AH second). Both-items closure window halved across the two examples (4 phases → 2 phases).
+8. **Eleventh prep-/APPEND-doc-level deferral closed** — **APPEND-deferral closure cadence sustained 11 phases** — new longest sustained cadence in project history. **First 11-phase APPEND-deferral closure run**.
+9. **19th APPEND on ADR-0018 D-G** — extends first-ADR-D-clause-with-most-APPENDs record 18 → 19.
+10. **Tenth two-letter APPEND letter D-AJ** (Excel-spreadsheet column convention sustained).
+11. **First "framework + 5 consumers + composition + 5 expansions + 3-consumer same-slot composition × 4 + alias syntax × 4 + dual-form regex × 3 + 5-consumer composition × 4" 16-phase cluster** in project history (Phase 37-52). **22nd consecutive phase without new B category** — first 22-phase run (extends Phase-51 record 21 → 22). **Forty-third NON-§13 phase**. **120th consecutive 103 kB First Load JS unit**.
+12. **Maximal multi-consumer all-surfaces composition extended to 5-consumer + 3-consumer-same-slot cardinality**. 5 consumers × 4 surfaces × 3 slots = 60 component-surface-slot positions; **20 active under 5-way default** (12 single-occupancy + 4 arxiv-doi same-slot extras + 4 pubmed same-slot extras). Future expansions (6th consumer or 5th surface) extend the dimensions, not the cell density.
+
+##### Phase 52 → Phase 53 entry conditions
+
+Per §12, Phase 53 entry requires **explicit human sign-off**.
+
+**Recommended Phase 53 first-thread candidates** (10 ranked; see `docs/thinking/52.4-phase-52-acceptance-gate.md` for full tractability + units breakdown):
+
+1. **Older-style category-prefixed arxiv IDs** (APPEND-D-Y item 2; e.g., `arxiv:math/0211159`) — 1-2 units; regex extension; closes APPEND-D-Y item 2 at **12-phase carryover** (Phase 41 → 53); longest open deferral.
+2. **ORCID auto-link consumer** — 2-3 units; **sixth concrete consumer**; **first 4th-`remarkPlugins` consumer**; tests whether regex-disjointness scales 3 → 4 same-slot consumers.
+3. **Table-specific attributes** (APPEND-D-Q item 3) — 1-2 units; first schema-extension on `schemaOverrides` slot; XSS-audit-required.
+4. **bioRxiv preprint consumer** — 2-3 units; sixth concrete consumer alternative; DOI overlap concern.
+5. **Cross-entity wikilinks** (APPEND-D-L item 3) — 2-3 units.
+6. **`<a class="wikilink">` styling** (APPEND-D-L item 4) — 1-2 units.
+7. **404 handling for unresolved wikilinks** (APPEND-D-L item 5) — 2-3 units.
+8. **Bare arxiv / DOI / PubMed IDs without prefix** — 1-2 units.
+9. **Empty-alias fallback unification** (Phase-48 deferral) — 1 unit.
+10. **ADR-0025 concrete content-moderation provider** — 3-5 units; NOT autonomous-tractable.
+
+**Operational gates still pending** (6 UNCHANGED): Q54 + Q55 + Q69 + Q73 + Q75 + Q77.
+
+##### Smoke gates
+
+- `pnpm typecheck` — passes.
+- `pnpm test` — **1195 / 73 files**.
+- `pnpm audit-content` — 0 errors / 6 warnings (48 consecutive phases at Q32 baseline).
+- First Load JS — **103 kB UNCHANGED** (120 consecutive units at Unit 52.4 ship).
+- Middleware — **160 kB UNCHANGED**.
+
+##### Anti-scope (Phase 53+ deferrals carried forward)
+
+NOT older-style category-prefixed arxiv IDs (Phase 53+ rank 1); NOT ORCID consumer (Phase 53+ rank 2); NOT table-specific attributes (Phase 53+ rank 3); NOT bioRxiv consumer (Phase 53+ rank 4); NOT cross-entity wikilinks (Phase 53+ rank 5); NOT `<a class="wikilink">` styling (Phase 53+ rank 6); NOT 404 handling (Phase 53+ rank 7); NOT bare arxiv / DOI / PubMed IDs without prefix (Phase 53+ rank 8); NOT empty-alias fallback unification (Phase 53+ rank 9); NOT OSF preprint consumer (Phase 53+); NOT dx.doi.org legacy host (Phase 53+); NOT stricter trailing-lookahead (Phase 53+); NOT paper-card hover-preview (Phase 53+); NOT plugin parameterization (Phase 53+); NOT auto-trim of alias display whitespace (Phase 53+); NOT `<caption>` (Phase 53+); NOT surface-specific table schemas (Phase 53+); NOT `@mention` (Phase 53+); NOT 4th-or-later `remarkPlugins` consumer beyond arxiv + doi + pubmed (Phase 53+ rank 2/4 would ship ORCID/bioRxiv); NOT 2nd `rehypePlugins` consumer beyond wikilinks (Phase 53+); NOT 2nd `schemaOverrides` consumer beyond tables (Phase 53+); NOT ADR-0025 concrete moderation provider; NOT Q78/Q79/v2 methodology/pre-commit typecheck/safeAuth/test backfill/account-deletion (each deferred); all Phase-30-through-51 deferrals carry forward.
+
+##### Boundary statement
+
+**Phase 52 CLOSED at this commit after 5 numbered units. Fifth realization of the "constructor-arg-only zero-rework expansion" property — completes the per-consumer all-4-surfaces arc for ALL 5 Phase-37-framework consumers (Phase 42 wikilinks; Phase 43 tables; Phase 44 arxiv; Phase 49 doi; Phase 52 pubmed). First 5-realization property in project history (extends Phase-49 4-realization record to 5). First "all 4 surfaces are quadruple-alias" state — every surface carries wikilinks + arxiv + doi + pubmed aliases simultaneously under 5-way default. First surface-with-4-alias-consumers cardinality of 4 in project history. First "all 4 surfaces have 3-consumer same-slot composition" state — the arxiv-doi-pubmed triple in `remarkPlugins` now active on every surface under `arxiv,doi,pubmed` composite default; regex-disjointness-as-sole-defense discipline at 3-consumer cardinality (Phase 50 established) exercised everywhere in production default. First "all 4 surfaces with 5-consumer composition under default dispatch" state — maximum-consumer-cardinality state generalized to all surfaces. Maximal multi-consumer all-surfaces composition extended to 5-consumer + 3-consumer-same-slot cardinality — 20 active component-surface-slot positions under 5-way default. FASTEST CROSS-SURFACE-EXPANSION APPEND-DEFERRAL CLOSURE EVER OBSERVED at 2-phase carryover (Phase 50 → 52; beats prior 3-phase Phase-41 → 44 record). First cross-surface-expansion closure under the 3-phase floor. Cadence trajectory for the five cross-surface-expansion realizations: 4 → 4 → 3 → 4 → 2 phases. Fifth cross-surface-expansion APPEND-deferral closure in the cadence (Phase 42 + 43 + 44 + 49 + 52). Closes ADR-0018 APPEND-D-AH PubMed PMID cross-surface item at 2-phase carryover. Second D-clause with BOTH items closed within the closure cadence — D-AH carries alias (closed Phase 51 via D-AI) + cross-surface (closes Phase 52 via D-AJ); D-AC was first; D-AH is second. Both-items closure window halved across the two examples (4 phases → 2 phases). APPEND-deferral closure cadence sustained 11 phases — new longest sustained cadence in project history. First 11-phase APPEND-deferral closure run. 19th APPEND on ADR-0018 D-G (project record extends 18 → 19). Tenth two-letter APPEND letter D-AJ. Forty-third NON-§13 phase. First "framework + 5 consumers + composition + 5 expansions + 3-consumer same-slot composition × 4 + alias syntax × 4 + dual-form regex × 3 + 5-consumer composition × 4" 16-phase cluster in project history (Phase 37-52). 22nd consecutive phase without new B category — first 22-phase run (extends Phase-51 record 21 → 22). 120th consecutive 103 kB First Load JS unit (extends from 116 at Phase-51 close). XSS line of defense preserved. 1195 tests across 73 vitest files (+21/0 vs Phase 51). 24 ADRs UNCHANGED. 7 DB tables UNCHANGED. 9 migrations UNCHANGED. 14 env vars UNCHANGED. 168 i18n keys per locale UNCHANGED. First Load JS 103 kB UNCHANGED. Middleware 160 kB UNCHANGED. OPEN_QUESTIONS top-level Q-count 66 UNCHANGED. Phase-37+ candidate count 8 UNCHANGED. `MARKDOWN_EXTENSIONS` recognized single-value arms 6 UNCHANGED. Zero new ADRs / migrations / i18n keys / env vars / operational gates / runtime deps / files. Phase 53 entry requires explicit human sign-off per §12.**
+
 #### Unit 52.3 — Phase-52 hygiene + ADR-0018 APPEND-D-AH PubMed PMID cross-surface item closure documentation + fastest cross-surface-expansion APPEND-deferral closure ever observed (2-phase carryover; beats prior 3-phase record) + completes per-consumer all-4-surfaces arc for all 5 framework consumers (Q-tally UNCHANGED at 66; Phase-37+ candidate count UNCHANGED at 8; 22-phase no-new-B-category streak EXTENDS to Phase 52; 120th consecutive 103 kB unit)
 
 - Fourth Phase-52 unit; docs-only hygiene. Mirrors Phase 38-51 hygiene shapes (CHANGELOG-only annotation; no separate THINK doc; the Phase-52-prep doc at `docs/thinking/52.0-phase-52-prep.md` already enumerated closures, anti-scope, and architectural firsts).
