@@ -2470,6 +2470,44 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Phase 54 — Community-adjacent surfaces (**forty-fifth NON-§13 phase**: ORCID auto-link consumer `orcid:NNNN-NNNN-NNNN-NNNN` via NEW `OrcidExtensionRegistry` + `MARKDOWN_EXTENSIONS=orcid` env-var dispatch arm; **sixth concrete Phase-37-framework consumer**; **first 4th-`remarkPlugins` consumer** beyond arxiv + doi + pubmed; **first 4-consumer same-slot composition** under composition; **first 6-consumer composition under default dispatch** — new maximum-consumer-cardinality state; **7th single-value arm** (first expansion of recognized-arms set since Phase 50); **regex-disjointness-as-sole-defense discipline scales from 3 to 4 same-slot consumers**; closes ADR-0018 APPEND-D-AC ORCID auto-link consumer item at **9-phase carryover** (Phase 45 → 54) — second-longest absolute APPEND-deferral closure ever observed; APPEND-D-AL twelfth two-letter slot; anticipated 5 numbered units; 49th "Continue" override invoked)
 
+#### Unit 54.2 — NEW end-to-end Phase-54 tests on rationale ORCID + first 4-consumer same-slot composition validation + first 6-consumer composition under default dispatch validation (18 NEW tests; 1276/74)
+
+- Third Phase-54 unit; code-only (test additions to `lib/markdown/index.test.ts`).
+- Three new describe blocks added at end of file; `OrcidExtensionRegistry` + `PHASE_54_DEFAULT_ENABLED_SURFACES` imported from `./extensions/orcid`.
+- **First describe block** — `Phase-54 orcid default — rationale surface via PHASE_54_DEFAULT_ENABLED_SURFACES` (7 tests):
+  - ORCID renders on rationale.
+  - ORCID does NOT render on bio (Phase-54 rationale-only default).
+  - ORCID does NOT render on reviewNotes.
+  - ORCID does NOT render on actionRationale.
+  - Uppercase X checksum renders correctly on rationale.
+  - Multiple ORCIDs in same paragraph render correctly on rationale.
+  - XSS defenses survive Phase-54 ORCID + rationale (javascript: stripped; orcid resolves).
+- **Second describe block** — `Phase-54 first 4-consumer same-slot composition under MARKDOWN_EXTENSIONS=arxiv,doi,pubmed,orcid` (6 tests):
+  - rationale: arxiv + doi + pubmed + orcid ALL render in same paragraph — **FIRST 4-consumer same-slot composition** in project history.
+  - bio: arxiv + doi + pubmed render; orcid inactive (Phase-52 baseline + orcid rationale-only default).
+  - reviewNotes: arxiv + doi + pubmed render; orcid inactive.
+  - actionRationale: arxiv + doi + pubmed render; orcid inactive.
+  - Regex-disjointness-as-sole-defense at 4-consumer cardinality: registration ordering preserved on rationale (arxiv → doi → pubmed → orcid source-order respected; collision-free per distinct literal prefixes alone).
+  - XSS defenses survive 4-consumer same-slot composition on rationale.
+- **Third describe block** — `Phase-54 first 6-consumer composition — wikilinks,tables,arxiv,doi,pubmed,orcid maximal default` (5 tests):
+  - rationale: all 6 consumers active simultaneously (wikilink + table + arxiv + doi + pubmed + orcid) — **FIRST 6-consumer composition under default dispatch** in project history. **New maximum-consumer-cardinality state**.
+  - bio: 5 consumers active (Phase-52 baseline); orcid inactive per Phase-54 rationale-only default.
+  - reviewNotes: 5 consumers active; orcid inactive.
+  - actionRationale: 5 consumers active; orcid inactive.
+  - XSS defenses survive Phase-54 6-consumer composition on every surface.
+- **Composition matrix snapshot Phase 54** under `MARKDOWN_EXTENSIONS=wikilinks,tables,arxiv,doi,pubmed,orcid`:
+  - bio: 5 consumers — Phase-52 baseline; orcid inactive.
+  - reviewNotes: 5 consumers — Phase-52 baseline; orcid inactive.
+  - rationale: **6 consumers** (wikilinks + tables + arxiv + doi + pubmed + orcid) — **new max-cardinality state**; **first surface with 4 consumers in `remarkPlugins`**.
+  - actionRationale: 5 consumers — Phase-52 baseline; orcid inactive.
+- **First state where one surface (rationale) has strictly more consumers than the other 3 since Phase 50 ship**. Phase 50 first-introduced this asymmetry (5-consumer rationale vs 4-consumer elsewhere); Phase 52 generalized to all 4; Phase 54 reintroduces the asymmetry at 6-consumer rationale vs 5-consumer elsewhere.
+- **No source code changes**: Unit 54.1 already shipped the consumer + factory dispatch + APPEND-D-AL; Unit 54.2 is pure test additions validating the new 4-consumer same-slot + 6-consumer composition states through the full sanitize pipeline.
+- **Smoke gates**:
+  - `pnpm typecheck` clean.
+  - `pnpm test` → **1276 / 74 files** (+18 vs Unit 54.1).
+  - `pnpm audit-content` → 0 errors / 6 warnings UNCHANGED.
+  - First Load JS = 103 kB UNCHANGED (128 consecutive units); Middleware = 160 kB UNCHANGED.
+
 #### Unit 54.1 — NEW `orcid.ts` + NEW `orcid.test.ts` (26 tests) + factory dispatch arm (`MARKDOWN_EXTENSIONS=orcid` — 7th single-value arm) + 7 NEW dispatch tests + ADR-0018 D-G APPEND-D-AL (sixth concrete consumer; first 4th-`remarkPlugins` consumer; first 4-consumer same-slot composition; first 6-consumer composition under default dispatch — new maximum-consumer-cardinality state; regex-disjointness-as-sole-defense scales 3 → 4 same-slot; 21st D-G APPEND extends record 20 → 21; 1258/74)
 
 - Second Phase-54 unit; code + ADR APPEND.
