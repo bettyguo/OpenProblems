@@ -7,8 +7,8 @@
 | New problems | 10                                                                                                                                                              |
 | Updates      | (none)                                                                                                                                                          |
 | Curator      | `jikun`                                                                                                                                                         |
-| RUN_ID       | `2026-05-20T05-42-90a3d6`                                                                                                                                       |
-| Branch       | `curate/BATCH-NEW-genml-systems-2026-05-20T05-42-90a3d6`                                                                                                        |
+| RUN_ID       | `2026-05-20T06-07-90a3d6`                                                                                                                                       |
+| Branch       | `curate/BATCH-NEW-genml-systems-2026-05-20T06-07-90a3d6`                                                                                                        |
 
 **Subdomains the session may author into:**
 
@@ -45,7 +45,7 @@ TERRITORY_LABEL: genml-systems # short kebab-case slug for branch name, e.g. "op
 TARGET_NEW_COUNT: 10 # for BATCH-NEW or BATCH-MIXED; target across the whole campaign (8–22 typical; this session caps at 15, deferring any remainder via Step 2.5 + 6.5)
 TARGET_UPDATE_SLUGS: # for BATCH-DEEP-UPDATE or BATCH-MIXED; comma-separated existing slugs to deeply re-research, "" if none
 CURATOR: jikun # default `jikun`
-RUN_ID: 2026-05-20T05-42-90a3d6 # YYYY-MM-DDTHH-MM-RAND6 (UTC, hyphens, no colons — Windows-safe)
+RUN_ID: 2026-05-20T06-07-90a3d6 # YYYY-MM-DDTHH-MM-RAND6 (UTC, hyphens, no colons — Windows-safe)
 
 == STEP 1 — BRANCH AND ORIENT ==
 
