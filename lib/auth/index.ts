@@ -1,9 +1,8 @@
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { eq } from "drizzle-orm";
 import NextAuth from "next-auth";
-import GitHub from "next-auth/providers/github";
-import Google from "next-auth/providers/google";
 
+import authConfig from "@/auth.config";
 import { db } from "@/lib/db";
 import { accounts, sessions, users, verificationTokens } from "@/lib/db/schema";
 
@@ -57,23 +56,19 @@ import { extractGithubLogin } from "./link-account";
  * signed-out branch still renders (the affected provider's button just
  * surfaces an error on click).
  */
+// `authConfig` (edge-safe) carries `providers` (GitHub + Google in that
+// order; Auth.js v5 auto-detects `AUTH_<PROVIDER>_ID` + `_SECRET`) and
+// `trustHost`. The full config below spreads it and layers the Node-only
+// DrizzleAdapter + db-session strategy + linkAccount event.
 export const { auth, handlers, signIn, signOut } = NextAuth({
+  ...authConfig,
   adapter: DrizzleAdapter(db, {
     usersTable: users,
     accountsTable: accounts,
     sessionsTable: sessions,
     verificationTokensTable: verificationTokens,
   }),
-  // GitHub + Google providers invoked without args; Auth.js v5 auto-
-  // detects `AUTH_<PROVIDER>_ID` + `AUTH_<PROVIDER>_SECRET` env vars
-  // per the canonical convention (Q54 + Q73 operational gates).
-  //
-  // Order matters: GitHub first preserves Phase-9 user expectation +
-  // tracks `PROVIDER_IDS` in link-account.ts which the sign-in UI
-  // (`<AuthControl>`) iterates against.
-  providers: [GitHub, Google],
   session: { strategy: "database" },
-  trustHost: true,
   events: {
     async linkAccount({ user, account, profile }) {
       const extracted = extractGithubLogin(account, profile, user);
