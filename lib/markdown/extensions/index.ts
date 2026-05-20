@@ -1,3 +1,5 @@
+import { authors, institutions, papers, problems } from "#site/content";
+
 import { ArxivExtensionRegistry, PHASE_41_DEFAULT_ENABLED_SURFACES } from "./arxiv";
 import { BiorxivExtensionRegistry, PHASE_58_DEFAULT_ENABLED_SURFACES } from "./biorxiv";
 import { CompositeExtensionRegistry } from "./composite";
@@ -12,10 +14,61 @@ import {
 } from "./tables";
 import type { MarkdownExtensionRegistry } from "./types";
 import {
+  isValidWikilinkTarget,
+  type ValidWikilinkTargets,
+  type WikilinkReference,
+} from "./wikilinks-validator";
+import {
   CROSS_ENTITY_BUILD_HREF,
   PHASE_38_DEFAULT_ENABLED_SURFACES,
   WikilinkExtensionRegistry,
 } from "./wikilinks";
+
+/**
+ * Phase 67 Unit 67.2 build-time-loaded `ValidWikilinkTargets` set
+ * per ADR-0018 D-G APPEND-D-AY (closes Phase-66 APPEND-D-AX render-
+ * time-fallback item at 1-phase carryover).
+ *
+ * Lazily assembled from Velite-built `#site/content` collections on
+ * first call. Memoized per process — the Velite-built content is
+ * static within a process lifetime, so the set is amortized across
+ * requests. Wired into the `MARKDOWN_EXTENSIONS=wikilinks-validated`
+ * factory arm as the predicate closure for the
+ * `isValidTarget?: (slug, entityType?) => boolean` plugin-option.
+ *
+ * Mirrors the audit-script set assembly in
+ * `lib/content/cross-link-audit.ts` (Phase 66 ship) — drift-free
+ * between the build-time validator + the render-time fallback so
+ * the two consumers of the validator helper agree on what
+ * resolves.
+ *
+ * **First state where the Phase-66 validator helper has 2
+ * consumers**: audit script (Phase 66) + render-time factory arm
+ * (Phase 67) both call `isValidWikilinkTarget(ref, validTargets)`
+ * against the same shape.
+ */
+let validWikilinkTargetsCache: ValidWikilinkTargets | null = null;
+function getValidWikilinkTargets(): ValidWikilinkTargets {
+  if (validWikilinkTargetsCache !== null) return validWikilinkTargetsCache;
+  validWikilinkTargetsCache = {
+    problemSlugs: new Set(problems.map((p) => p.slug)),
+    paperIds: new Set(papers.map((p) => p.id)),
+    authorSlugs: new Set(authors.map((a) => a.slug)),
+    institutionSlugs: new Set(institutions.map((i) => i.slug)),
+  };
+  return validWikilinkTargetsCache;
+}
+
+/**
+ * Test-only cache reset for the build-time-loaded valid-targets
+ * set. Mirrors the `__resetMarkdownCachesForTests` pattern from
+ * `lib/markdown/index.ts` for the registry-level caches (Phase 37
+ * Unit 37.2). Used by `__setRegistryForTests` callers that swap
+ * Velite mocks mid-test.
+ */
+export function __resetValidWikilinkTargetsCacheForTests(): void {
+  validWikilinkTargetsCache = null;
+}
 
 function buildSingleConsumerRegistry(name: string): MarkdownExtensionRegistry {
   switch (name) {
@@ -31,6 +84,36 @@ function buildSingleConsumerRegistry(name: string): MarkdownExtensionRegistry {
       return new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES, {
         buildHref: CROSS_ENTITY_BUILD_HREF,
       });
+    case "wikilinks-validated": {
+      // Phase 67 Unit 67.2 — third plugin-option-axis realization at
+      // the registry layer (Phase 62 affordance + Phase 63 cross-entity
+      // consumer + Phase 67 isValidTarget consumer). 11th MARKDOWN_EXTENSIONS
+      // single-value arm; first new arm since Phase 64 tables-per-surface;
+      // first 3-phase gap between new-arm additions in project history.
+      // Wires the Phase-66 isValidWikilinkTarget(ref, validTargets) helper
+      // against a build-time-loaded ValidWikilinkTargets set from
+      // #site/content (Velite collections). First state where the
+      // Phase-66 validator helper has 2 consumers (audit script + this
+      // render-time factory arm).
+      //
+      // The closure adapts the (slug, entityType?) signature the plugin
+      // calls back with into the WikilinkReference shape isValidWikilinkTarget
+      // expects. The surface field is filler — the validator only inspects
+      // entityType + slug, not surface.
+      const validTargets = getValidWikilinkTargets();
+      const isValidTarget = (slug: string, entityType?: string): boolean => {
+        const ref: WikilinkReference = {
+          entityType,
+          slug,
+          matchText: "",
+          surface: "bio",
+        };
+        return isValidWikilinkTarget(ref, validTargets);
+      };
+      return new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES, {
+        isValidTarget,
+      });
+    }
     case "tables":
       return new TablesExtensionRegistry(PHASE_39_DEFAULT_ENABLED_SURFACES);
     case "tables-per-surface":
@@ -59,9 +142,9 @@ function buildSingleConsumerRegistry(name: string): MarkdownExtensionRegistry {
     default:
       throw new Error(
         `Unknown MARKDOWN_EXTENSIONS value: "${name}". ` +
-          `Recognized values at this build: "default" (default), "wikilinks", "wikilinks-cross-entity", "tables", "tables-per-surface", "arxiv", "doi", "pubmed", "orcid", "biorxiv", ` +
+          `Recognized values at this build: "default" (default), "wikilinks", "wikilinks-cross-entity", "wikilinks-validated", "tables", "tables-per-surface", "arxiv", "doi", "pubmed", "orcid", "biorxiv", ` +
           `or a comma-separated combination of non-default values (e.g., "wikilinks,tables,arxiv,doi,pubmed,orcid,biorxiv"). ` +
-          `Phase 64+ values will extend this list — see ADR-0018 D-G APPEND APPEND-D-AV.`,
+          `Phase 67+ values will extend this list — see ADR-0018 D-G APPEND APPEND-D-AY.`,
       );
   }
 }

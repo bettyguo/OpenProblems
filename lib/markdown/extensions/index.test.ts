@@ -769,12 +769,14 @@ describe("getExtensionRegistry (factory) — env-var dispatch", () => {
     expect(() => getExtensionRegistry()).toThrow(/tables-per-surface/);
   });
 
-  it("error message references APPEND-D-AV Phase 64", () => {
+  it("error message references the latest ADR-0018 D-G APPEND letter (was D-AV at Phase 64; bumped to D-AY at Phase 67)", () => {
     // Validates the throw-on-unknown error message documents the latest
-    // ADR-0018 D-G APPEND letter, mirroring Phase-63 APPEND-D-AU
-    // reference convention.
+    // ADR-0018 D-G APPEND letter. Phase 64 originally asserted D-AV; the
+    // assertion advances each time a new arm ships (Phase 67 = D-AY for
+    // wikilinks-validated). Future phases that add new arms should bump
+    // this regex along with the error-message template in `index.ts`.
     process.env["MARKDOWN_EXTENSIONS"] = "unknown";
-    expect(() => getExtensionRegistry()).toThrow(/APPEND-D-AV/);
+    expect(() => getExtensionRegistry()).toThrow(/APPEND-D-AY/);
   });
 
   it("returns TablesExtensionRegistry when MARKDOWN_EXTENSIONS is 'tables-per-surface' Phase 64", () => {
@@ -837,5 +839,46 @@ describe("getExtensionRegistry (factory) — env-var dispatch", () => {
     const reviewNotes = composite.getExtensions("reviewNotes");
     expect(reviewNotes.schemaOverrides).toBe(GFM_TABLE_SCHEMA_OVERRIDES);
     expect(reviewNotes.rehypePlugins).toBeDefined();
+  });
+
+  // -----------------------------------------------------------------------
+  // Phase-67 wikilinks-validated dispatch tests — third plugin-option-axis
+  // realization at the registry layer (Phase 62 affordance + Phase 63 cross-
+  // entity registry consumer + Phase 67 isValidTarget registry consumer);
+  // first 3-realization for plugin-option axis. 11th MARKDOWN_EXTENSIONS
+  // single-value arm; first new arm since Phase 64 tables-per-surface;
+  // first 3-phase gap between new-arm additions in project history.
+  // First state where the Phase-66 wikilinks-validator helper has 2
+  // consumers (audit script from Phase 66 + this factory arm from Phase 67).
+  // -----------------------------------------------------------------------
+
+  it("error message lists 'wikilinks-validated' Phase 67", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "unknown";
+    expect(() => getExtensionRegistry()).toThrow(/wikilinks-validated/);
+  });
+
+  it("error message references APPEND-D-AY Phase 67", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "unknown";
+    expect(() => getExtensionRegistry()).toThrow(/APPEND-D-AY/);
+  });
+
+  it("returns WikilinkExtensionRegistry when MARKDOWN_EXTENSIONS is 'wikilinks-validated' Phase 67", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "wikilinks-validated";
+    expect(getExtensionRegistry()).toBeInstanceOf(WikilinkExtensionRegistry);
+  });
+
+  it("wikilinks-validated dispatch emits tuple-form rehypePlugins on all 4 surfaces (Phase-67 third plugin-option-axis registry realization)", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "wikilinks-validated";
+    const r = getExtensionRegistry();
+    for (const surface of ["bio", "reviewNotes", "rationale", "actionRationale"] as const) {
+      const plugins = r.getExtensions(surface).rehypePlugins;
+      expect(plugins).toBeDefined();
+      expect(plugins).toHaveLength(1);
+      // Tuple-form emit when isValidTarget is set (Phase-67 mirror of
+      // Phase-63 wikilinks-cross-entity tuple-form). Distinguishes
+      // wikilinks-validated arm from Phase-38 wikilinks bare-form arm.
+      const entry = plugins?.[0];
+      expect(Array.isArray(entry)).toBe(true);
+    }
   });
 });

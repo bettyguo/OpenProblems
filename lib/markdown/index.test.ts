@@ -5349,3 +5349,116 @@ describe('Phase-65 className end-to-end — `<a class="wikilink">` styling survi
     expect(html).not.toContain("class=");
   });
 });
+
+describe("Phase-67 render-time fallback end-to-end — multi-className emit + `isValidTarget?` plugin-option (first multi-className emit realization; second plugin-body output-shape sub-pattern realization; 9th plugin-body axis realization; third plugin-option-axis realization; first 3-realization for plugin-option axis; wikilinks 6th evolution; first state where a consumer has 6+ evolutions; first build-time + render-time defense-in-depth pattern; closes Phase-66 APPEND-D-AX render-time-fallback item at 1-phase carryover)", () => {
+  beforeEach(() => {
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it('Phase-67: end-to-end render-time fallback — `[[missing-slug]]` renders with class="wikilink wikilink-unresolved" through full sanitize pipeline when isValidTarget rejects', () => {
+    // Validates that the 2-class array emit survives the full sanitize +
+    // strip-unsafe-hrefs + extensions pipeline. The "wikilink-unresolved"
+    // class is NOT in bioSchema.attributes.a (which only allows ["href"])
+    // BUT survives because the plugin runs AFTER rehype-sanitize per
+    // APPEND-D-D — the same plugin-only emit pattern Phase 65 established.
+    // Multi-className emit composes with plugin-only emit pattern.
+    __setRegistryForTests(
+      new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES, {
+        isValidTarget: () => false,
+      }),
+    );
+    const html = renderBioMarkdown("see [[missing-slug]]") ?? "";
+    expect(html).toContain('class="wikilink wikilink-unresolved"');
+    expect(html).toContain('href="/problems/missing-slug"');
+    expect(html).toContain(
+      '<a class="wikilink wikilink-unresolved" href="/problems/missing-slug">missing-slug</a>',
+    );
+  });
+
+  it("Phase-67: end-to-end isValidTarget returns true — emit single-class wikilink (Phase-65 backward-compat preserved when predicate accepts)", () => {
+    // Regression guard: when the predicate accepts ALL targets, the emit
+    // shape must be byte-identical to the Phase-65 ship — single-class
+    // ["wikilink"] only. The "wikilink-unresolved" class must NOT appear.
+    __setRegistryForTests(
+      new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES, {
+        isValidTarget: () => true,
+      }),
+    );
+    const html = renderBioMarkdown("see [[any-slug]]") ?? "";
+    expect(html).toContain('<a class="wikilink" href="/problems/any-slug">any-slug</a>');
+    expect(html).not.toContain("wikilink-unresolved");
+  });
+
+  it("Phase-67: end-to-end selective predicate — only the rejected link gets the unresolved class (mixed-resolution scenario)", () => {
+    // Selective predicate: accepts "valid-slug" only. The output should
+    // have exactly ONE class="wikilink" + exactly ONE class="wikilink
+    // wikilink-unresolved" attribute on the right anchors.
+    __setRegistryForTests(
+      new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES, {
+        isValidTarget: (slug) => slug === "valid-slug",
+      }),
+    );
+    const html = renderBioMarkdown("[[valid-slug]] and [[missing-slug]]") ?? "";
+    expect(html).toContain('<a class="wikilink" href="/problems/valid-slug">valid-slug</a>');
+    expect(html).toContain(
+      '<a class="wikilink wikilink-unresolved" href="/problems/missing-slug">missing-slug</a>',
+    );
+  });
+
+  it("Phase-67: end-to-end cross-entity + isValidTarget compose — `[[paper:slug]]` cross-entity routing + render-time fallback together (plugin-option-axis composition)", () => {
+    // Phase-67 isValidTarget composes with Phase-63 buildHref — the
+    // registry tuple-form carries BOTH options into one plugin invocation.
+    // Validates the plugin-option-axis composition end-to-end.
+    __setRegistryForTests(
+      new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES, {
+        buildHref: CROSS_ENTITY_BUILD_HREF,
+        isValidTarget: (slug, entityType) => entityType === "paper" && slug === "known-paper",
+      }),
+    );
+    const html =
+      renderBioMarkdown("[[paper:known-paper]] vs [[paper:typo]] vs [[author:bob]]") ?? "";
+    // known-paper resolves: single-class
+    expect(html).toContain('<a class="wikilink" href="/papers/known-paper">known-paper</a>');
+    // paper:typo fails: 2-class fallback emit
+    expect(html).toContain('<a class="wikilink wikilink-unresolved" href="/papers/typo">typo</a>');
+    // author:bob fails (predicate only accepts paper entity-type): 2-class
+    expect(html).toContain('<a class="wikilink wikilink-unresolved" href="/authors/bob">bob</a>');
+  });
+
+  it("Phase-67: external markdown links UNCLASSED end-to-end — Phase-65 negative-scope contract preserved with Phase-67 multi-className emit", () => {
+    // The Phase-67 multi-className emit applies ONLY to wikilinks-plugin-
+    // resolved anchors. External markdown links via [text](url) continue
+    // to emit unclassed <a> tags via remark-rehype default transformation,
+    // even with the predicate rejecting everything.
+    __setRegistryForTests(
+      new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES, {
+        isValidTarget: () => false,
+      }),
+    );
+    const html =
+      renderBioMarkdown("external [link](https://example.com) and wikilink [[missing-slug]]") ?? "";
+    expect(html).toContain('<a href="https://example.com">link</a>');
+    expect(html).toContain(
+      '<a class="wikilink wikilink-unresolved" href="/problems/missing-slug">missing-slug</a>',
+    );
+    // The external link is NOT classed; only the wikilink anchor is.
+    expect(html).not.toContain('class="wikilink"href="https://example.com"');
+  });
+
+  it("Phase-67: wikilinks arm (NO isValidTarget) preserves Phase-65 single-class emit byte-identically — render-time fallback is opt-in via wikilinks-validated arm only", () => {
+    // Regression guard: the existing `MARKDOWN_EXTENSIONS=wikilinks` arm
+    // (which constructs WikilinkExtensionRegistry WITHOUT isValidTarget)
+    // MUST continue to emit single-class ["wikilink"] verbatim — no
+    // fallback emission. Phase-67 multi-className is opt-in via the new
+    // wikilinks-validated arm only.
+    __setRegistryForTests(new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES));
+    const html = renderBioMarkdown("[[any-slug]]") ?? "";
+    expect(html).toContain('<a class="wikilink" href="/problems/any-slug">any-slug</a>');
+    expect(html).not.toContain("wikilink-unresolved");
+  });
+});
