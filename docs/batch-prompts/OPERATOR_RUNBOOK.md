@@ -116,6 +116,8 @@ git -C c:\opensource\OpenProblems worktree list
 
 **If you see `fatal: 'main' is already used by worktree at ...`:** you forgot `--detach`. Remove any empty slot directories under `c:\opensource\OpenProblems-worktrees\` (no Git state created on failure, just empty dirs) and re-run with the corrected command.
 
+**If you see `fatal: '<path>' is a missing but already registered worktree`:** a prior worktree directory was removed via `Remove-Item` / `rm -rf` without telling git, so git still has stale metadata pointing at the vanished path. Clean shutdown is always `git worktree remove <path>`, never raw `Remove-Item`. To recover: run `git worktree prune --verbose` to garbage-collect the dead registrations, then re-run the worktree-add loop above. **`git worktree prune` does NOT delete branches** — any `curate/*` refs from the prior session runs remain reachable and can be inspected via `git log curate/<name>` or deleted with `git branch -D curate/<name>` once you have decided their fate.
+
 ### 0.6. Install dependencies in each worktree
 
 Each worktree needs its own `node_modules/` for the pre-commit `pnpm test` to work. pnpm's content-addressable store makes this fast (~30–60 sec per worktree, mostly cache-hit):
