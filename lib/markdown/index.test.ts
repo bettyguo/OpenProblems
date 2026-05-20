@@ -18,6 +18,7 @@ import { OrcidExtensionRegistry, PHASE_54_DEFAULT_ENABLED_SURFACES } from "./ext
 import { PHASE_50_DEFAULT_ENABLED_SURFACES, PubmedExtensionRegistry } from "./extensions/pubmed";
 import { PHASE_39_DEFAULT_ENABLED_SURFACES, TablesExtensionRegistry } from "./extensions/tables";
 import {
+  CROSS_ENTITY_BUILD_HREF,
   PHASE_38_DEFAULT_ENABLED_SURFACES,
   WikilinkExtensionRegistry,
 } from "./extensions/wikilinks";
@@ -5237,5 +5238,114 @@ describe("Phase-60 first all-4-surfaces sextuple-alias state under 7-way composi
         '<a href="https://www.biorxiv.org/content/10.1101/2024.01.15.575678">safe biorxiv</a>',
       );
     }
+  });
+});
+
+describe('Phase-65 className end-to-end — `<a class="wikilink">` styling survives the full sanitize pipeline (first non-regex plugin-body realization; first 8-realization for plugin-body axis; first state where plugin-body axis exceeds registry-state axis; closes APPEND-D-L item 4 at 27-phase carryover — NEW LONGEST ABSOLUTE record; first post-tie absolute-record extension; first D-clause with 5+ items closed)', () => {
+  beforeEach(() => {
+    __resetMarkdownCachesForTests();
+  });
+
+  afterEach(() => {
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+  });
+
+  it('Phase-65: end-to-end wikilinks arm — `[[slug]]` renders with class="wikilink" through the full sanitize + strip-unsafe-hrefs + extensions pipeline (plugin-only emit pattern bypasses sanitize allow-list because rehypeResolveWikilinks runs AFTER rehype-sanitize per APPEND-D-D)', () => {
+    // Validates the Phase-65 plugin-only emit pattern end-to-end: the class
+    // attribute is NOT in bioSchema.attributes.a (which only allows ["href"])
+    // BUT survives the sanitize pass because the wikilinks plugin runs after
+    // rehype-sanitize and splices the classed <a> into the post-sanitize
+    // tree. This is the architectural validation for the Phase-65 framework
+    // decision.
+    __setRegistryForTests(new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES));
+    const html = renderBioMarkdown("see [[problem-slug]]") ?? "";
+    expect(html).toContain('class="wikilink"');
+    expect(html).toContain('href="/problems/problem-slug"');
+    expect(html).toContain('<a class="wikilink" href="/problems/problem-slug">problem-slug</a>');
+  });
+
+  it('Phase-65: end-to-end wikilinks-cross-entity arm — `[[paper:slug]]` renders with class="wikilink" + cross-entity routing (className orthogonal to buildHref; plugin-body axis + plugin-option axis compose independently)', () => {
+    // Cross-entity arm test: the className is emitted regardless of which
+    // builder is in use. Validates that the Phase-65 className addition
+    // does NOT interfere with Phase-63 cross-entity routing.
+    __setRegistryForTests(
+      new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES, {
+        buildHref: CROSS_ENTITY_BUILD_HREF,
+      }),
+    );
+    const html =
+      renderBioMarkdown("see [[paper:arxiv-2401]] cited by [[author:jane-doe|Jane]]") ?? "";
+    expect(html).toContain('<a class="wikilink" href="/papers/arxiv-2401">arxiv-2401</a>');
+    expect(html).toContain('<a class="wikilink" href="/authors/jane-doe">Jane</a>');
+  });
+
+  it("Phase-65: external markdown links remain UNCLASSED end-to-end — only wikilinks-plugin-resolved anchors get the className (negative-scope discrimination at the full-pipeline level)", () => {
+    // Critical scope contract validated end-to-end: external links via
+    // standard markdown `[text](url)` syntax continue to emit unclassed
+    // `<a>` tags via remark-rehype's default transformation, even after
+    // the Phase-65 plugin evolution. The className is wikilink-plugin-
+    // specific. Mixes external + wikilink in the same source.
+    __setRegistryForTests(new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES));
+    const html =
+      renderBioMarkdown("external [link](https://example.com) and wikilink [[problem-slug]]") ?? "";
+    // The external link is unclassed; the wikilink is classed.
+    expect(html).toContain('<a href="https://example.com">link</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/problem-slug">problem-slug</a>');
+    // Stronger assertion: only ONE class="wikilink" attribute in the entire
+    // output (corresponding to the wikilink anchor only).
+    const classCount = (html.match(/class="wikilink"/g) ?? []).length;
+    expect(classCount).toBe(1);
+  });
+
+  it('Phase-65: 7-way default composite emits class="wikilink" on resolved wikilinks across ALL 4 surfaces — Phase-42 cross-surface invariant preserved with className addition (no composite conflict)', () => {
+    // Composite registry composition validation: the className addition
+    // composes conflict-free with the other 6 consumers (tables + arxiv +
+    // doi + pubmed + orcid + biorxiv) under the canonical 7-way default.
+    // Validates that the Phase-65 plugin-body extension does NOT trigger
+    // the composite single-source schemaOverrides rule (no schemaOverrides
+    // change in Phase 65).
+    const wikilinks = new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES);
+    const tables = new TablesExtensionRegistry(PHASE_39_DEFAULT_ENABLED_SURFACES);
+    const arxiv = new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES);
+    const doi = new DoiExtensionRegistry(PHASE_45_DEFAULT_ENABLED_SURFACES);
+    const pubmed = new PubmedExtensionRegistry(PHASE_50_DEFAULT_ENABLED_SURFACES);
+    const orcid = new OrcidExtensionRegistry(PHASE_54_DEFAULT_ENABLED_SURFACES);
+    const biorxiv = new BiorxivExtensionRegistry(PHASE_58_DEFAULT_ENABLED_SURFACES);
+    __setRegistryForTests(
+      new CompositeExtensionRegistry([wikilinks, tables, arxiv, doi, pubmed, orcid, biorxiv]),
+    );
+    __resetMarkdownCachesForTests();
+
+    const wikilinkSnippet = "see [[problem-slug]]";
+    // Render through all 4 wired surfaces; assert className survives on each.
+    expect(renderBioMarkdown(wikilinkSnippet) ?? "").toContain(
+      '<a class="wikilink" href="/problems/problem-slug">problem-slug</a>',
+    );
+    expect(renderReviewNotesMarkdown(wikilinkSnippet) ?? "").toContain(
+      '<a class="wikilink" href="/problems/problem-slug">problem-slug</a>',
+    );
+    expect(renderRationaleMarkdown(wikilinkSnippet)).toContain(
+      '<a class="wikilink" href="/problems/problem-slug">problem-slug</a>',
+    );
+    expect(renderActionRationaleMarkdown(wikilinkSnippet)).toContain(
+      '<a class="wikilink" href="/problems/problem-slug">problem-slug</a>',
+    );
+  });
+
+  it("Phase-65: default registry (no wikilinks enabled) emits NO className anywhere — the className is wikilinks-consumer-specific, not a framework-wide attribute (DefaultExtensionRegistry Day-1 parity preserved)", () => {
+    // Surfaces under DefaultExtensionRegistry receive empty extension sets;
+    // wikilinks plugin does NOT run; no className emitted on any <a> tag.
+    // Validates the Phase-65 addition is scoped to the wikilinks consumer.
+    __resetRegistryForTests();
+    __resetMarkdownCachesForTests();
+    const html =
+      renderBioMarkdown("external [link](https://example.com) and `[[not-a-wikilink]]` as code") ??
+      "";
+    // The external link is present (unclassed); the code-block content
+    // survives as literal (no wikilink resolution).
+    expect(html).toContain('<a href="https://example.com">link</a>');
+    expect(html).not.toContain('class="wikilink"');
+    expect(html).not.toContain("class=");
   });
 });
