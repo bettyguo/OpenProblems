@@ -395,9 +395,9 @@ Q4 resolved in Unit 1.0 (2026-05-14); Apache-2.0 picked over MIT for the explici
 
 <a href="https://star-history.com/#bettyguo/OpenProblems&Date">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=jacobwucs/OpenProblems&type=Date&theme=dark"/>
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=jacobwucs/OpenProblems&type=Date"/>
-    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=jacobwucs/OpenProblems&type=Date" width="100%"/>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=bettyguo/OpenProblems&type=Date&theme=dark"/>
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=bettyguo/OpenProblems&type=Date"/>
+    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=bettyguo/OpenProblems&type=Date" width="100%"/>
   </picture>
 </a>
 
