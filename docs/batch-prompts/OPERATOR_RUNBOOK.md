@@ -640,3 +640,210 @@ The 250 count is **the** target, not "phase 1 of N". Future maintenance is:
 - **Quarterly UPDATE pass** (every ~3 months). Use `docs/CURATION_PROMPT.md` in UPDATE mode per slug. Don't add new problems; refresh ratings.
 - **Annual taxonomy review.** If a new subdomain emerges, write an ADR amending `MASTER_PROMPT.md` §4. Only then add new problems in that subdomain.
 - **Never** scale past ~300 without explicitly re-evaluating the methodology paper. Scale destroys trust.
+
+---
+
+## Appendix A — Multi-PC operation (split across 2 machines)
+
+If the operator has access to two machines and wants to halve wall-clock, split the 20 slots 10/10 and run them in parallel on PC-A and PC-B. The Phase 0 → 5 flow stays the same; three sync points coordinate the two PCs through a shared remote.
+
+### A.1. Recommended split (sequential, 10/10)
+
+| PC       | Slots | Sum of new problems | Chunked slots (need continuation burst) |
+| -------- | ----- | ------------------- | --------------------------------------- |
+| **PC-A** | 01–10 | 136                 | 2 (slot 01 = 22, slot 07 = 18)          |
+| **PC-B** | 11–20 | 114                 | 2 (slot 11 = 16, slot 20 = 16)          |
+
+Asymmetry: ~22 problems / ~9%. PC-A finishes ~20–30 min later than PC-B. Each PC has the same workflow shape (one main burst of 10 sessions + one continuation burst of ~2 sessions). The split is balanced enough that load-balancing across slots is not worth the bookkeeping cost.
+
+If PC-B is materially slower (older hardware, weaker network), swap slot 07 (PC-A, 18 problems) for slot 03 (PC-B, 13 problems): new totals 131 / 119, smaller gap.
+
+### A.2. Sync point 1 — Publish a shared baseline (~5 min)
+
+Before any session opens on either PC, both must hold the same commit on `main`.
+
+**On PC-A** (currently 7+ commits ahead of `origin/main`):
+
+```pwsh
+cd c:\opensource\OpenProblems
+git status --short             # must be clean
+git push origin main
+```
+
+**On PC-B:**
+
+```pwsh
+# First-time setup:
+cd c:\opensource
+git clone <repo-url> OpenProblems
+cd OpenProblems
+pnpm install
+
+# Or, if PC-B already has a clone:
+cd c:\opensource\OpenProblems
+git switch main
+git pull --ff-only origin main
+pnpm install   # only if dependencies changed since last pull
+```
+
+Verify both PCs are on the same commit:
+
+```pwsh
+git rev-parse HEAD     # same SHA on both PCs
+git status --short     # empty on both
+```
+
+### A.3. Phase 0 preflight, per-PC variant
+
+Both PCs run Phase 0.1–0.7 as documented, with **two** changes:
+
+- **0.4 (RUN_ID refresh):** Run on **one PC only** (say PC-A), commit the regenerated slot files locally, push to origin, pull on PC-B. This ensures both PCs use the same RUN_ID suffixes — and therefore the same branch names. If both PCs regenerate independently with different prefixes, RUN_IDs diverge and branch names collide at merge time. Run once, share via git.
+
+  ```pwsh
+  # On PC-A only:
+  $env:RUN_ID_PREFIX = [DateTime]::UtcNow.ToString("yyyy-MM-ddTHH-mm")
+  node scripts/generate-batch-prompts.mjs
+  git add docs/batch-prompts/
+  git commit -m "chore(curation): refresh RUN_ID prefix for campaign $(Get-Date -Format yyyy-MM-dd)"
+  git push origin main
+
+  # On PC-B:
+  git pull --ff-only origin main
+  ```
+
+- **0.5 (worktree creation):** Each PC creates worktrees for **only its 10 assigned slots**:
+
+  ```pwsh
+  # On PC-A (slots 01-10):
+  $base = "c:\opensource\OpenProblems-worktrees"
+  New-Item -ItemType Directory -Force -Path $base | Out-Null
+  Get-ChildItem c:\opensource\OpenProblems\docs\batch-prompts -Filter 'slot-0[1-9]-*.md','slot-10-*.md' | ForEach-Object {
+    $slotDir = Join-Path $base $_.BaseName
+    if (-not (Test-Path $slotDir)) {
+      git -C c:\opensource\OpenProblems worktree add --detach $slotDir main
+    }
+  }
+
+  # On PC-B (slots 11-20):
+  $base = "c:\opensource\OpenProblems-worktrees"
+  New-Item -ItemType Directory -Force -Path $base | Out-Null
+  Get-ChildItem c:\opensource\OpenProblems\docs\batch-prompts -Filter 'slot-1[1-9]-*.md','slot-20-*.md' | ForEach-Object {
+    $slotDir = Join-Path $base $_.BaseName
+    if (-not (Test-Path $slotDir)) {
+      git -C c:\opensource\OpenProblems worktree add --detach $slotDir main
+    }
+  }
+  ```
+
+  Each PC ends up with 11 worktrees in `git worktree list` (1 main + 10 slots). The `pnpm install` loop in 0.6 stays as-is, just runs on ~10 worktrees instead of 20.
+
+### A.4. Phase 1–3 — Independent work (each PC, ~3 hours)
+
+Each PC runs **Phase 1** (main burst) and **Phase 3** (continuation burst) independently, in its own slot range. **Do not coordinate between PCs during this time** — sessions only touch files inside their own slot worktree, so the two PCs cannot affect each other.
+
+Phase 2 (identifying continuations) runs separately on each PC: each PC lists its own `docs/resume-checkpoints/*.md` files and launches continuation sessions only for the chunked slots it owns.
+
+### A.5. Sync point 2 — Push curate branches to origin (~5 min, on each PC)
+
+After **each PC's** Phase 3 finishes (every territory's `remaining: 0`):
+
+```pwsh
+# Run on each PC after its sessions are done:
+cd c:\opensource\OpenProblems
+git branch --list 'curate/*' | ForEach-Object {
+  $b = $_.Trim().TrimStart('* ')
+  git push origin $b
+}
+```
+
+Each curate branch was created locally and has never been pushed, so this is a fast-forward push every time. No `--force` ever required.
+
+Verify on origin:
+
+```pwsh
+git ls-remote --heads origin 'curate/*'
+```
+
+PC-A's push uploads 10 branches; PC-B's push uploads the other 10. After both push, origin holds all 20.
+
+### A.6. Sync point 3 — Merge pass on ONE PC (~60–90 min)
+
+Choose the merger PC (typically PC-A since it's likely the primary). On that PC:
+
+```pwsh
+cd c:\opensource\OpenProblems
+git switch main
+git pull --ff-only origin main
+git fetch origin 'refs/heads/curate/*:refs/heads/curate/*'
+git branch --list 'curate/*' | Measure-Object | Select-Object Count
+```
+
+**Expected:** the count is 20. If less, one of the other PC's push didn't land; re-run that PC's Sync-point-2 loop.
+
+Now run the **Phase 4 merge prompt** as documented in §4.3, with one adjustment to the prompt's step 5 (singleton aggregation): the inbox files for branches that came from the other PC are **only on the branch refs, not in any worktree**. The merger session reads them via `git show <branch-ref>:<path>` rather than scanning the worktree filesystem. Add this to the merge prompt:
+
+> **Important for multi-PC merge:** branches imported via `git fetch origin 'refs/heads/curate/*:refs/heads/curate/*'` do not have worktrees on this machine. Read their inbox files via `git show <branch>:<path>` rather than expecting them on disk. The PowerShell aggregation snippet in Phase 4.2 of the runbook will not find them under `c:\opensource\OpenProblems-worktrees\` — use `git show` instead.
+
+The rest of the merge pass works identically: branch review, `git merge --no-ff` each kept branch, singleton aggregation, cross-link audit, final validation, final commit. Approve at each pause.
+
+### A.7. Phase 5 — Push + cleanup (multi-PC variant)
+
+After the merge session commits, push `main` and delete the campaign branches from origin:
+
+```pwsh
+# On the merger PC:
+cd c:\opensource\OpenProblems
+git push origin main
+
+# Delete the 20 curate branches from origin (cleanup):
+git branch --list 'curate/*' | ForEach-Object {
+  $b = $_.Trim().TrimStart('* ')
+  git push origin --delete $b
+}
+
+# Delete them locally on the merger PC:
+git branch --list 'curate/*' | ForEach-Object {
+  $b = $_.Trim().TrimStart('* ')
+  git branch -D $b
+}
+
+# Remove the merger PC's 10 worktrees (Phase 5.3 of the main runbook):
+Get-ChildItem c:\opensource\OpenProblems-worktrees -Directory | ForEach-Object {
+  git worktree remove $_.FullName
+}
+Remove-Item c:\opensource\OpenProblems-worktrees -Force -Recurse
+```
+
+**On the other PC** (PC-B if PC-A was the merger):
+
+```pwsh
+cd c:\opensource\OpenProblems
+git switch main
+git pull --ff-only origin main          # picks up the merged main + the deletions of curate/*
+
+# The local curate/* branches on PC-B are now orphaned (their refs were deleted from origin).
+# Delete them locally:
+git branch --list 'curate/*' | ForEach-Object {
+  $b = $_.Trim().TrimStart('* ')
+  git branch -D $b
+}
+
+# Remove PC-B's 10 worktrees:
+Get-ChildItem c:\opensource\OpenProblems-worktrees -Directory | ForEach-Object {
+  git worktree remove $_.FullName
+}
+Remove-Item c:\opensource\OpenProblems-worktrees -Force -Recurse
+```
+
+Both PCs now hold the merged `main` with ~260 problems and no campaign branches.
+
+### A.8. Failure-mode quick reference for multi-PC operation
+
+| Symptom                                                                          | Cause                                                                               | Fix                                                                                                                                                                             |
+| -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `git push origin <curate-branch>` returns "non-fast-forward"                     | The same branch name exists on origin from a prior aborted run                      | `git fetch origin <branch>` to inspect; if old, `git push origin --delete <branch>`, then re-push from the current PC                                                           |
+| Merger PC's `git fetch` count is 10 instead of 20                                | The other PC didn't push, or there's a network glitch                               | Confirm the other PC ran its Sync-point-2 loop; check `git ls-remote --heads origin 'curate/*'` from the merger PC                                                              |
+| Both PCs generated different RUN_IDs (different branch names per slot)           | The Phase 0.4 regeneration was run on both PCs instead of once                      | Pick one PC's set of branches as authoritative; on the other PC, `git branch -D` its `curate/*` and re-run sessions using the slot files from the authoritative PC (`git pull`) |
+| Merger session reports "branch curate/X-c2 deletes content authored on curate/X" | A continuation session on the other PC reused a parent slug, race-conflict at merge | Drop the chunk-2 branch; keep the parent. Re-author the deferred slugs in a follow-up run if needed                                                                             |
+
+The multi-PC workflow does NOT change the methodology, the per-slot quality bar, or the merge-pass approval pauses — it only adds three short coordination commands at the boundaries.
