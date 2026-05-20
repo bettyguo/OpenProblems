@@ -22,7 +22,7 @@ You, the human operator, follow this document literally — every command, every
 ```pwsh
 # Once per campaign
 cd c:\opensource\OpenProblems
-$env:RUN_ID_PREFIX = (Get-Date -AsUTC).ToString("yyyy-MM-ddTHH-mm")
+$env:RUN_ID_PREFIX = [DateTime]::UtcNow.ToString("yyyy-MM-ddTHH-mm")
 node scripts/generate-batch-prompts.mjs
 # Burst 1: open 20 Claude Code windows, paste docs/batch-prompts/slot-NN-*.md prompts
 # Burst 2: open ~4 continuation sessions from checkpoints (Phase 2)
@@ -82,7 +82,7 @@ Close that test session.
 The committed slot files use a stable prefix (`2026-05-20T17-00-…`) for diffability. Before a real campaign, bake in today's timestamp so branch names are calendar-accurate:
 
 ```pwsh
-$env:RUN_ID_PREFIX = (Get-Date -AsUTC).ToString("yyyy-MM-ddTHH-mm")
+$env:RUN_ID_PREFIX = [DateTime]::UtcNow.ToString("yyyy-MM-ddTHH-mm")
 node scripts/generate-batch-prompts.mjs
 ```
 

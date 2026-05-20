@@ -434,7 +434,7 @@ $slots = @(
   @{ Label = "theory";             Territory = "theory/dl-theory,theory/learning-theory,theory/rl-planning-theory,theory/optimization-theory,theory/game-theory,theory/probabilistic-theory,theory/online-bandits,theory/active-interactive,theory/domain-adaptation-transfer,theory/theory-other"; New = 16; Updates = "" }
 )
 
-$ts = (Get-Date -AsUTC).ToString("yyyy-MM-ddTHH-mm")
+$ts = [DateTime]::UtcNow.ToString("yyyy-MM-ddTHH-mm")
 $promptTemplate = Get-Content docs/BATCH_GENERATION_PROMPT.md -Raw
 
 foreach ($slot in $slots) {
