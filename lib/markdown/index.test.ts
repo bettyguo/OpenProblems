@@ -575,9 +575,9 @@ describe("Phase-38 wikilinks consumer — end-to-end via WikilinkExtensionRegist
     __resetMarkdownCachesForTests();
   });
 
-  it('renders [[problem-slug]] as <a href="/problems/{slug}">{slug}</a> in actionRationale', () => {
+  it('renders [[problem-slug]] as <a class="wikilink" href="/problems/{slug}">{slug}</a> in actionRationale', () => {
     expect(renderActionRationaleMarkdown("see [[scalable-oversight]] for context")).toBe(
-      '<p>see <a href="/problems/scalable-oversight">scalable-oversight</a> for context</p>',
+      '<p>see <a class="wikilink" href="/problems/scalable-oversight">scalable-oversight</a> for context</p>',
     );
   });
 
@@ -585,7 +585,7 @@ describe("Phase-38 wikilinks consumer — end-to-end via WikilinkExtensionRegist
     expect(
       renderActionRationaleMarkdown("[[hallucination-reduction]] and [[long-context-rag]]"),
     ).toBe(
-      '<p><a href="/problems/hallucination-reduction">hallucination-reduction</a> and <a href="/problems/long-context-rag">long-context-rag</a></p>',
+      '<p><a class="wikilink" href="/problems/hallucination-reduction">hallucination-reduction</a> and <a class="wikilink" href="/problems/long-context-rag">long-context-rag</a></p>',
     );
   });
 
@@ -631,7 +631,7 @@ describe("Phase-38 wikilinks consumer — end-to-end via WikilinkExtensionRegist
 
   it("renders wikilink inside emphasized text (nested element preservation)", () => {
     expect(renderActionRationaleMarkdown("**[[hallucination-reduction]]** is the work")).toBe(
-      '<p><strong><a href="/problems/hallucination-reduction">hallucination-reduction</a></strong> is the work</p>',
+      '<p><strong><a class="wikilink" href="/problems/hallucination-reduction">hallucination-reduction</a></strong> is the work</p>',
     );
   });
 });
@@ -757,7 +757,7 @@ describe("Phase-40 composite consumer — end-to-end wikilinks + tables coexiste
 
   it("wikilinks resolve on actionRationale under composite", () => {
     expect(renderActionRationaleMarkdown("see [[scalable-oversight]] here")).toBe(
-      '<p>see <a href="/problems/scalable-oversight">scalable-oversight</a> here</p>',
+      '<p>see <a class="wikilink" href="/problems/scalable-oversight">scalable-oversight</a> here</p>',
     );
   });
 
@@ -927,7 +927,7 @@ describe("Phase-41 3-way composite consumer — wikilinks + tables + arxiv coexi
 
   it("wikilinks resolve on actionRationale under 3-way composite", () => {
     expect(renderActionRationaleMarkdown("see [[scalable-oversight]] here")).toBe(
-      '<p>see <a href="/problems/scalable-oversight">scalable-oversight</a> here</p>',
+      '<p>see <a class="wikilink" href="/problems/scalable-oversight">scalable-oversight</a> here</p>',
     );
   });
 
@@ -1006,25 +1006,25 @@ describe("Phase-42 wikilinks default — all 4 surfaces via PHASE_38_DEFAULT_ENA
 
   it("wikilinks resolve on bio under Phase-42 default (newly-enabled surface)", () => {
     expect(renderBioMarkdown("see [[scalable-oversight]] for my work")).toBe(
-      '<p>see <a href="/problems/scalable-oversight">scalable-oversight</a> for my work</p>',
+      '<p>see <a class="wikilink" href="/problems/scalable-oversight">scalable-oversight</a> for my work</p>',
     );
   });
 
   it("wikilinks resolve on reviewNotes under Phase-42 default (newly-enabled surface)", () => {
     expect(renderReviewNotesMarkdown("compare with [[hallucination-reduction]]")).toBe(
-      '<p>compare with <a href="/problems/hallucination-reduction">hallucination-reduction</a></p>',
+      '<p>compare with <a class="wikilink" href="/problems/hallucination-reduction">hallucination-reduction</a></p>',
     );
   });
 
   it("wikilinks resolve on rationale under Phase-42 default (newly-enabled surface)", () => {
     expect(renderRationaleMarkdown("see [[scalable-oversight]] for context")).toBe(
-      '<p>see <a href="/problems/scalable-oversight">scalable-oversight</a> for context</p>',
+      '<p>see <a class="wikilink" href="/problems/scalable-oversight">scalable-oversight</a> for context</p>',
     );
   });
 
   it("wikilinks resolve on actionRationale under Phase-42 default (Phase-38 baseline)", () => {
     expect(renderActionRationaleMarkdown("see [[scalable-oversight]] here")).toBe(
-      '<p>see <a href="/problems/scalable-oversight">scalable-oversight</a> here</p>',
+      '<p>see <a class="wikilink" href="/problems/scalable-oversight">scalable-oversight</a> here</p>',
     );
   });
 
@@ -1105,7 +1105,7 @@ describe("Phase-42 same-surface different-slot composition under default dispatc
     // First 4-of-4 surface-coverage state: wikilinks now enabled on bio
     // under Phase-42 default; no other consumer touches bio.
     expect(renderBioMarkdown("see [[scalable-oversight]] for my work")).toBe(
-      '<p>see <a href="/problems/scalable-oversight">scalable-oversight</a> for my work</p>',
+      '<p>see <a class="wikilink" href="/problems/scalable-oversight">scalable-oversight</a> for my work</p>',
     );
   });
 
@@ -1113,7 +1113,7 @@ describe("Phase-42 same-surface different-slot composition under default dispatc
     // Phase-38 baseline: wikilinks on actionRationale. Carried verbatim
     // under the Phase-42 expanded default.
     expect(renderActionRationaleMarkdown("see [[hallucination-reduction]]")).toBe(
-      '<p>see <a href="/problems/hallucination-reduction">hallucination-reduction</a></p>',
+      '<p>see <a class="wikilink" href="/problems/hallucination-reduction">hallucination-reduction</a></p>',
     );
   });
 
@@ -1791,28 +1791,32 @@ describe("Phase-46 wikilink alias syntax — all 4 surfaces under default dispat
 
   it("alias renders on bio: [[slug|display]] → <a href=/problems/slug>display</a>", () => {
     expect(renderBioMarkdown("I work on [[scalable-oversight|the alignment frontier]]")).toBe(
-      '<p>I work on <a href="/problems/scalable-oversight">the alignment frontier</a></p>',
+      '<p>I work on <a class="wikilink" href="/problems/scalable-oversight">the alignment frontier</a></p>',
     );
   });
 
   it("alias renders on reviewNotes: display divergence preserved through full pipeline", () => {
     expect(
       renderReviewNotesMarkdown("compare to [[hallucination-reduction|the truth problem]]"),
-    ).toBe('<p>compare to <a href="/problems/hallucination-reduction">the truth problem</a></p>');
+    ).toBe(
+      '<p>compare to <a class="wikilink" href="/problems/hallucination-reduction">the truth problem</a></p>',
+    );
   });
 
   it("alias renders on rationale: prose-style display preserved", () => {
     expect(
       renderRationaleMarkdown("see [[long-horizon-agent-reliability|this problem]] for context"),
     ).toBe(
-      '<p>see <a href="/problems/long-horizon-agent-reliability">this problem</a> for context</p>',
+      '<p>see <a class="wikilink" href="/problems/long-horizon-agent-reliability">this problem</a> for context</p>',
     );
   });
 
   it("alias renders on actionRationale: Phase-38 baseline surface preserves alias", () => {
     expect(
       renderActionRationaleMarkdown("upgrade reflects [[scalable-oversight|recent progress]]"),
-    ).toBe('<p>upgrade reflects <a href="/problems/scalable-oversight">recent progress</a></p>');
+    ).toBe(
+      '<p>upgrade reflects <a class="wikilink" href="/problems/scalable-oversight">recent progress</a></p>',
+    );
   });
 
   it("backwards-compat: bare [[slug]] still renders identically on all 4 surfaces", () => {
@@ -1820,7 +1824,8 @@ describe("Phase-46 wikilink alias syntax — all 4 surfaces under default dispat
     // (16 occurrences across rating-action YAMLs at Phase 38 ship) renders
     // unchanged.
     const md = "[[scalable-oversight]]";
-    const expected = '<p><a href="/problems/scalable-oversight">scalable-oversight</a></p>';
+    const expected =
+      '<p><a class="wikilink" href="/problems/scalable-oversight">scalable-oversight</a></p>';
     expect(renderBioMarkdown(md)).toBe(expected);
     expect(renderReviewNotesMarkdown(md)).toBe(expected);
     expect(renderRationaleMarkdown(md)).toBe(expected);
@@ -1833,8 +1838,8 @@ describe("Phase-46 wikilink alias syntax — all 4 surfaces under default dispat
         "see [[scalable-oversight|here]] and the related [[hallucination-reduction]]",
       ),
     ).toBe(
-      '<p>see <a href="/problems/scalable-oversight">here</a> and the related ' +
-        '<a href="/problems/hallucination-reduction">hallucination-reduction</a></p>',
+      '<p>see <a class="wikilink" href="/problems/scalable-oversight">here</a> and the related ' +
+        '<a class="wikilink" href="/problems/hallucination-reduction">hallucination-reduction</a></p>',
     );
   });
 
@@ -1843,12 +1848,12 @@ describe("Phase-46 wikilink alias syntax — all 4 surfaces under default dispat
     // line of defense for HTML-special chars in display text. No new
     // XSS surface introduced by Phase-46 alias syntax.
     const html = renderRationaleMarkdown("see [[a|x < y]] for math");
-    expect(html).toContain('<a href="/problems/a">x &#x3C; y</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/a">x &#x3C; y</a>');
   });
 
   it("alias ampersand escapes on bio (text-node escape preserves XSS line of defense)", () => {
     const html = renderBioMarkdown("[[a|Cats & dogs]]");
-    expect(html ?? "").toContain('<a href="/problems/a">Cats &#x26; dogs</a>');
+    expect(html ?? "").toContain('<a class="wikilink" href="/problems/a">Cats &#x26; dogs</a>');
   });
 
   it("XSS defenses survive alias on rationale (javascript: stripped; alias still resolves)", () => {
@@ -1856,7 +1861,7 @@ describe("Phase-46 wikilink alias syntax — all 4 surfaces under default dispat
       "[bad](javascript:alert(1)) and [[scalable-oversight|here]]",
     );
     expect(html).not.toContain("javascript:alert");
-    expect(html).toContain('<a href="/problems/scalable-oversight">here</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/scalable-oversight">here</a>');
   });
 
   it("empty alias [[slug|]] falls through as literal on all 4 surfaces (no match)", () => {
@@ -1901,7 +1906,7 @@ describe("Phase-46 alias under Phase-45 4-way composite — wikilinks,tables,arx
     const md =
       "see [[scalable-oversight|here]] arxiv:1909.03004 doi:10.1234/abc.\n\n| A | B |\n|---|---|\n| 1 | 2 |";
     const html = renderRationaleMarkdown(md);
-    expect(html).toContain('<a href="/problems/scalable-oversight">here</a>'); // wikilinks + alias
+    expect(html).toContain('<a class="wikilink" href="/problems/scalable-oversight">here</a>'); // wikilinks + alias
     expect(html).toContain('href="https://arxiv.org/abs/1909.03004"'); // arxiv
     expect(html).toContain('href="https://doi.org/10.1234/abc"'); // doi
     expect(html).toContain("<table>"); // tables
@@ -1911,7 +1916,9 @@ describe("Phase-46 alias under Phase-45 4-way composite — wikilinks,tables,arx
     const md =
       "I work on [[hallucination-reduction|truth in LLMs]] arxiv:2024.01234.\n\n| C |\n|---|\n| ok |";
     const html = renderBioMarkdown(md) ?? "";
-    expect(html).toContain('<a href="/problems/hallucination-reduction">truth in LLMs</a>');
+    expect(html).toContain(
+      '<a class="wikilink" href="/problems/hallucination-reduction">truth in LLMs</a>',
+    );
     expect(html).toContain('href="https://arxiv.org/abs/2024.01234"');
     expect(html).toContain("<table>");
     expect(html).not.toContain("doi.org");
@@ -1921,7 +1928,7 @@ describe("Phase-46 alias under Phase-45 4-way composite — wikilinks,tables,arx
     const md = "[bad](javascript:alert(1)) [[s|safe display]] arxiv:1909.03004 doi:10.1234/abc.";
     const html = renderRationaleMarkdown(md);
     expect(html).not.toContain("javascript:alert");
-    expect(html).toContain('<a href="/problems/s">safe display</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/s">safe display</a>');
     expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
     expect(html).toContain('href="https://doi.org/10.1234/abc"');
   });
@@ -1931,7 +1938,9 @@ describe("Phase-46 alias under Phase-45 4-way composite — wikilinks,tables,arx
     // when the curator doesn't use alias syntax — backwards-compat holds.
     const md = "see [[scalable-oversight]] arxiv:1909.03004";
     const html = renderActionRationaleMarkdown(md);
-    expect(html).toContain('<a href="/problems/scalable-oversight">scalable-oversight</a>');
+    expect(html).toContain(
+      '<a class="wikilink" href="/problems/scalable-oversight">scalable-oversight</a>',
+    );
     expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
   });
 });
@@ -2063,7 +2072,7 @@ describe("Phase-47 arxiv alias under Phase-45 4-way composite — wikilinks,tabl
     const md =
       "see [[scalable-oversight|here]] and [[arxiv:1909.03004|Smith 2024]] and doi:10.1234/abc.\n\n| A | B |\n|---|---|\n| 1 | 2 |";
     const html = renderRationaleMarkdown(md);
-    expect(html).toContain('<a href="/problems/scalable-oversight">here</a>'); // wikilinks alias
+    expect(html).toContain('<a class="wikilink" href="/problems/scalable-oversight">here</a>'); // wikilinks alias
     expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">Smith 2024</a>'); // arxiv alias
     expect(html).toContain('href="https://doi.org/10.1234/abc"'); // doi
     expect(html).toContain("<table>"); // tables
@@ -2074,7 +2083,9 @@ describe("Phase-47 arxiv alias under Phase-45 4-way composite — wikilinks,tabl
       "I cite [[arxiv:1909.03004|the original work]] for [[hallucination-reduction|this topic]].\n\n| C |\n|---|\n| ok |";
     const html = renderBioMarkdown(md) ?? "";
     expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">the original work</a>');
-    expect(html).toContain('<a href="/problems/hallucination-reduction">this topic</a>');
+    expect(html).toContain(
+      '<a class="wikilink" href="/problems/hallucination-reduction">this topic</a>',
+    );
     expect(html).toContain("<table>");
     expect(html).not.toContain("doi.org");
   });
@@ -2084,7 +2095,9 @@ describe("Phase-47 arxiv alias under Phase-45 4-way composite — wikilinks,tabl
     // 4-way composite + Phase-46/47 regex extensions.
     const md = "see [[scalable-oversight]] arxiv:1909.03004 doi:10.1234/abc.";
     const html = renderRationaleMarkdown(md);
-    expect(html).toContain('<a href="/problems/scalable-oversight">scalable-oversight</a>');
+    expect(html).toContain(
+      '<a class="wikilink" href="/problems/scalable-oversight">scalable-oversight</a>',
+    );
     expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">arxiv:1909.03004</a>');
     expect(html).toContain('href="https://doi.org/10.1234/abc"');
   });
@@ -2094,7 +2107,7 @@ describe("Phase-47 arxiv alias under Phase-45 4-way composite — wikilinks,tabl
       "[bad](javascript:alert(1)) [[s|safe slug]] [[arxiv:1909.03004|safe arxiv]] doi:10.1234/abc.";
     const html = renderRationaleMarkdown(md);
     expect(html).not.toContain("javascript:alert");
-    expect(html).toContain('<a href="/problems/s">safe slug</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/s">safe slug</a>');
     expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">safe arxiv</a>');
     expect(html).toContain('href="https://doi.org/10.1234/abc"');
   });
@@ -2240,7 +2253,7 @@ describe("Phase-48 doi alias under Phase-45 4-way composite — first triple-ali
     const md =
       "see [[scalable-oversight|here]], [[arxiv:1909.03004|Smith 2024]], and [[doi:10.48550/arXiv.2005.14165|Brown 2020]].\n\n| A | B |\n|---|---|\n| 1 | 2 |";
     const html = renderRationaleMarkdown(md);
-    expect(html).toContain('<a href="/problems/scalable-oversight">here</a>'); // wikilinks alias
+    expect(html).toContain('<a class="wikilink" href="/problems/scalable-oversight">here</a>'); // wikilinks alias
     expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">Smith 2024</a>'); // arxiv alias
     expect(html).toContain('<a href="https://doi.org/10.48550/arXiv.2005.14165">Brown 2020</a>'); // doi alias
     expect(html).toContain("<table>"); // tables
@@ -2255,7 +2268,9 @@ describe("Phase-48 doi alias under Phase-45 4-way composite — first triple-ali
       "I cite [[arxiv:1909.03004|the original]] for [[hallucination-reduction|this topic]] and [[doi:10.1234/abc|paper]].";
     const html = renderBioMarkdown(md) ?? "";
     expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">the original</a>');
-    expect(html).toContain('<a href="/problems/hallucination-reduction">this topic</a>');
+    expect(html).toContain(
+      '<a class="wikilink" href="/problems/hallucination-reduction">this topic</a>',
+    );
     // doi alias does NOT render on bio; the [[doi:...|paper]] text passes
     // through. Verify no <a href="https://doi.org/..."> emitted.
     expect(html).not.toContain('href="https://doi.org/');
@@ -2265,14 +2280,14 @@ describe("Phase-48 doi alias under Phase-45 4-way composite — first triple-ali
     const md = "see [[arxiv:2024.01234|the survey]] and [[scalable-oversight|context]] notes.";
     const html = renderReviewNotesMarkdown(md);
     expect(html).toContain('<a href="https://arxiv.org/abs/2024.01234">the survey</a>');
-    expect(html).toContain('<a href="/problems/scalable-oversight">context</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/scalable-oversight">context</a>');
   });
 
   it("actionRationale: wikilinks + arxiv aliases render (dual-alias; doi inactive)", () => {
     const md = "upgrade reflects [[arxiv:1909.03004|the work]] on [[benchmark-integrity|this]].";
     const html = renderActionRationaleMarkdown(md);
     expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">the work</a>');
-    expect(html).toContain('<a href="/problems/benchmark-integrity">this</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/benchmark-integrity">this</a>');
   });
 
   it("backwards-compat under 4-way composite: bare doi + bare arxiv + bare [[slug]] still work on rationale", () => {
@@ -2281,7 +2296,9 @@ describe("Phase-48 doi alias under Phase-45 4-way composite — first triple-ali
     // extensions.
     const md = "see [[scalable-oversight]] arxiv:1909.03004 doi:10.1234/abc.";
     const html = renderRationaleMarkdown(md);
-    expect(html).toContain('<a href="/problems/scalable-oversight">scalable-oversight</a>');
+    expect(html).toContain(
+      '<a class="wikilink" href="/problems/scalable-oversight">scalable-oversight</a>',
+    );
     expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">arxiv:1909.03004</a>');
     expect(html).toContain('<a href="https://doi.org/10.1234/abc">doi:10.1234/abc</a>');
   });
@@ -2291,7 +2308,7 @@ describe("Phase-48 doi alias under Phase-45 4-way composite — first triple-ali
       "[bad](javascript:alert(1)) [[s|safe slug]] [[arxiv:1909.03004|safe arxiv]] [[doi:10.1234/abc|safe doi]].";
     const html = renderRationaleMarkdown(md);
     expect(html).not.toContain("javascript:alert");
-    expect(html).toContain('<a href="/problems/s">safe slug</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/s">safe slug</a>');
     expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">safe arxiv</a>');
     expect(html).toContain('<a href="https://doi.org/10.1234/abc">safe doi</a>');
   });
@@ -2428,7 +2445,7 @@ describe("Phase-49 first all-4-surfaces triple-alias state under 4-way composite
     const md =
       "see [[scalable-oversight|topic]] and [[arxiv:1909.03004|paper A]] and [[doi:10.1234/abc|paper B]].";
     const html = renderBioMarkdown(md) ?? "";
-    expect(html).toContain('<a href="/problems/scalable-oversight">topic</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/scalable-oversight">topic</a>');
     expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">paper A</a>');
     expect(html).toContain('<a href="https://doi.org/10.1234/abc">paper B</a>');
   });
@@ -2437,7 +2454,9 @@ describe("Phase-49 first all-4-surfaces triple-alias state under 4-way composite
     const md =
       "see [[hallucination-reduction|topic]], [[arxiv:2024.01234|paper A]], [[doi:10.5678/xyz|paper B]].";
     const html = renderReviewNotesMarkdown(md);
-    expect(html).toContain('<a href="/problems/hallucination-reduction">topic</a>');
+    expect(html).toContain(
+      '<a class="wikilink" href="/problems/hallucination-reduction">topic</a>',
+    );
     expect(html).toContain('<a href="https://arxiv.org/abs/2024.01234">paper A</a>');
     expect(html).toContain('<a href="https://doi.org/10.5678/xyz">paper B</a>');
   });
@@ -2446,7 +2465,7 @@ describe("Phase-49 first all-4-surfaces triple-alias state under 4-way composite
     const md =
       "see [[benchmark-integrity|topic]] and [[arxiv:1909.03004|paper A]] and [[doi:10.1234/abc|paper B]].";
     const html = renderRationaleMarkdown(md);
-    expect(html).toContain('<a href="/problems/benchmark-integrity">topic</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/benchmark-integrity">topic</a>');
     expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">paper A</a>');
     expect(html).toContain('<a href="https://doi.org/10.1234/abc">paper B</a>');
   });
@@ -2455,7 +2474,7 @@ describe("Phase-49 first all-4-surfaces triple-alias state under 4-way composite
     const md =
       "see [[scalable-oversight|topic]], [[arxiv:1909.03004|the work]], and [[doi:10.1234/abc|cite this]].";
     const html = renderActionRationaleMarkdown(md);
-    expect(html).toContain('<a href="/problems/scalable-oversight">topic</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/scalable-oversight">topic</a>');
     expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">the work</a>');
     expect(html).toContain('<a href="https://doi.org/10.1234/abc">cite this</a>');
   });
@@ -2471,7 +2490,9 @@ describe("Phase-49 first all-4-surfaces triple-alias state under 4-way composite
     ] as const) {
       const html = renderer(md) ?? "";
       expect(html).not.toContain("javascript:alert");
-      expect(html).toContain('<a href="/problems/scalable-oversight">safe slug</a>');
+      expect(html).toContain(
+        '<a class="wikilink" href="/problems/scalable-oversight">safe slug</a>',
+      );
       expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">safe arxiv</a>');
       expect(html).toContain('<a href="https://doi.org/10.1234/abc">safe doi</a>');
       expect(html).toContain("<table>");
@@ -2781,7 +2802,7 @@ describe("Phase-50 first 5-consumer composition — wikilinks,tables,arxiv,doi,p
     const md =
       "see [[scalable-oversight|topic]], arxiv:1909.03004, doi:10.1234/abc, and pubmed:12345678.\n\n| A | B |\n|---|---|\n| 1 | 2 |";
     const html = renderRationaleMarkdown(md);
-    expect(html).toContain('<a href="/problems/scalable-oversight">topic</a>'); // wikilinks alias
+    expect(html).toContain('<a class="wikilink" href="/problems/scalable-oversight">topic</a>'); // wikilinks alias
     expect(html).toContain('href="https://arxiv.org/abs/1909.03004"'); // arxiv
     expect(html).toContain('href="https://doi.org/10.1234/abc"'); // doi
     expect(html).toContain('href="https://pubmed.ncbi.nlm.nih.gov/12345678/"'); // pubmed
@@ -2795,7 +2816,9 @@ describe("Phase-50 first 5-consumer composition — wikilinks,tables,arxiv,doi,p
     const md =
       "I cite [[hallucination-reduction|topic]] in arxiv:1909.03004, doi:10.1234/abc, and pubmed:12345678.";
     const html = renderBioMarkdown(md) ?? "";
-    expect(html).toContain('<a href="/problems/hallucination-reduction">topic</a>');
+    expect(html).toContain(
+      '<a class="wikilink" href="/problems/hallucination-reduction">topic</a>',
+    );
     expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
     expect(html).toContain('href="https://doi.org/10.1234/abc"');
     expect(html).not.toContain("pubmed.ncbi");
@@ -2805,7 +2828,7 @@ describe("Phase-50 first 5-consumer composition — wikilinks,tables,arxiv,doi,p
   it("reviewNotes: 4 consumers render; pubmed inactive (Phase-50 rationale-only)", () => {
     const md = "see [[benchmark-integrity|topic]] arxiv:2024.01234 doi:10.5678/xyz pubmed:99999999";
     const html = renderReviewNotesMarkdown(md);
-    expect(html).toContain('<a href="/problems/benchmark-integrity">topic</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/benchmark-integrity">topic</a>');
     expect(html).toContain('href="https://arxiv.org/abs/2024.01234"');
     expect(html).toContain('href="https://doi.org/10.5678/xyz"');
     expect(html).not.toContain("pubmed.ncbi");
@@ -2815,7 +2838,7 @@ describe("Phase-50 first 5-consumer composition — wikilinks,tables,arxiv,doi,p
     const md =
       "upgrade reflects [[scalable-oversight|the work]] arxiv:1909.03004 doi:10.1234/abc pubmed:12345678";
     const html = renderActionRationaleMarkdown(md);
-    expect(html).toContain('<a href="/problems/scalable-oversight">the work</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/scalable-oversight">the work</a>');
     expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
     expect(html).toContain('href="https://doi.org/10.1234/abc"');
     expect(html).not.toContain("pubmed.ncbi");
@@ -2824,7 +2847,9 @@ describe("Phase-50 first 5-consumer composition — wikilinks,tables,arxiv,doi,p
   it("backwards-compat: bare wikilink + bare arxiv + bare doi + bare pubmed all coexist on rationale", () => {
     const md = "see [[scalable-oversight]] arxiv:1909.03004 doi:10.1234/abc pubmed:12345678.";
     const html = renderRationaleMarkdown(md);
-    expect(html).toContain('<a href="/problems/scalable-oversight">scalable-oversight</a>');
+    expect(html).toContain(
+      '<a class="wikilink" href="/problems/scalable-oversight">scalable-oversight</a>',
+    );
     expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">arxiv:1909.03004</a>');
     expect(html).toContain('<a href="https://doi.org/10.1234/abc">doi:10.1234/abc</a>');
     expect(html).toContain(
@@ -2837,7 +2862,7 @@ describe("Phase-50 first 5-consumer composition — wikilinks,tables,arxiv,doi,p
       "[bad](javascript:alert(1)) [[s|safe slug]] [[arxiv:1909.03004|safe arxiv]] [[doi:10.1234/abc|safe doi]] pubmed:12345678.";
     const html = renderRationaleMarkdown(md);
     expect(html).not.toContain("javascript:alert");
-    expect(html).toContain('<a href="/problems/s">safe slug</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/s">safe slug</a>');
     expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">safe arxiv</a>');
     expect(html).toContain('<a href="https://doi.org/10.1234/abc">safe doi</a>');
     expect(html).toContain(
@@ -2985,7 +3010,7 @@ describe("Phase-51 pubmed alias under Phase-50 5-way composite — first quadrup
     const md =
       "see [[scalable-oversight|topic]], [[arxiv:1909.03004|paper A]], [[doi:10.48550/arXiv.2005.14165|paper B]], and [[pubmed:12345678|paper C]].\n\n| A | B |\n|---|---|\n| 1 | 2 |";
     const html = renderRationaleMarkdown(md);
-    expect(html).toContain('<a href="/problems/scalable-oversight">topic</a>'); // wikilinks alias
+    expect(html).toContain('<a class="wikilink" href="/problems/scalable-oversight">topic</a>'); // wikilinks alias
     expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">paper A</a>'); // arxiv alias
     expect(html).toContain('<a href="https://doi.org/10.48550/arXiv.2005.14165">paper B</a>'); // doi alias
     expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">paper C</a>'); // pubmed alias
@@ -2999,7 +3024,9 @@ describe("Phase-51 pubmed alias under Phase-50 5-way composite — first quadrup
       "I cite [[arxiv:1909.03004|the original]] for [[hallucination-reduction|this topic]] and [[doi:10.1234/abc|paper]] and [[pubmed:12345678|biomed]].";
     const html = renderBioMarkdown(md) ?? "";
     expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">the original</a>');
-    expect(html).toContain('<a href="/problems/hallucination-reduction">this topic</a>');
+    expect(html).toContain(
+      '<a class="wikilink" href="/problems/hallucination-reduction">this topic</a>',
+    );
     expect(html).toContain('<a href="https://doi.org/10.1234/abc">paper</a>');
     // pubmed alias does NOT render on bio
     expect(html).not.toContain('href="https://pubmed.ncbi.nlm.nih.gov/');
@@ -3010,7 +3037,7 @@ describe("Phase-51 pubmed alias under Phase-50 5-way composite — first quadrup
       "see [[arxiv:2024.01234|the survey]] and [[scalable-oversight|context]] and [[doi:10.5678/xyz|related]] and [[pubmed:99999999|biomed]]";
     const html = renderReviewNotesMarkdown(md);
     expect(html).toContain('<a href="https://arxiv.org/abs/2024.01234">the survey</a>');
-    expect(html).toContain('<a href="/problems/scalable-oversight">context</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/scalable-oversight">context</a>');
     expect(html).toContain('<a href="https://doi.org/10.5678/xyz">related</a>');
     expect(html).not.toContain('href="https://pubmed.ncbi.nlm.nih.gov/');
   });
@@ -3020,7 +3047,7 @@ describe("Phase-51 pubmed alias under Phase-50 5-way composite — first quadrup
       "upgrade reflects [[arxiv:1909.03004|the work]] on [[benchmark-integrity|this]] and [[doi:10.1234/abc|paper]] and [[pubmed:12345678|biomed]]";
     const html = renderActionRationaleMarkdown(md);
     expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">the work</a>');
-    expect(html).toContain('<a href="/problems/benchmark-integrity">this</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/benchmark-integrity">this</a>');
     expect(html).toContain('<a href="https://doi.org/10.1234/abc">paper</a>');
     expect(html).not.toContain('href="https://pubmed.ncbi.nlm.nih.gov/');
   });
@@ -3028,7 +3055,9 @@ describe("Phase-51 pubmed alias under Phase-50 5-way composite — first quadrup
   it("backwards-compat under 5-way composite: bare wikilink + bare arxiv + bare doi + bare pubmed all coexist on rationale", () => {
     const md = "see [[scalable-oversight]] arxiv:1909.03004 doi:10.1234/abc pubmed:12345678.";
     const html = renderRationaleMarkdown(md);
-    expect(html).toContain('<a href="/problems/scalable-oversight">scalable-oversight</a>');
+    expect(html).toContain(
+      '<a class="wikilink" href="/problems/scalable-oversight">scalable-oversight</a>',
+    );
     expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">arxiv:1909.03004</a>');
     expect(html).toContain('<a href="https://doi.org/10.1234/abc">doi:10.1234/abc</a>');
     expect(html).toContain(
@@ -3041,7 +3070,7 @@ describe("Phase-51 pubmed alias under Phase-50 5-way composite — first quadrup
       "[bad](javascript:alert(1)) [[s|safe slug]] [[arxiv:1909.03004|safe arxiv]] [[doi:10.1234/abc|safe doi]] [[pubmed:12345678|safe pubmed]].";
     const html = renderRationaleMarkdown(md);
     expect(html).not.toContain("javascript:alert");
-    expect(html).toContain('<a href="/problems/s">safe slug</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/s">safe slug</a>');
     expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">safe arxiv</a>');
     expect(html).toContain('<a href="https://doi.org/10.1234/abc">safe doi</a>');
     expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">safe pubmed</a>');
@@ -3184,7 +3213,7 @@ describe("Phase-52 first all-4-surfaces quadruple-alias state under 5-way compos
     const md =
       "see [[scalable-oversight|topic]] and [[arxiv:1909.03004|paper A]] and [[doi:10.1234/abc|paper B]] and [[pubmed:12345678|paper C]].";
     const html = renderBioMarkdown(md) ?? "";
-    expect(html).toContain('<a href="/problems/scalable-oversight">topic</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/scalable-oversight">topic</a>');
     expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">paper A</a>');
     expect(html).toContain('<a href="https://doi.org/10.1234/abc">paper B</a>');
     expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">paper C</a>');
@@ -3194,7 +3223,9 @@ describe("Phase-52 first all-4-surfaces quadruple-alias state under 5-way compos
     const md =
       "see [[hallucination-reduction|topic]], [[arxiv:2024.01234|paper A]], [[doi:10.5678/xyz|paper B]], [[pmid:99999999|paper C]].";
     const html = renderReviewNotesMarkdown(md);
-    expect(html).toContain('<a href="/problems/hallucination-reduction">topic</a>');
+    expect(html).toContain(
+      '<a class="wikilink" href="/problems/hallucination-reduction">topic</a>',
+    );
     expect(html).toContain('<a href="https://arxiv.org/abs/2024.01234">paper A</a>');
     expect(html).toContain('<a href="https://doi.org/10.5678/xyz">paper B</a>');
     expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/99999999/">paper C</a>');
@@ -3204,7 +3235,7 @@ describe("Phase-52 first all-4-surfaces quadruple-alias state under 5-way compos
     const md =
       "see [[benchmark-integrity|topic]] and [[arxiv:1909.03004|paper A]] and [[doi:10.1234/abc|paper B]] and [[pubmed:12345678|paper C]].";
     const html = renderRationaleMarkdown(md);
-    expect(html).toContain('<a href="/problems/benchmark-integrity">topic</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/benchmark-integrity">topic</a>');
     expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">paper A</a>');
     expect(html).toContain('<a href="https://doi.org/10.1234/abc">paper B</a>');
     expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">paper C</a>');
@@ -3214,7 +3245,7 @@ describe("Phase-52 first all-4-surfaces quadruple-alias state under 5-way compos
     const md =
       "see [[scalable-oversight|topic]], [[arxiv:1909.03004|the work]], [[doi:10.1234/abc|cite this]], and [[pmid:12345678|biomed paper]].";
     const html = renderActionRationaleMarkdown(md);
-    expect(html).toContain('<a href="/problems/scalable-oversight">topic</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/scalable-oversight">topic</a>');
     expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">the work</a>');
     expect(html).toContain('<a href="https://doi.org/10.1234/abc">cite this</a>');
     expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">biomed paper</a>');
@@ -3231,7 +3262,9 @@ describe("Phase-52 first all-4-surfaces quadruple-alias state under 5-way compos
     ] as const) {
       const html = renderer(md) ?? "";
       expect(html).not.toContain("javascript:alert");
-      expect(html).toContain('<a href="/problems/scalable-oversight">safe slug</a>');
+      expect(html).toContain(
+        '<a class="wikilink" href="/problems/scalable-oversight">safe slug</a>',
+      );
       expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">safe arxiv</a>');
       expect(html).toContain('<a href="https://doi.org/10.1234/abc">safe doi</a>');
       expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">safe pubmed</a>');
@@ -3765,7 +3798,7 @@ describe("Phase-54 first 6-consumer composition — wikilinks,tables,arxiv,doi,p
     const md =
       "see [[scalable-oversight|topic]], arxiv:1909.03004, doi:10.1234/abc, pubmed:12345678, orcid:0000-0002-1825-0097.\n\n| A | B |\n|---|---|\n| 1 | 2 |";
     const html = renderRationaleMarkdown(md);
-    expect(html).toContain('<a href="/problems/scalable-oversight">topic</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/scalable-oversight">topic</a>');
     expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
     expect(html).toContain('href="https://doi.org/10.1234/abc"');
     expect(html).toContain('href="https://pubmed.ncbi.nlm.nih.gov/12345678/"');
@@ -3777,7 +3810,7 @@ describe("Phase-54 first 6-consumer composition — wikilinks,tables,arxiv,doi,p
     const md =
       "see [[scalable-oversight|topic]], arxiv:1909.03004, doi:10.1234/abc, pubmed:12345678, orcid:0000-0002-1825-0097";
     const html = renderBioMarkdown(md) ?? "";
-    expect(html).toContain('<a href="/problems/scalable-oversight">topic</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/scalable-oversight">topic</a>');
     expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
     expect(html).toContain('href="https://doi.org/10.1234/abc"');
     expect(html).toContain('href="https://pubmed.ncbi.nlm.nih.gov/12345678/"');
@@ -3788,7 +3821,7 @@ describe("Phase-54 first 6-consumer composition — wikilinks,tables,arxiv,doi,p
     const md =
       "see [[scalable-oversight|topic]], arxiv:1909.03004, doi:10.1234/abc, pubmed:12345678, orcid:0000-0002-1825-0097";
     const html = renderReviewNotesMarkdown(md);
-    expect(html).toContain('<a href="/problems/scalable-oversight">topic</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/scalable-oversight">topic</a>');
     expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
     expect(html).toContain('href="https://doi.org/10.1234/abc"');
     expect(html).toContain('href="https://pubmed.ncbi.nlm.nih.gov/12345678/"');
@@ -3799,7 +3832,7 @@ describe("Phase-54 first 6-consumer composition — wikilinks,tables,arxiv,doi,p
     const md =
       "see [[scalable-oversight|topic]], arxiv:1909.03004, doi:10.1234/abc, pubmed:12345678, orcid:0000-0002-1825-0097";
     const html = renderActionRationaleMarkdown(md);
-    expect(html).toContain('<a href="/problems/scalable-oversight">topic</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/scalable-oversight">topic</a>');
     expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
     expect(html).toContain('href="https://doi.org/10.1234/abc"');
     expect(html).toContain('href="https://pubmed.ncbi.nlm.nih.gov/12345678/"');
@@ -3817,7 +3850,7 @@ describe("Phase-54 first 6-consumer composition — wikilinks,tables,arxiv,doi,p
     ] as const) {
       const html = renderer(md) ?? "";
       expect(html).not.toContain("javascript:alert");
-      expect(html).toContain('<a href="/problems/s">safe slug</a>');
+      expect(html).toContain('<a class="wikilink" href="/problems/s">safe slug</a>');
       expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
       expect(html).toContain('href="https://doi.org/10.1234/abc"');
       expect(html).toContain('href="https://pubmed.ncbi.nlm.nih.gov/12345678/"');
@@ -3942,7 +3975,7 @@ describe("Phase-55 orcid alias under Phase-54 6-way composite — first quintupl
     const md =
       "see [[scalable-oversight|topic]] and [[arxiv:1909.03004|paper]] and [[doi:10.1234/abc|study]] and [[pubmed:12345678|article]] and [[orcid:0000-0002-1825-0097|author]].";
     const html = renderRationaleMarkdown(md);
-    expect(html).toContain('<a href="/problems/scalable-oversight">topic</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/scalable-oversight">topic</a>');
     expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">paper</a>');
     expect(html).toContain('<a href="https://doi.org/10.1234/abc">study</a>');
     expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">article</a>');
@@ -3955,7 +3988,7 @@ describe("Phase-55 orcid alias under Phase-54 6-way composite — first quintupl
     const md =
       "see [[scalable-oversight|topic]] and [[arxiv:1909.03004|paper]] and [[doi:10.1234/abc|study]] and [[pubmed:12345678|article]] and [[orcid:0000-0002-1825-0097|author]].";
     const html = renderBioMarkdown(md) ?? "";
-    expect(html).toContain('<a href="/problems/scalable-oversight">topic</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/scalable-oversight">topic</a>');
     expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">paper</a>');
     expect(html).toContain('<a href="https://doi.org/10.1234/abc">study</a>');
     expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">article</a>');
@@ -3966,7 +3999,9 @@ describe("Phase-55 orcid alias under Phase-54 6-way composite — first quintupl
     const md =
       "see [[hallucination-reduction|topic]], [[arxiv:2024.01234|paper]], [[doi:10.5678/xyz|study]], [[pmid:99999999|article]], [[orcid:0000-0002-9079-593X|author]].";
     const html = renderReviewNotesMarkdown(md);
-    expect(html).toContain('<a href="/problems/hallucination-reduction">topic</a>');
+    expect(html).toContain(
+      '<a class="wikilink" href="/problems/hallucination-reduction">topic</a>',
+    );
     expect(html).toContain('<a href="https://arxiv.org/abs/2024.01234">paper</a>');
     expect(html).toContain('<a href="https://doi.org/10.5678/xyz">study</a>');
     expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/99999999/">article</a>');
@@ -3977,7 +4012,7 @@ describe("Phase-55 orcid alias under Phase-54 6-way composite — first quintupl
     const md =
       "see [[scalable-oversight|topic]], [[arxiv:1909.03004|paper]], [[doi:10.1234/abc|study]], [[pmid:12345678|article]], [[orcid:0000-0002-1825-0097|author]].";
     const html = renderActionRationaleMarkdown(md);
-    expect(html).toContain('<a href="/problems/scalable-oversight">topic</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/scalable-oversight">topic</a>');
     expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">paper</a>');
     expect(html).toContain('<a href="https://doi.org/10.1234/abc">study</a>');
     expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">article</a>');
@@ -4000,7 +4035,7 @@ describe("Phase-55 orcid alias under Phase-54 6-way composite — first quintupl
       "[bad](javascript:alert(1)) [[s|safe slug]] [[arxiv:1909.03004|safe arxiv]] [[doi:10.1234/abc|safe doi]] [[pubmed:12345678|safe pubmed]] [[orcid:0000-0002-1825-0097|safe orcid]].";
     const html = renderRationaleMarkdown(md);
     expect(html).not.toContain("javascript:alert");
-    expect(html).toContain('<a href="/problems/s">safe slug</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/s">safe slug</a>');
     expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">safe arxiv</a>');
     expect(html).toContain('<a href="https://doi.org/10.1234/abc">safe doi</a>');
     expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">safe pubmed</a>');
@@ -4149,7 +4184,7 @@ describe("Phase-56 first all-4-surfaces quintuple-alias state under 6-way compos
     const md =
       "see [[scalable-oversight|topic]] and [[arxiv:1909.03004|paper A]] and [[doi:10.1234/abc|paper B]] and [[pubmed:12345678|paper C]] and [[orcid:0000-0002-1825-0097|author A]].";
     const html = renderBioMarkdown(md) ?? "";
-    expect(html).toContain('<a href="/problems/scalable-oversight">topic</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/scalable-oversight">topic</a>');
     expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">paper A</a>');
     expect(html).toContain('<a href="https://doi.org/10.1234/abc">paper B</a>');
     expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">paper C</a>');
@@ -4160,7 +4195,9 @@ describe("Phase-56 first all-4-surfaces quintuple-alias state under 6-way compos
     const md =
       "see [[hallucination-reduction|topic]], [[arxiv:2024.01234|paper A]], [[doi:10.5678/xyz|paper B]], [[pmid:99999999|paper C]], [[orcid:0000-0001-5109-3700|author B]].";
     const html = renderReviewNotesMarkdown(md);
-    expect(html).toContain('<a href="/problems/hallucination-reduction">topic</a>');
+    expect(html).toContain(
+      '<a class="wikilink" href="/problems/hallucination-reduction">topic</a>',
+    );
     expect(html).toContain('<a href="https://arxiv.org/abs/2024.01234">paper A</a>');
     expect(html).toContain('<a href="https://doi.org/10.5678/xyz">paper B</a>');
     expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/99999999/">paper C</a>');
@@ -4171,7 +4208,7 @@ describe("Phase-56 first all-4-surfaces quintuple-alias state under 6-way compos
     const md =
       "see [[benchmark-integrity|topic]] and [[arxiv:1909.03004|paper A]] and [[doi:10.1234/abc|paper B]] and [[pubmed:12345678|paper C]] and [[orcid:0000-0002-9079-593X|author C]].";
     const html = renderRationaleMarkdown(md);
-    expect(html).toContain('<a href="/problems/benchmark-integrity">topic</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/benchmark-integrity">topic</a>');
     expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">paper A</a>');
     expect(html).toContain('<a href="https://doi.org/10.1234/abc">paper B</a>');
     expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">paper C</a>');
@@ -4182,7 +4219,7 @@ describe("Phase-56 first all-4-surfaces quintuple-alias state under 6-way compos
     const md =
       "see [[scalable-oversight|topic]], [[arxiv:1909.03004|the work]], [[doi:10.1234/abc|cite this]], [[pmid:12345678|biomed paper]], and [[orcid:0000-0002-1825-0097|primary author]].";
     const html = renderActionRationaleMarkdown(md);
-    expect(html).toContain('<a href="/problems/scalable-oversight">topic</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/scalable-oversight">topic</a>');
     expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">the work</a>');
     expect(html).toContain('<a href="https://doi.org/10.1234/abc">cite this</a>');
     expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">biomed paper</a>');
@@ -4200,7 +4237,9 @@ describe("Phase-56 first all-4-surfaces quintuple-alias state under 6-way compos
     ] as const) {
       const html = renderer(md) ?? "";
       expect(html).not.toContain("javascript:alert");
-      expect(html).toContain('<a href="/problems/scalable-oversight">safe slug</a>');
+      expect(html).toContain(
+        '<a class="wikilink" href="/problems/scalable-oversight">safe slug</a>',
+      );
       expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">safe arxiv</a>');
       expect(html).toContain('<a href="https://doi.org/10.1234/abc">safe doi</a>');
       expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">safe pubmed</a>');
@@ -4566,7 +4605,7 @@ describe("Phase-58 first 7-consumer composition — wikilinks,tables,arxiv,doi,p
     const md =
       "see [[scalable-oversight|topic]], arxiv:1909.03004, doi:10.1234/abc, pubmed:12345678, orcid:0000-0002-1825-0097, biorxiv:2024.01.15.575678.\n\n| A | B |\n|---|---|\n| 1 | 2 |";
     const html = renderRationaleMarkdown(md);
-    expect(html).toContain('<a href="/problems/scalable-oversight">topic</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/scalable-oversight">topic</a>');
     expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
     expect(html).toContain('href="https://doi.org/10.1234/abc"');
     expect(html).toContain('href="https://pubmed.ncbi.nlm.nih.gov/12345678/"');
@@ -4579,7 +4618,7 @@ describe("Phase-58 first 7-consumer composition — wikilinks,tables,arxiv,doi,p
     const md =
       "see [[scalable-oversight|topic]], arxiv:1909.03004, doi:10.1234/abc, pubmed:12345678, orcid:0000-0002-1825-0097, biorxiv:2024.01.15.575678";
     const html = renderBioMarkdown(md) ?? "";
-    expect(html).toContain('<a href="/problems/scalable-oversight">topic</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/scalable-oversight">topic</a>');
     expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
     expect(html).toContain('href="https://doi.org/10.1234/abc"');
     expect(html).toContain('href="https://pubmed.ncbi.nlm.nih.gov/12345678/"');
@@ -4591,7 +4630,7 @@ describe("Phase-58 first 7-consumer composition — wikilinks,tables,arxiv,doi,p
     const md =
       "see [[scalable-oversight|topic]], arxiv:1909.03004, doi:10.1234/abc, pubmed:12345678, orcid:0000-0002-1825-0097, biorxiv:2024.01.15.575678";
     const html = renderReviewNotesMarkdown(md);
-    expect(html).toContain('<a href="/problems/scalable-oversight">topic</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/scalable-oversight">topic</a>');
     expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
     expect(html).toContain('href="https://doi.org/10.1234/abc"');
     expect(html).toContain('href="https://pubmed.ncbi.nlm.nih.gov/12345678/"');
@@ -4603,7 +4642,7 @@ describe("Phase-58 first 7-consumer composition — wikilinks,tables,arxiv,doi,p
     const md =
       "see [[scalable-oversight|topic]], arxiv:1909.03004, doi:10.1234/abc, pubmed:12345678, orcid:0000-0002-1825-0097, biorxiv:2024.01.15.575678";
     const html = renderActionRationaleMarkdown(md);
-    expect(html).toContain('<a href="/problems/scalable-oversight">topic</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/scalable-oversight">topic</a>');
     expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
     expect(html).toContain('href="https://doi.org/10.1234/abc"');
     expect(html).toContain('href="https://pubmed.ncbi.nlm.nih.gov/12345678/"');
@@ -4622,7 +4661,7 @@ describe("Phase-58 first 7-consumer composition — wikilinks,tables,arxiv,doi,p
     ] as const) {
       const html = renderer(md) ?? "";
       expect(html).not.toContain("javascript:alert");
-      expect(html).toContain('<a href="/problems/s">safe slug</a>');
+      expect(html).toContain('<a class="wikilink" href="/problems/s">safe slug</a>');
       expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
       expect(html).toContain('href="https://doi.org/10.1234/abc"');
       expect(html).toContain('href="https://pubmed.ncbi.nlm.nih.gov/12345678/"');
@@ -4904,7 +4943,7 @@ describe("Phase-59 first all-4-surfaces 7-consumer composition — wikilinks,tab
     const md =
       "see [[scalable-oversight|topic]], arxiv:1909.03004, doi:10.1234/abc, pubmed:12345678, orcid:0000-0002-1825-0097, biorxiv:2024.01.15.575678.\n\n| A | B |\n|---|---|\n| 1 | 2 |";
     const html = renderBioMarkdown(md) ?? "";
-    expect(html).toContain('<a href="/problems/scalable-oversight">topic</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/scalable-oversight">topic</a>');
     expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
     expect(html).toContain('href="https://doi.org/10.1234/abc"');
     expect(html).toContain('href="https://pubmed.ncbi.nlm.nih.gov/12345678/"');
@@ -4917,7 +4956,9 @@ describe("Phase-59 first all-4-surfaces 7-consumer composition — wikilinks,tab
     const md =
       "see [[hallucination-reduction|topic]], arxiv:2024.01234, doi:10.5678/xyz, pmid:99999999, orcid:0000-0001-5109-3700, biorxiv:2023.12.05.570123v2.\n\n| X | Y |\n|---|---|\n| 3 | 4 |";
     const html = renderReviewNotesMarkdown(md);
-    expect(html).toContain('<a href="/problems/hallucination-reduction">topic</a>');
+    expect(html).toContain(
+      '<a class="wikilink" href="/problems/hallucination-reduction">topic</a>',
+    );
     expect(html).toContain('href="https://arxiv.org/abs/2024.01234"');
     expect(html).toContain('href="https://doi.org/10.5678/xyz"');
     expect(html).toContain('href="https://pubmed.ncbi.nlm.nih.gov/99999999/"');
@@ -4930,7 +4971,7 @@ describe("Phase-59 first all-4-surfaces 7-consumer composition — wikilinks,tab
     const md =
       "see [[benchmark-integrity|topic]], arxiv:1909.03004, doi:10.1234/abc, pubmed:12345678, orcid:0000-0002-9079-593X, biorxiv:2024.01.15.575678.\n\n| A | B |\n|---|---|\n| 1 | 2 |";
     const html = renderRationaleMarkdown(md);
-    expect(html).toContain('<a href="/problems/benchmark-integrity">topic</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/benchmark-integrity">topic</a>');
     expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
     expect(html).toContain('href="https://doi.org/10.1234/abc"');
     expect(html).toContain('href="https://pubmed.ncbi.nlm.nih.gov/12345678/"');
@@ -4943,7 +4984,7 @@ describe("Phase-59 first all-4-surfaces 7-consumer composition — wikilinks,tab
     const md =
       "see [[scalable-oversight|topic]], arxiv:1909.03004, doi:10.1234/abc, pubmed:12345678, orcid:0000-0002-1825-0097, biorxiv:2024.01.15.575678.\n\n| P | Q |\n|---|---|\n| 5 | 6 |";
     const html = renderActionRationaleMarkdown(md);
-    expect(html).toContain('<a href="/problems/scalable-oversight">topic</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/scalable-oversight">topic</a>');
     expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
     expect(html).toContain('href="https://doi.org/10.1234/abc"');
     expect(html).toContain('href="https://pubmed.ncbi.nlm.nih.gov/12345678/"');
@@ -4963,7 +5004,7 @@ describe("Phase-59 first all-4-surfaces 7-consumer composition — wikilinks,tab
     ] as const) {
       const html = renderer(md) ?? "";
       expect(html).not.toContain("javascript:alert");
-      expect(html).toContain('<a href="/problems/s">safe slug</a>');
+      expect(html).toContain('<a class="wikilink" href="/problems/s">safe slug</a>');
       expect(html).toContain('href="https://arxiv.org/abs/1909.03004"');
       expect(html).toContain('href="https://doi.org/10.1234/abc"');
       expect(html).toContain('href="https://pubmed.ncbi.nlm.nih.gov/12345678/"');
@@ -5102,7 +5143,7 @@ describe("Phase-60 first all-4-surfaces sextuple-alias state under 7-way composi
     const md =
       "see [[scalable-oversight|topic]] and [[arxiv:1909.03004|paper A]] and [[doi:10.1234/abc|paper B]] and [[pubmed:12345678|paper C]] and [[orcid:0000-0002-1825-0097|author A]] and [[biorxiv:2024.01.15.575678|preprint A]].";
     const html = renderBioMarkdown(md) ?? "";
-    expect(html).toContain('<a href="/problems/scalable-oversight">topic</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/scalable-oversight">topic</a>');
     expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">paper A</a>');
     expect(html).toContain('<a href="https://doi.org/10.1234/abc">paper B</a>');
     expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">paper C</a>');
@@ -5116,7 +5157,9 @@ describe("Phase-60 first all-4-surfaces sextuple-alias state under 7-way composi
     const md =
       "see [[hallucination-reduction|topic]], [[arxiv:2024.01234|paper A]], [[doi:10.5678/xyz|paper B]], [[pmid:99999999|paper C]], [[orcid:0000-0001-5109-3700|author B]], [[biorxiv:2023.12.05.570123|preprint B]].";
     const html = renderReviewNotesMarkdown(md);
-    expect(html).toContain('<a href="/problems/hallucination-reduction">topic</a>');
+    expect(html).toContain(
+      '<a class="wikilink" href="/problems/hallucination-reduction">topic</a>',
+    );
     expect(html).toContain('<a href="https://arxiv.org/abs/2024.01234">paper A</a>');
     expect(html).toContain('<a href="https://doi.org/10.5678/xyz">paper B</a>');
     expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/99999999/">paper C</a>');
@@ -5130,7 +5173,7 @@ describe("Phase-60 first all-4-surfaces sextuple-alias state under 7-way composi
     const md =
       "see [[benchmark-integrity|topic]] and [[arxiv:1909.03004|paper A]] and [[doi:10.1234/abc|paper B]] and [[pubmed:12345678|paper C]] and [[orcid:0000-0002-9079-593X|author C]] and [[biorxiv:2024.01.15.575678v2|preprint v2]].";
     const html = renderRationaleMarkdown(md);
-    expect(html).toContain('<a href="/problems/benchmark-integrity">topic</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/benchmark-integrity">topic</a>');
     expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">paper A</a>');
     expect(html).toContain('<a href="https://doi.org/10.1234/abc">paper B</a>');
     expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">paper C</a>');
@@ -5144,7 +5187,7 @@ describe("Phase-60 first all-4-surfaces sextuple-alias state under 7-way composi
     const md =
       "see [[scalable-oversight|topic]], [[arxiv:1909.03004|the work]], [[doi:10.1234/abc|cite this]], [[pmid:12345678|biomed paper]], [[orcid:0000-0002-1825-0097|primary author]], and [[biorxiv:2024.01.15.575678|the preprint]].";
     const html = renderActionRationaleMarkdown(md);
-    expect(html).toContain('<a href="/problems/scalable-oversight">topic</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/scalable-oversight">topic</a>');
     expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">the work</a>');
     expect(html).toContain('<a href="https://doi.org/10.1234/abc">cite this</a>');
     expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">biomed paper</a>');
@@ -5185,7 +5228,7 @@ describe("Phase-60 first all-4-surfaces sextuple-alias state under 7-way composi
     ] as const) {
       const html = renderer(md) ?? "";
       expect(html).not.toContain("javascript:alert");
-      expect(html).toContain('<a href="/problems/s">safe slug</a>');
+      expect(html).toContain('<a class="wikilink" href="/problems/s">safe slug</a>');
       expect(html).toContain('<a href="https://arxiv.org/abs/1909.03004">safe arxiv</a>');
       expect(html).toContain('<a href="https://doi.org/10.1234/abc">safe doi</a>');
       expect(html).toContain('<a href="https://pubmed.ncbi.nlm.nih.gov/12345678/">safe pubmed</a>');

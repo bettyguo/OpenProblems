@@ -5796,6 +5796,321 @@ streak.
 - **ADR-0025 concrete content-moderation provider** — Phase
   65+; not autonomous-tractable.
 
+#### EXTENDED Phase 65 Unit 65.1 — APPEND-D-AW `<a class="wikilink">` styling via plugin-only emit pattern (first non-regex plugin-body realization in project history; first 8-realization for plugin-body axis; first state where plugin-body axis exceeds registry-state axis in realization count; wikilinks consumer gains 5th evolution post-first-ship; first state where a consumer has 5+ evolutions; closes APPEND-D-L item 4 at 27-phase carryover — NEW LONGEST ABSOLUTE APPEND-DEFERRAL CLOSURE EVER OBSERVED (extends Phase-63/Phase-64 25-phase TIED record by 2 phases; first post-tie absolute-record extension in project history; resumes the absolute-record-EXTENSION pattern after Phase-64's tie; first 5-consecutive-phase set-or-extend streak — Phase 61 new + 62 extend + 63 extend + 64 tie + 65 extend); D-L becomes first D-clause with 5-of-6 enumerated items closed; first D-clause with 5+ items closed; 24-phase APPEND-deferral closure cadence — new record; 32nd D-G APPEND record extends; twenty-third two-letter slot D-AW; fifty-sixth NON-§13 phase; `MARKDOWN_EXTENSIONS` single-value arms UNCHANGED at 10 — className inherited automatically by BOTH existing `wikilinks` and `wikilinks-cross-entity` arms)
+
+Phase 65 evolves the `rehypeResolveWikilinks` plugin body to
+emit `className: ["wikilink"]` on every resolved `<a>`
+element. HAST uses the array form for className per
+`property-information` convention; `rehype-stringify` renders
+this as `class="wikilink"` at compile time. Downstream CSS
+can now style `a.wikilink` distinctly from unclassed external
+`<a href="...">` anchors emitted by standard markdown
+`[text](url)` syntax.
+
+**APPEND-D-AW className-emission shape**:
+
+```ts
+// Before (Phase 63 ship through Phase-64 close):
+newNodes.push({
+  type: "element",
+  tagName: "a",
+  properties: { href: buildHref(slug, entityType) },
+  children: [{ type: "text", value: display }],
+});
+
+// After (Phase 65 ship):
+newNodes.push({
+  type: "element",
+  tagName: "a",
+  properties: {
+    className: ["wikilink"],
+    href: buildHref(slug, entityType),
+  },
+  children: [{ type: "text", value: display }],
+});
+```
+
+**Plugin-only emit pattern** (first realization Phase 65): the
+className addition does NOT require a `schemaOverrides`
+change. The Phase-37 framework pipeline runs `rehype-sanitize`
+BEFORE the registry's `rehypePlugins` per APPEND-D-D plugin-
+order-after-default discipline (see
+`lib/markdown/index.ts:213-215`). The `<a class="wikilink">`
+element this plugin splices into the post-sanitize tree
+enters under explicit framework intent — sanitize has already
+run and cannot strip the class attribute. **No
+schemaOverrides change required.** APPEND-D-C override-replace
+no-deep-merge contract preserved verbatim. APPEND-D-R
+composite-registry single-source `schemaOverrides` rule
+preserved verbatim — tables remains the SOLE
+`schemaOverrides` consumer at Phase 65.
+
+The plugin-only emit pattern is the recognized technique for
+"plugin-body output-shape extension that emits attributes NOT
+in the base schema allow-list" — Phase 65 is the FIRST such
+realization. Prior plugin-body realizations all emit
+attributes already in the base allow-list (`href` on `<a>`
+for wikilinks/arxiv/doi/pubmed/orcid/biorxiv; text-only
+children for alias display); Phase 65 is the first to emit
+the `class` attribute on `<a>` which is NOT in
+`bioSchema.attributes.a` (only `["href"]` allowed). The
+plugin-only emit pattern unblocks future plugin-body
+realizations that need to emit attributes outside the schema
+allow-list without violating APPEND-D-C / APPEND-D-R
+contracts.
+
+**className value**: hardcoded literal `"wikilink"` (no
+curator input; no slug/entityType interpolation; no
+opportunity for attribute injection). The attribute value is
+a fixed literal, not curator-controllable. **No new XSS
+surface** introduced by Phase 65. Future Phase 66+ curator-
+configurable className via plugin-option axis (mirroring
+Phase-62 `buildHref` parameterization) would extend the
+plugin-option axis to a 3rd realization; deferred to demand
+signal.
+
+**No factory arm change**. The className is emitted by ALL
+invocations of `rehypeResolveWikilinks` regardless of how the
+plugin was invoked. Both existing arms inherit automatically:
+
+- `MARKDOWN_EXTENSIONS=wikilinks` (Phase 38+; bare-form emit
+  with `DEFAULT_BUILD_HREF`) — emits className AND
+  `/problems/{slug}` href.
+- `MARKDOWN_EXTENSIONS=wikilinks-cross-entity` (Phase 63+;
+  tuple-form emit with `CROSS_ENTITY_BUILD_HREF`) — emits
+  className AND uses cross-entity routing.
+
+`MARKDOWN_EXTENSIONS` single-value arms UNCHANGED at 10.
+Phase 65 differs from Phase 63 + Phase 64 in that the new
+behavior is automatically enabled for ALL existing arms that
+use wikilinks rather than gated behind a new opt-in arm.
+Defensible because: (a) the className addition is purely
+additive — does not change `href` semantics, does not affect
+sanitize, does not require curator opt-in; (b) the className
+is the FIRST step toward consistent visual differentiation
+of wikilinks across all surfaces; gating it behind a new arm
+would create curator-opt-in friction without architectural
+benefit; (c) the pattern of opt-in-vs-default for new plugin
+features is established as "opt-in when the behavior is a
+SEMANTIC change (Phase 63 routing; Phase 64 schema content);
+default when the behavior is purely VISUAL/ANNOTATIVE
+addition (Phase 65 className)."
+
+**External markdown links UNCHANGED**: standard markdown
+`[text](url)` syntax continues to emit unclassed `<a
+href="url">text</a>` via `remark-rehype`'s default
+transformation. Only wikilinks-plugin-resolved anchors
+receive the className. This is the desired behavior:
+curators can style `a.wikilink` distinct from unclassed
+external `a` links via CSS selector specificity.
+
+**Tests added Phase 65 Unit 65.1** (7 NEW tests in
+`wikilinks.test.ts` in a new `describe` block "Phase-65
+className emission — plugin-only emit pattern"):
+
+1. Plugin emits `class="wikilink"` on resolved `<a>` for bare
+   `[[slug]]` syntax (Phase 38 baseline + className addition).
+2. Plugin emits className for `[[slug|display]]` alias syntax
+   (Phase 46 alias preserved).
+3. Plugin emits className for `[[paper:slug]]` cross-entity
+   syntax (Phase 63 cross-entity preserved).
+4. Plugin emits className alongside Phase-62 custom
+   `buildHref` (plugin-option axis + plugin-body axis compose
+   independently).
+5. className value is exactly `"wikilink"` — regression guard
+   against value drift (negative assertions for `"wikilinks"`,
+   `"wiki-link"`, `"wikilink wikilink"`).
+6. External markdown links emit UNCLASSED `<a>` tags — only
+   wikilinks-plugin-resolved anchors get the className
+   (mixed-source assertion + single-className-count
+   stronger assertion).
+7. HAST `className: ["wikilink"]` array form renders as
+   `class="wikilink"` via rehype-stringify (end-to-end HAST
+   → HTML transformation).
+
+**Plugin-body axis 8th realization**: extends Phase-60 7-
+realization record. Plugin-body axis trajectory:
+
+| # | Phase | Consumer | Extension shape |
+|---|---|---|---|
+| 1 | Phase 46 | wikilinks | Alias syntax regex extension (`(?:\|([^\]\n]+))?`) |
+| 2 | Phase 47 | arxiv | Alias syntax regex extension |
+| 3 | Phase 48 | doi | Alias syntax regex extension |
+| 4 | Phase 51 | pubmed | Alias syntax regex extension |
+| 5 | Phase 53 | arxiv | Legacy ID-class regex extension |
+| 6 | Phase 55 | orcid | Alias syntax regex extension |
+| 7 | Phase 60 | biorxiv | Alias syntax regex extension |
+| **8** | **Phase 65** | **wikilinks** | **className emission (output-shape; first non-regex realization)** |
+
+**First non-regex plugin-body realization** in project
+history. All 7 prior plugin-body realizations evolve the
+plugin's INPUT pattern (regex/extraction extensions). Phase
+65 is the FIRST plugin-body realization to evolve the
+plugin's OUTPUT shape (className emission). The plugin-body
+axis now has two recognized sub-patterns:
+
+- Input-regex sub-pattern (Phase 46-60; 7 realizations).
+- **Output-shape sub-pattern (Phase 65+; 1 realization).**
+
+**First state where plugin-body axis exceeds registry-state
+axis in realization count** in project history. Pre-Phase-
+65: both axes at 7 realizations (registry-state from Phase
+38+; plugin-body from Phase 46+). Post-Phase-65: plugin-body
+at 8 + registry-state at 7 — **first asymmetric state for
+the two original principal axes**. Axis depth ranking post-
+Phase-65:
+
+| Axis | Realizations | Introduced |
+|---|---|---|
+| Plugin-body | **8** | Phase 46 |
+| Registry-state | 7 | Phase 38 |
+| Plugin-option | 2 | Phase 62 |
+| Schema-options | 1 | Phase 64 |
+
+**Wikilinks consumer gains 5th evolution post-first-ship**
+(Phase 42 cross-surface + Phase 46 alias + Phase 62 plugin
+parameterization + Phase 63 cross-entity + Phase 65
+className). **First state where a consumer has 5+
+evolutions** in project history. Wikilinks remains the
+deepest-evolved consumer; tables at 4 (Phase 43+57+61+64);
+arxiv at 3 (Phase 44+47+53); doi/pubmed/orcid/biorxiv at 2
+each.
+
+**Closes APPEND-D-L item 4 `<a class="wikilink">` styling at
+27-phase carryover** (Phase 38 → Phase 65). **NEW LONGEST
+ABSOLUTE APPEND-DEFERRAL CLOSURE EVER OBSERVED** (extends
+Phase-63/Phase-64 25-phase TIED record by 2 phases). **First
+post-tie absolute-record extension** in project history.
+Resumes the absolute-record-EXTENSION pattern after Phase-
+64's tie. APPEND-D-L closure trajectory:
+
+- Item 1 (cross-surface) → Phase 42 = 4-phase carryover.
+- Item 2 (alias) → Phase 46 = 8-phase carryover.
+- Item 6 (plugin parameterization) → Phase 62 = 24-phase
+  carryover.
+- Item 3 (cross-entity) → Phase 63 = 25-phase carryover (new
+  absolute record at the time).
+- **Item 4 (`<a class="wikilink">` styling) → Phase 65 = 27-
+  phase carryover (NEW LONGEST ABSOLUTE).**
+- Item 5 (404 handling for unresolved wikilinks) → still
+  deferred (Phase 66+ rank 1 candidate; closure would make
+  D-L the second D-clause with ALL enumerated items closed).
+
+**First 5-consecutive-phase set-or-extend streak** in project
+history. Extends Phase-64 4-consecutive-phase set-or-tie
+streak. Streak trajectory:
+
+| Phase | Carryover | Shape |
+|---|---|---|
+| 61 | 22-phase | New record |
+| 62 | 24-phase | Extend by 2 |
+| 63 | 25-phase | Extend by 1 |
+| 64 | 25-phase | TIE (first tie) |
+| **65** | **27-phase** | **Extend by 2 (first post-tie extension)** |
+
+**D-L becomes first D-clause with 5-of-6 enumerated items
+closed** (items 1 + 2 + 3 + 4 + 6 closed; only item 5
+remaining). **First D-clause with 5+ items closed** in
+project history. Prior multi-item D-clauses: D-L at 4-of-6
+(Phase 63); D-Q at 4-of-4 ALL-CLOSED (Phase 64). D-L
+trajectory: 4 items closed at Phase 63 → 5 items closed at
+Phase 65; one item remaining (item 5).
+
+**24-phase APPEND-deferral closure cadence sustained** (Phase
+42-65) — new longest sustained cadence in project history
+(extends Phase-64 record 23 → 24). First 24-phase APPEND-
+deferral closure run.
+
+**Thirty-second APPEND on ADR-0018 D-G** — extends the
+**first-ADR-D-clause-with-most-APPENDs record** from 31 → 32
+(Phase 18 + 27 + 29 + 37 + 38 + 39 + 40 + 41 + 42 + 43 + 44
++ 45 + 46 + 47 + 48 + 49 + 50 + 51 + 52 + 53 + 54 + 55 + 56
++ 57 + 58 + 59 + 60 + 61 + 62 + 63 + 64 + **65**).
+
+**Twenty-third two-letter APPEND letter D-AW** (after Phase-
+43 D-AA + … + Phase-64 D-AV). Excel-spreadsheet column
+convention sustained.
+
+**Thirtieth consecutive no-new-ADR phase** (Phase 36-65;
+extends Phase-64 record 29 → 30). **Thirty-fifth consecutive
+phase without new B category** (Phase 31-65; extends Phase-
+64 record 34 → 35). **Fifty-sixth NON-§13 phase** (extends
+Phase-64 milestone to 56); first 56-phase ledger-closure
+streak.
+
+**Phase 66+ deferrals** (Phase-65 className-styling scope
+cap):
+
+- **404 handling for unresolved wikilinks** (APPEND-D-L item
+  5 carries) — Phase 66+ rank 1 candidate; closure would
+  make D-L the SECOND D-clause with ALL items closed in
+  project history.
+- **Locale-prefixed cross-entity wikilink paths** — Phase
+  66+; would be 3rd plugin-option-axis realization at the
+  registry layer.
+- **Per-surface schema-options consumer beyond bio-
+  restricted** — Phase 66+; would extend Phase-64 schema-
+  options axis to 2nd realization.
+- **2nd schema-options realization on a different consumer
+  than tables** — Phase 66+.
+- **Bare arxiv / DOI / PubMed / ORCID / bioRxiv IDs without
+  prefix** — Phase 66+.
+- **Legacy numeric-only bioRxiv IDs** (pre-2019 format) —
+  Phase 66+.
+- **dx.doi.org legacy host parsing** (APPEND-D-AC carries) —
+  Phase 66+.
+- **Stricter trailing-lookahead for trailing-period DOIs**
+  (APPEND-D-AC carries) — Phase 66+.
+- **Paper-card hover-preview** (APPEND-D-Y item 6 carries) —
+  Phase 66+.
+- **Auto-trim of alias display whitespace** — Phase 66+.
+- **Empty-alias fallback unification** across consumers —
+  Phase 66+.
+- **A future plugin that EMITS `<caption>` or
+  `colSpan`/`rowSpan`/`scope`** to realize the Phase-57 /
+  Phase-61 schema-ready-before-plugin states — Phase 66+.
+- **Curator-facing builder configuration** (locale-prefixed
+  paths, curator-overridable href builders, relative-path
+  variants) — Phase 66+.
+- **Locale-prefixed cross-entity routing** (e.g.,
+  `/{locale}/papers/${slug}`) — Phase 66+.
+- **Curator-facing per-surface schema configuration via DB
+  or UI** — Phase 66+; would extend Phase-64 schema-options
+  axis to DB-backed state.
+- **OSF preprint consumer** — eighth concrete consumer —
+  Phase 66+.
+- **6th-or-later `remarkPlugins` consumer beyond arxiv + doi
+  + pubmed + orcid + biorxiv** — Phase 66+.
+- **2nd `rehypePlugins` consumer beyond wikilinks** — Phase
+  66+.
+- **2nd `schemaOverrides` consumer beyond tables** — Phase
+  66+ (requires framework refactor per the composite-
+  registry single-source rule).
+- **3rd regex evolution on `remarkLinkArxivIds`** — Phase
+  66+.
+- **Cross-entity entity-type expansion beyond paper / author
+  / institution** (e.g., problem-tags, rating-actions,
+  rating-challenges) — Phase 66+.
+- **Build-time validation of captured entity-type against
+  content/papers / content/authors / content/institutions**
+  — Phase 66+; would extend the existing 404-handling
+  deferral to cross-entity routes.
+- **Multi-className emit** (e.g., `<a class="wikilink
+  wikilink-paper">` for entity-type-specific styling
+  variants) — Phase 66+; would extend the Phase-65 plugin-
+  only emit pattern to entity-type-aware className emission.
+- **Curator-configurable className value** via plugin-option
+  axis (`ResolveWikilinksOptions.className?: string`) —
+  Phase 66+; would generalize Phase-65 hardcoded
+  `"wikilink"` to a configurable value, mirroring Phase-62
+  `buildHref` parameterization pattern; would be 3rd plugin-
+  option-axis realization (or 2nd output-shape realization
+  under the plugin-body axis if scoped that way).
+- **2nd plugin using the plugin-only emit pattern** —
+  Phase 66+; first reuse of the Phase-65-established pattern.
+- **ADR-0025 concrete content-moderation provider** — Phase
+  66+; not autonomous-tractable.
+
 ### D-H. Phase 18+ deferrals
 
 Phase 17 ships MINIMAL markdown surface. Deferred to Phase 18+:

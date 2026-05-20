@@ -84,6 +84,43 @@ import type { MarkdownExtensionRegistry, MarkdownExtensionSet, MarkdownSurface }
  * runs BEFORE wikilinks per APPEND-D-D); curator-facing builder
  * configuration is a **Phase 64+** concern.
  *
+ * **Phase 65 className emission** (since Unit 65.1; closes
+ * ADR-0018 APPEND-D-L item 4 `<a class="wikilink">` styling
+ * at 27-phase carryover — NEW LONGEST ABSOLUTE APPEND-DEFERRAL
+ * CLOSURE RECORD; first post-tie absolute-record extension in
+ * project history): the plugin body emits
+ * `className: ["wikilink"]` on every resolved `<a>` element
+ * (HAST array form per `property-information` convention;
+ * rehype-stringify renders as `class="wikilink"` at compile
+ * time). Downstream CSS can style `a.wikilink` distinctly from
+ * unclassed external `<a href="...">` anchors emitted by
+ * standard markdown `[text](url)` syntax.
+ *
+ * **Plugin-only emit pattern** (Phase 65 first realization):
+ * the className addition does NOT require a schemaOverrides
+ * change. The Phase-37 framework pipeline runs
+ * `rehype-sanitize` BEFORE the registry's `rehypePlugins` per
+ * APPEND-D-D plugin-order-after-default discipline (see
+ * `lib/markdown/index.ts:213-215`); the `<a class="wikilink">`
+ * element this plugin splices into the post-sanitize tree
+ * enters under explicit framework intent — sanitize has
+ * already run and cannot strip the class attribute. **First
+ * non-regex plugin-body realization** in project history (all
+ * 7 prior plugin-body realizations Phase 46-60 are
+ * regex/extraction extensions evolving the plugin's INPUT
+ * pattern; Phase 65 evolves the plugin's OUTPUT shape).
+ * **First 8-realization for plugin-body axis**; **first state
+ * where plugin-body axis exceeds registry-state axis in
+ * realization count** (8 > 7).
+ *
+ * className value is hardcoded literal `"wikilink"` (no
+ * curator input; no slug/entityType interpolation; no
+ * opportunity for attribute injection). The attribute value
+ * is a fixed literal, not curator-controllable. **No new XSS
+ * surface** introduced by Phase 65. Curator-configurable
+ * className value via plugin-option axis (mirroring Phase-62
+ * `buildHref` parameterization) is a Phase 66+ concern.
+ *
  * Folds AFTER the default `rehype-sanitize` +
  * `rehypeStripUnsafeHrefs` steps per Phase-37 framework's
  * APPEND-D-D plugin-order-after-default discipline. The
@@ -244,10 +281,23 @@ export const rehypeResolveWikilinks: Plugin<[ResolveWikilinksOptions?], Root> =
         // preserved verbatim (no auto-trim Phase 46).
         const display = alias ?? slug;
 
+        // Phase 65 className emission (APPEND-D-AW): emit
+        // `className: ["wikilink"]` so downstream CSS can style
+        // wikilink anchors distinctly. HAST uses array form per
+        // `property-information` convention; rehype-stringify
+        // renders as `class="wikilink"`. The class attribute
+        // bypasses the sanitize allow-list because this plugin
+        // runs AFTER `rehype-sanitize` per APPEND-D-D plugin-
+        // order-after-default discipline (no schemaOverrides
+        // change required — plugin-only emit pattern, first
+        // realization).
         newNodes.push({
           type: "element",
           tagName: "a",
-          properties: { href: buildHref(slug, entityType) },
+          properties: {
+            className: ["wikilink"],
+            href: buildHref(slug, entityType),
+          },
           children: [{ type: "text", value: display }],
         });
 

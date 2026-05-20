@@ -32,27 +32,27 @@ function runWikilinkPipeline(md: string): string {
 }
 
 describe("rehypeResolveWikilinks — plugin behavior", () => {
-  it('resolves a single [[slug]] to <a href="/problems/slug">slug</a>', () => {
+  it('resolves a single [[slug]] to <a class="wikilink" href="/problems/slug">slug</a>', () => {
     expect(runWikilinkPipeline("[[scalable-oversight]]")).toBe(
-      '<p><a href="/problems/scalable-oversight">scalable-oversight</a></p>',
+      '<p><a class="wikilink" href="/problems/scalable-oversight">scalable-oversight</a></p>',
     );
   });
 
   it("preserves surrounding text", () => {
     expect(runWikilinkPipeline("see [[scalable-oversight]] for context")).toBe(
-      '<p>see <a href="/problems/scalable-oversight">scalable-oversight</a> for context</p>',
+      '<p>see <a class="wikilink" href="/problems/scalable-oversight">scalable-oversight</a> for context</p>',
     );
   });
 
   it("resolves multiple [[slug]] in one paragraph", () => {
     expect(runWikilinkPipeline("[[a-slug]] and [[other-slug]]")).toBe(
-      '<p><a href="/problems/a-slug">a-slug</a> and <a href="/problems/other-slug">other-slug</a></p>',
+      '<p><a class="wikilink" href="/problems/a-slug">a-slug</a> and <a class="wikilink" href="/problems/other-slug">other-slug</a></p>',
     );
   });
 
   it("resolves adjacent wikilinks without intervening text", () => {
     expect(runWikilinkPipeline("[[a]][[b]]")).toBe(
-      '<p><a href="/problems/a">a</a><a href="/problems/b">b</a></p>',
+      '<p><a class="wikilink" href="/problems/a">a</a><a class="wikilink" href="/problems/b">b</a></p>',
     );
   });
 
@@ -70,7 +70,7 @@ describe("rehypeResolveWikilinks — plugin behavior", () => {
 
   it("resolves a wikilink nested inside a bold element", () => {
     expect(runWikilinkPipeline("**[[scalable-oversight]]**")).toBe(
-      '<p><strong><a href="/problems/scalable-oversight">scalable-oversight</a></strong></p>',
+      '<p><strong><a class="wikilink" href="/problems/scalable-oversight">scalable-oversight</a></strong></p>',
     );
   });
 
@@ -88,7 +88,7 @@ describe("rehypeResolveWikilinks — plugin behavior", () => {
 
   it("resolves a wikilink that is the entire paragraph", () => {
     expect(runWikilinkPipeline("[[hallucination-reduction]]")).toBe(
-      '<p><a href="/problems/hallucination-reduction">hallucination-reduction</a></p>',
+      '<p><a class="wikilink" href="/problems/hallucination-reduction">hallucination-reduction</a></p>',
     );
   });
 
@@ -101,21 +101,21 @@ describe("rehypeResolveWikilinks — plugin behavior", () => {
   // (paragraph-break boundary).
   // ---------------------------------------------------------------
 
-  it("Phase-46: resolves [[slug|display]] to <a href=/problems/slug>display</a>", () => {
+  it("Phase-46: resolves [[slug|display]] to anchor with display text content", () => {
     expect(runWikilinkPipeline("[[scalable-oversight|the alignment frontier]]")).toBe(
-      '<p><a href="/problems/scalable-oversight">the alignment frontier</a></p>',
+      '<p><a class="wikilink" href="/problems/scalable-oversight">the alignment frontier</a></p>',
     );
   });
 
   it("Phase-46: backwards-compat — bare [[slug]] still renders as <a>slug</a>", () => {
     expect(runWikilinkPipeline("[[scalable-oversight]]")).toBe(
-      '<p><a href="/problems/scalable-oversight">scalable-oversight</a></p>',
+      '<p><a class="wikilink" href="/problems/scalable-oversight">scalable-oversight</a></p>',
     );
   });
 
   it("Phase-46: preserves multi-word display with internal spaces", () => {
     expect(runWikilinkPipeline("[[hallucination-reduction|truth in LLM outputs]]")).toBe(
-      '<p><a href="/problems/hallucination-reduction">truth in LLM outputs</a></p>',
+      '<p><a class="wikilink" href="/problems/hallucination-reduction">truth in LLM outputs</a></p>',
     );
   });
 
@@ -123,8 +123,8 @@ describe("rehypeResolveWikilinks — plugin behavior", () => {
     expect(
       runWikilinkPipeline("see [[scalable-oversight|here]] and [[hallucination-reduction]]"),
     ).toBe(
-      '<p>see <a href="/problems/scalable-oversight">here</a> and ' +
-        '<a href="/problems/hallucination-reduction">hallucination-reduction</a></p>',
+      '<p>see <a class="wikilink" href="/problems/scalable-oversight">here</a> and ' +
+        '<a class="wikilink" href="/problems/hallucination-reduction">hallucination-reduction</a></p>',
     );
   });
 
@@ -148,19 +148,19 @@ describe("rehypeResolveWikilinks — plugin behavior", () => {
     // before this plugin runs; that defense is tested at the full-
     // pipeline integration level in `lib/markdown/index.test.ts`.)
     const html = runWikilinkPipeline("[[a|Cats & dogs]]");
-    expect(html).toContain('<a href="/problems/a">Cats &#x26; dogs</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/a">Cats &#x26; dogs</a>');
   });
 
   it("Phase-46: less-than character in display HTML-escapes correctly", () => {
     // `<` in display escapes to `&#x3C;` via text-node rendering.
     // Using a context that doesn't trigger HTML parsing.
     const html = runWikilinkPipeline("[[a|x < y]]");
-    expect(html).toContain('<a href="/problems/a">x &#x3C; y</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/a">x &#x3C; y</a>');
   });
 
   it("Phase-46: alias nested in bold — <strong> wraps the aliased <a>", () => {
     expect(runWikilinkPipeline("**[[scalable-oversight|alignment]]**")).toBe(
-      '<p><strong><a href="/problems/scalable-oversight">alignment</a></strong></p>',
+      '<p><strong><a class="wikilink" href="/problems/scalable-oversight">alignment</a></strong></p>',
     );
   });
 
@@ -175,14 +175,14 @@ describe("rehypeResolveWikilinks — plugin behavior", () => {
     // an alias is consumed as part of the display string. Curator
     // who wants a literal `|` in display gets it.
     expect(runWikilinkPipeline("[[a|left|right]]")).toBe(
-      '<p><a href="/problems/a">left|right</a></p>',
+      '<p><a class="wikilink" href="/problems/a">left|right</a></p>',
     );
   });
 
   it("Phase-46: alias preserves leading/trailing whitespace verbatim (no auto-trim Phase 46)", () => {
     // D-10 prep-doc decision: whitespace preserved per curator intent.
     expect(runWikilinkPipeline("[[a|  spaced  ]]")).toBe(
-      '<p><a href="/problems/a">  spaced  </a></p>',
+      '<p><a class="wikilink" href="/problems/a">  spaced  </a></p>',
     );
   });
 
@@ -202,7 +202,7 @@ describe("rehypeResolveWikilinks — plugin behavior", () => {
     expect(
       runWikilinkPipeline("[[long-horizon-agent-reliability|the pass^k reliability gap]]"),
     ).toBe(
-      '<p><a href="/problems/long-horizon-agent-reliability">' +
+      '<p><a class="wikilink" href="/problems/long-horizon-agent-reliability">' +
         "the pass^k reliability gap</a></p>",
     );
   });
@@ -291,7 +291,7 @@ describe("Phase-62 plugin parameterization — buildHref option behavior", () =>
     // `WikilinkExtensionRegistry.getExtensions(...)` relies on. If this
     // assertion regresses, every existing call site breaks.
     expect(runWikilinkPipeline("[[scalable-oversight]]")).toBe(
-      '<p><a href="/problems/scalable-oversight">scalable-oversight</a></p>',
+      '<p><a class="wikilink" href="/problems/scalable-oversight">scalable-oversight</a></p>',
     );
   });
 
@@ -300,7 +300,7 @@ describe("Phase-62 plugin parameterization — buildHref option behavior", () =>
       runWikilinkPipelineWithOptions("[[arxiv-2401-12345]]", {
         buildHref: (slug) => `/papers/${slug}`,
       }),
-    ).toBe('<p><a href="/papers/arxiv-2401-12345">arxiv-2401-12345</a></p>');
+    ).toBe('<p><a class="wikilink" href="/papers/arxiv-2401-12345">arxiv-2401-12345</a></p>');
   });
 
   it("custom buildHref invoked exactly once per matched slug", () => {
@@ -325,7 +325,7 @@ describe("Phase-62 plugin parameterization — buildHref option behavior", () =>
         buildHref: (slug) => `https://example.org/problems/${slug}`,
       }),
     ).toBe(
-      '<p><a href="https://example.org/problems/scalable-oversight">' +
+      '<p><a class="wikilink" href="https://example.org/problems/scalable-oversight">' +
         "the oversight problem</a></p>",
     );
   });
@@ -337,7 +337,7 @@ describe("Phase-62 plugin parameterization — buildHref option behavior", () =>
     const html = runWikilinkPipelineWithOptions("[[a]]", {
       buildHref: () => "",
     });
-    expect(html).toContain('<a href="">a</a>');
+    expect(html).toContain('<a class="wikilink" href="">a</a>');
   });
 
   it("custom buildHref can dispatch on slug content (slug-prefix-driven routing)", () => {
@@ -355,9 +355,9 @@ describe("Phase-62 plugin parameterization — buildHref option behavior", () =>
         },
       },
     );
-    expect(html).toContain('<a href="/papers/arxiv-2401">paper-arxiv-2401</a>');
-    expect(html).toContain('<a href="/authors/jane-doe">author-jane-doe</a>');
-    expect(html).toContain('<a href="/problems/plain-slug">plain-slug</a>');
+    expect(html).toContain('<a class="wikilink" href="/papers/arxiv-2401">paper-arxiv-2401</a>');
+    expect(html).toContain('<a class="wikilink" href="/authors/jane-doe">author-jane-doe</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/plain-slug">plain-slug</a>');
   });
 
   it("DEFAULT_BUILD_HREF is byte-identical to the Phase-38 hardcoded shape", () => {
@@ -428,7 +428,9 @@ describe("Phase-62 plugin parameterization — WikilinkExtensionRegistry integra
           .use(rehypeStringify)
           .processSync("[[scalable-oversight]]"),
       );
-      expect(html).toBe('<p><a href="/problems/scalable-oversight">scalable-oversight</a></p>');
+      expect(html).toBe(
+        '<p><a class="wikilink" href="/problems/scalable-oversight">scalable-oversight</a></p>',
+      );
     }
   });
 
@@ -459,7 +461,7 @@ describe("Phase-62 plugin parameterization — WikilinkExtensionRegistry integra
         .use(rehypeStringify)
         .processSync("[[arxiv-2401]]"),
     );
-    expect(html).toBe('<p><a href="/papers/arxiv-2401">arxiv-2401</a></p>');
+    expect(html).toBe('<p><a class="wikilink" href="/papers/arxiv-2401">arxiv-2401</a></p>');
   });
 
   it("default-call vs custom-call: same input → same structure, divergent href only", () => {
@@ -473,12 +475,12 @@ describe("Phase-62 plugin parameterization — WikilinkExtensionRegistry integra
     });
 
     expect(defaultHtml).toBe(
-      '<p>see <a href="/problems/a-slug">the alias</a> and ' +
-        '<a href="/problems/other-slug">other-slug</a> inline</p>',
+      '<p>see <a class="wikilink" href="/problems/a-slug">the alias</a> and ' +
+        '<a class="wikilink" href="/problems/other-slug">other-slug</a> inline</p>',
     );
     expect(customHtml).toBe(
-      '<p>see <a href="/custom/a-slug">the alias</a> and ' +
-        '<a href="/custom/other-slug">other-slug</a> inline</p>',
+      '<p>see <a class="wikilink" href="/custom/a-slug">the alias</a> and ' +
+        '<a class="wikilink" href="/custom/other-slug">other-slug</a> inline</p>',
     );
     // Structural divergence is href-only: same number of <a> elements,
     // same display text, same surrounding text.
@@ -521,7 +523,7 @@ describe("Phase-62 plugin parameterization — WikilinkExtensionRegistry integra
         .use(rehypeStringify)
         .processSync("[[a]]"),
     );
-    expect(html).toBe('<p><a href="/x/a">a</a></p>');
+    expect(html).toBe('<p><a class="wikilink" href="/x/a">a</a></p>');
   });
 });
 
@@ -553,7 +555,7 @@ describe("Phase-63 cross-entity wikilinks — regex extension + entityType routi
       runWikilinkPipelineWithOptions("[[paper:arxiv-2401-12345]]", {
         buildHref: CROSS_ENTITY_BUILD_HREF,
       }),
-    ).toBe('<p><a href="/papers/arxiv-2401-12345">arxiv-2401-12345</a></p>');
+    ).toBe('<p><a class="wikilink" href="/papers/arxiv-2401-12345">arxiv-2401-12345</a></p>');
   });
 
   it("regex matches [[author:slug|display]] (entity-type + alias) — href uses entity routing, display preserved", () => {
@@ -561,7 +563,7 @@ describe("Phase-63 cross-entity wikilinks — regex extension + entityType routi
       runWikilinkPipelineWithOptions("[[author:jane-doe|Jane Doe]]", {
         buildHref: CROSS_ENTITY_BUILD_HREF,
       }),
-    ).toBe('<p><a href="/authors/jane-doe">Jane Doe</a></p>');
+    ).toBe('<p><a class="wikilink" href="/authors/jane-doe">Jane Doe</a></p>');
   });
 
   it("regex matches [[institution:slug]] and routes to /institutions/{slug}", () => {
@@ -570,7 +572,7 @@ describe("Phase-63 cross-entity wikilinks — regex extension + entityType routi
       runWikilinkPipelineWithOptions("[[institution:mit]]", {
         buildHref: CROSS_ENTITY_BUILD_HREF,
       }),
-    ).toBe('<p><a href="/institutions/mit">mit</a></p>');
+    ).toBe('<p><a class="wikilink" href="/institutions/mit">mit</a></p>');
   });
 
   it("regex still matches bare [[plain-slug]] under Phase-63 extended pattern (backwards-compat)", () => {
@@ -582,7 +584,7 @@ describe("Phase-63 cross-entity wikilinks — regex extension + entityType routi
       runWikilinkPipelineWithOptions("[[scalable-oversight]]", {
         buildHref: CROSS_ENTITY_BUILD_HREF,
       }),
-    ).toBe('<p><a href="/problems/scalable-oversight">scalable-oversight</a></p>');
+    ).toBe('<p><a class="wikilink" href="/problems/scalable-oversight">scalable-oversight</a></p>');
   });
 
   it("CROSS_ENTITY_BUILD_HREF: paper entity-type routes to /papers/{slug}", () => {
@@ -632,9 +634,11 @@ describe("Phase-63 cross-entity wikilinks — regex extension + entityType routi
     // Routes to /problems/x. This is the LEGACY fallback semantics that
     // the existing `wikilinks` arm exhibits at Phase 63; curators who want
     // cross-entity routing opt INTO the new `wikilinks-cross-entity` arm.
-    expect(runWikilinkPipeline("[[paper:x]]")).toBe('<p><a href="/problems/x">x</a></p>');
+    expect(runWikilinkPipeline("[[paper:x]]")).toBe(
+      '<p><a class="wikilink" href="/problems/x">x</a></p>',
+    );
     expect(runWikilinkPipeline("[[author:jane-doe]]")).toBe(
-      '<p><a href="/problems/jane-doe">jane-doe</a></p>',
+      '<p><a class="wikilink" href="/problems/jane-doe">jane-doe</a></p>',
     );
   });
 
@@ -644,9 +648,9 @@ describe("Phase-63 cross-entity wikilinks — regex extension + entityType routi
       { buildHref: CROSS_ENTITY_BUILD_HREF },
     );
     expect(html).toBe(
-      '<p>see <a href="/papers/arxiv-1">the paper</a> cited by ' +
-        '<a href="/authors/jane-doe">Jane Doe</a> from ' +
-        '<a href="/institutions/mit">mit</a></p>',
+      '<p>see <a class="wikilink" href="/papers/arxiv-1">the paper</a> cited by ' +
+        '<a class="wikilink" href="/authors/jane-doe">Jane Doe</a> from ' +
+        '<a class="wikilink" href="/institutions/mit">mit</a></p>',
     );
   });
 });
@@ -752,8 +756,112 @@ describe("Phase-63 cross-entity wikilinks — WikilinkExtensionRegistry buildHre
         .processSync("[[paper:arxiv-2401]] cited by [[author:jane-doe|Jane Doe]]"),
     );
     expect(html).toBe(
-      '<p><a href="/papers/arxiv-2401">arxiv-2401</a> cited by ' +
-        '<a href="/authors/jane-doe">Jane Doe</a></p>',
+      '<p><a class="wikilink" href="/papers/arxiv-2401">arxiv-2401</a> cited by ' +
+        '<a class="wikilink" href="/authors/jane-doe">Jane Doe</a></p>',
+    );
+  });
+});
+
+describe("Phase-65 className emission — plugin-only emit pattern (first non-regex plugin-body realization; first 8-realization for plugin-body axis; first state where plugin-body axis exceeds registry-state axis; closes APPEND-D-L item 4 at 27-phase carryover — NEW LONGEST ABSOLUTE record; first post-tie absolute-record extension)", () => {
+  it("Phase-65: emits class='wikilink' on resolved <a> for bare [[slug]] syntax", () => {
+    // Phase 38 baseline shape + Phase 65 className addition. The resolved
+    // <a> element carries `class="wikilink"` so downstream CSS can style
+    // wikilink anchors distinctly from external links.
+    const html = runWikilinkPipeline("see [[problem-slug]]");
+    expect(html).toContain('class="wikilink"');
+    expect(html).toContain('href="/problems/problem-slug"');
+    expect(html).toBe(
+      '<p>see <a class="wikilink" href="/problems/problem-slug">problem-slug</a></p>',
+    );
+  });
+
+  it("Phase-65: emits class='wikilink' on resolved <a> for [[slug|display]] alias syntax (Phase-46 alias preserved)", () => {
+    // Phase 46 alias + Phase 65 className composition: anchor text content
+    // is the display string; class attribute is the new addition.
+    const html = runWikilinkPipeline("see [[problem-slug|alias display]]");
+    expect(html).toBe(
+      '<p>see <a class="wikilink" href="/problems/problem-slug">alias display</a></p>',
+    );
+  });
+
+  it("Phase-65: emits class='wikilink' on resolved <a> for [[paper:slug]] cross-entity syntax (Phase-63 cross-entity preserved)", () => {
+    // Phase 63 cross-entity + Phase 65 className composition: cross-entity
+    // routing produces /papers/{slug} href; className is the new addition.
+    // Note: bare-form `rehypeResolveWikilinks` uses DEFAULT_BUILD_HREF which
+    // drops entityType — the test runs the plugin with explicit
+    // CROSS_ENTITY_BUILD_HREF.
+    const html = String(
+      unified()
+        .use(remarkParse)
+        .use(remarkRehype)
+        .use(rehypeResolveWikilinks, { buildHref: CROSS_ENTITY_BUILD_HREF })
+        .use(rehypeStringify)
+        .processSync("see [[paper:arxiv-2401]]"),
+    );
+    expect(html).toBe('<p>see <a class="wikilink" href="/papers/arxiv-2401">arxiv-2401</a></p>');
+  });
+
+  it("Phase-65: emits class='wikilink' alongside Phase-62 custom buildHref (plugin-option axis + plugin-body axis compose independently)", () => {
+    // Custom buildHref (Phase-62 plugin-option axis) + Phase-65 className
+    // (plugin-body axis) compose orthogonally: the className is emitted
+    // regardless of which builder is in use.
+    const customBuilder: ResolveWikilinksOptions["buildHref"] = (slug) => `/x/${slug}`;
+    const html = String(
+      unified()
+        .use(remarkParse)
+        .use(remarkRehype)
+        .use(rehypeResolveWikilinks, { buildHref: customBuilder })
+        .use(rehypeStringify)
+        .processSync("[[abc]]"),
+    );
+    expect(html).toBe('<p><a class="wikilink" href="/x/abc">abc</a></p>');
+  });
+
+  it("Phase-65: className value is exactly 'wikilink' — regression guard against value drift", () => {
+    // Hardcoded literal value per D-9 lean. Future Phase 66+ may extend to
+    // curator-configurable className via plugin-option axis, but Phase 65
+    // commits to literal "wikilink". Validates the exact string + absence
+    // of additional class tokens.
+    const html = runWikilinkPipeline("[[x]]");
+    expect(html).toContain('class="wikilink"');
+    // Negative assertions: no multi-class state, no namespace prefix, no
+    // typo variants (deliberately strict — if Phase 66+ multi-className or
+    // curator-configurable emit lands, this test will need to evolve).
+    expect(html).not.toContain('class="wikilinks"');
+    expect(html).not.toContain('class="wiki-link"');
+    expect(html).not.toContain('class="wikilink wikilink"');
+  });
+
+  it("Phase-65: external markdown links emit UNCLASSED <a> tags — only wikilinks-plugin-resolved anchors get the className", () => {
+    // Critical scope contract: the className is wikilink-plugin-specific.
+    // External links via standard markdown `[text](url)` syntax continue to
+    // emit unclassed `<a>` tags via remark-rehype's default transformation.
+    // This test mixes external + wikilink in the same source to validate
+    // the differentiation.
+    const html = runWikilinkPipeline(
+      "external [link](https://example.com) and wikilink [[problem-slug]]",
+    );
+    // The external link is unclassed; the wikilink is classed.
+    expect(html).toContain('<a href="https://example.com">link</a>');
+    expect(html).toContain('<a class="wikilink" href="/problems/problem-slug">problem-slug</a>');
+    // Stronger assertion: only ONE class="wikilink" attribute in the entire
+    // output (corresponding to the wikilink anchor only).
+    const classCount = (html.match(/class="wikilink"/g) ?? []).length;
+    expect(classCount).toBe(1);
+  });
+
+  it("Phase-65: HAST className=['wikilink'] array form renders as class=\"wikilink\" via rehype-stringify (end-to-end HAST → HTML transformation)", () => {
+    // Validates that the HAST property-information `className` array form
+    // (`className: ["wikilink"]`) renders to the HTML attribute
+    // `class="wikilink"` via rehype-stringify. If HAST changed convention
+    // (e.g., scalar string instead of array, or required `class` instead
+    // of `className`), this assertion would catch the divergence.
+    const html = runWikilinkPipeline("[[a]] [[b]]");
+    // Both anchors get the className via the array form; rehype-stringify
+    // joins multiple array entries with spaces (Phase 65 ships single
+    // entry only; multi-className is Phase 66+ deferral).
+    expect(html).toBe(
+      '<p><a class="wikilink" href="/problems/a">a</a> <a class="wikilink" href="/problems/b">b</a></p>',
     );
   });
 });
