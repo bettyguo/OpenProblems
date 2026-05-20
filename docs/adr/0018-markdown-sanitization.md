@@ -5477,6 +5477,325 @@ streak.
 - **ADR-0025 concrete content-moderation provider** — Phase
   64+; not autonomous-tractable.
 
+#### EXTENDED Phase 64 Unit 64.1 — APPEND-D-AV surface-specific table schemas via `TablesExtensionRegistry` constructor evolution + per-surface schema-override map (first realization of a FOURTH principal axis of zero-rework framework extension — schema-options axis joins registry-state + plugin-body + plugin-option axes; first state where the framework has FOUR principal axes of zero-rework extension; first D-clause with ALL enumerated items closed in project history — D-Q at 4-of-4 within Phase-39-tables-cap subset; closes APPEND-D-Q item 6 at 25-phase carryover — TIES Phase-63 absolute APPEND-deferral closure record without extending (first absolute-record-TIE in project history; ends 3-consecutive-phase absolute-record-EXTENSION streak but begins 4-consecutive-phase set-or-tie streak); tables consumer gains 4th evolution post-first-ship; first state where TWO consumers have 4+ evolutions; first schema-options-ready-before-curator-demand realization; 23-phase APPEND-deferral closure cadence; 31st D-G APPEND record extends; twenty-second two-letter slot D-AV; fifty-fifth NON-§13 phase; second new `MARKDOWN_EXTENSIONS` single-value arm in 2 consecutive phases — first 2-consecutive-phase new-arm-addition streak (`tables-per-surface`; 9 → 10 arms))
+
+Phase 64 evolves `TablesExtensionRegistry` constructor with an
+optional second arg `options: TablesExtensionOptions` carrying
+an optional
+`surfaceSchemaOverrides?: ReadonlyMap<MarkdownSurface, Partial<Schema>>`
+map. When undefined (Phase 39-63 default), all enabled
+surfaces receive `GFM_TABLE_SCHEMA_OVERRIDES` uniformly —
+byte-identical to Phase 39-63 behavior. When set, the
+registry emits the map's per-surface `Partial<Schema>` for
+surfaces present in the map; surfaces in `enabledSurfaces`
+but missing from the map fall back to
+`GFM_TABLE_SCHEMA_OVERRIDES` (graceful fallback per Phase-64
+D-9 lean — preserves the Phase 39-63 invariant for surfaces
+the curator hasn't opted into differentiating).
+
+**APPEND-D-AV schema-options-axis shape**:
+
+```ts
+// Before (Phase 39 ship through Phase-63 close):
+export class TablesExtensionRegistry implements MarkdownExtensionRegistry {
+  private readonly enabledSurfaces: ReadonlySet<MarkdownSurface>;
+
+  constructor(enabledSurfaces: ReadonlySet<MarkdownSurface>) {
+    this.enabledSurfaces = enabledSurfaces;
+  }
+
+  getExtensions(surface: MarkdownSurface): MarkdownExtensionSet {
+    if (this.enabledSurfaces.has(surface)) {
+      return { schemaOverrides: GFM_TABLE_SCHEMA_OVERRIDES };
+    }
+    return {};
+  }
+}
+
+// After (Phase 64 ship):
+export interface TablesExtensionOptions {
+  surfaceSchemaOverrides?: ReadonlyMap<MarkdownSurface, Partial<Schema>>;
+}
+
+export class TablesExtensionRegistry implements MarkdownExtensionRegistry {
+  private readonly enabledSurfaces: ReadonlySet<MarkdownSurface>;
+  private readonly surfaceSchemaOverrides: TablesExtensionOptions["surfaceSchemaOverrides"];
+
+  constructor(
+    enabledSurfaces: ReadonlySet<MarkdownSurface>,
+    options: TablesExtensionOptions = {},
+  ) {
+    this.enabledSurfaces = enabledSurfaces;
+    this.surfaceSchemaOverrides = options.surfaceSchemaOverrides;
+  }
+
+  getExtensions(surface: MarkdownSurface): MarkdownExtensionSet {
+    if (!this.enabledSurfaces.has(surface)) return {};
+    const perSurface = this.surfaceSchemaOverrides?.get(surface);
+    if (perSurface !== undefined) {
+      return { schemaOverrides: perSurface };
+    }
+    return { schemaOverrides: GFM_TABLE_SCHEMA_OVERRIDES };
+  }
+}
+
+// New Phase-64 exports (colocated with GFM_TABLE_SCHEMA_OVERRIDES):
+export const GFM_TABLE_SCHEMA_OVERRIDES_BIO_RESTRICTED: Partial<Schema> = {
+  tagNames: [...phase17Base, "table", "thead", "tbody", "tr", "th", "td"], // NO caption
+  attributes: {
+    a: ["href"],
+    input: [["type", "checkbox"], "checked", "disabled"],
+    th: [["align", "left", "center", "right"]], // NO colSpan/rowSpan/scope
+    td: [["align", "left", "center", "right"]], // NO colSpan/rowSpan
+    "*": [],
+  },
+};
+
+export const PHASE_64_DEFAULT_PER_SURFACE_SCHEMA_OVERRIDES: ReadonlyMap<
+  MarkdownSurface,
+  Partial<Schema>
+> = new Map([
+  ["bio", GFM_TABLE_SCHEMA_OVERRIDES_BIO_RESTRICTED],
+  ["reviewNotes", GFM_TABLE_SCHEMA_OVERRIDES],
+  ["rationale", GFM_TABLE_SCHEMA_OVERRIDES],
+  ["actionRationale", GFM_TABLE_SCHEMA_OVERRIDES],
+]);
+```
+
+**Backwards-compat preserved**: every Phase-39 / Phase-43 /
+Phase-57 / Phase-61 call site constructing
+`new TablesExtensionRegistry(enabledSurfaces)` continues to
+work byte-identically (options defaults to `{}`,
+`surfaceSchemaOverrides` defaults to `undefined`,
+`getExtensions` returns `GFM_TABLE_SCHEMA_OVERRIDES` for
+enabled surfaces). The existing `MARKDOWN_EXTENSIONS=tables`
+arm behavior is byte-identical to Phase 63.
+
+**Bio-restricted schema**: STRICT SUBSET of
+`GFM_TABLE_SCHEMA_OVERRIDES`. Omits Phase-57 attribute
+additions (`colSpan` / `rowSpan` on `<th>` / `<td>`; `scope`
+on `<th>`) AND Phase-61 tag addition (`<caption>`). Retains
+the Phase-39 baseline (basic GFM table tags + `align`
+attribute) plus the Phase-17 base allow-list verbatim per
+APPEND-D-C override-replace contract.
+
+**Per-surface map semantics** (overlay pattern per D-15 lean):
+
+- Surface in `enabledSurfaces` AND in `surfaceSchemaOverrides`
+  → emit map's per-surface `Partial<Schema>`.
+- Surface in `enabledSurfaces` but NOT in map → fall back to
+  `GFM_TABLE_SCHEMA_OVERRIDES` (Phase 39-63 invariant
+  preserved for surfaces the curator hasn't differentiated).
+- Surface NOT in `enabledSurfaces` → empty extension set
+  (Phase-17/27/29 baseline preserved regardless of map).
+
+**`PHASE_64_DEFAULT_PER_SURFACE_SCHEMA_OVERRIDES` content**
+(matches APPEND-D-Q item 6 example verbatim):
+
+- `bio` → `GFM_TABLE_SCHEMA_OVERRIDES_BIO_RESTRICTED`.
+- `reviewNotes` → `GFM_TABLE_SCHEMA_OVERRIDES`.
+- `rationale` → `GFM_TABLE_SCHEMA_OVERRIDES`.
+- `actionRationale` → `GFM_TABLE_SCHEMA_OVERRIDES`.
+
+**XSS-safety contract preserved**: bio-restricted is a strict
+SUBSET of `GFM_TABLE_SCHEMA_OVERRIDES`; no NEW tags or
+attributes added. All existing XSS defenses (literal-enum
+scope; align value restriction; event-handler attribute
+stripping; Phase-17 base allow-list) preserved verbatim
+across both schema variants. Bio-restricted further restricts
+the attack surface by omitting Phase-57 attributes + Phase-61
+caption tag from bio rendering — a defense-in-depth NARROWING,
+not a widening. The Phase-64 schema-options axis cannot widen
+the schema beyond `GFM_TABLE_SCHEMA_OVERRIDES`; curators
+choose between FULL (uniform) and RESTRICTED-on-some-surfaces
+variants, both of which are subsets of the audited Phase-61
+allow-list.
+
+**Tests added Phase 64 Unit 64.1** (19 NEW tests in
+`tables.test.ts` across three new `describe` blocks):
+
+- `GFM_TABLE_SCHEMA_OVERRIDES_BIO_RESTRICTED — content`: 9
+  tests (6 tags without caption; Phase-17 base verbatim;
+  Phase-17 base attributes verbatim; align-only on th/td;
+  strict subset of GFM_TABLE_SCHEMA_OVERRIDES; <th colspan>
+  stripped; <th scope> stripped; <caption> stripped; <th
+  align> survives).
+- `PHASE_64_DEFAULT_PER_SURFACE_SCHEMA_OVERRIDES — content`:
+  3 tests (bio maps to restricted; reviewNotes/rationale/
+  actionRationale map to full; covers all 4
+  MarkdownSurface).
+- `TablesExtensionRegistry — Phase-64 schema-options axis`:
+  7 tests (signature evolution backwards-compat; undefined
+  preserves Phase 39-63; map returns restricted on bio;
+  graceful fallback for missing surfaces; respects
+  enabledSurfaces gate; end-to-end composite with default
+  map; orthogonal to enabledSurfaces axis).
+
+**Schema-options axis is the FOURTH principal axis of zero-
+rework framework extension**:
+
+| # | Axis | Introduced | Realizations |
+|---|---|---|---|
+| 1 | Registry-state axis | Phase 38 | 7 (Phase 42 + 43 + 44 + 49 + 52 + 56 + 59) |
+| 2 | Plugin-body axis | Phase 46 | 7 (Phase 46 + 47 + 48 + 51 + 53 + 55 + 60) |
+| 3 | Plugin-option axis | Phase 62 | 2 (Phase 62 affordance + Phase 63 registry consumer) |
+| 4 | **Schema-options axis** | **Phase 64** | **1 (Phase 64 tables per-surface map)** |
+
+**Mechanistically parallel to Phase-62 plugin-option axis**:
+both axes introduce optional second constructor arg flowing
+configuration through to per-instance state. **Mechanistically
+distinct**: plugin-option targets unified-plugin invocation
+signatures (a unified.js concept); schema-options targets per-
+surface schema selection within the registry. The 4-axis state
+is the first state where the framework supports zero-rework
+extension along four orthogonal dimensions: enabled-surface-
+set (axis 1), plugin-body (axis 2), plugin invocation options
+(axis 3), schema selection per surface (axis 4).
+
+**First schema-options-ready-before-curator-demand
+realization**: the bio-restricted variant + concrete per-
+surface map ship the differentiation capability AHEAD of
+explicit curator demand for a bio-only basic-table policy.
+Generalizes Phase-62 plugin-option-ready-before-consumer-
+demand to the schema slot. Demand-anticipation discipline
+trajectory:
+
+- Phase 57 = schema-ready-before-plugin (attributes layer)
+- Phase 61 = schema-ready-before-plugin (tags layer)
+- Phase 62 = plugin-option-ready-before-consumer-demand
+  (one layer up from schema-ready-before-plugin)
+- **Phase 64 = schema-options-ready-before-curator-demand**
+  (parallel to plugin-option-ready but in the schema slot)
+
+**Closes APPEND-D-Q item 6 `Surface-specific table schemas`
+at 25-phase carryover** (Phase 39 → Phase 64). **TIES Phase-
+63 absolute APPEND-deferral closure record** (25-phase) —
+first absolute-record-TIE in project history. APPEND-D-Q
+closure trajectory:
+
+- Item 1 (multi-value `MARKDOWN_EXTENSIONS=wikilinks,tables`
+  composition) → closed Phase 40 (1-phase carryover; pre-
+  cadence).
+- Item 2 (cross-surface table expansion) → closed Phase 43
+  (4-phase carryover; first cadence closure).
+- Item 3 (table-specific attributes `colspan`/`rowspan`/
+  `scope`) → closed Phase 57 (18-phase carryover; first
+  NEW LONGEST ABSOLUTE RECORD).
+- Item 4 (`<caption>` element) → closed Phase 61 (22-phase
+  carryover; new NEW LONGEST ABSOLUTE RECORD).
+- Item 5 (`remarkPlugins` slot consumer) → closed Phase 41
+  (2-phase carryover via arxiv first-ship; pre-cadence
+  closure).
+- Item 6 (surface-specific table schemas) → **Phase 64 = 25-
+  phase carryover** (TIES Phase-63 absolute record).
+
+**D-Q becomes first D-clause with ALL enumerated items
+closed** within the Phase-39-tables-cap subset (items 2 + 3
++ 4 + 6 — the four items deferred at Phase-39 first-ship —
+all closed). Items 1 + 5 were closed pre-cadence (Phase 40 +
+41) and counted within the broader D-Q enumeration but were
+not part of the tables-consumer's specific deferral subset.
+**First D-clause with ALL items closed** in project history.
+First "fully-resolved D-clause" closure shape recognized.
+
+**Tables consumer gains 4th evolution post-first-ship**
+(Phase 43 cross-surface + Phase 57 attributes + Phase 61
+caption + Phase 64 per-surface). **First state where TWO
+consumers have 4+ evolutions** in project history (wikilinks
+at 4 from Phase 63 + tables joins at Phase 64). Other
+consumers: arxiv at 3 evolutions; doi/pubmed/orcid/biorxiv
+at 2 evolutions each.
+
+**TIES Phase-63 absolute APPEND-deferral closure record**.
+Phase 64 is the **first absolute-record-TIE in project
+history**. The 3-consecutive-phase absolute-record-EXTENSION
+streak (Phase 61 22 → Phase 62 24 → Phase 63 25) ENDS at
+Phase 64, but a 4-consecutive-phase set-or-tie streak BEGINS
+(Phase 61 new + 62 extend + 63 extend + 64 tie). First
+absolute-record-TIE phase shape recognized.
+
+**23-phase APPEND-deferral closure cadence sustained**
+(extends Phase-63 22-phase record to 23 — new longest
+sustained cadence in project history). First 23-phase
+APPEND-deferral closure run.
+
+**Thirty-first APPEND on ADR-0018 D-G** — extends the **first-
+ADR-D-clause-with-most-APPENDs record** from 30 → 31 (Phase
+18 + 27 + 29 + 37 + 38 + 39 + 40 + 41 + 42 + 43 + 44 + 45 +
+46 + 47 + 48 + 49 + 50 + 51 + 52 + 53 + 54 + 55 + 56 + 57 +
+58 + 59 + 60 + 61 + 62 + 63 + **64**).
+
+**Twenty-second two-letter APPEND letter D-AV** (after Phase-
+43 D-AA + … + Phase-63 D-AU). Excel-spreadsheet column
+convention sustained.
+
+**Twenty-ninth consecutive no-new-ADR phase** (Phase 36-64;
+extends Phase-63 record 28 → 29). **Thirty-fourth consecutive
+phase without new B category** (Phase 31-64; extends Phase-
+63 record 33 → 34). **Fifty-fifth NON-§13 phase** (extends
+Phase-63 milestone to 55); first 55-phase ledger-closure
+streak.
+
+**Phase 65+ deferrals** (Phase-64 per-surface scope cap):
+
+- **`<a class="wikilink">` styling** (APPEND-D-L item 4
+  carries) — Phase 65+; still blocked pending framework
+  decision on multi-source schemaOverrides.
+- **404 handling for unresolved wikilinks** (APPEND-D-L item
+  5 carries) — Phase 65+.
+- **Bare arxiv / DOI / PubMed / ORCID / bioRxiv IDs without
+  prefix** — Phase 65+.
+- **Legacy numeric-only bioRxiv IDs** (pre-2019 format) —
+  Phase 65+.
+- **dx.doi.org legacy host parsing** (APPEND-D-AC carries) —
+  Phase 65+.
+- **Stricter trailing-lookahead for trailing-period DOIs**
+  (APPEND-D-AC carries) — Phase 65+.
+- **Paper-card hover-preview** (APPEND-D-Y item 6 carries) —
+  Phase 65+.
+- **Auto-trim of alias display whitespace** — Phase 65+.
+- **Empty-alias fallback unification** across consumers —
+  Phase 65+.
+- **A future plugin that EMITS `<caption>` or
+  `colSpan`/`rowSpan`/`scope`** to realize the Phase-57 /
+  Phase-61 schema-ready-before-plugin states — Phase 65+.
+- **Curator-facing builder configuration** (locale-prefixed
+  paths, curator-overridable href builders, relative-path
+  variants) — Phase 65+.
+- **Locale-prefixed cross-entity routing** (e.g.,
+  `/{locale}/papers/${slug}`) — Phase 65+.
+- **Curator-facing per-surface schema configuration via DB
+  or UI** — Phase 65+; would extend Phase-64 schema-options
+  axis to DB-backed state.
+- **Per-surface schema-options consumer beyond bio-restricted**
+  (e.g., a `reviewNotes-extended` variant with footnote
+  support) — Phase 65+; would extend Phase-64 schema-options
+  axis to additional surface variants.
+- **2nd schema-options realization on a different consumer
+  than tables** (e.g., wikilinks with per-surface buildHref
+  variants) — Phase 65+; tables is the only schemaOverrides
+  consumer at Phase 64.
+- **OSF preprint consumer** — eighth concrete consumer —
+  Phase 65+.
+- **6th-or-later `remarkPlugins` consumer beyond arxiv + doi
+  + pubmed + orcid + biorxiv** — Phase 65+.
+- **2nd `rehypePlugins` consumer beyond wikilinks** — Phase
+  65+.
+- **2nd `schemaOverrides` consumer beyond tables** — Phase
+  65+ (requires framework refactor per the composite-
+  registry single-source rule).
+- **3rd regex evolution on `remarkLinkArxivIds`** — Phase
+  65+.
+- **Cross-entity entity-type expansion beyond paper / author
+  / institution** (e.g., problem-tags, rating-actions,
+  rating-challenges) — Phase 65+.
+- **Build-time validation of captured entity-type against
+  content/papers / content/authors / content/institutions**
+  — Phase 65+; would extend the existing 404-handling
+  deferral to cross-entity routes.
+- **ADR-0025 concrete content-moderation provider** — Phase
+  65+; not autonomous-tractable.
+
 ### D-H. Phase 18+ deferrals
 
 Phase 17 ships MINIMAL markdown surface. Deferred to Phase 18+:

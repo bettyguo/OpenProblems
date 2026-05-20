@@ -4,12 +4,17 @@ import rehypeStringify from "rehype-stringify";
 import { unified } from "unified";
 import { describe, expect, it } from "vitest";
 
+import type { Options as Schema } from "rehype-sanitize";
+
 import { bioSchema } from "../sanitize-schema";
 import {
   GFM_TABLE_SCHEMA_OVERRIDES,
+  GFM_TABLE_SCHEMA_OVERRIDES_BIO_RESTRICTED,
   PHASE_39_DEFAULT_ENABLED_SURFACES,
+  PHASE_64_DEFAULT_PER_SURFACE_SCHEMA_OVERRIDES,
   TablesExtensionRegistry,
 } from "./tables";
+import type { MarkdownSurface } from "./types";
 
 /**
  * Phase-57 schema-isolation helper: sanitize a manually-
@@ -1108,5 +1113,372 @@ describe("GFM_TABLE_SCHEMA_OVERRIDES — Phase-61 caption edge cases + cumulativ
     const transformed = processor.runSync(tree) as Root;
     const html = String(processor.stringify(transformed));
     expect(html).toContain("<caption></caption>");
+  });
+});
+
+describe("GFM_TABLE_SCHEMA_OVERRIDES_BIO_RESTRICTED — content (Phase-64 schema-options axis; first realization of FOURTH principal axis of zero-rework framework extension)", () => {
+  it("includes the 6 basic GFM table tags WITHOUT the Phase-61 caption tag (strict subset of GFM_TABLE_SCHEMA_OVERRIDES)", () => {
+    const tagNames = GFM_TABLE_SCHEMA_OVERRIDES_BIO_RESTRICTED.tagNames ?? [];
+    // Phase-39 basic GFM table tags present:
+    expect(tagNames).toContain("table");
+    expect(tagNames).toContain("thead");
+    expect(tagNames).toContain("tbody");
+    expect(tagNames).toContain("tr");
+    expect(tagNames).toContain("th");
+    expect(tagNames).toContain("td");
+    // Phase-61 caption is DELIBERATELY OMITTED per bio-restricted policy
+    // (matches APPEND-D-Q item 6 example "bio does not allow colspan" generalized
+    // to span/scope/caption — bio surface omits all Phase-57+61 additions).
+    expect(tagNames).not.toContain("caption");
+  });
+
+  it("includes the Phase-17 base allow-list verbatim per APPEND-D-C override-replace contract", () => {
+    // Bio-restricted is a STRICT SUBSET of GFM_TABLE_SCHEMA_OVERRIDES but
+    // still MUST include the Phase-17 base allow-list verbatim per
+    // override-replace semantics. Without this, base tags get stripped on
+    // bio surface — would regress Phase-17 bio markdown.
+    const tagNames = GFM_TABLE_SCHEMA_OVERRIDES_BIO_RESTRICTED.tagNames ?? [];
+    for (const base of bioSchema.tagNames ?? []) {
+      expect(tagNames).toContain(base);
+    }
+  });
+
+  it("includes the Phase-17 base attributes verbatim per APPEND-D-C", () => {
+    const attrs = GFM_TABLE_SCHEMA_OVERRIDES_BIO_RESTRICTED.attributes ?? {};
+    expect(attrs["a"]).toEqual(["href"]);
+    expect(attrs["input"]).toEqual([["type", "checkbox"], "checked", "disabled"]);
+    expect(attrs["*"]).toEqual([]);
+  });
+
+  it("includes th + td align attribute (Phase-39) but OMITS Phase-57 colSpan/rowSpan/scope per bio-restricted policy", () => {
+    // Bio-restricted retains Phase-39 align but OMITS Phase-57 attribute
+    // additions. Matches APPEND-D-Q item 6 example verbatim ("bio does not
+    // allow colspan"). Defense-in-depth: narrowing the allow-list for bio
+    // surface; not a widening.
+    const attrs = GFM_TABLE_SCHEMA_OVERRIDES_BIO_RESTRICTED.attributes ?? {};
+    expect(attrs["th"]).toEqual([["align", "left", "center", "right"]]);
+    expect(attrs["td"]).toEqual([["align", "left", "center", "right"]]);
+  });
+
+  it("bio-restricted is a STRICT SUBSET of full GFM_TABLE_SCHEMA_OVERRIDES (no NEW tags or attributes; XSS-safety contract preserved)", () => {
+    // Defense-in-depth invariant: bio-restricted must NEVER introduce a tag
+    // or attribute that GFM_TABLE_SCHEMA_OVERRIDES does not allow. If this
+    // ever fails, bio surface would render content that the default tables
+    // arm refuses — a widening, not a narrowing. Validates the Phase-64
+    // schema-options axis preserves XSS-safety regardless of per-surface
+    // differentiation policy.
+    const restrictedTags = new Set(GFM_TABLE_SCHEMA_OVERRIDES_BIO_RESTRICTED.tagNames ?? []);
+    const fullTags = new Set(GFM_TABLE_SCHEMA_OVERRIDES.tagNames ?? []);
+    for (const tag of restrictedTags) {
+      expect(fullTags.has(tag)).toBe(true);
+    }
+  });
+
+  it("<th colspan='3'> is STRIPPED under bio-restricted schema (Phase-57 attribute NOT in bio-restricted; sanitize strips colspan on bio surface)", () => {
+    const tree: Root = {
+      type: "root",
+      children: [
+        {
+          type: "element",
+          tagName: "table",
+          properties: {},
+          children: [
+            {
+              type: "element",
+              tagName: "thead",
+              properties: {},
+              children: [
+                {
+                  type: "element",
+                  tagName: "tr",
+                  properties: {},
+                  children: [
+                    {
+                      type: "element",
+                      tagName: "th",
+                      properties: { colSpan: 3 },
+                      children: [{ type: "text", value: "Header" }],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const processor = unified()
+      .use(rehypeSanitize, GFM_TABLE_SCHEMA_OVERRIDES_BIO_RESTRICTED)
+      .use(rehypeStringify);
+    const transformed = processor.runSync(tree) as Root;
+    const html = String(processor.stringify(transformed));
+    // The <th> element survives but the colspan attribute is stripped.
+    expect(html).toContain("<th>");
+    expect(html).not.toContain("colspan");
+    expect(html).toContain("Header");
+  });
+
+  it("<th scope='col'> is STRIPPED under bio-restricted schema (Phase-57 attribute NOT in bio-restricted)", () => {
+    const tree: Root = {
+      type: "root",
+      children: [
+        {
+          type: "element",
+          tagName: "table",
+          properties: {},
+          children: [
+            {
+              type: "element",
+              tagName: "thead",
+              properties: {},
+              children: [
+                {
+                  type: "element",
+                  tagName: "tr",
+                  properties: {},
+                  children: [
+                    {
+                      type: "element",
+                      tagName: "th",
+                      properties: { scope: "col" },
+                      children: [{ type: "text", value: "Header" }],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const processor = unified()
+      .use(rehypeSanitize, GFM_TABLE_SCHEMA_OVERRIDES_BIO_RESTRICTED)
+      .use(rehypeStringify);
+    const transformed = processor.runSync(tree) as Root;
+    const html = String(processor.stringify(transformed));
+    expect(html).toContain("<th>");
+    expect(html).not.toContain("scope");
+    expect(html).toContain("Header");
+  });
+
+  it("<caption> is STRIPPED under bio-restricted schema (Phase-61 tag NOT in bio-restricted; defense-in-depth narrowing)", () => {
+    const tree: Root = {
+      type: "root",
+      children: [
+        {
+          type: "element",
+          tagName: "table",
+          properties: {},
+          children: [
+            {
+              type: "element",
+              tagName: "caption",
+              properties: {},
+              children: [{ type: "text", value: "Caption text" }],
+            },
+            {
+              type: "element",
+              tagName: "thead",
+              properties: {},
+              children: [],
+            },
+          ],
+        },
+      ],
+    };
+    const processor = unified()
+      .use(rehypeSanitize, GFM_TABLE_SCHEMA_OVERRIDES_BIO_RESTRICTED)
+      .use(rehypeStringify);
+    const transformed = processor.runSync(tree) as Root;
+    const html = String(processor.stringify(transformed));
+    // The caption tag is stripped; only its text content survives.
+    expect(html).not.toContain("<caption>");
+    expect(html).not.toContain("</caption>");
+    expect(html).toContain("Caption text");
+    expect(html).toContain("<table>");
+  });
+
+  it("<th align='center'> SURVIVES under bio-restricted schema (Phase-39 align retained)", () => {
+    // Phase-39 align attribute is the SOLE retained attribute on th/td
+    // under bio-restricted; basic column alignment continues to work.
+    const tree: Root = {
+      type: "root",
+      children: [
+        {
+          type: "element",
+          tagName: "table",
+          properties: {},
+          children: [
+            {
+              type: "element",
+              tagName: "thead",
+              properties: {},
+              children: [
+                {
+                  type: "element",
+                  tagName: "tr",
+                  properties: {},
+                  children: [
+                    {
+                      type: "element",
+                      tagName: "th",
+                      properties: { align: "center" },
+                      children: [{ type: "text", value: "Centered" }],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const processor = unified()
+      .use(rehypeSanitize, GFM_TABLE_SCHEMA_OVERRIDES_BIO_RESTRICTED)
+      .use(rehypeStringify);
+    const transformed = processor.runSync(tree) as Root;
+    const html = String(processor.stringify(transformed));
+    expect(html).toContain('align="center"');
+  });
+});
+
+describe("PHASE_64_DEFAULT_PER_SURFACE_SCHEMA_OVERRIDES — content (Phase-64 default per-surface map per APPEND-D-Q item 6)", () => {
+  it("maps bio to GFM_TABLE_SCHEMA_OVERRIDES_BIO_RESTRICTED (restricted variant per APPEND-D-Q item 6 example)", () => {
+    expect(PHASE_64_DEFAULT_PER_SURFACE_SCHEMA_OVERRIDES.get("bio")).toBe(
+      GFM_TABLE_SCHEMA_OVERRIDES_BIO_RESTRICTED,
+    );
+  });
+
+  it("maps reviewNotes + rationale + actionRationale to full GFM_TABLE_SCHEMA_OVERRIDES (Phase-61 schema preserved on editorial surfaces)", () => {
+    expect(PHASE_64_DEFAULT_PER_SURFACE_SCHEMA_OVERRIDES.get("reviewNotes")).toBe(
+      GFM_TABLE_SCHEMA_OVERRIDES,
+    );
+    expect(PHASE_64_DEFAULT_PER_SURFACE_SCHEMA_OVERRIDES.get("rationale")).toBe(
+      GFM_TABLE_SCHEMA_OVERRIDES,
+    );
+    expect(PHASE_64_DEFAULT_PER_SURFACE_SCHEMA_OVERRIDES.get("actionRationale")).toBe(
+      GFM_TABLE_SCHEMA_OVERRIDES,
+    );
+  });
+
+  it("covers all 4 wired MarkdownSurface values", () => {
+    expect(PHASE_64_DEFAULT_PER_SURFACE_SCHEMA_OVERRIDES.size).toBe(4);
+    const surfaces: MarkdownSurface[] = ["bio", "reviewNotes", "rationale", "actionRationale"];
+    for (const surface of surfaces) {
+      expect(PHASE_64_DEFAULT_PER_SURFACE_SCHEMA_OVERRIDES.has(surface)).toBe(true);
+    }
+  });
+});
+
+describe("TablesExtensionRegistry — Phase-64 schema-options axis (constructor evolution; first realization of FOURTH principal axis of zero-rework framework extension)", () => {
+  it("constructor accepts optional second arg (signature evolution; backwards-compat preserved when omitted)", () => {
+    // Phase 39-63: constructor(enabledSurfaces) — single arg.
+    // Phase 64+: constructor(enabledSurfaces, options?) — second arg optional.
+    // Existing call sites continue to work byte-identically.
+    const r = new TablesExtensionRegistry(new Set(["bio"]));
+    expect(r.getExtensions("bio")).toEqual({
+      schemaOverrides: GFM_TABLE_SCHEMA_OVERRIDES,
+    });
+  });
+
+  it("undefined surfaceSchemaOverrides preserves Phase 39-63 byte-identical behavior on enabled surfaces (regression guard)", () => {
+    // When options object is empty (no surfaceSchemaOverrides), behavior MUST
+    // be byte-identical to Phase 39-63. Validates the Phase-64 axis
+    // introduction does not regress the existing `tables` arm.
+    const r = new TablesExtensionRegistry(new Set(["bio", "reviewNotes"]), {});
+    expect(r.getExtensions("bio")).toEqual({
+      schemaOverrides: GFM_TABLE_SCHEMA_OVERRIDES,
+    });
+    expect(r.getExtensions("reviewNotes")).toEqual({
+      schemaOverrides: GFM_TABLE_SCHEMA_OVERRIDES,
+    });
+  });
+
+  it("surfaceSchemaOverrides with bio-restricted variant returns the restricted schema on bio (Phase-64 NEW behavior)", () => {
+    const map: ReadonlyMap<MarkdownSurface, Partial<Schema>> = new Map([
+      ["bio", GFM_TABLE_SCHEMA_OVERRIDES_BIO_RESTRICTED],
+    ]);
+    const r = new TablesExtensionRegistry(new Set(["bio", "reviewNotes"]), {
+      surfaceSchemaOverrides: map,
+    });
+    expect(r.getExtensions("bio")).toEqual({
+      schemaOverrides: GFM_TABLE_SCHEMA_OVERRIDES_BIO_RESTRICTED,
+    });
+  });
+
+  it("surfaceSchemaOverrides graceful fallback: surface in enabledSurfaces but NOT in map falls back to GFM_TABLE_SCHEMA_OVERRIDES (D-9 lean)", () => {
+    // reviewNotes is enabled BUT not in the map → falls back to full schema.
+    // Preserves Phase 39-63 invariant for surfaces the curator hasn't
+    // differentiated. Validates the overlay (not strict-mode) per-surface
+    // semantics per D-15 lean.
+    const map: ReadonlyMap<MarkdownSurface, Partial<Schema>> = new Map([
+      ["bio", GFM_TABLE_SCHEMA_OVERRIDES_BIO_RESTRICTED],
+    ]);
+    const r = new TablesExtensionRegistry(new Set(["bio", "reviewNotes"]), {
+      surfaceSchemaOverrides: map,
+    });
+    expect(r.getExtensions("reviewNotes")).toEqual({
+      schemaOverrides: GFM_TABLE_SCHEMA_OVERRIDES,
+    });
+  });
+
+  it("surfaceSchemaOverrides map respects enabledSurfaces gate (surface NOT in enabledSurfaces returns {} even if present in map)", () => {
+    // enabledSurfaces remains the PRIMARY gate per D-15 lean (overlay
+    // semantics; not strict-mode). bio is in the map but NOT enabled → empty
+    // extension set returned (Phase-17/27/29 baseline preserved).
+    const map: ReadonlyMap<MarkdownSurface, Partial<Schema>> = new Map([
+      ["bio", GFM_TABLE_SCHEMA_OVERRIDES_BIO_RESTRICTED],
+      ["reviewNotes", GFM_TABLE_SCHEMA_OVERRIDES],
+    ]);
+    const r = new TablesExtensionRegistry(new Set(["reviewNotes"]), {
+      surfaceSchemaOverrides: map,
+    });
+    // bio: NOT in enabledSurfaces → empty set despite map presence
+    expect(r.getExtensions("bio")).toEqual({});
+    // reviewNotes: in BOTH → map entry applied
+    expect(r.getExtensions("reviewNotes")).toEqual({
+      schemaOverrides: GFM_TABLE_SCHEMA_OVERRIDES,
+    });
+  });
+
+  it("PHASE_64_DEFAULT_PER_SURFACE_SCHEMA_OVERRIDES wired with PHASE_39_DEFAULT_ENABLED_SURFACES produces the documented per-surface differentiation across all 4 surfaces", () => {
+    // End-to-end composite assertion: the default per-surface map + the
+    // default enabled-surface set together produce the documented Phase-64
+    // composition matrix. Validates the wiring intended for the Phase-64
+    // `MARKDOWN_EXTENSIONS=tables-per-surface` factory arm.
+    const r = new TablesExtensionRegistry(PHASE_39_DEFAULT_ENABLED_SURFACES, {
+      surfaceSchemaOverrides: PHASE_64_DEFAULT_PER_SURFACE_SCHEMA_OVERRIDES,
+    });
+    expect(r.getExtensions("bio")).toEqual({
+      schemaOverrides: GFM_TABLE_SCHEMA_OVERRIDES_BIO_RESTRICTED,
+    });
+    expect(r.getExtensions("reviewNotes")).toEqual({
+      schemaOverrides: GFM_TABLE_SCHEMA_OVERRIDES,
+    });
+    expect(r.getExtensions("rationale")).toEqual({
+      schemaOverrides: GFM_TABLE_SCHEMA_OVERRIDES,
+    });
+    expect(r.getExtensions("actionRationale")).toEqual({
+      schemaOverrides: GFM_TABLE_SCHEMA_OVERRIDES,
+    });
+  });
+
+  it("schema-options axis is orthogonal to enabledSurfaces axis (constructor-arg-only zero-rework expansion realizations preserved)", () => {
+    // The Phase-64 schema-options axis evolves the constructor SIGNATURE
+    // without disturbing the Phase-43 constructor-arg-only zero-rework
+    // expansion realization for tables (all 4 surfaces enabled by default).
+    // Validates structural orthogonality: schema-options + enabled-set
+    // changes compose independently.
+    const allFour = new TablesExtensionRegistry(PHASE_39_DEFAULT_ENABLED_SURFACES, {
+      surfaceSchemaOverrides: PHASE_64_DEFAULT_PER_SURFACE_SCHEMA_OVERRIDES,
+    });
+    const onlyBio = new TablesExtensionRegistry(new Set(["bio"]), {
+      surfaceSchemaOverrides: PHASE_64_DEFAULT_PER_SURFACE_SCHEMA_OVERRIDES,
+    });
+    // Both registries apply the same per-surface map on bio:
+    expect(allFour.getExtensions("bio")).toEqual(onlyBio.getExtensions("bio"));
+    // But reviewNotes differs because of the enabled-set narrowing:
+    expect(allFour.getExtensions("reviewNotes").schemaOverrides).toBeDefined();
+    expect(onlyBio.getExtensions("reviewNotes")).toEqual({});
   });
 });

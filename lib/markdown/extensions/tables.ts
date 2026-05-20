@@ -79,6 +79,55 @@ import type { MarkdownExtensionRegistry, MarkdownExtensionSet, MarkdownSurface }
  * `tables.test.ts` exercise the new allow-list entries
  * directly via manual HAST tree construction.
  *
+ * **Phase-64 schema-options-axis evolution** (since Unit
+ * 64.1): `TablesExtensionRegistry` gains an optional
+ * second constructor arg `options: TablesExtensionOptions`
+ * carrying an optional
+ * `surfaceSchemaOverrides?: ReadonlyMap<MarkdownSurface, Partial<Schema>>`
+ * map. When undefined (Phase 39-63 default), all enabled
+ * surfaces receive `GFM_TABLE_SCHEMA_OVERRIDES` uniformly —
+ * byte-identical to Phase 39-63 behavior. When set, the
+ * registry emits the map's per-surface `Partial<Schema>`
+ * for surfaces present in the map; surfaces in
+ * `enabledSurfaces` but missing from the map fall back to
+ * `GFM_TABLE_SCHEMA_OVERRIDES` (graceful fallback per
+ * Phase-64 D-9 lean). **First realization of a FOURTH
+ * principal axis of zero-rework framework extension** in
+ * project history — schema-options axis joins registry-
+ * state axis (Phase 38+; 7 realizations), plugin-body
+ * axis (Phase 46+; 7 realizations), and plugin-option
+ * axis (Phase 62+; 2 realizations). **First state where
+ * the framework has FOUR principal axes of zero-rework
+ * extension**. Mechanistically parallel to Phase-62
+ * plugin-option axis (constructor evolution + flow-through
+ * to consumer-specific configuration) but targets a
+ * distinct framework slot (schemaOverrides vs plugin
+ * invocation). **First schema-options-ready-before-curator-
+ * demand realization** (generalizes Phase-62 plugin-option-
+ * ready-before-consumer-demand to the schema slot). Closes
+ * ADR-0018 APPEND-D-Q item 6 at **25-phase carryover**
+ * (Phase 39 → Phase 64) — **TIES Phase-63 absolute APPEND-
+ * deferral closure record** without extending (first
+ * absolute-record-TIE in project history). **D-Q becomes
+ * first D-clause with ALL enumerated items closed** within
+ * the Phase-39-tables-cap subset (items 2 + 3 + 4 + 6) —
+ * first "fully-resolved D-clause" in project history.
+ * **Tables consumer gains 4th evolution post-first-ship**
+ * (Phase 43 cross-surface + Phase 57 attributes + Phase 61
+ * caption + Phase 64 per-surface) — **first state where
+ * TWO consumers have 4+ evolutions** (wikilinks at 4 +
+ * tables joins). Companion exports:
+ * `GFM_TABLE_SCHEMA_OVERRIDES_BIO_RESTRICTED` (bio-
+ * restricted variant: basic GFM table tags + align only;
+ * NO Phase-57 spans/scope, NO Phase-61 caption) and
+ * `PHASE_64_DEFAULT_PER_SURFACE_SCHEMA_OVERRIDES` (concrete
+ * per-surface map: bio → restricted; reviewNotes +
+ * rationale + actionRationale → full Phase-61 schema).
+ * Wired through the new `MARKDOWN_EXTENSIONS=tables-per-surface`
+ * factory arm (Unit 64.2; 9 → 10 single-value arms; first
+ * 2-consecutive-phase new-arm-addition streak via Phase-63
+ * `wikilinks-cross-entity` + Phase-64 `tables-per-surface`).
+ *
  * Server-only: imported by `TablesExtensionRegistry` returned
  * from `getExtensionRegistry()` per the Phase-39 env-var
  * dispatch arm (Unit 39.2). Never include in a `"use client"`
@@ -164,6 +213,96 @@ export const GFM_TABLE_SCHEMA_OVERRIDES: Partial<Schema> = {
 };
 
 /**
+ * Phase-64 bio-restricted schema variant per APPEND-D-Q item
+ * 6 example ("bio does not allow colspan"). **Strict subset**
+ * of `GFM_TABLE_SCHEMA_OVERRIDES`: omits Phase-57 attribute
+ * additions (`colSpan` / `rowSpan` / `scope` on `<th>` /
+ * `<td>`) AND Phase-61 tag addition (`<caption>`). Retains
+ * the Phase-39 baseline (basic GFM table tags + `align`
+ * attribute restricted to 3 literal values) plus the Phase-17
+ * base allow-list verbatim.
+ *
+ * **XSS-safety contract**: bio-restricted is a strict
+ * subset; **no NEW tags or attributes** added relative to
+ * `GFM_TABLE_SCHEMA_OVERRIDES`. All existing XSS defenses
+ * (literal-enum scope; align value restriction; event-
+ * handler attribute stripping; Phase-17 base allow-list)
+ * preserved verbatim. Bio-restricted is a defense-in-depth
+ * NARROWING for bio surface, not a widening.
+ *
+ * **Use case** (per APPEND-D-Q item 6 example): short user-
+ * facing profile content (4000-char `users.bio`) where rich
+ * data tables (multi-cell spans, scope-annotated headers,
+ * captioned tables) are inappropriate. Curators opt INTO
+ * this via the Phase-64 `MARKDOWN_EXTENSIONS=tables-per-surface`
+ * arm; the default `MARKDOWN_EXTENSIONS=tables` arm continues
+ * to apply the full `GFM_TABLE_SCHEMA_OVERRIDES` uniformly.
+ */
+export const GFM_TABLE_SCHEMA_OVERRIDES_BIO_RESTRICTED: Partial<Schema> = {
+  tagNames: [
+    // Phase-17 base allow-list (verbatim copy per APPEND-D-C override-replace)
+    "p",
+    "strong",
+    "em",
+    "code",
+    "pre",
+    "a",
+    "ul",
+    "ol",
+    "li",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "blockquote",
+    "hr",
+    "del",
+    "br",
+    "input",
+    // Phase-39 basic GFM table tags (NO Phase-61 caption per bio-restricted policy)
+    "table",
+    "thead",
+    "tbody",
+    "tr",
+    "th",
+    "td",
+  ],
+  attributes: {
+    // Phase-17 base attributes (verbatim copy per override-replace)
+    a: ["href"],
+    input: [["type", "checkbox"], "checked", "disabled"],
+    // Phase-39 align ONLY (NO Phase-57 colSpan/rowSpan/scope per bio-restricted policy)
+    th: [["align", "left", "center", "right"]],
+    td: [["align", "left", "center", "right"]],
+    "*": [],
+  },
+};
+
+/**
+ * Phase-64 options object accepted by `TablesExtensionRegistry`
+ * constructor's optional second arg. Forward-compatible
+ * structure for future Phase-65+ options (e.g., a per-surface
+ * enable map distinct from the primary `enabledSurfaces` gate;
+ * a future schema-extension toggle).
+ *
+ *   - `surfaceSchemaOverrides` — optional `ReadonlyMap` from
+ *     `MarkdownSurface` to `Partial<Schema>`. When a surface
+ *     is in `enabledSurfaces` AND present in this map, the
+ *     map's entry is emitted as the per-surface
+ *     `schemaOverrides`. When a surface is in
+ *     `enabledSurfaces` but NOT in this map, falls back to
+ *     `GFM_TABLE_SCHEMA_OVERRIDES` (graceful fallback per
+ *     D-9 lean — preserves the Phase 39-63 invariant for
+ *     surfaces the curator hasn't opted into differentiating).
+ *     When undefined (Phase 39-63 default), all enabled
+ *     surfaces receive `GFM_TABLE_SCHEMA_OVERRIDES` uniformly
+ *     — byte-identical to Phase 39-63 behavior.
+ */
+export interface TablesExtensionOptions {
+  surfaceSchemaOverrides?: ReadonlyMap<MarkdownSurface, Partial<Schema>>;
+}
+
+/**
  * `MarkdownExtensionRegistry` implementation that enables GFM
  * tables on a curator-specified set of surfaces via
  * `schemaOverrides`.
@@ -206,22 +345,34 @@ export const GFM_TABLE_SCHEMA_OVERRIDES: Partial<Schema> = {
  * D-Q item 3 closed at 18-phase carryover — new longest
  * absolute APPEND-deferral closure ever observed) via in-
  * place schema-extension on `GFM_TABLE_SCHEMA_OVERRIDES`.
- * Phase 58+ may add `<caption>` element (APPEND-D-Q item 4)
- * or surface-specific table schemas (APPEND-D-Q item 6)
- * via per-surface enabled-set differentiation.
+ * Phase 61 ships `<caption>` (APPEND-D-Q item 4 closed at
+ * 22-phase carryover — extends the absolute record by 4
+ * phases). Phase 64 ships surface-specific table schemas
+ * (APPEND-D-Q item 6 closed at 25-phase carryover — TIES
+ * Phase-63 absolute record; **D-Q becomes first D-clause
+ * with ALL items closed** in project history) via the new
+ * optional second constructor arg
+ * `options: TablesExtensionOptions`.
  */
 export class TablesExtensionRegistry implements MarkdownExtensionRegistry {
   private readonly enabledSurfaces: ReadonlySet<MarkdownSurface>;
+  private readonly surfaceSchemaOverrides: TablesExtensionOptions["surfaceSchemaOverrides"];
 
-  constructor(enabledSurfaces: ReadonlySet<MarkdownSurface>) {
+  constructor(enabledSurfaces: ReadonlySet<MarkdownSurface>, options: TablesExtensionOptions = {}) {
     this.enabledSurfaces = enabledSurfaces;
+    this.surfaceSchemaOverrides = options.surfaceSchemaOverrides;
   }
 
   getExtensions(surface: MarkdownSurface): MarkdownExtensionSet {
-    if (this.enabledSurfaces.has(surface)) {
-      return { schemaOverrides: GFM_TABLE_SCHEMA_OVERRIDES };
+    if (!this.enabledSurfaces.has(surface)) return {};
+    // Phase 64+ per-surface map: if the surface is in the map, emit the map's
+    // entry; otherwise fall back to GFM_TABLE_SCHEMA_OVERRIDES (Phase 39-63
+    // invariant preserved for surfaces the curator hasn't differentiated).
+    const perSurface = this.surfaceSchemaOverrides?.get(surface);
+    if (perSurface !== undefined) {
+      return { schemaOverrides: perSurface };
     }
-    return {};
+    return { schemaOverrides: GFM_TABLE_SCHEMA_OVERRIDES };
   }
 }
 
@@ -259,4 +410,49 @@ export const PHASE_39_DEFAULT_ENABLED_SURFACES: ReadonlySet<MarkdownSurface> = n
   "reviewNotes",
   "rationale",
   "actionRationale",
+]);
+
+/**
+ * Default per-surface schema-override map for the Phase-64
+ * `MARKDOWN_EXTENSIONS=tables-per-surface` factory arm per
+ * ADR-0018 D-G APPEND-D-AV (Unit 64.1).
+ *
+ * Concrete differentiation matching APPEND-D-Q item 6 example
+ * verbatim ("reviewNotes allows colspan; bio does not"):
+ *
+ *   - `bio` → `GFM_TABLE_SCHEMA_OVERRIDES_BIO_RESTRICTED`
+ *     (basic GFM tables + align only; NO Phase-57 spans/scope,
+ *     NO Phase-61 caption).
+ *   - `reviewNotes` → `GFM_TABLE_SCHEMA_OVERRIDES` (full
+ *     Phase-61 schema).
+ *   - `rationale` → `GFM_TABLE_SCHEMA_OVERRIDES`.
+ *   - `actionRationale` → `GFM_TABLE_SCHEMA_OVERRIDES`.
+ *
+ * Surface enumeration follows `MarkdownSurface` type-union
+ * order from `./types.ts` (`bio, reviewNotes, rationale,
+ * actionRationale`).
+ *
+ * **Audit-trail-preserving naming**: the constant's name
+ * encodes the introduction phase (Phase 64) per the
+ * `PHASE_38_DEFAULT_ENABLED_SURFACES` / `PHASE_39_DEFAULT_ENABLED_SURFACES`
+ * naming convention. The VALUE may evolve in future phases
+ * (e.g., a Phase-65+ reviewNotes-extended variant) while the
+ * NAME preserves WHEN the per-surface map was introduced.
+ *
+ * Imported by the factory dispatch arm
+ * `MARKDOWN_EXTENSIONS=tables-per-surface` in `./index.ts`
+ * (Unit 64.2). **Second new `MARKDOWN_EXTENSIONS` single-
+ * value arm in 2 consecutive phases** — first 2-consecutive-
+ * phase new-arm-addition streak in project history (Phase 63
+ * `wikilinks-cross-entity` + Phase 64 `tables-per-surface`;
+ * 9 → 10 arms).
+ */
+export const PHASE_64_DEFAULT_PER_SURFACE_SCHEMA_OVERRIDES: ReadonlyMap<
+  MarkdownSurface,
+  Partial<Schema>
+> = new Map<MarkdownSurface, Partial<Schema>>([
+  ["bio", GFM_TABLE_SCHEMA_OVERRIDES_BIO_RESTRICTED],
+  ["reviewNotes", GFM_TABLE_SCHEMA_OVERRIDES],
+  ["rationale", GFM_TABLE_SCHEMA_OVERRIDES],
+  ["actionRationale", GFM_TABLE_SCHEMA_OVERRIDES],
 ]);
