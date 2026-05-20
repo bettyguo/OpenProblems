@@ -680,23 +680,27 @@ git pull --ff-only origin main
 # STEP 5a. On PC-A — create worktrees for slots 01-10:
 $base = "c:\opensource\OpenProblems-worktrees"
 New-Item -ItemType Directory -Force -Path $base | Out-Null
-Get-ChildItem c:\opensource\OpenProblems\docs\batch-prompts -Filter 'slot-0[1-9]-*.md','slot-10-*.md' | ForEach-Object {
-  $slotDir = Join-Path $base $_.BaseName
-  if (-not (Test-Path $slotDir)) {
-    git -C c:\opensource\OpenProblems worktree add --detach $slotDir main
+Get-ChildItem c:\opensource\OpenProblems\docs\batch-prompts -Filter 'slot-*.md' |
+  Where-Object { $_.BaseName -match '^slot-(0[1-9]|10)-' } |
+  ForEach-Object {
+    $slotDir = Join-Path $base $_.BaseName
+    if (-not (Test-Path $slotDir)) {
+      git -C c:\opensource\OpenProblems worktree add --detach $slotDir main
+    }
   }
-}
 git -C c:\opensource\OpenProblems worktree list           # expect 11 lines
 
 # STEP 5b. On PC-B — create worktrees for slots 11-20:
 $base = "c:\opensource\OpenProblems-worktrees"
 New-Item -ItemType Directory -Force -Path $base | Out-Null
-Get-ChildItem c:\opensource\OpenProblems\docs\batch-prompts -Filter 'slot-1[1-9]-*.md','slot-20-*.md' | ForEach-Object {
-  $slotDir = Join-Path $base $_.BaseName
-  if (-not (Test-Path $slotDir)) {
-    git -C c:\opensource\OpenProblems worktree add --detach $slotDir main
+Get-ChildItem c:\opensource\OpenProblems\docs\batch-prompts -Filter 'slot-*.md' |
+  Where-Object { $_.BaseName -match '^slot-(1[1-9]|20)-' } |
+  ForEach-Object {
+    $slotDir = Join-Path $base $_.BaseName
+    if (-not (Test-Path $slotDir)) {
+      git -C c:\opensource\OpenProblems worktree add --detach $slotDir main
+    }
   }
-}
 git -C c:\opensource\OpenProblems worktree list           # expect 11 lines
 
 # STEP 6. On both PCs — run Phase 0.6 (`pnpm install` per worktree) on the 10 worktrees.
@@ -806,22 +810,26 @@ Both PCs run Phase 0.1–0.7 as documented, with **two** changes:
   # On PC-A (slots 01-10):
   $base = "c:\opensource\OpenProblems-worktrees"
   New-Item -ItemType Directory -Force -Path $base | Out-Null
-  Get-ChildItem c:\opensource\OpenProblems\docs\batch-prompts -Filter 'slot-0[1-9]-*.md','slot-10-*.md' | ForEach-Object {
-    $slotDir = Join-Path $base $_.BaseName
-    if (-not (Test-Path $slotDir)) {
-      git -C c:\opensource\OpenProblems worktree add --detach $slotDir main
+  Get-ChildItem c:\opensource\OpenProblems\docs\batch-prompts -Filter 'slot-*.md' |
+    Where-Object { $_.BaseName -match '^slot-(0[1-9]|10)-' } |
+    ForEach-Object {
+      $slotDir = Join-Path $base $_.BaseName
+      if (-not (Test-Path $slotDir)) {
+        git -C c:\opensource\OpenProblems worktree add --detach $slotDir main
+      }
     }
-  }
 
   # On PC-B (slots 11-20):
   $base = "c:\opensource\OpenProblems-worktrees"
   New-Item -ItemType Directory -Force -Path $base | Out-Null
-  Get-ChildItem c:\opensource\OpenProblems\docs\batch-prompts -Filter 'slot-1[1-9]-*.md','slot-20-*.md' | ForEach-Object {
-    $slotDir = Join-Path $base $_.BaseName
-    if (-not (Test-Path $slotDir)) {
-      git -C c:\opensource\OpenProblems worktree add --detach $slotDir main
+  Get-ChildItem c:\opensource\OpenProblems\docs\batch-prompts -Filter 'slot-*.md' |
+    Where-Object { $_.BaseName -match '^slot-(1[1-9]|20)-' } |
+    ForEach-Object {
+      $slotDir = Join-Path $base $_.BaseName
+      if (-not (Test-Path $slotDir)) {
+        git -C c:\opensource\OpenProblems worktree add --detach $slotDir main
+      }
     }
-  }
   ```
 
   Each PC ends up with 11 worktrees in `git worktree list` (1 main + 10 slots). The `pnpm install` loop in 0.6 stays as-is, just runs on ~10 worktrees instead of 20.
