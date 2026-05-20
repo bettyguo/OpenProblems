@@ -7,7 +7,11 @@ import { DoiExtensionRegistry, remarkLinkDoiIds } from "./doi";
 import { __resetRegistryForTests, DefaultExtensionRegistry, getExtensionRegistry } from "./index";
 import { OrcidExtensionRegistry, remarkLinkOrcidIds } from "./orcid";
 import { PubmedExtensionRegistry, remarkLinkPubmedIds } from "./pubmed";
-import { TablesExtensionRegistry } from "./tables";
+import {
+  GFM_TABLE_SCHEMA_OVERRIDES,
+  GFM_TABLE_SCHEMA_OVERRIDES_BIO_RESTRICTED,
+  TablesExtensionRegistry,
+} from "./tables";
 import { WikilinkExtensionRegistry } from "./wikilinks";
 
 const ORIGINAL_PROVIDER = process.env["MARKDOWN_EXTENSIONS"];
@@ -747,5 +751,91 @@ describe("getExtensionRegistry (factory) — env-var dispatch", () => {
       const entry = plugins?.[0];
       expect(Array.isArray(entry)).toBe(false);
     }
+  });
+
+  // -----------------------------------------------------------------------
+  // Phase-64 tables-per-surface dispatch tests — second new
+  // MARKDOWN_EXTENSIONS single-value arm in 2 consecutive phases (first
+  // 2-consecutive-phase new-arm-addition streak in project history; 9 → 10
+  // arms). First realization of the FOURTH principal axis of zero-rework
+  // framework extension (schema-options axis joins registry-state + plugin-
+  // body + plugin-option axes). Factory constructs TablesExtensionRegistry
+  // with PHASE_64_DEFAULT_PER_SURFACE_SCHEMA_OVERRIDES; registry emits
+  // per-surface differentiated schemaOverrides per Phase-64 Unit 64.2.
+  // -----------------------------------------------------------------------
+
+  it("error message lists 'tables-per-surface' Phase 64", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "unknown";
+    expect(() => getExtensionRegistry()).toThrow(/tables-per-surface/);
+  });
+
+  it("error message references APPEND-D-AV Phase 64", () => {
+    // Validates the throw-on-unknown error message documents the latest
+    // ADR-0018 D-G APPEND letter, mirroring Phase-63 APPEND-D-AU
+    // reference convention.
+    process.env["MARKDOWN_EXTENSIONS"] = "unknown";
+    expect(() => getExtensionRegistry()).toThrow(/APPEND-D-AV/);
+  });
+
+  it("returns TablesExtensionRegistry when MARKDOWN_EXTENSIONS is 'tables-per-surface' Phase 64", () => {
+    // The Phase-64 arm shares the same registry class as the Phase-39
+    // `tables` arm — the difference is the ctor's optional
+    // `surfaceSchemaOverrides` arg (Unit 64.1 evolution). Both arms
+    // instantiate TablesExtensionRegistry; only the per-surface schema
+    // selection differs (uniform GFM_TABLE_SCHEMA_OVERRIDES for `tables` vs
+    // bio-restricted on bio for `tables-per-surface`).
+    process.env["MARKDOWN_EXTENSIONS"] = "tables-per-surface";
+    expect(getExtensionRegistry()).toBeInstanceOf(TablesExtensionRegistry);
+  });
+
+  it("tables-per-surface dispatch returns bio-restricted schema on bio surface (Phase-64 first registry-level realization of schema-options axis)", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "tables-per-surface";
+    const r = getExtensionRegistry();
+    expect(r.getExtensions("bio").schemaOverrides).toBe(GFM_TABLE_SCHEMA_OVERRIDES_BIO_RESTRICTED);
+  });
+
+  it("tables-per-surface dispatch returns full GFM_TABLE_SCHEMA_OVERRIDES on reviewNotes + rationale + actionRationale surfaces (per-surface differentiation per APPEND-D-Q item 6 example)", () => {
+    process.env["MARKDOWN_EXTENSIONS"] = "tables-per-surface";
+    const r = getExtensionRegistry();
+    for (const surface of ["reviewNotes", "rationale", "actionRationale"] as const) {
+      expect(r.getExtensions(surface).schemaOverrides).toBe(GFM_TABLE_SCHEMA_OVERRIDES);
+    }
+  });
+
+  it("tables (Phase-39 default arm) still returns uniform GFM_TABLE_SCHEMA_OVERRIDES on all 4 surfaces (Phase 39-63 invariant preserved across Phase-64 registry constructor evolution)", () => {
+    // Critical regression guard: the existing `MARKDOWN_EXTENSIONS=tables`
+    // arm MUST continue to emit uniform GFM_TABLE_SCHEMA_OVERRIDES on every
+    // enabled surface, even after the Phase-64 Unit-64.1 registry
+    // constructor evolution. The Phase-43 cross-surface expansion default
+    // is load-bearing for backwards-compat; Phase 64 MUST NOT regress the
+    // uniform-schema behavior of the existing arm.
+    process.env["MARKDOWN_EXTENSIONS"] = "tables";
+    const r = getExtensionRegistry();
+    for (const surface of ["bio", "reviewNotes", "rationale", "actionRationale"] as const) {
+      expect(r.getExtensions(surface).schemaOverrides).toBe(GFM_TABLE_SCHEMA_OVERRIDES);
+    }
+  });
+
+  it("tables-per-surface dispatch composes conflict-free with wikilinks under CompositeExtensionRegistry (single-source schemaOverrides rule unaffected; tables is still the only schemaOverrides consumer at Phase 64)", () => {
+    // The Phase-40 APPEND-D-R single-source schemaOverrides rule throws on
+    // conflict (two consumers both providing schemaOverrides on the same
+    // surface). Phase 64 does NOT add a second schemaOverrides consumer —
+    // both `tables` and `tables-per-surface` arms instantiate the SAME
+    // TablesExtensionRegistry class, just with different options. The
+    // composite `wikilinks,tables-per-surface` MUST compose without
+    // triggering the single-source rule, mirroring the Phase-40 canonical
+    // `wikilinks,tables` composition test.
+    process.env["MARKDOWN_EXTENSIONS"] = "wikilinks,tables-per-surface";
+    const composite = getExtensionRegistry();
+    expect(composite).toBeInstanceOf(CompositeExtensionRegistry);
+    // bio: bio-restricted schema (tables-per-surface) + bare wikilinks plugin
+    const bio = composite.getExtensions("bio");
+    expect(bio.schemaOverrides).toBe(GFM_TABLE_SCHEMA_OVERRIDES_BIO_RESTRICTED);
+    expect(bio.rehypePlugins).toBeDefined();
+    expect(bio.rehypePlugins).toHaveLength(1);
+    // reviewNotes: full schema (tables-per-surface map default) + bare wikilinks
+    const reviewNotes = composite.getExtensions("reviewNotes");
+    expect(reviewNotes.schemaOverrides).toBe(GFM_TABLE_SCHEMA_OVERRIDES);
+    expect(reviewNotes.rehypePlugins).toBeDefined();
   });
 });

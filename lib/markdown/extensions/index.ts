@@ -5,7 +5,11 @@ import { DefaultExtensionRegistry } from "./default";
 import { DoiExtensionRegistry, PHASE_45_DEFAULT_ENABLED_SURFACES } from "./doi";
 import { OrcidExtensionRegistry, PHASE_54_DEFAULT_ENABLED_SURFACES } from "./orcid";
 import { PHASE_50_DEFAULT_ENABLED_SURFACES, PubmedExtensionRegistry } from "./pubmed";
-import { PHASE_39_DEFAULT_ENABLED_SURFACES, TablesExtensionRegistry } from "./tables";
+import {
+  PHASE_39_DEFAULT_ENABLED_SURFACES,
+  PHASE_64_DEFAULT_PER_SURFACE_SCHEMA_OVERRIDES,
+  TablesExtensionRegistry,
+} from "./tables";
 import type { MarkdownExtensionRegistry } from "./types";
 import {
   CROSS_ENTITY_BUILD_HREF,
@@ -29,6 +33,19 @@ function buildSingleConsumerRegistry(name: string): MarkdownExtensionRegistry {
       });
     case "tables":
       return new TablesExtensionRegistry(PHASE_39_DEFAULT_ENABLED_SURFACES);
+    case "tables-per-surface":
+      // Phase 64 Unit 64.2 — second new MARKDOWN_EXTENSIONS single-value arm
+      // in 2 consecutive phases (first 2-consecutive-phase new-arm-addition
+      // streak in project history; 9 → 10 arms). First realization of the
+      // FOURTH principal axis of zero-rework framework extension (schema-
+      // options axis joins registry-state + plugin-body + plugin-option
+      // axes). Wires PHASE_64_DEFAULT_PER_SURFACE_SCHEMA_OVERRIDES map per
+      // ADR-0018 D-G APPEND-D-AV (Phase 64 surface-specific table schemas;
+      // closes APPEND-D-Q item 6 at 25-phase carryover; D-Q becomes first
+      // D-clause with ALL items closed in project history).
+      return new TablesExtensionRegistry(PHASE_39_DEFAULT_ENABLED_SURFACES, {
+        surfaceSchemaOverrides: PHASE_64_DEFAULT_PER_SURFACE_SCHEMA_OVERRIDES,
+      });
     case "arxiv":
       return new ArxivExtensionRegistry(PHASE_41_DEFAULT_ENABLED_SURFACES);
     case "doi":
@@ -42,9 +59,9 @@ function buildSingleConsumerRegistry(name: string): MarkdownExtensionRegistry {
     default:
       throw new Error(
         `Unknown MARKDOWN_EXTENSIONS value: "${name}". ` +
-          `Recognized values at this build: "default" (default), "wikilinks", "wikilinks-cross-entity", "tables", "arxiv", "doi", "pubmed", "orcid", "biorxiv", ` +
+          `Recognized values at this build: "default" (default), "wikilinks", "wikilinks-cross-entity", "tables", "tables-per-surface", "arxiv", "doi", "pubmed", "orcid", "biorxiv", ` +
           `or a comma-separated combination of non-default values (e.g., "wikilinks,tables,arxiv,doi,pubmed,orcid,biorxiv"). ` +
-          `Phase 63+ values will extend this list — see ADR-0018 D-G APPEND APPEND-D-AU.`,
+          `Phase 64+ values will extend this list — see ADR-0018 D-G APPEND APPEND-D-AV.`,
       );
   }
 }
