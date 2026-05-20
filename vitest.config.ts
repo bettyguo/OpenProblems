@@ -22,7 +22,7 @@ export default defineConfig({
         plugins: [react()],
         test: {
           include: ["**/*.test.ts", "**/*.test.tsx"],
-          exclude: ["node_modules/**", ".next/**", "dist/**", "build/**"],
+          exclude: ["**/node_modules/**", "**/.next/**", "**/dist/**", "**/build/**", ".claude/**"],
         },
       },
       {

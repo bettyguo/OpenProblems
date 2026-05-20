@@ -148,7 +148,7 @@ Budget 2–4 hours for the merge pass at this scale.
 
 ## Caveats
 
-- **RUN_IDs in committed slot files are stable but stale-looking** (prefix `2026-05-20T06-07`). They are unique strings, not real timestamps. Regenerate with a fresh prefix any time you want today's timestamp baked in.
+- **RUN_IDs in committed slot files are stable but stale-looking** (prefix `2026-05-20T08-15`). They are unique strings, not real timestamps. Regenerate with a fresh prefix any time you want today's timestamp baked in.
 - **Two sessions sharing the same RUN_ID would write to the same paths**, which is why every slot has a distinct 6-hex suffix. Do not edit the suffixes by hand.
 - **Chunk discipline (Step 2.5) is non-negotiable.** Even with 1M-context Opus, authoring 50+ slugs in one session degrades quality. The 15-slug cap is calibrated from web-research + file-generation budget per slug.
 - **Saturation defaults to qualitative-band on initial ratings.** This is the most-honest default given §15.6. A follow-up `BATCH-DEEP-UPDATE` campaign converts qualitative bands to numeric values once curators place SOTA on the ceiling.
