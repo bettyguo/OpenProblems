@@ -865,3 +865,124 @@ describe("Phase-65 className emission — plugin-only emit pattern (first non-re
     );
   });
 });
+
+describe("Phase-67 render-time fallback — multi-className emit + isValidTarget? plugin-option (second plugin-body output-shape realization; first multi-className emit realization; 9th plugin-body axis realization; third plugin-option-axis realization; closes Phase-66 APPEND-D-AX render-time-fallback item at 1-phase carryover)", () => {
+  const acceptAll = () => true;
+  const rejectAll = () => false;
+
+  it("emits Phase-65 single-class wikilink when isValidTarget option is absent (backward-compat default preserved)", () => {
+    // No options at all — Phase-65 ship behavior preserved verbatim.
+    expect(runWikilinkPipeline("[[any-slug]]")).toBe(
+      '<p><a class="wikilink" href="/problems/any-slug">any-slug</a></p>',
+    );
+  });
+
+  it("emits single-class wikilink when isValidTarget returns true", () => {
+    const html = runWikilinkPipelineWithOptions("[[scalable-oversight]]", {
+      isValidTarget: acceptAll,
+    });
+    expect(html).toBe(
+      '<p><a class="wikilink" href="/problems/scalable-oversight">scalable-oversight</a></p>',
+    );
+    expect(html).not.toContain("wikilink-unresolved");
+  });
+
+  it("emits 2-class array when isValidTarget returns false for a bare wikilink", () => {
+    const html = runWikilinkPipelineWithOptions("[[missing-slug]]", {
+      isValidTarget: rejectAll,
+    });
+    expect(html).toBe(
+      '<p><a class="wikilink wikilink-unresolved" href="/problems/missing-slug">missing-slug</a></p>',
+    );
+  });
+
+  it("emits 2-class array when isValidTarget returns false for a [[paper:slug]] cross-entity wikilink", () => {
+    const html = runWikilinkPipelineWithOptions("[[paper:typo]]", {
+      buildHref: CROSS_ENTITY_BUILD_HREF,
+      isValidTarget: rejectAll,
+    });
+    expect(html).toBe(
+      '<p><a class="wikilink wikilink-unresolved" href="/papers/typo">typo</a></p>',
+    );
+  });
+
+  it("emits 2-class array alongside alias display (Phase-46 alias + Phase-67 multi-className compose)", () => {
+    const html = runWikilinkPipelineWithOptions("[[missing-slug|Missing Topic]]", {
+      isValidTarget: rejectAll,
+    });
+    expect(html).toBe(
+      '<p><a class="wikilink wikilink-unresolved" href="/problems/missing-slug">Missing Topic</a></p>',
+    );
+  });
+
+  it("passes BOTH slug and entityType to the isValidTarget predicate (predicate-call-signature contract)", () => {
+    const calls: Array<[string, string | undefined]> = [];
+    const predicate = (slug: string, entityType?: string) => {
+      calls.push([slug, entityType]);
+      return true;
+    };
+    runWikilinkPipelineWithOptions("[[a-slug]] and [[paper:x]] and [[author:b|alias]]", {
+      buildHref: CROSS_ENTITY_BUILD_HREF,
+      isValidTarget: predicate,
+    });
+    expect(calls).toEqual([
+      ["a-slug", undefined],
+      ["x", "paper"],
+      ["b", "author"],
+    ]);
+  });
+
+  it("emits wikilink-unresolved only on the specific link whose target is rejected (selective predicate)", () => {
+    // Predicate accepts the "valid" slug only; rejects everything else.
+    const html = runWikilinkPipelineWithOptions("[[valid-slug]] and [[missing-slug]]", {
+      isValidTarget: (slug) => slug === "valid-slug",
+    });
+    expect(html).toBe(
+      '<p><a class="wikilink" href="/problems/valid-slug">valid-slug</a>' +
+        ' and <a class="wikilink wikilink-unresolved" href="/problems/missing-slug">missing-slug</a></p>',
+    );
+  });
+
+  it("WikilinkExtensionRegistry accepts isValidTarget option and emits tuple-form rehypePlugins", () => {
+    const registry = new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES, {
+      isValidTarget: rejectAll,
+    });
+    const ext = registry.getExtensions("bio");
+    expect(ext.rehypePlugins).toHaveLength(1);
+    // Tuple-form emit when isValidTarget is set (mirrors Phase-63 buildHref
+    // tuple-form): [plugin, { isValidTarget }].
+    const entry = ext.rehypePlugins![0];
+    expect(Array.isArray(entry)).toBe(true);
+    expect((entry as [unknown, ResolveWikilinksOptions])[0]).toBe(rehypeResolveWikilinks);
+    expect((entry as [unknown, ResolveWikilinksOptions])[1].isValidTarget).toBe(rejectAll);
+  });
+
+  it("WikilinkExtensionRegistry composes BOTH buildHref AND isValidTarget into one tuple", () => {
+    const registry = new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES, {
+      buildHref: CROSS_ENTITY_BUILD_HREF,
+      isValidTarget: rejectAll,
+    });
+    const ext = registry.getExtensions("bio");
+    const entry = ext.rehypePlugins![0] as [unknown, ResolveWikilinksOptions];
+    expect(entry[1].buildHref).toBe(CROSS_ENTITY_BUILD_HREF);
+    expect(entry[1].isValidTarget).toBe(rejectAll);
+  });
+
+  it("WikilinkExtensionRegistry with NO options emits bare plugin reference (Phase-62/65 backward-compat preserved)", () => {
+    const registry = new WikilinkExtensionRegistry(PHASE_38_DEFAULT_ENABLED_SURFACES);
+    const ext = registry.getExtensions("bio");
+    expect(ext.rehypePlugins).toEqual([rehypeResolveWikilinks]);
+  });
+
+  it("end-to-end rehype-stringify renders className array as class='wikilink wikilink-unresolved'", () => {
+    // Load-bearing: HAST array form is the property-information convention;
+    // rehype-stringify joins multiple array entries with single space.
+    const html = runWikilinkPipelineWithOptions("[[a]] [[b]]", {
+      isValidTarget: (slug) => slug === "a",
+    });
+    expect(html).toBe(
+      '<p><a class="wikilink" href="/problems/a">a</a>' +
+        ' <a class="wikilink wikilink-unresolved" href="/problems/b">b</a></p>',
+    );
+  });
+});

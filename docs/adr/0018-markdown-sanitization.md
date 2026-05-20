@@ -6477,6 +6477,279 @@ scope cap):
 - **ADR-0025 concrete content-moderation provider** —
   Phase 67+; not autonomous-tractable.
 
+#### EXTENDED Phase 67 Unit 67.1 — APPEND-D-AY Render-time fallback for unresolved wikilinks via multi-className emit + `isValidTarget?` plugin-option + `WikilinkExtensionRegistry` constructor evolution (closes Phase-66 APPEND-D-AX render-time-fallback item at 1-phase carryover — ties Phase-51 pubmed alias + Phase-59 bioRxiv cross-surface fastest-closure record; first multi-className emit realization in project history; second plugin-body output-shape sub-pattern realization extending Phase-65 sub-pattern to 2 realizations; 9th plugin-body axis realization; third plugin-option-axis realization — first 3-realization for plugin-option axis + first state where plugin-option-axis has 3+ realizations; wikilinks consumer gains 6th evolution post-first-ship — first state where a consumer has 6+ evolutions; first build-time + render-time defense-in-depth pattern in project history; 26-phase APPEND-deferral closure cadence — new record; first non-set-or-extend phase since Phase 60; 34th D-G APPEND record extends; twenty-fifth two-letter slot D-AY; fifty-eighth NON-§13 phase)
+
+Phase 67 evolves the `rehypeResolveWikilinks` plugin body to
+conditionally emit a 2-class array `className: ["wikilink",
+"wikilink-unresolved"]` when the new `isValidTarget?` plugin-
+option returns `false`. When the option is absent OR returns
+`true`, the plugin preserves the Phase-65 single-class emit
+`className: ["wikilink"]` byte-identically (backward-compat
+default). HAST uses array form per `property-information`
+convention; `rehype-stringify` renders the 2-class case as
+`class="wikilink wikilink-unresolved"` at compile time.
+Downstream CSS can style `a.wikilink-unresolved` distinctly
+to signal that the link target does not resolve.
+
+**APPEND-D-AY multi-className-emit shape**:
+
+```ts
+// Before (Phase 65 ship through Phase-66 close):
+const classNames = ["wikilink"];
+
+// After (Phase 67 ship):
+const isResolved = options.isValidTarget?.(slug, entityType) ?? true;
+const classNames = isResolved
+  ? ["wikilink"]
+  : ["wikilink", "wikilink-unresolved"];
+```
+
+**Plugin-option-axis 3rd realization**: extends Phase-62
+`buildHref?` + Phase-63 cross-entity-routing (which exercised
+the Phase-62 `buildHref?` affordance at the registry layer)
+with a third option on the same plugin signature. Mirrors the
+Phase-62 pattern verbatim — optional plugin-option with
+backward-compat default. **First 3-realization for the plugin-
+option axis** + **first state where the plugin-option axis has
+3+ realizations** in project history.
+
+**`WikilinkExtensionRegistry` constructor evolution**:
+
+```ts
+constructor(
+  enabledSurfaces: ReadonlySet<MarkdownSurface>,
+  options: {
+    buildHref?: ResolveWikilinksOptions["buildHref"];
+    isValidTarget?: ResolveWikilinksOptions["isValidTarget"]; // ← NEW Phase 67
+  } = {},
+) {
+  this.enabledSurfaces = enabledSurfaces;
+  this.buildHref = options.buildHref;
+  this.isValidTarget = options.isValidTarget;
+}
+```
+
+The `getExtensions` method emits BARE-form plugin reference
+when BOTH `buildHref` and `isValidTarget` are undefined
+(Phase-62/65 backward-compat invariant preserved verbatim for
+the existing `MARKDOWN_EXTENSIONS=wikilinks` arm); emits TUPLE-
+form `[plugin, {buildHref?, isValidTarget?}]` when EITHER is
+set. The tuple-form composes both options into one plugin-
+option object — curators may set buildHref alone (Phase-63
+`wikilinks-cross-entity` arm), isValidTarget alone (Phase-67
+`wikilinks-validated` arm — wired in Unit 67.2), or both.
+
+**Second plugin-body output-shape sub-pattern realization**:
+Phase 65 was the first plugin-body output-shape realization
+(single-class emit). Phase 67 is the second — multi-className
+emit conditional on plugin-option. The plugin-body axis now has
+two sub-patterns with their own depth distributions:
+
+| Sub-pattern | Phase 67 close depth | First-realization phase |
+|---|---|---|
+| Input-regex extension | 7 | Phase 46 |
+| **Output-shape extension** | **2** | **Phase 65** |
+
+**9th plugin-body axis realization** in project history
+(extends Phase-65 8-realization record to 9). The plugin-body
+axis remains the most-realized principal axis post-Phase-67;
+axis depth ranking:
+
+| Axis | Realizations | Introduced |
+|---|---|---|
+| Plugin-body | **9** | Phase 46 |
+| Registry-state | 7 | Phase 38 |
+| **Plugin-option** | **3** | **Phase 62** |
+| Schema-options | 1 | Phase 64 |
+
+**First "build-time + render-time" defense-in-depth pattern**
+in project history. Phase 66 ships build-time validation
+(`pnpm audit-content` fails CI on unresolved wikilinks);
+Phase 67 ships render-time fallback (browsers show visually-
+distinct class for unresolved wikilinks when build-time was
+bypassed). The two layers compose — the Phase-66 validator
+helper (`isValidWikilinkTarget(ref, validTargets)`) is consumed
+at BOTH layers (the `pnpm audit-content` script AND the new
+Phase-67 `MARKDOWN_EXTENSIONS=wikilinks-validated` arm wired in
+Unit 67.2). **First state where the Phase-66 validator helper
+has 2 consumers** in project history.
+
+Under normal curator workflow, build-time catches all
+unresolved wikilinks BEFORE merge so render-time fallback
+never fires in production. Render-time fallback is the belt-
+and-suspenders defense against `--no-verify` git pushes +
+race-condition content removals + branch-merge cases where two
+PRs each pass audit independently but together remove a target.
+
+**XSS-safety contract preserved**: both className strings
+(`"wikilink"` + `"wikilink-unresolved"`) are hardcoded
+literals — no curator input, no slug/entityType interpolation,
+no opportunity for attribute injection. The 2-class array
+emit is a fixed-literal array, not curator-controllable. **No
+new XSS surface** introduced by Phase 67. Curator-configurable
+multi-className arrays via plugin-option axis 4th realization
+remain a Phase 68+ deferral.
+
+**Wikilinks consumer gains 6th evolution post-first-ship**:
+Phase 42 cross-surface + Phase 46 alias + Phase 62 plugin
+parameterization + Phase 63 cross-entity + Phase 65 className
++ Phase 67 render-time fallback. **First state where a
+consumer has 6+ evolutions** in project history. Wikilinks
+remains the deepest-evolved consumer (first to 4 at Phase 63;
+first to 5 at Phase 65; first to 6 at Phase 67).
+
+**Closes Phase-66 APPEND-D-AX render-time-fallback item at
+1-phase carryover** (Phase 66 → Phase 67). **Ties Phase-51
+pubmed alias + Phase-59 bioRxiv cross-surface 1-phase fastest-
+closure record**. **First sub-2-phase closure since Phase 60**
+(Phase 60 was the 6th 2-phase closure; Phase 67 is the first
+1-phase closure since the 6-consecutive-phase absolute-record
+set-or-extend streak ended at Phase 66).
+
+**First non-set-or-extend phase since Phase 60** in project
+history. Phase 67's 1-phase carryover does NOT set, extend, OR
+tie the absolute-record carryover (which remains at 28-phase
+from Phase 66). Phase 67 is a "fresh-deferral fast-closure"
+phase shape. **Ends the 6-consecutive-phase set-or-extend
+streak** (Phase 61-66) at Phase 67. Streak shape evolves:
+6-phase set-or-extend (Phase 61-66) → 1-phase fast-closure
+(Phase 67).
+
+**26-phase APPEND-deferral closure cadence sustained** (Phase
+42-67) — new longest sustained cadence in project history
+(extends Phase-66 25-phase record to 26). First 26-phase
+APPEND-deferral closure run.
+
+**Thirty-fourth APPEND on ADR-0018 D-G** — extends the **first-
+ADR-D-clause-with-most-APPENDs record** from 33 → 34 (Phase
+18 + 27 + 29 + 37 + 38 + 39 + 40 + 41 + 42 + 43 + 44 + 45 +
+46 + 47 + 48 + 49 + 50 + 51 + 52 + 53 + 54 + 55 + 56 + 57 +
+58 + 59 + 60 + 61 + 62 + 63 + 64 + 65 + 66 + **67**).
+
+**Twenty-fifth two-letter APPEND letter D-AY** (after Phase
+66 D-AX). Excel-spreadsheet column convention sustained.
+
+**Thirty-second consecutive no-new-ADR phase** (Phase 36-67;
+extends Phase-66 record 31 → 32). **Thirty-seventh consecutive
+phase without new B category** (Phase 31-67; extends Phase-66
+record 36 → 37). **Fifty-eighth NON-§13 phase** (extends
+Phase-66 milestone to 58); first 58-phase ledger-closure
+streak.
+
+**Tests added Phase 67 Unit 67.1** (11 NEW tests in
+`wikilinks.test.ts` in a new `describe` block "Phase-67
+render-time fallback — multi-className emit + `isValidTarget?`
+plugin-option"):
+
+1. Plugin emits Phase-65 single-class wikilink when
+   `isValidTarget` option is absent (backward-compat default
+   preserved).
+2. Plugin emits single-class wikilink when `isValidTarget`
+   returns true.
+3. Plugin emits 2-class array when `isValidTarget` returns
+   false for a bare wikilink.
+4. Plugin emits 2-class array when `isValidTarget` returns
+   false for a `[[paper:slug]]` cross-entity wikilink.
+5. Plugin emits 2-class array alongside alias display
+   (Phase-46 alias + Phase-67 multi-className compose).
+6. Plugin passes BOTH slug and entityType to the
+   `isValidTarget` predicate (predicate-call-signature
+   contract).
+7. Plugin emits `wikilink-unresolved` only on the specific
+   link whose target is rejected (selective predicate).
+8. `WikilinkExtensionRegistry` accepts `isValidTarget` option
+   AND emits tuple-form rehypePlugins.
+9. `WikilinkExtensionRegistry` composes BOTH `buildHref` AND
+   `isValidTarget` into one tuple.
+10. `WikilinkExtensionRegistry` with NO options emits bare
+    plugin reference (Phase-62/65 backward-compat preserved).
+11. End-to-end rehype-stringify renders className array as
+    `class="wikilink wikilink-unresolved"` (load-bearing —
+    HAST array form is the property-information convention).
+
+Unit 67.2 will ship the new `MARKDOWN_EXTENSIONS=wikilinks-
+validated` factory arm + 5-7 NEW integration tests in
+`index.test.ts` covering end-to-end render-time fallback
+through the full sanitize + extensions pipeline with build-
+time-loaded valid-targets from `#site/content`.
+
+**Backwards-compatibility contract**: every Phase-38-through-
+Phase-66 invariant preserved verbatim. The existing
+`MARKDOWN_EXTENSIONS=wikilinks` arm (Phase 38+) emits the bare
+plugin reference + single-class `["wikilink"]` per Phase-65
+behavior. The existing `MARKDOWN_EXTENSIONS=wikilinks-cross-
+entity` arm (Phase 63+) emits tuple-form with `buildHref:
+CROSS_ENTITY_BUILD_HREF` only (no `isValidTarget`) — still
+single-class `["wikilink"]` per Phase-65 behavior. Only the
+new Phase-67 `MARKDOWN_EXTENSIONS=wikilinks-validated` arm
+(Unit 67.2) activates the predicate.
+
+**Phase 68+ deferrals** (Phase-67 render-time-fallback scope
+cap):
+
+- **Period-allowing slug character-class extension** — Phase
+  68+; would lift regex + validator + render-time fallback
+  simultaneously.
+- **Locale-prefixed cross-entity wikilink paths** — Phase
+  68+; 4th plugin-option-axis realization if framed as a
+  separate `buildHref` variant.
+- **Curator-configurable className value** via plugin-option
+  axis (`ResolveWikilinksOptions.className?: string[]` —
+  multi-class form) — Phase 68+; XSS audit per CSS-class-
+  injection vector.
+- **Multi-className emit for entity-type-specific styling
+  variants** (e.g., `<a class="wikilink wikilink-paper">`)
+  — Phase 68+; third plugin-body output-shape realization;
+  composes with the Phase-67 multi-className emit pattern.
+- **Per-surface schema-options consumer beyond bio-
+  restricted** — Phase 68+; 2nd schema-options-axis
+  realization.
+- **2nd schema-options realization on a different consumer
+  than tables** — Phase 68+.
+- **2nd build-time-validation realization** (e.g., link-
+  target-fk for non-wikilink markdown links) — Phase 68+;
+  would elevate "build-time-validation" from sub-pattern to
+  recognized PRINCIPAL AXIS = first 5th principal axis in
+  project history.
+- **Empty-alias fallback unification** across consumers —
+  Phase 68+.
+- **Bare arxiv / DOI / PubMed / ORCID / bioRxiv IDs without
+  prefix** — Phase 68+.
+- **Legacy numeric-only bioRxiv IDs** (pre-2019 format) —
+  Phase 68+.
+- **dx.doi.org legacy host parsing** (APPEND-D-AC carries)
+  — Phase 68+.
+- **Stricter trailing-lookahead for trailing-period DOIs**
+  (APPEND-D-AC carries) — Phase 68+.
+- **Paper-card hover-preview** (APPEND-D-Y item 6 carries)
+  — Phase 68+.
+- **Auto-trim of alias display whitespace** — Phase 68+.
+- **A future plugin that EMITS `<caption>` or
+  `colSpan`/`rowSpan`/`scope`** to realize the Phase-57 /
+  Phase-61 schema-ready-before-plugin states — Phase 68+.
+- **Curator-facing builder configuration** (locale-prefixed
+  paths, curator-overridable href builders, relative-path
+  variants) — Phase 68+.
+- **Curator-facing per-surface schema configuration via DB
+  or UI** — Phase 68+.
+- **OSF preprint consumer** — eighth concrete consumer —
+  Phase 68+.
+- **6th-or-later `remarkPlugins` consumer beyond arxiv + doi
+  + pubmed + orcid + biorxiv** — Phase 68+.
+- **2nd `rehypePlugins` consumer beyond wikilinks** — Phase
+  68+.
+- **2nd `schemaOverrides` consumer beyond tables** — Phase
+  68+ (requires framework refactor per the composite-
+  registry single-source rule).
+- **3rd regex evolution on `remarkLinkArxivIds`** — Phase
+  68+.
+- **Cross-entity entity-type expansion beyond paper /
+  author / institution** — Phase 68+.
+- **2nd plugin using the plugin-only emit pattern** — Phase
+  68+; first reuse on a non-wikilinks plugin.
+- **ADR-0025 concrete content-moderation provider** — Phase
+  68+; not autonomous-tractable.
+
 ### D-H. Phase 18+ deferrals
 
 Phase 17 ships MINIMAL markdown surface. Deferred to Phase 18+:

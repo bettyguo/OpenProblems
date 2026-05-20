@@ -121,6 +121,50 @@ import type { MarkdownExtensionRegistry, MarkdownExtensionSet, MarkdownSurface }
  * className value via plugin-option axis (mirroring Phase-62
  * `buildHref` parameterization) is a Phase 66+ concern.
  *
+ * **Phase 67 render-time fallback** (since Unit 67.1; closes
+ * Phase-66 ADR-0018 APPEND-D-AX render-time-fallback item at
+ * 1-phase carryover — ties Phase-51 + Phase-59 fastest-closure
+ * record; **first multi-className emit realization** in project
+ * history; **second plugin-body output-shape sub-pattern
+ * realization** extending Phase-65 sub-pattern to 2
+ * realizations; **9th plugin-body axis realization**): the
+ * plugin signature gains an optional `isValidTarget?: (slug,
+ * entityType?) => boolean` plugin-option. When the option is
+ * absent OR returns `true`, the plugin emits the Phase-65
+ * single-class `className: ["wikilink"]` (backward-compat
+ * default preserved verbatim). When the option returns
+ * `false`, the plugin emits the 2-class array `className:
+ * ["wikilink", "wikilink-unresolved"]` — rehype-stringify
+ * renders this as `class="wikilink wikilink-unresolved"`.
+ *
+ * Multi-className emit composes with the Phase-65 plugin-
+ * only emit pattern: the second class enters the post-
+ * sanitize tree under explicit framework intent and bypasses
+ * the sanitize allow-list filter via APPEND-D-D plugin-order-
+ * after-default discipline. No schemaOverrides change
+ * required. The XSS-safety contract is preserved — both
+ * className strings are hardcoded literals (no curator
+ * input; no slug/entityType interpolation).
+ *
+ * **Build-time + render-time defense-in-depth**: Phase 66
+ * ships build-time validation (`pnpm audit-content` fails CI
+ * on unresolved wikilinks). Phase 67 ships render-time
+ * fallback as belt-and-suspenders defense against
+ * `--no-verify` git pushes + race-condition content removals
+ * + branch-merge cases where two PRs each pass audit
+ * independently but together remove a target. The two layers
+ * compose: under normal curator workflow, build-time catches
+ * all unresolved wikilinks BEFORE merge so render-time
+ * fallback never fires in production. **First "build-time +
+ * render-time" defense-in-depth pattern** in project history.
+ *
+ * **Plugin-option-axis 3rd realization**: extends Phase-62
+ * `buildHref?` + Phase-63 cross-entity-routing (2 prior
+ * realizations) to 3 realizations. **First state where the
+ * plugin-option axis has 3+ realizations** in project history.
+ * Mirrors the Phase-62 pattern verbatim — optional plugin-
+ * option with backward-compat default.
+ *
  * Folds AFTER the default `rehype-sanitize` +
  * `rehypeStripUnsafeHrefs` steps per Phase-37 framework's
  * APPEND-D-D plugin-order-after-default discipline. The
@@ -252,12 +296,53 @@ export interface ResolveWikilinksOptions {
    * concern.
    */
   buildHref?: (slug: string, entityType?: string) => string;
+
+  /**
+   * Phase 67 render-time-fallback predicate per ADR-0018 D-G
+   * APPEND-D-AY (Unit 67.1; closes Phase-66 APPEND-D-AX render-
+   * time-fallback item at 1-phase carryover).
+   *
+   * Receives the same `(slug, entityType?)` tuple captured from
+   * the regex as `buildHref`. When the predicate returns `true`
+   * (or the option is undefined — backward-compat default), the
+   * plugin emits the Phase-65 single-class `className:
+   * ["wikilink"]`. When the predicate returns `false`, the plugin
+   * emits the 2-class array `className: ["wikilink", "wikilink-
+   * unresolved"]` — rehype-stringify renders this as `class=
+   * "wikilink wikilink-unresolved"`. Downstream CSS can style
+   * `a.wikilink-unresolved` distinctly to signal that the link
+   * target does not resolve (CI-bypass safety net).
+   *
+   * The canonical predicate at the factory layer is the
+   * `isValidWikilinkTarget(ref, validTargets)` helper from
+   * `./wikilinks-validator.ts` (Phase 66 ship) wrapped in a
+   * build-time-loaded `ValidWikilinkTargets` closure; the new
+   * `MARKDOWN_EXTENSIONS=wikilinks-validated` arm wires this up
+   * automatically. Curators may supply alternative predicates
+   * via the registry constructor's `isValidTarget?` option for
+   * custom validation strategies.
+   *
+   * **XSS-safety contract**: the className value emitted on a
+   * `false` return is the hardcoded literal `["wikilink",
+   * "wikilink-unresolved"]` — neither class string is curator-
+   * controllable. No new XSS surface introduced by Phase 67.
+   *
+   * **Default behavior preservation**: when the option is
+   * omitted, the plugin behaves byte-identically to the Phase-65
+   * ship — `["wikilink"]` single-class emit on every resolved
+   * anchor. The existing `MARKDOWN_EXTENSIONS=wikilinks` and
+   * `MARKDOWN_EXTENSIONS=wikilinks-cross-entity` arms preserve
+   * this default; only the new `MARKDOWN_EXTENSIONS=wikilinks-
+   * validated` arm activates the predicate.
+   */
+  isValidTarget?: (slug: string, entityType?: string) => boolean;
 }
 
 export const rehypeResolveWikilinks: Plugin<[ResolveWikilinksOptions?], Root> =
   (options = {}) =>
   (tree) => {
     const buildHref = options.buildHref ?? DEFAULT_BUILD_HREF;
+    const isValidTarget = options.isValidTarget;
 
     visit(tree, "text", (node, index, parent) => {
       if (typeof node.value !== "string") return;
@@ -302,11 +387,24 @@ export const rehypeResolveWikilinks: Plugin<[ResolveWikilinksOptions?], Root> =
         // order-after-default discipline (no schemaOverrides
         // change required — plugin-only emit pattern, first
         // realization).
+        //
+        // Phase 67 render-time fallback (APPEND-D-AY): when the
+        // `isValidTarget` plugin-option is set AND returns
+        // `false`, emit the 2-class array `["wikilink",
+        // "wikilink-unresolved"]` instead. Multi-className emit
+        // composes with the Phase-65 plugin-only emit pattern;
+        // the second class enters the post-sanitize tree under
+        // explicit framework intent and bypasses sanitize via
+        // the same APPEND-D-D mechanism. Second plugin-body
+        // output-shape realization; first multi-className emit
+        // realization in project history.
+        const isResolved = isValidTarget?.(slug, entityType) ?? true;
+        const classNames = isResolved ? ["wikilink"] : ["wikilink", "wikilink-unresolved"];
         newNodes.push({
           type: "element",
           tagName: "a",
           properties: {
-            className: ["wikilink"],
+            className: classNames,
             href: buildHref(slug, entityType),
           },
           children: [{ type: "text", value: display }],
@@ -370,30 +468,41 @@ export const rehypeResolveWikilinks: Plugin<[ResolveWikilinksOptions?], Root> =
 export class WikilinkExtensionRegistry implements MarkdownExtensionRegistry {
   private readonly enabledSurfaces: ReadonlySet<MarkdownSurface>;
   private readonly buildHref: ResolveWikilinksOptions["buildHref"];
+  private readonly isValidTarget: ResolveWikilinksOptions["isValidTarget"];
 
   constructor(
     enabledSurfaces: ReadonlySet<MarkdownSurface>,
-    options: { buildHref?: ResolveWikilinksOptions["buildHref"] } = {},
+    options: {
+      buildHref?: ResolveWikilinksOptions["buildHref"];
+      isValidTarget?: ResolveWikilinksOptions["isValidTarget"];
+    } = {},
   ) {
     this.enabledSurfaces = enabledSurfaces;
     this.buildHref = options.buildHref;
+    this.isValidTarget = options.isValidTarget;
   }
 
   getExtensions(surface: MarkdownSurface): MarkdownExtensionSet {
     if (!this.enabledSurfaces.has(surface)) return {};
-    if (this.buildHref === undefined) {
-      // Phase 38-62 bare-form emit preserved when no buildHref is set
+    if (this.buildHref === undefined && this.isValidTarget === undefined) {
+      // Phase 38-62 bare-form emit preserved when neither option is set
       // (the existing `MARKDOWN_EXTENSIONS=wikilinks` arm behavior is
-      // byte-identical to Phase 62). The Phase-62 Unit 62.2 invariant
+      // byte-identical to Phase 65). The Phase-62 Unit 62.2 invariant
       // "registry-emitted rehypePlugins is the bare plugin reference"
       // is load-bearing here.
       return { rehypePlugins: [rehypeResolveWikilinks] };
     }
-    // Phase 63+ tuple-form emit when buildHref is set (Phase 63 Unit
-    // 63.2; first registry-level realization of the plugin-option axis;
-    // wired via the `MARKDOWN_EXTENSIONS=wikilinks-cross-entity` arm
-    // with `CROSS_ENTITY_BUILD_HREF`).
-    return { rehypePlugins: [[rehypeResolveWikilinks, { buildHref: this.buildHref }]] };
+    // Tuple-form emit when EITHER buildHref OR isValidTarget is set.
+    // Phase 63 introduced tuple-form for buildHref (wikilinks-cross-
+    // entity arm with CROSS_ENTITY_BUILD_HREF). Phase 67 extends it to
+    // also carry isValidTarget for the wikilinks-validated arm. Both
+    // options compose — the tuple may carry either, both, or
+    // neither-equivalent-to-undefined (handled by the omit-undefined
+    // pattern below).
+    const pluginOptions: ResolveWikilinksOptions = {};
+    if (this.buildHref !== undefined) pluginOptions.buildHref = this.buildHref;
+    if (this.isValidTarget !== undefined) pluginOptions.isValidTarget = this.isValidTarget;
+    return { rehypePlugins: [[rehypeResolveWikilinks, pluginOptions]] };
   }
 }
 
