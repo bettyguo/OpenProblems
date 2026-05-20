@@ -1,0 +1,6 @@
+domains:
+  - id: x
+    title: Domain X
+    subdomains:
+      - id: y
+        title: Subdomain Y

@@ -2,6 +2,13 @@ import { readdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { parse as parseYaml } from "yaml";
 
+import {
+  extractWikilinkReferences,
+  isValidWikilinkTarget,
+  type ValidWikilinkTargets,
+  type WikilinkReference,
+} from "@/lib/markdown/extensions/wikilinks-validator";
+
 /**
  * Cross-link audit (Unit 2.11 / §13 Phase 2 acceptance).
  *
@@ -21,7 +28,17 @@ export type AuditCheck =
   | "author-institution-fk"
   | "related-problems-fk"
   | "related-problems-symmetry"
-  | "entries-contributions-agreement";
+  | "entries-contributions-agreement"
+  /**
+   * Phase 66 Unit 66.2 — closes ADR-0018 APPEND-D-L item 5 (404 handling
+   * for unresolved wikilinks; the LAST remaining D-L deferral) at 28-phase
+   * carryover (Phase 38 → 66). Validates every `[[...]]` reference in
+   * curator-authored markdown surfaces against the appropriate slug-set
+   * per the Phase-63 `CROSS_ENTITY_BUILD_HREF` routing. ERROR severity
+   * mirrors the `paper-problem-fk` precedent — dangling references fail
+   * CI.
+   */
+  | "wikilink-target-fk";
 
 export interface AuditFinding {
   check: AuditCheck;
@@ -43,6 +60,12 @@ export interface AuditReport {
     danglingPaperAuthorRefs: number;
     danglingPaperInstitutionRefs: number;
     asymmetricRelatedProblems: number;
+    /**
+     * Phase 66 Unit 66.2 — total count of unresolved wikilink references
+     * across all curator-authored markdown surfaces. Zero on healthy
+     * content; non-zero on any `[[nonexistent-slug]]` or cross-entity miss.
+     */
+    danglingWikilinkRefs: number;
   };
 }
 
@@ -270,6 +293,51 @@ export async function runCrossLinkAudit(contentRoot: string): Promise<AuditRepor
     }
   }
 
+  // wikilink-target-fk check (Phase 66 Unit 66.2 — closes APPEND-D-L item 5
+  // at 28-phase carryover). Walks every rating-action YAML in
+  // `content/problems/*/ratings/*.yaml` and extracts wikilinks from each
+  // `dimensions.<dim>.rationale` string (the only content-side
+  // actionRationale surface today; bio + reviewNotes + rationale surfaces
+  // live in the DB per ADR-0018 D-G inheritance contract, not content
+  // YAMLs). Cross-entity routing mirrors Phase-63 `CROSS_ENTITY_BUILD_HREF`
+  // exactly — the validator catches the cases the plugin would 404 on at
+  // render time.
+  const validWikilinkTargets: ValidWikilinkTargets = {
+    problemSlugs,
+    paperIds: new Set(papers.map((p) => p.id)),
+    authorSlugs,
+    institutionSlugs,
+  };
+  let danglingWikilinkRefs = 0;
+
+  for (const p of problems) {
+    const ratingsDir = path.join(contentRoot, "problems", p.slug, "ratings");
+    if (!(await isDirectory(ratingsDir))) continue;
+    for (const ratingFile of await listEntries(ratingsDir)) {
+      if (!ratingFile.endsWith(".yaml")) continue;
+      const fullPath = path.join(ratingsDir, ratingFile);
+      filesRead++;
+      const raw = (await readYaml(fullPath)) as { dimensions?: unknown };
+      if (!raw.dimensions || typeof raw.dimensions !== "object") continue;
+      for (const [dimName, dimValue] of Object.entries(raw.dimensions)) {
+        if (!dimValue || typeof dimValue !== "object") continue;
+        const rationale = (dimValue as { rationale?: unknown }).rationale;
+        if (typeof rationale !== "string") continue;
+        const refs: WikilinkReference[] = extractWikilinkReferences(rationale, "actionRationale");
+        for (const ref of refs) {
+          if (isValidWikilinkTarget(ref, validWikilinkTargets)) continue;
+          danglingWikilinkRefs++;
+          findings.push({
+            check: "wikilink-target-fk",
+            severity: "error",
+            file: relTo(repoRoot, fullPath),
+            message: `dimensions.${dimName}.rationale ${ref.matchText} — no such ${ref.entityType ?? "problem"} target "${ref.slug}"`,
+          });
+        }
+      }
+    }
+  }
+
   // entries.json check — no-op until Unit 2.10 lands the content
   for (const p of problems) {
     const entriesPath = path.join(contentRoot, "problems", p.slug, "entries.json");
@@ -313,6 +381,7 @@ export async function runCrossLinkAudit(contentRoot: string): Promise<AuditRepor
       danglingPaperAuthorRefs,
       danglingPaperInstitutionRefs,
       asymmetricRelatedProblems,
+      danglingWikilinkRefs,
     },
   };
 }

@@ -1,0 +1,38 @@
+problem_slug: real
+date: 2026-05-14
+methodology_version: "1.0.0"
+curator: test
+dimensions:
+  difficulty:
+    grade: A
+    confidence: 0.6
+    rationale: |
+      Cross-link to [[nonexistent-problem]] to exercise the wikilink-target-fk
+      check. The bare slug syntax routes via the problem-slug fallback per
+      Phase-63 CROSS_ENTITY_BUILD_HREF graceful-degradation contract.
+  saturation:
+    value: 22
+    confidence: 0.5
+    rationale: |
+      Cross-entity miss: [[author:typo-author]] should flag against
+      authorSlugs.
+  urgency:
+    stars: 4
+    confidence: 0.6
+    rationale: |
+      Cross-entity miss: [[paper:typo-paper]] should flag against paperIds.
+  value:
+    stars: 4
+    confidence: 0.6
+    rationale: |
+      Cross-entity miss: [[institution:typo-institution]] should flag against
+      institutionSlugs.
+  industry_call:
+    stars: 3
+    confidence: 0.5
+    rationale: |
+      Valid bare wikilink: [[real]] — this problem-slug exists and the
+      finding count should not include it.
+watchlist: false
+notes_internal: |
+  Audit fixture for Phase-66 Unit 66.2 wikilink-target-fk check.

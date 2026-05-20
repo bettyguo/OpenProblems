@@ -50,7 +50,7 @@ console.log(
 console.log(`  authors:       ${s.authors}`);
 console.log(`  institutions:  ${s.institutions}`);
 console.log(
-  `  problems:      ${s.problems} (${s.asymmetricRelatedProblems} asymmetric related-problems edges)`,
+  `  problems:      ${s.problems} (${s.asymmetricRelatedProblems} asymmetric related-problems edges, ${s.danglingWikilinkRefs} dangling wikilink refs)`,
 );
 
 process.exit(report.errors.length === 0 ? 0 : 1);
