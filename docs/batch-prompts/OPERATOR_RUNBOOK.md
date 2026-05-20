@@ -94,6 +94,8 @@ This rewrites all 20 slot files in place. You can leave them uncommitted — the
 
 This is **mandatory** for 20 concurrent sessions. Worktrees give each session its own working tree, index, and `node_modules/` so they don't fight on `.git/index` locks or the vitest cache.
 
+**Critical:** use `--detach`. A single branch (here, `main`) can only be checked out by one worktree at a time, and your primary worktree at `c:\opensource\OpenProblems` already owns `main`. The 20 slot worktrees start in detached-HEAD state at `main`'s commit; each session's Step 1.2 (`git checkout -b curate/...`) then creates a new branch from that commit and the worktree leaves detached state automatically.
+
 ```pwsh
 $base = "c:\opensource\OpenProblems-worktrees"
 New-Item -ItemType Directory -Force -Path $base | Out-Null
@@ -101,14 +103,16 @@ New-Item -ItemType Directory -Force -Path $base | Out-Null
 Get-ChildItem c:\opensource\OpenProblems\docs\batch-prompts -Filter 'slot-*.md' | ForEach-Object {
   $slotDir = Join-Path $base $_.BaseName    # e.g. slot-01-dl-lm-frontier
   if (-not (Test-Path $slotDir)) {
-    git -C c:\opensource\OpenProblems worktree add $slotDir main
+    git -C c:\opensource\OpenProblems worktree add --detach $slotDir main
   }
 }
 
 git -C c:\opensource\OpenProblems worktree list
 ```
 
-**Expected output of `worktree list`:** 21 lines — the main worktree plus 20 slot worktrees, all on `main` at the same commit hash.
+**Expected output of `worktree list`:** 21 lines — your main worktree on `[main]`, plus 20 slot worktrees marked `(detached HEAD)` at the same commit hash as main. After each session's Step 1.2 runs, that slot's line will switch to `[curate/<MODE>-<LABEL>-<RUN_ID>]`.
+
+**If you see `fatal: 'main' is already used by worktree at ...`:** you forgot `--detach`. Remove any empty slot directories under `c:\opensource\OpenProblems-worktrees\` (no Git state created on failure, just empty dirs) and re-run with the corrected command.
 
 ### 0.6. Install dependencies in each worktree
 

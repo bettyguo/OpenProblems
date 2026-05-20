@@ -46,12 +46,14 @@ Twenty Claude Code sessions in the same working directory will trip over one ano
 ```pwsh
 # One-time setup: 20 worktrees under c:\opensource\OpenProblems-worktrees\
 # Each shares the same .git/ but has its own HEAD, index, and lock files.
+# Use --detach because main is already checked out by the primary worktree;
+# each session's Step 1.2 (git checkout -b curate/...) leaves detached state.
 $base = "c:\opensource\OpenProblems-worktrees"
 New-Item -ItemType Directory -Force -Path $base | Out-Null
 Get-ChildItem c:\opensource\OpenProblems\docs\batch-prompts -Filter 'slot-*.md' | ForEach-Object {
   $slotDir = Join-Path $base $_.BaseName    # e.g. slot-01-dl-lm-frontier
   if (-not (Test-Path $slotDir)) {
-    git -C c:\opensource\OpenProblems worktree add $slotDir main
+    git -C c:\opensource\OpenProblems worktree add --detach $slotDir main
   }
 }
 
