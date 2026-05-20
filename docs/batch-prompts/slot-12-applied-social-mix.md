@@ -7,8 +7,8 @@
 | New problems | 8                                                             |
 | Updates      | (none)                                                        |
 | Curator      | `jikun`                                                       |
-| RUN_ID       | `2026-05-20T17-00-5c6f92`                                     |
-| Branch       | `curate/BATCH-NEW-applied-social-mix-2026-05-20T17-00-5c6f92` |
+| RUN_ID       | `2026-05-20T05-42-5c6f92`                                     |
+| Branch       | `curate/BATCH-NEW-applied-social-mix-2026-05-20T05-42-5c6f92` |
 
 **Subdomains the session may author into:**
 
@@ -42,7 +42,7 @@ TERRITORY_LABEL: applied-social-mix # short kebab-case slug for branch name, e.g
 TARGET_NEW_COUNT: 8 # for BATCH-NEW or BATCH-MIXED; target across the whole campaign (8–22 typical; this session caps at 15, deferring any remainder via Step 2.5 + 6.5)
 TARGET_UPDATE_SLUGS: # for BATCH-DEEP-UPDATE or BATCH-MIXED; comma-separated existing slugs to deeply re-research, "" if none
 CURATOR: jikun # default `jikun`
-RUN_ID: 2026-05-20T17-00-5c6f92 # YYYY-MM-DDTHH-MM-RAND6 (UTC, hyphens, no colons — Windows-safe)
+RUN_ID: 2026-05-20T05-42-5c6f92 # YYYY-MM-DDTHH-MM-RAND6 (UTC, hyphens, no colons — Windows-safe)
 
 == STEP 1 — BRANCH AND ORIENT ==
 
