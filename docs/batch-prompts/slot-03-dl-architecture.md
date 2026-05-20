@@ -7,8 +7,8 @@
 | New problems | 13                                                                                             |
 | Updates      | compute-optimal-test-time-reasoning                                                            |
 | Curator      | `jikun`                                                                                        |
-| RUN_ID       | `2026-05-20T08-15-c3e547`                                                                      |
-| Branch       | `curate/BATCH-MIXED-dl-architecture-2026-05-20T08-15-c3e547`                                   |
+| RUN_ID       | `2026-05-20T08-55-c3e547`                                                                      |
+| Branch       | `curate/BATCH-MIXED-dl-architecture-2026-05-20T08-55-c3e547`                                   |
 
 **Subdomains the session may author into:**
 
@@ -43,7 +43,7 @@ TERRITORY_LABEL: dl-architecture # short kebab-case slug for branch name, e.g. "
 TARGET_NEW_COUNT: 13 # for BATCH-NEW or BATCH-MIXED; target across the whole campaign (8–22 typical; this session caps at 15, deferring any remainder via Step 2.5 + 6.5)
 TARGET_UPDATE_SLUGS: compute-optimal-test-time-reasoning # for BATCH-DEEP-UPDATE or BATCH-MIXED; comma-separated existing slugs to deeply re-research, "" if none
 CURATOR: jikun # default `jikun`
-RUN_ID: 2026-05-20T08-15-c3e547 # YYYY-MM-DDTHH-MM-RAND6 (UTC, hyphens, no colons — Windows-safe)
+RUN_ID: 2026-05-20T08-55-c3e547 # YYYY-MM-DDTHH-MM-RAND6 (UTC, hyphens, no colons — Windows-safe)
 
 == STEP 1 — BRANCH AND ORIENT ==
 
@@ -185,8 +185,7 @@ For each verified `<NEW-SLUG>`, produce the five files in a single commit. Shape
      `
 
 4.6. Stage and commit ONLY the five files for this slug:
-
-````
+```
 content(<NEW-SLUG>): <YYYY-MM-DD> initial — <title-fragment>
 
      - domain: <D>/<S>
@@ -305,4 +304,3 @@ Then exit.
 - Cap each web-research pass at ~8 tool calls per slug. Verification quality matters more than count.
 - A run that ships zero defensible new problems is a successful run if its inbox file explains why. Quality > volume.
   ===PROMPT-END===
-````
