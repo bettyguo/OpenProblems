@@ -32,6 +32,8 @@ git push origin main
 
 If anything is unclear, read the full runbook below.
 
+> **Running on 2 PCs to parallelize?** Read [Appendix A — Multi-PC operation](#appendix-a--multi-pc-operation-split-across-2-machines) before Phase 0. The Phase 0 → 5 flow stays the same; Appendix A adds 3 short sync points across the PCs (publish baseline → push curate branches → merge on one PC) and recommends a 10/10 slot split.
+
 ---
 
 ## Phase 0 — Preflight (15–30 min, do once)
@@ -646,6 +648,93 @@ The 250 count is **the** target, not "phase 1 of N". Future maintenance is:
 ## Appendix A — Multi-PC operation (split across 2 machines)
 
 If the operator has access to two machines and wants to halve wall-clock, split the 20 slots 10/10 and run them in parallel on PC-A and PC-B. The Phase 0 → 5 flow stays the same; three sync points coordinate the two PCs through a shared remote.
+
+### A.0. TL;DR — 8 step-by-step operator commands
+
+```pwsh
+# ─── Sync point 1: publish shared baseline ─────────────────────────────────
+
+# STEP 1. On PC-A (the primary):
+cd c:\opensource\OpenProblems
+git status --short                # must be clean
+git push origin main
+
+# STEP 2. On PC-B (clone if first time, otherwise pull):
+cd c:\opensource\OpenProblems
+git switch main
+git pull --ff-only origin main
+pnpm install                       # only if deps changed
+
+# STEP 3. On PC-A ONLY — refresh RUN_IDs, commit, push:
+$env:RUN_ID_PREFIX = [DateTime]::UtcNow.ToString("yyyy-MM-ddTHH-mm")
+node scripts/generate-batch-prompts.mjs
+git add docs/batch-prompts/
+git commit -m "chore(curation): refresh RUN_ID prefix for campaign $(Get-Date -Format yyyy-MM-dd)"
+git push origin main
+
+# STEP 4. On PC-B — pull the refreshed slot files:
+git pull --ff-only origin main
+
+# ─── Each PC's preflight (Phase 0.5 + 0.6 + 0.7, but for 10 slots) ─────────
+
+# STEP 5a. On PC-A — create worktrees for slots 01-10:
+$base = "c:\opensource\OpenProblems-worktrees"
+New-Item -ItemType Directory -Force -Path $base | Out-Null
+Get-ChildItem c:\opensource\OpenProblems\docs\batch-prompts -Filter 'slot-0[1-9]-*.md','slot-10-*.md' | ForEach-Object {
+  $slotDir = Join-Path $base $_.BaseName
+  if (-not (Test-Path $slotDir)) {
+    git -C c:\opensource\OpenProblems worktree add --detach $slotDir main
+  }
+}
+git -C c:\opensource\OpenProblems worktree list           # expect 11 lines
+
+# STEP 5b. On PC-B — create worktrees for slots 11-20:
+$base = "c:\opensource\OpenProblems-worktrees"
+New-Item -ItemType Directory -Force -Path $base | Out-Null
+Get-ChildItem c:\opensource\OpenProblems\docs\batch-prompts -Filter 'slot-1[1-9]-*.md','slot-20-*.md' | ForEach-Object {
+  $slotDir = Join-Path $base $_.BaseName
+  if (-not (Test-Path $slotDir)) {
+    git -C c:\opensource\OpenProblems worktree add --detach $slotDir main
+  }
+}
+git -C c:\opensource\OpenProblems worktree list           # expect 11 lines
+
+# STEP 6. On both PCs — run Phase 0.6 (`pnpm install` per worktree) on the 10 worktrees.
+#         Then run Phase 1 (10 sessions), Phase 2 (list checkpoints), Phase 3 (~2 continuation sessions).
+#         These run INDEPENDENTLY on each PC — no coordination needed during this time.
+
+# ─── Sync point 2: each PC pushes its 10 curate branches ───────────────────
+
+# STEP 7. On EACH PC, after its Phase 3 finishes:
+git branch --list 'curate/*' | ForEach-Object {
+  $b = $_.Trim().TrimStart('* ')
+  git push origin $b
+}
+git ls-remote --heads origin 'curate/*' | Measure-Object  # expect 20 (after both PCs push)
+
+# ─── Sync point 3: merge on ONE PC (e.g. PC-A) ─────────────────────────────
+
+# STEP 8. On the merger PC (PC-A):
+git switch main
+git pull --ff-only origin main
+git fetch origin 'refs/heads/curate/*:refs/heads/curate/*'
+git branch --list 'curate/*' | Measure-Object             # expect 20
+# Open ONE Claude Code session in c:\opensource\OpenProblems and paste the Phase 4
+# merge prompt (§4.3), with the added note from §A.6 about using `git show <branch>:<path>`
+# for inbox files on branches imported from the other PC.
+
+# After the merge session commits:
+git push origin main
+git branch --list 'curate/*' | ForEach-Object {
+  $b = $_.Trim().TrimStart('* ')
+  git push origin --delete $b           # clean up campaign branches from origin
+  git branch -D $b                       # clean up locally on the merger PC
+}
+
+# STEP 9 (cleanup, on each PC): see §A.7 for the worktree-remove loop.
+```
+
+If anything is unclear, read sections A.1 → A.8 below.
 
 ### A.1. Recommended split (sequential, 10/10)
 
