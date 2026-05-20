@@ -393,7 +393,7 @@ Q4 resolved in Unit 1.0 (2026-05-14); Apache-2.0 picked over MIT for the explici
 
 ## Star history
 
-<a href="https://star-history.com/#jacobwucs/OpenProblems&Date">
+<a href="https://star-history.com/#bettyguo/OpenProblems&Date">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=jacobwucs/OpenProblems&type=Date&theme=dark"/>
     <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=jacobwucs/OpenProblems&type=Date"/>
