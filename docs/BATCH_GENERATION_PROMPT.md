@@ -50,7 +50,7 @@ MODE: <MODE>                           # BATCH-NEW | BATCH-DEEP-UPDATE | BATCH-M
 TERRITORY: <TERRITORY>                 # comma-separated "domain/subdomain" pairs, e.g.
                                        # "optimization/convex,optimization/non-convex,optimization/stochastic,optimization/discrete-combinatorial"
 TERRITORY_LABEL: <TERRITORY-LABEL>     # short kebab-case slug for branch name, e.g. "opt-cluster-a"
-TARGET_NEW_COUNT: <N>                  # for BATCH-NEW or BATCH-MIXED; target number of new problems this run (4–8 typical)
+TARGET_NEW_COUNT: <N>                  # for BATCH-NEW or BATCH-MIXED; target across the whole campaign (30–80 typical; this session caps at 15, deferring the rest via Step 2.5 + 6.5)
 TARGET_UPDATE_SLUGS: <SLUGS>           # for BATCH-DEEP-UPDATE or BATCH-MIXED; comma-separated existing slugs to deeply re-research, "" if none
 CURATOR: <CURATOR>                     # default `jikun`
 RUN_ID: <RUN-ID>                       # YYYY-MM-DDTHH-MM-RAND6 (UTC, hyphens, no colons — Windows-safe)
@@ -74,8 +74,8 @@ RUN_ID: <RUN-ID>                       # YYYY-MM-DDTHH-MM-RAND6 (UTC, hyphens, n
      - At least one recognised benchmark family or evaluation surface exists in the literature (you will name it but you will NOT cite numerical SOTA).
      - At least one survey or position paper from the last 4 years on or near the topic (you will verify this in Step 3 before committing the problem).
      - Not a near-duplicate of an existing slug in this repo (subjective; lean toward "yes it's distinct" if the rated dimensions would differ materially).
-2.2. From the brainstorm, select <TARGET_NEW_COUNT> candidates spread across the subdomains in <TERRITORY> (aim for ≥ 1 per subdomain if N ≥ |subdomains|).
-2.3. Mint a kebab-case `<NEW-SLUG>` for each. Slug rules: lowercase letters / digits / hyphens; 3–6 words; concept-first, not adjective-first (`offline-rl-conservatism` not `conservative-offline-rl`); avoids overlap with existing slugs.
+2.2. From the brainstorm, select **min(<TARGET_NEW_COUNT>, 15)** candidates spread across the subdomains in <TERRITORY> (aim for ≥ 1 per subdomain if N ≥ |subdomains|). The cap at 15 is the chunk-discipline rule from §2.5 — even when <TARGET_NEW_COUNT> is 50 or 80, this session authors at most 15 of them; the remainder is brainstormed but DEFERRED for a continuation session via Step 6.5.
+2.3. Mint a kebab-case `<NEW-SLUG>` for each of the 15-or-fewer candidates you are authoring **this session**. Slug rules: lowercase letters / digits / hyphens; 3–6 words; concept-first, not adjective-first (`offline-rl-conservatism` not `conservative-offline-rl`); avoids overlap with existing slugs. Do NOT mint slugs for deferred candidates — leaving them un-claimed lets the continuation session claim them (or revise them based on what authored cleanly).
 2.4. Write the slug-claim manifest at `docs/new-problem-claims/<RUN_ID>.md`:
      ```
      ---
@@ -93,6 +93,16 @@ RUN_ID: <RUN-ID>                       # YYYY-MM-DDTHH-MM-RAND6 (UTC, hyphens, n
      - <anything the merger should know — e.g. "slug X may overlap conceptually with existing Y, see related_problems link">
      ```
      Commit this manifest alone: `chore(claims): <YYYY-MM-DD> claim <N> slugs in <TERRITORY-LABEL>`. This is your first commit on the branch; everything else hangs off it.
+     Note for the `## Notes` section: if <TARGET_NEW_COUNT> > 15, write a one-liner like "chunk 1 of ~`ceil(<TARGET_NEW_COUNT>/15)`; remaining `<deferred-count>` candidates carry over via docs/resume-checkpoints/<RUN_ID>.md (written in Step 6.5)".
+
+== STEP 2.5 — CHUNK DISCIPLINE (when <TARGET_NEW_COUNT> > 15) ==
+
+Realistic per-session ceiling: ~15 quality slugs. Each slug costs ~50–80K context (Step 3 deep-research with 6–8 web calls + Step 4 file generation + commit overhead), so even Opus 4.7's 1M-context budget realistically supports 15–20 slugs before output quality degrades. When <TARGET_NEW_COUNT> exceeds 15:
+
+2.5.a. This session authors the **first 15 candidates** from your Step 2.2 brainstorm — the highest-confidence / best-evidenced ones; the candidates you generated first.
+2.5.b. Keep a private scratchpad of the deferred candidates: working title, proposed slug, subdomain, and any verified sources you already noticed in the survey pass. You will dump this into a checkpoint file in Step 6.5.
+2.5.c. Do NOT claim deferred slugs in the Step 2.4 manifest. The continuation session re-evaluates them with fresh context and may revise the slug spelling or drop a candidate that turns out to overlap with one you just authored.
+2.5.d. If <TARGET_NEW_COUNT> ≤ 15, ignore Step 2.5 and Step 6.5 entirely — this is a single-chunk run.
 
 == STEP 3 — DEEP RESEARCH per new problem (BATCH-NEW / BATCH-MIXED) ==
 
@@ -268,10 +278,64 @@ For each slug in <TARGET_UPDATE_SLUGS>:
      ```
 6.4. Commit the curation logs + inbox files in a final housekeeping commit: `chore(curation): <YYYY-MM-DD> logs + inbox for <TERRITORY-LABEL>/<RUN_ID>`.
 
+== STEP 6.5 — RESUME CHECKPOINT (only when you deferred candidates in Step 2.5) ==
+
+Skip this step entirely if `<TARGET_NEW_COUNT> ≤ 15` OR you authored every candidate from Step 2.2 in this session. Otherwise:
+
+6.5.a. Compute: `remaining = <TARGET_NEW_COUNT> − (count of new-problem commits this session)`.
+6.5.b. Write `docs/resume-checkpoints/<RUN_ID>.md`:
+
+       ```
+       ---
+       run_id: <RUN_ID>
+       parent_branch: curate/<MODE>-<TERRITORY-LABEL>-<RUN_ID>
+       territory_label: <TERRITORY-LABEL>
+       territory: <TERRITORY>
+       mode: <MODE>
+       curator: <CURATOR>
+       target_total: <TARGET_NEW_COUNT>
+       authored_this_session: <count>
+       remaining: <remaining>
+       chunk_index: 1
+       ---
+       ## Already authored this session (commits on parent branch)
+       - <new-slug-1>: <short title fragment>
+       - <new-slug-2>: ...
+       ## Deferred candidates (the next chunk should author these)
+       - title: "<working title 1>" | proposed slug: <slug-1> | domain: <D>/<S> | one-line rationale
+       - title: "<working title 2>" | proposed slug: <slug-2> | domain: <D>/<S> | one-line rationale
+       - ...
+       ## Existing slugs deliberately skipped (do not re-propose in continuation)
+       - <existing-slug>: <one-line reason — e.g., "already covers this concept">
+       ## Verified-source scratchpad (carry-over evidence the continuation can reuse)
+       - <deferred-slug-1>:
+         - arxiv:XXXX.YYYYY — "<verified title>", <Authors-verified>, <Venue> <Year> (WebFetched in this session)
+         - <verified URL 2>
+       - <deferred-slug-2>:
+         - ...
+       ## CONTINUATION PROMPT — paste the fenced block below into a fresh Claude Code session pointed at this same worktree
+
+       ```
+       Continue batch-curation campaign <RUN_ID> on branch curate/<MODE>-<TERRITORY-LABEL>-<RUN_ID>.
+
+       1. git status --short && git log --oneline -1  — verify the working tree is clean and HEAD matches the parent-branch tip.
+       2. git checkout curate/<MODE>-<TERRITORY-LABEL>-<RUN_ID>  — checkout the EXISTING parent branch; do NOT use `-b` (do not create a new branch).
+       3. Read docs/resume-checkpoints/<RUN_ID>.md (this file) end-to-end. Treat the "Deferred candidates" list as your Step 2.2 selection and the "Verified-source scratchpad" as Step 3 carry-over.
+       4. Use RUN_ID = <RUN_ID>-c2 for every NEW file this session writes (slug-claim manifest, rating-action filenames, inbox files, curation logs, next checkpoint). The `-c2` suffix makes chunk-2 files globally unique vs chunk-1's `<RUN_ID>` files on the same branch.
+       5. Apply Steps 2.4 → 3 → 4 → 6 → 6.5 (if you still defer) → 7 from docs/BATCH_GENERATION_PROMPT.md. SKIP Step 5 entirely — the parent session already ran updates on <TARGET_UPDATE_SLUGS>.
+       6. Cap THIS session at 15 new slugs as well (the chunk discipline applies to every session, not just chunk 1). If after this session you still have remaining > 0, write the next checkpoint with chunk_index: 2 and RUN_ID suffix `-c3` for the session after.
+       7. Constraints unchanged: MASTER_PROMPT §15.6 no-invent rule (verify every cited paper via WebFetch in THIS session — do not trust unverified entries copied from the carry-over scratchpad), ADR-0005 rating-action immutability, the absolute guardrails at the bottom of BATCH_GENERATION_PROMPT.md.
+       8. Do not push, do not merge. The serial merge pass aggregates all chunks per branch at the end of the burst.
+       ```
+       ```
+
+6.5.c. Stage and commit the checkpoint alone: `chore(curation): <YYYY-MM-DD> checkpoint at <authored>/<TARGET_NEW_COUNT> for <TERRITORY-LABEL>/<RUN_ID>`.
+6.5.d. The print in Step 7.3 must also include: `Checkpoint: docs/resume-checkpoints/<RUN_ID>.md (remaining: <remaining>) — copy the continuation prompt from that file into a fresh session to resume.`
+
 == STEP 7 — VALIDATE + STOP ==
 
 7.1. `pnpm validate-content`. If errors, fix only files inside your allow-list (this session's slugs, this session's paper YAMLs, this session's inbox files). If you cannot fix without crossing the allow-list, abort, write the blocker to docs/open-questions-inbox/<RUN_ID>.md, commit only the inbox file, and stop.
-7.2. Final `git log --oneline` on your branch — expect: 1 claim commit + N slug commits + 1 housekeeping commit = N+2 commits total.
+7.2. Final `git log --oneline` on your branch — expect: 1 claim commit + N slug commits + 1 housekeeping commit (+ optional 1 checkpoint commit if Step 6.5 fired) = N+2 or N+3 commits total.
 7.3. Print to the user exactly:
      ```
      Branch: curate/<MODE>-<TERRITORY-LABEL>-<RUN_ID>  (HEAD: <SHORT-HASH>)
@@ -279,6 +343,7 @@ For each slug in <TARGET_UPDATE_SLUGS>:
      Updated slugs: <M-updated>  (<comma-separated slugs or "none">)
      Verified sources: <K> across <N+M> commits
      Inbox files: open-questions-inbox/<RUN_ID>.md (<Q-count>), changelog-inbox/<RUN_ID>.md, new-problem-claims/<RUN_ID>.md
+     Checkpoint: <docs/resume-checkpoints/<RUN_ID>.md (remaining: <remaining>) — paste its continuation prompt into a fresh session to resume>  OR  <"none — target met in single chunk">
      ```
      Then exit.
 
@@ -298,34 +363,45 @@ For each slug in <TARGET_UPDATE_SLUGS>:
 
 ## 20-session shard manifest
 
-Goal: cover all 80 subdomains with disjoint territories so 20 sessions can run concurrently without slug-claim conflicts. Each slot targets 4–8 new problems; with all 20 slots running, expect **80–160 new problems per burst** (vs. today's 10 baseline). Each session is also given a small `TARGET_UPDATE_SLUGS` list for deep-research updates within its territory, with explicit fallback to "" if its territory has no existing problems yet.
+Goal: cover all 80 subdomains with disjoint territories so 20 sessions can run concurrently without slug-claim conflicts. The targets below total **exactly 1000 new problems**, weighted by subdomain density (LLM-rich slots take 60–80, narrow theory slots take 30–40). Because each session can realistically author ~15 quality slugs before context degrades (Step 2.5 chunk discipline), reaching 1000 takes **3–4 sequential bursts per slot** via the Step 6.5 resume-checkpoint protocol.
+
+Each session is also given a small `TARGET_UPDATE_SLUGS` list for deep-research updates within its territory, with explicit fallback to "" if its territory has no existing problems yet. Updates run once per slot in chunk-1; subsequent chunks skip Step 5.
 
 The territories below are pre-checked disjoint across the 80 subdomains in `content/taxonomy.yaml`. Adjust the per-slot `TARGET_NEW_COUNT` and `TARGET_UPDATE_SLUGS` as content backlog allows.
 
 | Slot | TERRITORY_LABEL    | Subdomains (domain/subdomain)                                                                                                                                                                                                                                                                                                                          | NEW | Update slugs (existing today)                                                                                 |
 | ---- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --- | ------------------------------------------------------------------------------------------------------------- |
-| 01   | dl-lm-frontier     | `deep-learning/large-language-models`, `deep-learning/attention-mechanisms`, `deep-learning/foundation-models`                                                                                                                                                                                                                                         | 8   | `hallucination-reduction,long-horizon-agent-reliability,long-context-rag,compute-optimal-test-time-reasoning` |
-| 02   | dl-generative      | `deep-learning/generative-models`, `deep-learning/self-supervised-learning`, `deep-learning/representation-learning`                                                                                                                                                                                                                                   | 6   | ""                                                                                                            |
-| 03   | dl-architecture    | `deep-learning/algorithms`, `deep-learning/graph-neural-networks`, `deep-learning/sequential-models`                                                                                                                                                                                                                                                   | 6   | "compute-optimal-test-time-reasoning"                                                                         |
-| 04   | dl-theory-robust   | `deep-learning/theory`, `deep-learning/robustness`, `deep-learning/dl-other`                                                                                                                                                                                                                                                                           | 6   | ""                                                                                                            |
-| 05   | rl-frontier        | `reinforcement-learning/deep-rl`, `reinforcement-learning/multi-agent`, `reinforcement-learning/policy-search`                                                                                                                                                                                                                                         | 6   | "multi-agent-llm-coordination"                                                                                |
-| 06   | rl-offline-inverse | `reinforcement-learning/batch-offline`, `reinforcement-learning/inverse`, `reinforcement-learning/online`, `reinforcement-learning/planning`, `reinforcement-learning/rl-other`                                                                                                                                                                        | 6   | ""                                                                                                            |
-| 07   | safety-alignment   | `social-aspects/alignment`, `social-aspects/safety`, `social-aspects/accountability-transparency-interpretability`                                                                                                                                                                                                                                     | 6   | "scalable-oversight,mechanistic-interpretability"                                                             |
-| 08   | safety-fairness    | `social-aspects/fairness`, `social-aspects/privacy`, `social-aspects/robustness`, `social-aspects/security`, `social-aspects/social-other`                                                                                                                                                                                                             | 6   | ""                                                                                                            |
-| 09   | applied-bio-health | `applications/health-medicine`, `applications/neuroscience`                                                                                                                                                                                                                                                                                            | 5   | "genome-foundation-models"                                                                                    |
-| 10   | applied-physical   | `applications/chem-phys-earth`, `applications/energy`, `applications/time-series`                                                                                                                                                                                                                                                                      | 5   | "operator-learning-foundation-models"                                                                         |
-| 11   | applied-perception | `applications/computer-vision`, `applications/language-speech`, `applications/robotics`                                                                                                                                                                                                                                                                | 6   | ""                                                                                                            |
-| 12   | applied-social-mix | `applications/social-sciences`, `applications/applications-other`                                                                                                                                                                                                                                                                                      | 4   | ""                                                                                                            |
-| 13   | genml-data-eval    | `general-ml/data`, `general-ml/evaluation`, `general-ml/methodology`                                                                                                                                                                                                                                                                                   | 5   | "benchmark-integrity"                                                                                         |
-| 14   | genml-causal-rep   | `general-ml/causality`, `general-ml/representation-learning`, `general-ml/clustering`                                                                                                                                                                                                                                                                  | 5   | ""                                                                                                            |
-| 15   | genml-online-trans | `general-ml/online-active-bandits`, `general-ml/transfer-multitask-meta`, `general-ml/unsup-semisup`, `general-ml/supervised-learning`                                                                                                                                                                                                                 | 6   | ""                                                                                                            |
-| 16   | genml-systems      | `general-ml/hardware-software`, `general-ml/scalable-algorithms`, `general-ml/sequential-network-time-series`, `general-ml/kernel-methods`, `general-ml/general-ml-other`                                                                                                                                                                              | 5   | ""                                                                                                            |
-| 17   | opt-classical      | `optimization/convex`, `optimization/non-convex`, `optimization/stochastic`                                                                                                                                                                                                                                                                            | 5   | ""                                                                                                            |
-| 18   | opt-applied        | `optimization/discrete-combinatorial`, `optimization/large-scale-parallel-distributed`, `optimization/zero-order-black-box`, `optimization/optimization-other`                                                                                                                                                                                         | 5   | ""                                                                                                            |
-| 19   | prob-methods       | `probabilistic-methods/bayesian`, `probabilistic-methods/variational-inference`, `probabilistic-methods/monte-carlo-sampling`, `probabilistic-methods/gaussian-processes`, `probabilistic-methods/graphical-models`, `probabilistic-methods/spectral-methods`, `probabilistic-methods/structure-learning`, `probabilistic-methods/probabilistic-other` | 6   | ""                                                                                                            |
-| 20   | theory             | `theory/dl-theory`, `theory/learning-theory`, `theory/rl-planning-theory`, `theory/optimization-theory`, `theory/game-theory`, `theory/probabilistic-theory`, `theory/online-bandits`, `theory/active-interactive`, `theory/domain-adaptation-transfer`, `theory/theory-other`                                                                         | 6   | ""                                                                                                            |
+| 01   | dl-lm-frontier     | `deep-learning/large-language-models`, `deep-learning/attention-mechanisms`, `deep-learning/foundation-models`                                                                                                                                                                                                                                         | 80  | `hallucination-reduction,long-horizon-agent-reliability,long-context-rag,compute-optimal-test-time-reasoning` |
+| 02   | dl-generative      | `deep-learning/generative-models`, `deep-learning/self-supervised-learning`, `deep-learning/representation-learning`                                                                                                                                                                                                                                   | 60  | ""                                                                                                            |
+| 03   | dl-architecture    | `deep-learning/algorithms`, `deep-learning/graph-neural-networks`, `deep-learning/sequential-models`                                                                                                                                                                                                                                                   | 50  | "compute-optimal-test-time-reasoning"                                                                         |
+| 04   | dl-theory-robust   | `deep-learning/theory`, `deep-learning/robustness`, `deep-learning/dl-other`                                                                                                                                                                                                                                                                           | 50  | ""                                                                                                            |
+| 05   | rl-frontier        | `reinforcement-learning/deep-rl`, `reinforcement-learning/multi-agent`, `reinforcement-learning/policy-search`                                                                                                                                                                                                                                         | 50  | "multi-agent-llm-coordination"                                                                                |
+| 06   | rl-offline-inverse | `reinforcement-learning/batch-offline`, `reinforcement-learning/inverse`, `reinforcement-learning/online`, `reinforcement-learning/planning`, `reinforcement-learning/rl-other`                                                                                                                                                                        | 40  | ""                                                                                                            |
+| 07   | safety-alignment   | `social-aspects/alignment`, `social-aspects/safety`, `social-aspects/accountability-transparency-interpretability`                                                                                                                                                                                                                                     | 60  | "scalable-oversight,mechanistic-interpretability"                                                             |
+| 08   | safety-fairness    | `social-aspects/fairness`, `social-aspects/privacy`, `social-aspects/robustness`, `social-aspects/security`, `social-aspects/social-other`                                                                                                                                                                                                             | 50  | ""                                                                                                            |
+| 09   | applied-bio-health | `applications/health-medicine`, `applications/neuroscience`                                                                                                                                                                                                                                                                                            | 50  | "genome-foundation-models"                                                                                    |
+| 10   | applied-physical   | `applications/chem-phys-earth`, `applications/energy`, `applications/time-series`                                                                                                                                                                                                                                                                      | 50  | "operator-learning-foundation-models"                                                                         |
+| 11   | applied-perception | `applications/computer-vision`, `applications/language-speech`, `applications/robotics`                                                                                                                                                                                                                                                                | 60  | ""                                                                                                            |
+| 12   | applied-social-mix | `applications/social-sciences`, `applications/applications-other`                                                                                                                                                                                                                                                                                      | 30  | ""                                                                                                            |
+| 13   | genml-data-eval    | `general-ml/data`, `general-ml/evaluation`, `general-ml/methodology`                                                                                                                                                                                                                                                                                   | 50  | "benchmark-integrity"                                                                                         |
+| 14   | genml-causal-rep   | `general-ml/causality`, `general-ml/representation-learning`, `general-ml/clustering`                                                                                                                                                                                                                                                                  | 40  | ""                                                                                                            |
+| 15   | genml-online-trans | `general-ml/online-active-bandits`, `general-ml/transfer-multitask-meta`, `general-ml/unsup-semisup`, `general-ml/supervised-learning`                                                                                                                                                                                                                 | 50  | ""                                                                                                            |
+| 16   | genml-systems      | `general-ml/hardware-software`, `general-ml/scalable-algorithms`, `general-ml/sequential-network-time-series`, `general-ml/kernel-methods`, `general-ml/general-ml-other`                                                                                                                                                                              | 40  | ""                                                                                                            |
+| 17   | opt-classical      | `optimization/convex`, `optimization/non-convex`, `optimization/stochastic`                                                                                                                                                                                                                                                                            | 40  | ""                                                                                                            |
+| 18   | opt-applied        | `optimization/discrete-combinatorial`, `optimization/large-scale-parallel-distributed`, `optimization/zero-order-black-box`, `optimization/optimization-other`                                                                                                                                                                                         | 40  | ""                                                                                                            |
+| 19   | prob-methods       | `probabilistic-methods/bayesian`, `probabilistic-methods/variational-inference`, `probabilistic-methods/monte-carlo-sampling`, `probabilistic-methods/gaussian-processes`, `probabilistic-methods/graphical-models`, `probabilistic-methods/spectral-methods`, `probabilistic-methods/structure-learning`, `probabilistic-methods/probabilistic-other` | 50  | ""                                                                                                            |
+| 20   | theory             | `theory/dl-theory`, `theory/learning-theory`, `theory/rl-planning-theory`, `theory/optimization-theory`, `theory/game-theory`, `theory/probabilistic-theory`, `theory/online-bandits`, `theory/active-interactive`, `theory/domain-adaptation-transfer`, `theory/theory-other`                                                                         | 60  | ""                                                                                                            |
 
-Sum across slots: 80 + 100 + 24 = ~115 new problems per burst (with 20 slots at average 5–6 new each). Aggregate update-pass coverage: every existing slug except `multi-agent-llm-coordination` (covered in slot 05 explicitly) gets at least one deep-research update from its territory owner.
+Sum across slots: **1000 new problems** distributed across all 80 subdomains. Per-subdomain density averages ~12 problems with high-density slots (LLM, alignment, vision) at 20–27 per subdomain and low-density slots (narrow theory, applications-other) at 6–15. Aggregate update-pass coverage: every existing slug except `multi-agent-llm-coordination` (covered in slot 05 explicitly) gets at least one deep-research update from its territory owner in chunk-1.
+
+**Realistic burst cadence:** Each session caps at ~15 new slugs per chunk (Step 2.5). To complete the table above takes:
+
+- **Chunk 1 (burst 1):** 20 sessions × ~15 slugs = ~300 problems landed, ~700 deferred via Step 6.5 checkpoints.
+- **Chunk 2 (burst 2):** 20 continuation sessions × ~15 = ~300 more; territories at ~30 each.
+- **Chunk 3 (burst 3):** 20 sessions × ~15 = ~300 more; the high-density slots (01, 02, 07, 11, 20) write a chunk-4 checkpoint, the rest hit their target.
+- **Chunk 4 (burst 4):** ~5–6 continuation sessions × ~15 = ~80–100 final slugs.
+
+Total: **3–4 sequential bursts over 1–3 days** to land 1000 quality problems with all citations verified.
 
 ---
 
@@ -334,26 +410,26 @@ Sum across slots: 80 + 100 + 24 = ~115 new problems per burst (with 20 slots at 
 ```pwsh
 # PowerShell — 20 concurrent slots, BATCH-MIXED mode. Run from c:\opensource\OpenProblems.
 $slots = @(
-  @{ Label = "dl-lm-frontier";     Territory = "deep-learning/large-language-models,deep-learning/attention-mechanisms,deep-learning/foundation-models";                                      New = 8; Updates = "hallucination-reduction,long-horizon-agent-reliability,long-context-rag,compute-optimal-test-time-reasoning" },
-  @{ Label = "dl-generative";      Territory = "deep-learning/generative-models,deep-learning/self-supervised-learning,deep-learning/representation-learning";                                New = 6; Updates = "" },
-  @{ Label = "dl-architecture";    Territory = "deep-learning/algorithms,deep-learning/graph-neural-networks,deep-learning/sequential-models";                                                New = 6; Updates = "compute-optimal-test-time-reasoning" },
-  @{ Label = "dl-theory-robust";   Territory = "deep-learning/theory,deep-learning/robustness,deep-learning/dl-other";                                                                        New = 6; Updates = "" },
-  @{ Label = "rl-frontier";        Territory = "reinforcement-learning/deep-rl,reinforcement-learning/multi-agent,reinforcement-learning/policy-search";                                      New = 6; Updates = "multi-agent-llm-coordination" },
-  @{ Label = "rl-offline-inverse"; Territory = "reinforcement-learning/batch-offline,reinforcement-learning/inverse,reinforcement-learning/online,reinforcement-learning/planning,reinforcement-learning/rl-other"; New = 6; Updates = "" },
-  @{ Label = "safety-alignment";   Territory = "social-aspects/alignment,social-aspects/safety,social-aspects/accountability-transparency-interpretability";                                  New = 6; Updates = "scalable-oversight,mechanistic-interpretability" },
-  @{ Label = "safety-fairness";    Territory = "social-aspects/fairness,social-aspects/privacy,social-aspects/robustness,social-aspects/security,social-aspects/social-other";                New = 6; Updates = "" },
-  @{ Label = "applied-bio-health"; Territory = "applications/health-medicine,applications/neuroscience";                                                                                      New = 5; Updates = "genome-foundation-models" },
-  @{ Label = "applied-physical";   Territory = "applications/chem-phys-earth,applications/energy,applications/time-series";                                                                   New = 5; Updates = "operator-learning-foundation-models" },
-  @{ Label = "applied-perception"; Territory = "applications/computer-vision,applications/language-speech,applications/robotics";                                                             New = 6; Updates = "" },
-  @{ Label = "applied-social-mix"; Territory = "applications/social-sciences,applications/applications-other";                                                                                New = 4; Updates = "" },
-  @{ Label = "genml-data-eval";    Territory = "general-ml/data,general-ml/evaluation,general-ml/methodology";                                                                                New = 5; Updates = "benchmark-integrity" },
-  @{ Label = "genml-causal-rep";   Territory = "general-ml/causality,general-ml/representation-learning,general-ml/clustering";                                                               New = 5; Updates = "" },
-  @{ Label = "genml-online-trans"; Territory = "general-ml/online-active-bandits,general-ml/transfer-multitask-meta,general-ml/unsup-semisup,general-ml/supervised-learning";                 New = 6; Updates = "" },
-  @{ Label = "genml-systems";      Territory = "general-ml/hardware-software,general-ml/scalable-algorithms,general-ml/sequential-network-time-series,general-ml/kernel-methods,general-ml/general-ml-other"; New = 5; Updates = "" },
-  @{ Label = "opt-classical";      Territory = "optimization/convex,optimization/non-convex,optimization/stochastic";                                                                         New = 5; Updates = "" },
-  @{ Label = "opt-applied";        Territory = "optimization/discrete-combinatorial,optimization/large-scale-parallel-distributed,optimization/zero-order-black-box,optimization/optimization-other"; New = 5; Updates = "" },
-  @{ Label = "prob-methods";       Territory = "probabilistic-methods/bayesian,probabilistic-methods/variational-inference,probabilistic-methods/monte-carlo-sampling,probabilistic-methods/gaussian-processes,probabilistic-methods/graphical-models,probabilistic-methods/spectral-methods,probabilistic-methods/structure-learning,probabilistic-methods/probabilistic-other"; New = 6; Updates = "" },
-  @{ Label = "theory";             Territory = "theory/dl-theory,theory/learning-theory,theory/rl-planning-theory,theory/optimization-theory,theory/game-theory,theory/probabilistic-theory,theory/online-bandits,theory/active-interactive,theory/domain-adaptation-transfer,theory/theory-other"; New = 6; Updates = "" }
+  @{ Label = "dl-lm-frontier";     Territory = "deep-learning/large-language-models,deep-learning/attention-mechanisms,deep-learning/foundation-models";                                      New = 80; Updates = "hallucination-reduction,long-horizon-agent-reliability,long-context-rag,compute-optimal-test-time-reasoning" },
+  @{ Label = "dl-generative";      Territory = "deep-learning/generative-models,deep-learning/self-supervised-learning,deep-learning/representation-learning";                                New = 60; Updates = "" },
+  @{ Label = "dl-architecture";    Territory = "deep-learning/algorithms,deep-learning/graph-neural-networks,deep-learning/sequential-models";                                                New = 50; Updates = "compute-optimal-test-time-reasoning" },
+  @{ Label = "dl-theory-robust";   Territory = "deep-learning/theory,deep-learning/robustness,deep-learning/dl-other";                                                                        New = 50; Updates = "" },
+  @{ Label = "rl-frontier";        Territory = "reinforcement-learning/deep-rl,reinforcement-learning/multi-agent,reinforcement-learning/policy-search";                                      New = 50; Updates = "multi-agent-llm-coordination" },
+  @{ Label = "rl-offline-inverse"; Territory = "reinforcement-learning/batch-offline,reinforcement-learning/inverse,reinforcement-learning/online,reinforcement-learning/planning,reinforcement-learning/rl-other"; New = 40; Updates = "" },
+  @{ Label = "safety-alignment";   Territory = "social-aspects/alignment,social-aspects/safety,social-aspects/accountability-transparency-interpretability";                                  New = 60; Updates = "scalable-oversight,mechanistic-interpretability" },
+  @{ Label = "safety-fairness";    Territory = "social-aspects/fairness,social-aspects/privacy,social-aspects/robustness,social-aspects/security,social-aspects/social-other";                New = 50; Updates = "" },
+  @{ Label = "applied-bio-health"; Territory = "applications/health-medicine,applications/neuroscience";                                                                                      New = 50; Updates = "genome-foundation-models" },
+  @{ Label = "applied-physical";   Territory = "applications/chem-phys-earth,applications/energy,applications/time-series";                                                                   New = 50; Updates = "operator-learning-foundation-models" },
+  @{ Label = "applied-perception"; Territory = "applications/computer-vision,applications/language-speech,applications/robotics";                                                             New = 60; Updates = "" },
+  @{ Label = "applied-social-mix"; Territory = "applications/social-sciences,applications/applications-other";                                                                                New = 30; Updates = "" },
+  @{ Label = "genml-data-eval";    Territory = "general-ml/data,general-ml/evaluation,general-ml/methodology";                                                                                New = 50; Updates = "benchmark-integrity" },
+  @{ Label = "genml-causal-rep";   Territory = "general-ml/causality,general-ml/representation-learning,general-ml/clustering";                                                               New = 40; Updates = "" },
+  @{ Label = "genml-online-trans"; Territory = "general-ml/online-active-bandits,general-ml/transfer-multitask-meta,general-ml/unsup-semisup,general-ml/supervised-learning";                 New = 50; Updates = "" },
+  @{ Label = "genml-systems";      Territory = "general-ml/hardware-software,general-ml/scalable-algorithms,general-ml/sequential-network-time-series,general-ml/kernel-methods,general-ml/general-ml-other"; New = 40; Updates = "" },
+  @{ Label = "opt-classical";      Territory = "optimization/convex,optimization/non-convex,optimization/stochastic";                                                                         New = 40; Updates = "" },
+  @{ Label = "opt-applied";        Territory = "optimization/discrete-combinatorial,optimization/large-scale-parallel-distributed,optimization/zero-order-black-box,optimization/optimization-other"; New = 40; Updates = "" },
+  @{ Label = "prob-methods";       Territory = "probabilistic-methods/bayesian,probabilistic-methods/variational-inference,probabilistic-methods/monte-carlo-sampling,probabilistic-methods/gaussian-processes,probabilistic-methods/graphical-models,probabilistic-methods/spectral-methods,probabilistic-methods/structure-learning,probabilistic-methods/probabilistic-other"; New = 50; Updates = "" },
+  @{ Label = "theory";             Territory = "theory/dl-theory,theory/learning-theory,theory/rl-planning-theory,theory/optimization-theory,theory/game-theory,theory/probabilistic-theory,theory/online-bandits,theory/active-interactive,theory/domain-adaptation-transfer,theory/theory-other"; New = 60; Updates = "" }
 )
 
 $ts = (Get-Date -AsUTC).ToString("yyyy-MM-ddTHH-mm")
@@ -386,27 +462,32 @@ Get-Job -Name 'curate-*' | Wait-Job | Receive-Job
 
 Throughput notes for 20 concurrent sessions on this repo:
 
-- Pre-commit runs `pnpm test` tree-wide on every commit. With ~115 new-problem commits across 20 branches, the test runner will queue commits at the filesystem-lock level — practical commit throughput is bounded to ~1–2 commits/minute aggregate even with 20 sessions. Plan a 1–3 hour burst window.
-- Sessions are independent on read paths (each reads MASTER_PROMPT.md + schemas + the hallucination-reduction reference once). Cache hits on these reads dominate after the first session warms.
-- Web research dominates wall-clock per slug (Step 3 = 6–8 web calls × N candidates). Budget ~3–5 minutes per new problem authored. A 6-new-problem slot fits comfortably in a 60-minute window.
+- Pre-commit runs `pnpm test` tree-wide on every commit. With ~300 new-problem commits per burst across 20 branches, the test runner queues commits at the filesystem-lock level. **Without git worktrees**, practical commit throughput is bounded to ~1–2 commits/minute aggregate (commits serialize on `.git/index` + `node_modules/.vitest/`). **With git worktrees** (one per slot), throughput rises to ~5–10 commits/minute aggregate because the index locks are per-worktree. The README in `docs/batch-prompts/` documents the worktree recipe — **strongly recommended** at this scale.
+- Sessions are independent on read paths (each reads MASTER_PROMPT.md + schemas + the hallucination-reduction reference once). After the first session warms, prompt-cache hits dominate for these reads.
+- Web research dominates wall-clock per slug (Step 3 = 6–8 web calls × ≤15 candidates/chunk). Budget ~3–5 minutes per new problem authored. A 15-slug chunk fits in a 60–90 minute session. Three chunks per slot ⇒ ~3–4 hours of wall-clock per slot ⇒ ~6–12 hours of total wall-clock across 3–4 sequential bursts (depending on whether you launch all 20 continuation sessions simultaneously).
+- Realistic completion timeline for the full 1000-problem target: **1–3 calendar days** if you start each burst as soon as the prior finishes. Run 1 lands ~300, run 2 lands ~600 cumulative, run 3 lands ~900 cumulative, run 4 lands the final ~100. The merge pass runs ONCE at the end across all chunks of all slots, not after every burst — see "Serial merge pass" below.
 
 ---
 
-## Serial merge pass (single session, runs after the 20-session burst)
+## Serial merge pass (single session, runs after the final chunk of the campaign)
 
-After all 20 branches stop:
+Run the merge pass **once** at the end — not after every burst. Each slot's branch accumulates 3–4 chunks of commits before merging; that is by design. Running the merge between bursts would force continuation sessions to rebase, multiplying the surface for conflicts and breaking the "continuation session reuses the parent branch" rule from Step 6.5.
 
-1. **Slug-collision pass.** `cat docs/new-problem-claims/*.md` — aggregate every claimed slug. If two RUN-IDs claim the same slug, keep the earlier commit and rename the later branch's slug (`git mv content/problems/<old>/* content/problems/<new>/` + edit problem.yaml's `slug:` field) before merging. Add a redirect entry to `content/redirects.yaml` if/when that file exists. Surface the collision in CHANGELOG.md.
-2. **Branch review.** `git branch --list 'curate/*'` — for each branch, read its `content/problems/*/.curation-log/<RUN_ID>.md` to assess quality. Drop branches whose log shows < 3 verified sources per slug or whose problems duplicate existing concepts.
-3. **Cherry-pick merge.** For each branch kept: `git merge --no-ff curate/<MODE>-<LABEL>-<RUN_ID>`. Resolve any incidental `content/papers/<ARXIV-ID>.yaml` collisions by picking the more-complete YAML (more authors, longer tldr).
-4. **Aggregate singletons.**
-   - `docs/open-questions-inbox/*.md` → append as new Q-numbers at the bottom of `OPEN_QUESTIONS.md`. `git rm docs/open-questions-inbox/*.md`.
+After the last continuation session writes its final non-checkpoint commit (i.e., every territory's `remaining` count has reached 0, OR you decide to call it done at ~600/1000):
+
+1. **Slug-collision pass.** `cat docs/new-problem-claims/*.md` — aggregate every claimed slug. If two RUN-IDs (parent or chunk-N) claim the same slug, keep the earlier commit and rename the later branch's slug (`git mv content/problems/<old>/* content/problems/<new>/` + edit problem.yaml's `slug:` field) before merging. Add a redirect entry to `content/redirects.yaml` if/when that file exists. Surface the collision in CHANGELOG.md.
+2. **Resume-checkpoint pass.** `cat docs/resume-checkpoints/*.md` — confirm `remaining: 0` on every checkpoint OR a deliberate operator decision to skip the rest. Any non-zero remaining is fine to ship; just log it in CHANGELOG.md as "campaign paused at N/1000 — continuation candidates retained in docs/resume-checkpoints/.archived/".
+3. **Branch review.** `git branch --list 'curate/*'` — for each branch, read its `content/problems/*/.curation-log/<RUN_ID>*.md` (multiple curation logs per slot now — one per chunk). Drop branches whose logs show < 3 verified sources per slug or whose problems duplicate existing concepts. Drop **chunks** within a branch you don't trust by hard-resetting the branch to a known-good chunk SHA before merging.
+4. **Cherry-pick merge.** For each branch kept: `git merge --no-ff curate/<MODE>-<LABEL>-<RUN_ID>`. The merge picks up all chunks because they share the branch. Resolve any incidental `content/papers/<ARXIV-ID>.yaml` collisions by picking the more-complete YAML (more authors, longer tldr).
+5. **Aggregate singletons.**
+   - `docs/open-questions-inbox/*.md` (one per session, including continuations) → append as new Q-numbers at the bottom of `OPEN_QUESTIONS.md`. `git rm docs/open-questions-inbox/*.md`.
    - `docs/changelog-inbox/*.md` → append bullets under the right Phase heading in `CHANGELOG.md`. `git rm docs/changelog-inbox/*.md`.
-   - `docs/new-problem-claims/*.md` → archive to `docs/new-problem-claims/.archived/<DATE>/` for audit history, or `git rm` if you prefer a clean tree.
-5. **Cross-link audit.** Run `pnpm tsx scripts/cross-link-audit.ts` (if present) to detect one-direction `related_problems` links produced by sibling sessions, then optionally symmetrise in a follow-up commit.
-6. **Final commit.** `chore(curation): merge <N> branches from batch <YYYY-MM-DD>` summarising new problems / updates / inbox files.
+   - `docs/new-problem-claims/*.md` → archive to `docs/new-problem-claims/.archived/<DATE>/` for audit history.
+   - `docs/resume-checkpoints/*.md` → archive to `docs/resume-checkpoints/.archived/<DATE>/`. Do NOT `git rm` outright; the deferred-candidate scratchpads are useful for the next campaign cycle.
+6. **Cross-link audit.** Run `pnpm tsx scripts/cross-link-audit.ts` (if present) to detect one-direction `related_problems` links produced by sibling sessions, then optionally symmetrise in a follow-up commit. At 1000 problems, expect dozens of asymmetric links — symmetrising them is its own dedicated unit, not part of the merge pass.
+7. **Final commit.** `chore(curation): merge <N> slots × <K> chunks = ~1000 new problems from campaign <YYYY-MM-DD>` summarising slot-by-slot counts.
 
-This merge pass is intentionally serial and intentionally the only writer of the global singletons. With 20 disjoint territories and the slug-claim manifest, it should resolve in well under an hour for a 100-problem batch.
+This merge pass is intentionally serial and intentionally the only writer of the global singletons. At 1000 problems with chunked commits, budget **2–4 hours** for the merge pass (vs. ~1 hour for the smaller 113-problem version) — most of that is reading curation logs and judging branch quality, not git mechanics.
 
 ---
 

@@ -4,7 +4,7 @@
 | ------------ | ------------------------------------------------------------------------------------------------------------ |
 | Mode         | `BATCH-MIXED`                                                                                                |
 | Territory    | social-aspects/alignment, social-aspects/safety, social-aspects/accountability-transparency-interpretability |
-| New problems | 6                                                                                                            |
+| New problems | 60                                                                                                           |
 | Updates      | scalable-oversight, mechanistic-interpretability                                                             |
 | Curator      | `jikun`                                                                                                      |
 | RUN_ID       | `2026-05-20T17-00-071a4d`                                                                                    |
@@ -41,7 +41,7 @@ You are a content curator and researcher for LLM OpenProblems at c:\opensource\O
 MODE: BATCH-MIXED # BATCH-NEW | BATCH-DEEP-UPDATE | BATCH-MIXED
 TERRITORY: social-aspects/alignment,social-aspects/safety,social-aspects/accountability-transparency-interpretability # comma-separated "domain/subdomain" pairs, e.g. # "optimization/convex,optimization/non-convex,optimization/stochastic,optimization/discrete-combinatorial"
 TERRITORY_LABEL: safety-alignment # short kebab-case slug for branch name, e.g. "opt-cluster-a"
-TARGET_NEW_COUNT: 6 # for BATCH-NEW or BATCH-MIXED; target number of new problems this run (4–8 typical)
+TARGET_NEW_COUNT: 60 # for BATCH-NEW or BATCH-MIXED; target across the whole campaign (30–80 typical; this session caps at 15, deferring the rest via Step 2.5 + 6.5)
 TARGET_UPDATE_SLUGS: scalable-oversight,mechanistic-interpretability # for BATCH-DEEP-UPDATE or BATCH-MIXED; comma-separated existing slugs to deeply re-research, "" if none
 CURATOR: jikun # default `jikun`
 RUN_ID: 2026-05-20T17-00-071a4d # YYYY-MM-DDTHH-MM-RAND6 (UTC, hyphens, no colons — Windows-safe)
@@ -56,8 +56,8 @@ RUN_ID: 2026-05-20T17-00-071a4d # YYYY-MM-DDTHH-MM-RAND6 (UTC, hyphens, no colon
 == STEP 2 — CANDIDATE-LIST + SLUG CLAIM (BATCH-NEW / BATCH-MIXED) ==
 
 2.1. For each subdomain in <TERRITORY>, brainstorm 2–4 candidate open problems whose authoring is feasible from public literature. Each candidate must clear the §16-quality bar: - Substantive open research question (not a solved engineering problem, not a tool wishlist). - At least one recognised benchmark family or evaluation surface exists in the literature (you will name it but you will NOT cite numerical SOTA). - At least one survey or position paper from the last 4 years on or near the topic (you will verify this in Step 3 before committing the problem). - Not a near-duplicate of an existing slug in this repo (subjective; lean toward "yes it's distinct" if the rated dimensions would differ materially).
-2.2. From the brainstorm, select <TARGET_NEW_COUNT> candidates spread across the subdomains in <TERRITORY> (aim for ≥ 1 per subdomain if N ≥ |subdomains|).
-2.3. Mint a kebab-case `<NEW-SLUG>` for each. Slug rules: lowercase letters / digits / hyphens; 3–6 words; concept-first, not adjective-first (`offline-rl-conservatism` not `conservative-offline-rl`); avoids overlap with existing slugs.
+2.2. From the brainstorm, select **min(<TARGET_NEW_COUNT>, 15)** candidates spread across the subdomains in <TERRITORY> (aim for ≥ 1 per subdomain if N ≥ |subdomains|). The cap at 15 is the chunk-discipline rule from §2.5 — even when <TARGET_NEW_COUNT> is 50 or 80, this session authors at most 15 of them; the remainder is brainstormed but DEFERRED for a continuation session via Step 6.5.
+2.3. Mint a kebab-case `<NEW-SLUG>` for each of the 15-or-fewer candidates you are authoring **this session**. Slug rules: lowercase letters / digits / hyphens; 3–6 words; concept-first, not adjective-first (`offline-rl-conservatism` not `conservative-offline-rl`); avoids overlap with existing slugs. Do NOT mint slugs for deferred candidates — leaving them un-claimed lets the continuation session claim them (or revise them based on what authored cleanly).
 2.4. Write the slug-claim manifest at `docs/new-problem-claims/<RUN_ID>.md`:
 `      ---
      run_id: <RUN_ID>
@@ -74,6 +74,16 @@ RUN_ID: 2026-05-20T17-00-071a4d # YYYY-MM-DDTHH-MM-RAND6 (UTC, hyphens, no colon
      - <anything the merger should know — e.g. "slug X may overlap conceptually with existing Y, see related_problems link">
      `
 Commit this manifest alone: `chore(claims): <YYYY-MM-DD> claim <N> slugs in <TERRITORY-LABEL>`. This is your first commit on the branch; everything else hangs off it.
+Note for the `## Notes` section: if <TARGET_NEW_COUNT> > 15, write a one-liner like "chunk 1 of ~`ceil(<TARGET_NEW_COUNT>/15)`; remaining `<deferred-count>` candidates carry over via docs/resume-checkpoints/<RUN_ID>.md (written in Step 6.5)".
+
+== STEP 2.5 — CHUNK DISCIPLINE (when <TARGET_NEW_COUNT> > 15) ==
+
+Realistic per-session ceiling: ~15 quality slugs. Each slug costs ~50–80K context (Step 3 deep-research with 6–8 web calls + Step 4 file generation + commit overhead), so even Opus 4.7's 1M-context budget realistically supports 15–20 slugs before output quality degrades. When <TARGET_NEW_COUNT> exceeds 15:
+
+2.5.a. This session authors the **first 15 candidates** from your Step 2.2 brainstorm — the highest-confidence / best-evidenced ones; the candidates you generated first.
+2.5.b. Keep a private scratchpad of the deferred candidates: working title, proposed slug, subdomain, and any verified sources you already noticed in the survey pass. You will dump this into a checkpoint file in Step 6.5.
+2.5.c. Do NOT claim deferred slugs in the Step 2.4 manifest. The continuation session re-evaluates them with fresh context and may revise the slug spelling or drop a candidate that turns out to overlap with one you just authored.
+2.5.d. If <TARGET_NEW_COUNT> ≤ 15, ignore Step 2.5 and Step 6.5 entirely — this is a single-chunk run.
 
 == STEP 3 — DEEP RESEARCH per new problem (BATCH-NEW / BATCH-MIXED) ==
 
@@ -216,16 +226,71 @@ For each slug in <TARGET_UPDATE_SLUGS>:
      `
 6.4. Commit the curation logs + inbox files in a final housekeeping commit: `chore(curation): <YYYY-MM-DD> logs + inbox for <TERRITORY-LABEL>/<RUN_ID>`.
 
+== STEP 6.5 — RESUME CHECKPOINT (only when you deferred candidates in Step 2.5) ==
+
+Skip this step entirely if `<TARGET_NEW_COUNT> ≤ 15` OR you authored every candidate from Step 2.2 in this session. Otherwise:
+
+6.5.a. Compute: `remaining = <TARGET_NEW_COUNT> − (count of new-problem commits this session)`.
+6.5.b. Write `docs/resume-checkpoints/<RUN_ID>.md`:
+
+       ```
+       ---
+       run_id: <RUN_ID>
+       parent_branch: curate/<MODE>-<TERRITORY-LABEL>-<RUN_ID>
+       territory_label: <TERRITORY-LABEL>
+       territory: <TERRITORY>
+       mode: <MODE>
+       curator: <CURATOR>
+       target_total: <TARGET_NEW_COUNT>
+       authored_this_session: <count>
+       remaining: <remaining>
+       chunk_index: 1
+       ---
+       ## Already authored this session (commits on parent branch)
+       - <new-slug-1>: <short title fragment>
+       - <new-slug-2>: ...
+       ## Deferred candidates (the next chunk should author these)
+       - title: "<working title 1>" | proposed slug: <slug-1> | domain: <D>/<S> | one-line rationale
+       - title: "<working title 2>" | proposed slug: <slug-2> | domain: <D>/<S> | one-line rationale
+       - ...
+       ## Existing slugs deliberately skipped (do not re-propose in continuation)
+       - <existing-slug>: <one-line reason — e.g., "already covers this concept">
+       ## Verified-source scratchpad (carry-over evidence the continuation can reuse)
+       - <deferred-slug-1>:
+         - arxiv:XXXX.YYYYY — "<verified title>", <Authors-verified>, <Venue> <Year> (WebFetched in this session)
+         - <verified URL 2>
+       - <deferred-slug-2>:
+         - ...
+       ## CONTINUATION PROMPT — paste the fenced block below into a fresh Claude Code session pointed at this same worktree
+
+       ```
+       Continue batch-curation campaign <RUN_ID> on branch curate/<MODE>-<TERRITORY-LABEL>-<RUN_ID>.
+
+       1. git status --short && git log --oneline -1  — verify the working tree is clean and HEAD matches the parent-branch tip.
+       2. git checkout curate/<MODE>-<TERRITORY-LABEL>-<RUN_ID>  — checkout the EXISTING parent branch; do NOT use `-b` (do not create a new branch).
+       3. Read docs/resume-checkpoints/<RUN_ID>.md (this file) end-to-end. Treat the "Deferred candidates" list as your Step 2.2 selection and the "Verified-source scratchpad" as Step 3 carry-over.
+       4. Use RUN_ID = <RUN_ID>-c2 for every NEW file this session writes (slug-claim manifest, rating-action filenames, inbox files, curation logs, next checkpoint). The `-c2` suffix makes chunk-2 files globally unique vs chunk-1's `<RUN_ID>` files on the same branch.
+       5. Apply Steps 2.4 → 3 → 4 → 6 → 6.5 (if you still defer) → 7 from docs/BATCH_GENERATION_PROMPT.md. SKIP Step 5 entirely — the parent session already ran updates on <TARGET_UPDATE_SLUGS>.
+       6. Cap THIS session at 15 new slugs as well (the chunk discipline applies to every session, not just chunk 1). If after this session you still have remaining > 0, write the next checkpoint with chunk_index: 2 and RUN_ID suffix `-c3` for the session after.
+       7. Constraints unchanged: MASTER_PROMPT §15.6 no-invent rule (verify every cited paper via WebFetch in THIS session — do not trust unverified entries copied from the carry-over scratchpad), ADR-0005 rating-action immutability, the absolute guardrails at the bottom of BATCH_GENERATION_PROMPT.md.
+       8. Do not push, do not merge. The serial merge pass aggregates all chunks per branch at the end of the burst.
+       ```
+       ```
+
+6.5.c. Stage and commit the checkpoint alone: `chore(curation): <YYYY-MM-DD> checkpoint at <authored>/<TARGET_NEW_COUNT> for <TERRITORY-LABEL>/<RUN_ID>`.
+6.5.d. The print in Step 7.3 must also include: `Checkpoint: docs/resume-checkpoints/<RUN_ID>.md (remaining: <remaining>) — copy the continuation prompt from that file into a fresh session to resume.`
+
 == STEP 7 — VALIDATE + STOP ==
 
 7.1. `pnpm validate-content`. If errors, fix only files inside your allow-list (this session's slugs, this session's paper YAMLs, this session's inbox files). If you cannot fix without crossing the allow-list, abort, write the blocker to docs/open-questions-inbox/<RUN_ID>.md, commit only the inbox file, and stop.
-7.2. Final `git log --oneline` on your branch — expect: 1 claim commit + N slug commits + 1 housekeeping commit = N+2 commits total.
+7.2. Final `git log --oneline` on your branch — expect: 1 claim commit + N slug commits + 1 housekeeping commit (+ optional 1 checkpoint commit if Step 6.5 fired) = N+2 or N+3 commits total.
 7.3. Print to the user exactly:
 `      Branch: curate/<MODE>-<TERRITORY-LABEL>-<RUN_ID>  (HEAD: <SHORT-HASH>)
      New problems: <N-new>  (<comma-separated slugs>)
      Updated slugs: <M-updated>  (<comma-separated slugs or "none">)
      Verified sources: <K> across <N+M> commits
      Inbox files: open-questions-inbox/<RUN_ID>.md (<Q-count>), changelog-inbox/<RUN_ID>.md, new-problem-claims/<RUN_ID>.md
+     Checkpoint: <docs/resume-checkpoints/<RUN_ID>.md (remaining: <remaining>) — paste its continuation prompt into a fresh session to resume>  OR  <"none — target met in single chunk">
      `
 Then exit.
 
