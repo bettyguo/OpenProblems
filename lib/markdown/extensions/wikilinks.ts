@@ -135,7 +135,18 @@ import type { MarkdownExtensionRegistry, MarkdownExtensionSet, MarkdownSurface }
  * invariant.
  */
 
-const WIKILINK_PATTERN = /\[\[(?:([a-z0-9-]+):)?([a-z0-9-]+)(?:\|([^\]\n]+))?\]\]/g;
+/**
+ * Wikilink syntax regex shared between the render-time plugin
+ * body (this file) and the Phase-66 build-time validator
+ * (`./wikilinks-validator.ts`). Exported under ADR-0018 D-G
+ * APPEND-D-AX (Phase 66 Unit 66.1; closes APPEND-D-L item 5
+ * 404 handling at 28-phase carryover — NEW LONGEST ABSOLUTE
+ * APPEND-DEFERRAL CLOSURE EVER OBSERVED). Re-exported so the
+ * validator catches exactly the cases the plugin would
+ * resolve — drift between the two regexes would mean rendered
+ * links don't match validated set.
+ */
+export const WIKILINK_PATTERN = /\[\[(?:([a-z0-9-]+):)?([a-z0-9-]+)(?:\|([^\]\n]+))?\]\]/g;
 
 /**
  * Default href-builder for `rehypeResolveWikilinks` per

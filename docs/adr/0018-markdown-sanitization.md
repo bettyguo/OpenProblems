@@ -6111,6 +6111,372 @@ cap):
 - **ADR-0025 concrete content-moderation provider** — Phase
   66+; not autonomous-tractable.
 
+#### EXTENDED Phase 66 Unit 66.1 — APPEND-D-AX 404 handling for unresolved wikilinks via build-time validator hooked into `pnpm audit-content` (closes APPEND-D-L item 5 — the LAST remaining D-L deferral — at 28-phase carryover (Phase 38 → Phase 66) — NEW LONGEST ABSOLUTE APPEND-DEFERRAL CLOSURE EVER OBSERVED (extends Phase-65 27-phase record by 1 phase); second post-tie absolute-record extension in project history; first 6-consecutive-phase set-or-extend streak (Phase 61 new + 62 extend + 63 extend + 64 tie + 65 extend + 66 extend); **D-L becomes the SECOND D-clause with ALL enumerated items closed** in project history (D-Q was first at Phase 64); first state where 2 D-clauses have ALL enumerated items closed; first D-clause with 6+ items closed (D-L at 6-of-6; D-Q has only 4 enumerated items); first D-clause to traverse from 0-of-N closed → ALL-N closed entirely under the Phase-37 framework era; first build-time-validation realization in project history; `wikilink-target-fk` becomes the 8th `AuditCheck` type in `lib/content/cross-link-audit.ts`; 25-phase APPEND-deferral closure cadence — new record; 33rd D-G APPEND record extends; twenty-fourth two-letter slot D-AX; fifty-seventh NON-§13 phase; `MARKDOWN_EXTENSIONS` single-value arms UNCHANGED at 10)
+
+Phase 66 ships a build-time validator for unresolved
+wikilinks. The validator lives in a new sibling helper
+`lib/markdown/extensions/wikilinks-validator.ts` and wires
+into the existing `lib/content/cross-link-audit.ts` audit
+script (invoked via `pnpm audit-content`). The validator
+exports `extractWikilinkReferences(markdown, surface):
+WikilinkReference[]` (reuses the Phase-63 `WIKILINK_PATTERN`
+regex re-exported from `./wikilinks.ts`) +
+`isValidWikilinkTarget(ref, validTargets): boolean` (cross-
+entity-aware routing mirrors Phase-63
+`CROSS_ENTITY_BUILD_HREF`) + `WikilinkReference` interface +
+`ValidWikilinkTargets` interface.
+
+**APPEND-D-AX 404-handling-via-build-time-validator shape**:
+
+```ts
+// lib/markdown/extensions/wikilinks-validator.ts
+import type { MarkdownSurface } from "./types";
+import { WIKILINK_PATTERN } from "./wikilinks";
+
+export interface WikilinkReference {
+  entityType: string | undefined;
+  slug: string;
+  matchText: string;
+  surface: MarkdownSurface;
+}
+
+export interface ValidWikilinkTargets {
+  problemSlugs: ReadonlySet<string>;
+  paperIds: ReadonlySet<string>;
+  authorSlugs: ReadonlySet<string>;
+  institutionSlugs: ReadonlySet<string>;
+}
+
+export function extractWikilinkReferences(
+  markdown: string,
+  surface: MarkdownSurface,
+): WikilinkReference[] {
+  // Walks markdown via WIKILINK_PATTERN regex; emits
+  // (entityType, slug, matchText, surface) tuples in
+  // source-order.
+}
+
+export function isValidWikilinkTarget(
+  ref: WikilinkReference,
+  validTargets: ValidWikilinkTargets,
+): boolean {
+  // Cross-entity routing parity with CROSS_ENTITY_BUILD_HREF:
+  // paper: → paperIds; author: → authorSlugs;
+  // institution: → institutionSlugs;
+  // bare/unknown → problemSlugs (graceful-degradation
+  // fallback per Phase 63 ship).
+}
+```
+
+**404-handling mechanism choice** (Phase 66 D-1 framework
+decision): build-time validation is the 404-handling
+mechanism — under build-time validation, curators CANNOT
+ship unresolved wikilinks past CI (the audit fails). This is
+the STRONGER guarantee than render-time fallback:
+
+- **Interpretation (a) — build-time validation** (Phase 66
+  ship): curators get a CI failure if any wikilink does not
+  resolve. The unresolved wikilink never makes it to a
+  rendered page.
+- **Interpretation (b) — render-time fallback**: render
+  unresolved wikilinks with a distinct visual marker (e.g.,
+  `class="wikilink wikilink-unresolved"`) at request time.
+  Belt-and-suspenders defense against CI-bypass; redundant
+  under interpretation (a). **Deferred to Phase 67+** as
+  Phase-66-gate rank 1 candidate; would compose with Phase-65
+  className via multi-className emit pattern (`["wikilink",
+  "wikilink-unresolved"]`) per the convention "opt-in for
+  SEMANTIC changes; default for VISUAL/ANNOTATIVE additions"
+  established at Phase 65.
+
+**Audit-layer extension framing** (Phase 66 D-1 framework
+decision): Phase 66 introduces build-time validation as a
+sub-pattern within the existing `lib/content/cross-link-
+audit.ts` audit-layer machinery. The new `wikilink-target-fk`
+joins the existing 7 `AuditCheck` types (`paper-problem-fk`
++ `paper-author-fk` + `paper-institution-fk` + `author-
+institution-fk` + `related-problems-fk` + `related-problems-
+symmetry` + `entries-contributions-agreement`) as the 8th
+type. No new principal axis of zero-rework framework
+extension is declared at Phase 66 — the 4 principal axes
+(registry-state + plugin-body + plugin-option + schema-
+options) remain at their Phase-65-close counts. Phase 67+
+could elevate "build-time-validation" to a recognized
+principal axis if a second realization ships per the D-AX
+Phase 67+ deferrals list. Audit-layer extension framing
+preserves the existing axis taxonomy verbatim.
+
+**Cross-entity routing parity with `CROSS_ENTITY_BUILD_HREF`**:
+load-bearing — the validator must catch exactly the cases
+the plugin would 404 on at render time. Routing:
+
+- `entityType === "paper"` → `validTargets.paperIds`
+- `entityType === "author"` → `validTargets.authorSlugs`
+- `entityType === "institution"` →
+  `validTargets.institutionSlugs`
+- `entityType === undefined` (bare `[[slug]]`) →
+  `validTargets.problemSlugs`
+- any other `entityType` → `validTargets.problemSlugs`
+  (graceful-degradation fallback per Phase 63 ship —
+  curators who typo an entity-type get the same fallback as
+  bare wikilinks)
+
+This guarantees drift-free behavior between render-time
+routing and build-time validation. Curators who write
+`[[author:percy-liang]]` get validated against
+`content/authors/`; curators who write `[[unknown-entity:slug]]`
+get validated against `content/problems/` (fallback).
+
+**Regex re-export** (Phase 66 Unit 66.1): the
+`WIKILINK_PATTERN` constant in `./wikilinks.ts` is re-
+exported (`export const WIKILINK_PATTERN`) so the validator
+imports the same regex the plugin body uses. Drift between
+the two regexes would mean rendered links don't match the
+validated set — re-export is the cheapest invariant
+preservation.
+
+**Slug character-class inheritance**: the validator inherits
+the Phase-38 / Phase-63 `[a-z0-9-]+` character-class
+constraint from the regex. Period-allowing paper IDs (e.g.,
+`2109.07958` in `content/papers/*.yaml`) cannot be captured
+by the current regex; the validator therefore cannot detect
+typos in `[[paper:2109.07958]]`-style wikilinks today. This
+is a documented limitation inherited from Phase 63;
+extending the regex to allow periods would be a Phase 67+
+plugin-body-axis realization that both the plugin and the
+validator would gain simultaneously.
+
+**XSS-safety contract**: the validator reads the same
+`WIKILINK_PATTERN` regex as the plugin — both slug and
+entity-type are constrained to `[a-z0-9-]+` per APPEND-D-I.
+The validator emits findings into the audit report (strings
+only); no rendering, no HTML interpolation. **No new XSS
+surface** introduced by Phase 66. The validator is read-
+only.
+
+**`wikilink-target-fk` `AuditCheck` type wiring** (Phase 66
+Unit 66.2): `lib/content/cross-link-audit.ts` gains the 8th
+`AuditCheck` type + a new `WikilinkRef` collection step + a
+new validation loop. The check walks the 4 wikilink-enabled
+markdown surfaces per Phase-42 cross-surface mapping (bio +
+reviewNotes + rationale + actionRationale) across:
+
+- `content/problems/*/problem.yaml` → `reviewNotes` +
+  `rationale` fields (per problem schema).
+- `content/problems/*/ratings/*.yaml` → `actionRationale`
+  field (per rating-action schema; concrete `[[problem-slug]]`
+  examples exist in production content today).
+- `content/authors/*.yaml` → `bio` field (per author
+  schema).
+- `content/institutions/*.yaml` → `bio` field (per
+  institution schema).
+- Paper YAMLs do NOT have a markdown surface today — the
+  validator skips them.
+
+Each `wikilink-target-fk` finding is ERROR severity (per
+`paper-problem-fk` precedent — dangling FK references are
+errors, not warnings). Finding shape mirrors the existing
+`paper-problem-fk` format: cites the file + the unresolved
+match-text + the captured `(entityType, slug)` tuple.
+
+**Tests added Phase 66 Unit 66.1** (17 NEW tests in
+`wikilinks-validator.test.ts` across 4 `describe` blocks):
+
+- `extractWikilinkReferences — bare [[slug]] syntax (Phase 38
+  baseline)` (4 tests): single-ref + multi-ref + no-wikilink
+  + empty-string.
+- `extractWikilinkReferences — alias syntax (Phase 46+)` (1
+  test): alias preserved in matchText but slug captured
+  cleanly.
+- `extractWikilinkReferences — cross-entity syntax (Phase
+  63+)` (3 tests): `[[paper:slug]]` + `[[author:slug]]` +
+  `[[institution:slug|display]]`.
+- `isValidWikilinkTarget — cross-entity routing parity with
+  CROSS_ENTITY_BUILD_HREF` (8 tests): paper-valid + paper-
+  typo + author-valid + institution-valid + bare-valid +
+  bare-typo + unknown-entity-fallback (valid + invalid) +
+  empty-targets-set.
+- `regex consistency — validator reuses the same
+  WIKILINK_PATTERN as the plugin body` (1 test): assert
+  source + flags.
+
+Unit 66.2 will ship 5-7 NEW audit-integration tests in
+`lib/content/cross-link-audit.test.ts` covering production-
+content regression guard + fixture-based dangling-target
+finding emission.
+
+**First build-time-validation realization** in project
+history. Audit-layer extension framing preserved (no new
+principal axis declared at Phase 66). The 4 principal axes
+remain at their Phase-65-close counts:
+
+| Axis | Realizations | Introduced |
+|---|---|---|
+| Plugin-body | 8 | Phase 46 |
+| Registry-state | 7 | Phase 38 |
+| Plugin-option | 2 | Phase 62 |
+| Schema-options | 1 | Phase 64 |
+
+**`AuditCheck` type trajectory**:
+
+| # | Phase | `AuditCheck` type |
+|---|---|---|
+| 1 | Phase 2 | `paper-problem-fk` |
+| 2 | Phase 2 | `paper-author-fk` |
+| 3 | Phase 2 | `paper-institution-fk` |
+| 4 | Phase 2 | `author-institution-fk` |
+| 5 | Phase 2 | `related-problems-fk` |
+| 6 | Phase 2 | `related-problems-symmetry` |
+| 7 | Phase 2 | `entries-contributions-agreement` |
+| **8** | **Phase 66** | **`wikilink-target-fk`** |
+
+**Wikilinks consumer evolutions UNCHANGED at 5** (Phase 42
+cross-surface + Phase 46 alias + Phase 62 plugin
+parameterization + Phase 63 cross-entity + Phase 65
+className). Phase 66 does NOT add a 6th evolution to the
+wikilinks plugin — the plugin body remains UNCHANGED; the
+build-time validator is a SIBLING consumer of the same
+WIKILINK_PATTERN + entity-type routing logic but is a
+separate code path. The wikilinks plugin evolution count
+remains at 5.
+
+**Closes APPEND-D-L item 5 (404 handling for unresolved
+wikilinks) at 28-phase carryover** (Phase 38 → Phase 66).
+**NEW LONGEST ABSOLUTE APPEND-DEFERRAL CLOSURE EVER
+OBSERVED** (extends Phase-65 27-phase record by 1 phase).
+**Second post-tie absolute-record extension** in project
+history (Phase 65 was the first; Phase 66 confirms the post-
+tie-EXTENSION pattern as a sustained trajectory).
+APPEND-D-L closure trajectory:
+
+- Item 1 (cross-surface) → Phase 42 = 4-phase carryover.
+- Item 2 (alias) → Phase 46 = 8-phase carryover.
+- Item 6 (plugin parameterization) → Phase 62 = 24-phase
+  carryover.
+- Item 3 (cross-entity) → Phase 63 = 25-phase carryover.
+- Item 4 (`<a class="wikilink">` styling) → Phase 65 = 27-
+  phase carryover (NEW LONGEST ABSOLUTE at the time).
+- **Item 5 (404 handling for unresolved wikilinks) → Phase
+  66 = 28-phase carryover (NEW LONGEST ABSOLUTE)**.
+- **All 6 items of D-L now closed** (6-of-6 = ALL-CLOSED).
+
+**D-L becomes the SECOND D-clause with ALL enumerated items
+closed** in project history (D-Q was first at Phase 64).
+**First state where 2 D-clauses have ALL enumerated items
+closed**. D-Q at 4-of-4 (Phase 64); D-L at 6-of-6 (Phase
+66). **First D-clause with 6+ items closed**. **First
+D-clause to traverse from 0-of-N closed → ALL-N closed
+entirely under the Phase-37 framework era** (D-L items first
+enumerated at Phase 38 first-ship; all 6 items closed by
+Phase 66).
+
+**First 6-consecutive-phase set-or-extend streak** in
+project history. Extends Phase-65 5-consecutive-phase
+streak. Streak trajectory:
+
+| Phase | Carryover | Shape |
+|---|---|---|
+| 61 | 22-phase | New record |
+| 62 | 24-phase | Extend by 2 |
+| 63 | 25-phase | Extend by 1 |
+| 64 | 25-phase | TIE (first tie) |
+| 65 | 27-phase | Extend by 2 (first post-tie extension) |
+| **66** | **28-phase** | **Extend by 1 (second post-tie extension; confirms post-tie-EXTENSION pattern)** |
+
+**25-phase APPEND-deferral closure cadence sustained**
+(Phase 42-66) — new longest sustained cadence in project
+history (extends Phase-65 record 24 → 25). First 25-phase
+APPEND-deferral closure run.
+
+**Thirty-third APPEND on ADR-0018 D-G** — extends the
+**first-ADR-D-clause-with-most-APPENDs record** from 32 →
+33 (Phase 18 + 27 + 29 + 37 + 38 + 39 + 40 + 41 + 42 + 43 +
+44 + 45 + 46 + 47 + 48 + 49 + 50 + 51 + 52 + 53 + 54 + 55 +
+56 + 57 + 58 + 59 + 60 + 61 + 62 + 63 + 64 + 65 + **66**).
+
+**Twenty-fourth two-letter APPEND letter D-AX** (after Phase
+65 D-AW). Excel-spreadsheet column convention sustained.
+
+**Thirty-first consecutive no-new-ADR phase** (Phase 36-66;
+extends Phase-65 record 30 → 31). **Thirty-sixth consecutive
+phase without new B category** (Phase 31-66; extends Phase-
+65 record 35 → 36). **Fifty-seventh NON-§13 phase** (extends
+Phase-65 milestone to 57); first 57-phase ledger-closure
+streak.
+
+**Phase 67+ deferrals** (Phase-66 build-time-validation
+scope cap):
+
+- **Render-time fallback for unresolved wikilinks** (rank
+  1) — Phase 67+; would compose Phase-65 className with
+  Phase-66 build-time validation via multi-className emit
+  (`["wikilink", "wikilink-unresolved"]`); 2nd plugin-body
+  output-shape realization + first multi-className emit
+  realization. Belt-and-suspenders defense against CI-
+  bypass; redundant under build-time validation.
+- **Locale-prefixed cross-entity wikilink paths** — Phase
+  67+; 3rd plugin-option-axis realization at the registry
+  layer (Phase 62 affordance + Phase 63 registry consumer
+  + Phase 67+ second registry consumer).
+- **Curator-configurable className value** via plugin-
+  option axis (`ResolveWikilinksOptions.className?: string`)
+  — Phase 67+; XSS audit per CSS-class-injection vector.
+- **Per-surface schema-options consumer beyond bio-
+  restricted** — Phase 67+; 2nd schema-options-axis
+  realization.
+- **Multi-className emit** for entity-type-specific
+  styling variants — Phase 67+; 2nd plugin-body output-
+  shape realization. Depends on rank-3 className-
+  configurability decision.
+- **Bare arxiv / DOI / PubMed / ORCID / bioRxiv IDs without
+  prefix** — Phase 67+.
+- **Legacy numeric-only bioRxiv IDs** (pre-2019 format) —
+  Phase 67+.
+- **dx.doi.org legacy host parsing** (APPEND-D-AC carries)
+  — Phase 67+.
+- **Stricter trailing-lookahead for trailing-period DOIs**
+  (APPEND-D-AC carries) — Phase 67+.
+- **Paper-card hover-preview** (APPEND-D-Y item 6 carries)
+  — Phase 67+.
+- **Auto-trim of alias display whitespace** — Phase 67+.
+- **Empty-alias fallback unification** across consumers —
+  Phase 67+.
+- **A future plugin that EMITS `<caption>` or
+  `colSpan`/`rowSpan`/`scope`** to realize the Phase-57 /
+  Phase-61 schema-ready-before-plugin states — Phase 67+.
+- **Period-allowing slug character-class extension** —
+  Phase 67+; would let the regex (and therefore the
+  validator) match paper IDs like `[[paper:2109.07958]]`.
+  Plugin-body axis realization that both plugin + validator
+  would gain simultaneously.
+- **Curator-facing builder configuration** (locale-prefixed
+  paths, curator-overridable href builders, relative-path
+  variants) — Phase 67+.
+- **Curator-facing per-surface schema configuration via DB
+  or UI** — Phase 67+.
+- **OSF preprint consumer** — eighth concrete consumer —
+  Phase 67+.
+- **6th-or-later `remarkPlugins` consumer beyond arxiv + doi
+  + pubmed + orcid + biorxiv** — Phase 67+.
+- **2nd `rehypePlugins` consumer beyond wikilinks** — Phase
+  67+.
+- **2nd `schemaOverrides` consumer beyond tables** — Phase
+  67+ (requires framework refactor per the composite-
+  registry single-source rule).
+- **3rd regex evolution on `remarkLinkArxivIds`** — Phase
+  67+.
+- **Cross-entity entity-type expansion beyond paper /
+  author / institution** (e.g., problem-tags, rating-
+  actions, rating-challenges) — Phase 67+.
+- **2nd build-time-validation realization** — Phase 67+;
+  would elevate "build-time-validation" from sub-pattern to
+  recognized principal axis.
+- **2nd plugin using the plugin-only emit pattern** —
+  Phase 67+; first reuse of the Phase-65-established
+  pattern.
+- **ADR-0025 concrete content-moderation provider** —
+  Phase 67+; not autonomous-tractable.
+
 ### D-H. Phase 18+ deferrals
 
 Phase 17 ships MINIMAL markdown surface. Deferred to Phase 18+:
