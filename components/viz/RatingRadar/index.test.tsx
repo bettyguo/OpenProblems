@@ -56,4 +56,26 @@ describe("RatingRadar", () => {
     const html = render({ dimensions: validDimensions, staticRender: true });
     expect(html).not.toMatch(/animation:\s*rating-radar-enter/);
   });
+
+  it("pads viewBox outward to give axis labels room (regression: labels at radius 96 were clipped by viewBox=0 0 200 200)", () => {
+    // Bug: with VIEW_BOX=200 and LABEL_R=96, axis labels were anchored at
+    // points only 4 px from each viewBox edge — text extended beyond the
+    // bounds and was clipped (e.g. "Difficulty" appearing as "iculty" at
+    // the top; "Industry call" as "ustry call" at the left). Fix expands
+    // the viewBox by LABEL_PADDING=36 on every side while keeping the
+    // chart geometry unchanged.
+    const html = render({ dimensions: validDimensions });
+    expect(html).toMatch(/viewBox="-36 -36 272 272"/);
+  });
+
+  it('anchors the left axis label ("Industry call") with text-anchor="end" so it grows leftward instead of straddling its anchor point', () => {
+    // Bug: angle === 198 used text-anchor="middle", which centered the
+    // label at x≈9 — half of "Industry call" extended to negative x and
+    // was clipped at the viewBox left edge. Fix uses text-anchor="end"
+    // so the label grows cleanly leftward.
+    const html = render({ dimensions: validDimensions });
+    // The label text node for "Industry call" must carry text-anchor="end".
+    const industryMatch = html.match(/<text[^>]*text-anchor="([^"]+)"[^>]*>Industry call</);
+    expect(industryMatch?.[1]).toBe("end");
+  });
 });

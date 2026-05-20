@@ -98,4 +98,34 @@ describe("DomainMap", () => {
     const b = render({ nodes: TINY_NODES, links: TINY_LINKS });
     expect(a).toBe(b);
   });
+
+  it("auto-fits the viewBox to the actual layout extent so nodes are never clipped (regression: 96-node graphs had most nodes positioned outside the fixed 0 0 600 420 viewBox)", () => {
+    // Bug: a fixed viewBox of `0 0 600 420` clipped most nodes in graphs
+    // larger than ~20 nodes because the d3-force simulation (chargeStrength
+    // = -180, link distance 60) spreads many nodes well outside that
+    // window. Fix computes the actual bounding box of the positioned
+    // layout and emits viewBox dynamically.
+    const html = render({ nodes: TINY_NODES, links: TINY_LINKS });
+    // The viewBox attr is dynamic: regex captures the 4 numbers; assert
+    // the rect is large enough to contain all 4 positioned nodes (each
+    // has radius ~sqrt(composite)*k ≤ ~14 px). With only 2 domain + 2
+    // problem nodes, the layout fits in a small box but the viewBox
+    // must NOT be the legacy fixed `0 0 600 420`.
+    const viewBoxMatch = html.match(/viewBox="([^"]+)"/);
+    expect(viewBoxMatch).not.toBeNull();
+    expect(viewBoxMatch?.[1]).not.toBe("0 0 600 420");
+    const parts = viewBoxMatch?.[1]?.split(" ").map(Number) ?? [];
+    expect(parts.length).toBe(4);
+    const [, , w, h] = parts;
+    expect(w).toBeGreaterThan(0);
+    expect(h).toBeGreaterThan(0);
+  });
+
+  it('renders responsive width="100%" + preserveAspectRatio="xMidYMid meet" so the SVG fills its container', () => {
+    // Combined with the auto-fit viewBox, this makes the chart scale to
+    // its container width regardless of node count.
+    const html = render({ nodes: TINY_NODES, links: TINY_LINKS });
+    expect(html).toMatch(/width="100%"/);
+    expect(html).toMatch(/preserveAspectRatio="xMidYMid meet"/);
+  });
 });

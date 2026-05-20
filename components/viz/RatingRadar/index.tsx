@@ -21,6 +21,13 @@ const VIEW_BOX = 200;
 const CENTER = VIEW_BOX / 2;
 const MAX_R = 80;
 const LABEL_R = 96;
+// Padding around the chart geometry to give axis labels room to render
+// without being clipped by the SVG viewBox. The geometry (CENTER, MAX_R,
+// LABEL_R) is unchanged; only the SVG's visible coordinate window
+// expands outward by this amount on every side. With the default
+// `preserveAspectRatio="xMidYMid meet"` and the explicit `width={size}`,
+// the chart's apparent size shrinks slightly to fit the wider window.
+const LABEL_PADDING = 36;
 const ANGLES = [-90, -18, 54, 126, 198] as const; // 5 vertices, 72° apart, starting at top
 
 function polar(angleDeg: number, r: number): { x: number; y: number } {
@@ -77,7 +84,7 @@ export function RatingRadar({
       role="img"
       aria-label={ariaLabel}
       aria-describedby="rating-radar-desc"
-      viewBox={`0 0 ${VIEW_BOX} ${VIEW_BOX}`}
+      viewBox={`${-LABEL_PADDING} ${-LABEL_PADDING} ${VIEW_BOX + 2 * LABEL_PADDING} ${VIEW_BOX + 2 * LABEL_PADDING}`}
       width={size}
       height={size}
       className="block"
@@ -164,7 +171,11 @@ export function RatingRadar({
         const { x, y } = polar(angle, LABEL_R);
         const isTop = angle === -90;
         const isBottom = angle === 126 || angle === 54;
-        const anchor = angle === -90 || angle === 198 ? "middle" : x > CENTER ? "start" : "end";
+        // angle === -90 (top): center horizontally above the apex.
+        // angle === 198 (left): grow leftward from the anchor point so the
+        // label doesn't straddle and get clipped at the viewBox edge.
+        // Other angles: start/end based on horizontal half.
+        const anchor = angle === -90 ? "middle" : x > CENTER ? "start" : "end";
         return (
           <text
             key={p.dimension}

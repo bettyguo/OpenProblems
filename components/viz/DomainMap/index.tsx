@@ -47,17 +47,64 @@ interface PositionedNode extends DomainMapNode {
   radius: number;
 }
 
+interface ViewBoxRect {
+  minX: number;
+  minY: number;
+  width: number;
+  height: number;
+}
+
 export interface DomainMapProps {
   nodes: DomainMapNode[];
   links: DomainMapLink[];
-  /** Optional override for the rendered width (defaults to viewBox width — responsive via CSS otherwise). */
-  width?: number;
-  /** Optional override for the rendered height. */
-  height?: number;
+  /**
+   * Optional override for the rendered width. Defaults to `"100%"` so the
+   * SVG fills its container; the viewBox is auto-fit to the simulated
+   * layout extent so all nodes stay visible regardless of node count.
+   */
+  width?: number | string;
+  /** Optional override for the rendered height. Defaults to `undefined` (driven by viewBox aspect). */
+  height?: number | string;
   /** Optional aria-label override. Defaults to "Domain map of …N… problems across …M… domains". */
   ariaLabel?: string;
   /** Optional set of node ids to dim (for page-layer filter chips, Unit 4.3 / 4.4). */
   dimmedIds?: Set<string>;
+}
+
+/**
+ * Compute the SVG viewBox rectangle that contains every positioned node
+ * plus a uniform pad of `max(radius) + labelHeight` on every side. This
+ * makes the viewBox auto-fit the d3-force simulation's actual extent so
+ * graphs with many nodes (where the force layout spreads well beyond a
+ * fixed-size viewport) don't get clipped. Combined with default
+ * `preserveAspectRatio="xMidYMid meet"` and `width="100%"`, the SVG
+ * scales to its container.
+ */
+function computeViewBoxFromLayout(positioned: PositionedNode[]): ViewBoxRect {
+  if (positioned.length === 0) {
+    return { minX: 0, minY: 0, width: VIEW_W, height: VIEW_H };
+  }
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  let maxRadius = 0;
+  for (const n of positioned) {
+    if (n.x - n.radius < minX) minX = n.x - n.radius;
+    if (n.x + n.radius > maxX) maxX = n.x + n.radius;
+    if (n.y - n.radius < minY) minY = n.y - n.radius;
+    if (n.y + n.radius > maxY) maxY = n.y + n.radius;
+    if (n.radius > maxRadius) maxRadius = n.radius;
+  }
+  // Pad enough room for labels (rendered at `y + radius + fontSize + 1`,
+  // fontSize ≤ 11 for domain nodes; allow ~24 px for label height + slack).
+  const pad = maxRadius + 24;
+  return {
+    minX: minX - pad,
+    minY: minY - pad,
+    width: maxX - minX + 2 * pad,
+    height: maxY - minY + 2 * pad,
+  };
 }
 
 function radiusFor(node: DomainMapNode): number {
@@ -155,8 +202,8 @@ function isDescendantOf(p: DomainMapNode, d: DomainMapNode, all: DomainMapNode[]
 export function DomainMap({
   nodes,
   links,
-  width = VIEW_W,
-  height = VIEW_H,
+  width = "100%",
+  height,
   ariaLabel,
   dimmedIds,
 }: DomainMapProps) {
@@ -191,6 +238,7 @@ export function DomainMap({
   const positioned = computeLayout(nodes, links);
   const byId = new Map(positioned.map((n) => [n.id, n]));
   const desc = buildDescription(nodes);
+  const vb = computeViewBoxFromLayout(positioned);
 
   return (
     <figure>
@@ -198,9 +246,10 @@ export function DomainMap({
         role="img"
         aria-label={computedAriaLabel}
         aria-describedby="domain-map-desc"
-        viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
+        viewBox={`${vb.minX} ${vb.minY} ${vb.width} ${vb.height}`}
         width={width}
         height={height}
+        preserveAspectRatio="xMidYMid meet"
         className="block"
       >
         <desc id="domain-map-desc">{desc}</desc>
