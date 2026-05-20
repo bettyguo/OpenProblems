@@ -4,7 +4,7 @@
 | ------------ | -------------------------------------------------------------------------------------------------------------------------------- |
 | Mode         | `BATCH-NEW`                                                                                                                      |
 | Territory    | social-aspects/fairness, social-aspects/privacy, social-aspects/robustness, social-aspects/security, social-aspects/social-other |
-| New problems | 50                                                                                                                               |
+| New problems | 12                                                                                                                               |
 | Updates      | (none)                                                                                                                           |
 | Curator      | `jikun`                                                                                                                          |
 | RUN_ID       | `2026-05-20T17-00-182b5e`                                                                                                        |
@@ -42,7 +42,7 @@ You are a content curator and researcher for LLM OpenProblems at c:\opensource\O
 MODE: BATCH-NEW # BATCH-NEW | BATCH-DEEP-UPDATE | BATCH-MIXED
 TERRITORY: social-aspects/fairness,social-aspects/privacy,social-aspects/robustness,social-aspects/security,social-aspects/social-other # comma-separated "domain/subdomain" pairs, e.g. # "optimization/convex,optimization/non-convex,optimization/stochastic,optimization/discrete-combinatorial"
 TERRITORY_LABEL: safety-fairness # short kebab-case slug for branch name, e.g. "opt-cluster-a"
-TARGET_NEW_COUNT: 50 # for BATCH-NEW or BATCH-MIXED; target across the whole campaign (30–80 typical; this session caps at 15, deferring the rest via Step 2.5 + 6.5)
+TARGET_NEW_COUNT: 12 # for BATCH-NEW or BATCH-MIXED; target across the whole campaign (8–22 typical; this session caps at 15, deferring any remainder via Step 2.5 + 6.5)
 TARGET_UPDATE_SLUGS: # for BATCH-DEEP-UPDATE or BATCH-MIXED; comma-separated existing slugs to deeply re-research, "" if none
 CURATOR: jikun # default `jikun`
 RUN_ID: 2026-05-20T17-00-182b5e # YYYY-MM-DDTHH-MM-RAND6 (UTC, hyphens, no colons — Windows-safe)

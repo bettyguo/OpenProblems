@@ -4,7 +4,7 @@
 | ------------ | -------------------------------------------------------------------------------------------------------------- |
 | Mode         | `BATCH-MIXED`                                                                                                  |
 | Territory    | deep-learning/large-language-models, deep-learning/attention-mechanisms, deep-learning/foundation-models       |
-| New problems | 80                                                                                                             |
+| New problems | 22                                                                                                             |
 | Updates      | hallucination-reduction, long-horizon-agent-reliability, long-context-rag, compute-optimal-test-time-reasoning |
 | Curator      | `jikun`                                                                                                        |
 | RUN_ID       | `2026-05-20T17-00-a1c87f`                                                                                      |
@@ -43,7 +43,7 @@ You are a content curator and researcher for LLM OpenProblems at c:\opensource\O
 MODE: BATCH-MIXED # BATCH-NEW | BATCH-DEEP-UPDATE | BATCH-MIXED
 TERRITORY: deep-learning/large-language-models,deep-learning/attention-mechanisms,deep-learning/foundation-models # comma-separated "domain/subdomain" pairs, e.g. # "optimization/convex,optimization/non-convex,optimization/stochastic,optimization/discrete-combinatorial"
 TERRITORY_LABEL: dl-lm-frontier # short kebab-case slug for branch name, e.g. "opt-cluster-a"
-TARGET_NEW_COUNT: 80 # for BATCH-NEW or BATCH-MIXED; target across the whole campaign (30–80 typical; this session caps at 15, deferring the rest via Step 2.5 + 6.5)
+TARGET_NEW_COUNT: 22 # for BATCH-NEW or BATCH-MIXED; target across the whole campaign (8–22 typical; this session caps at 15, deferring any remainder via Step 2.5 + 6.5)
 TARGET_UPDATE_SLUGS: hallucination-reduction,long-horizon-agent-reliability,long-context-rag,compute-optimal-test-time-reasoning # for BATCH-DEEP-UPDATE or BATCH-MIXED; comma-separated existing slugs to deeply re-research, "" if none
 CURATOR: jikun # default `jikun`
 RUN_ID: 2026-05-20T17-00-a1c87f # YYYY-MM-DDTHH-MM-RAND6 (UTC, hyphens, no colons — Windows-safe)

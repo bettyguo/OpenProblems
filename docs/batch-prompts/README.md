@@ -1,4 +1,4 @@
-# Batch-prompts — 20 paste-ready slots, 1000-problem campaign
+# Batch-prompts — 20 paste-ready slots, 250-problem campaign
 
 This directory contains **20 self-contained prompt files** ready to be pasted into 20 concurrent Claude Code sessions. Each file is one batch-curation run targeting a disjoint **territory** (a set of taxonomy subdomains) so the 20 sessions never collide on a slug.
 
@@ -9,21 +9,22 @@ $env:RUN_ID_PREFIX = (Get-Date -AsUTC).ToString("yyyy-MM-ddTHH-mm")
 node scripts/generate-batch-prompts.mjs
 ```
 
-## Campaign target
+## Campaign target — 250 problems, the project's North Star
 
-| Total slots | New problems target | Existing slugs updated | Bursts to complete | Total wall-clock                  |
-| ----------- | ------------------- | ---------------------- | ------------------ | --------------------------------- |
-| 20          | **1000**            | **11**                 | 3–4                | 6–18 hours over 1–3 calendar days |
+| Total slots | New problems target | Existing slugs updated | Bursts to complete                       | Total wall-clock         |
+| ----------- | ------------------- | ---------------------- | ---------------------------------------- | ------------------------ |
+| 20          | **250**             | **11**                 | ~1.2 (one main + one short continuation) | 2–4 hours with worktrees |
 
-Today the repo has 10 problems / 30 papers. After the full campaign, expect ~1010 problems with at least 3 verified primary sources each and a refreshed rating on every existing slug.
+Today the repo has 10 problems / 30 papers. After the campaign, expect ~260 problems with ≥ 3 verified primary sources each and a refreshed rating on every existing slug.
 
-**Why multiple bursts?** Each session realistically authors ~15 quality slugs before context degrades (~50–80K context per slug × 15 = ~1M-ish). High-density slots target 50–80 problems, so they need 3–4 sequential sessions to complete. The Step 2.5 chunk-discipline + Step 6.5 resume-checkpoint protocol (see [`docs/BATCH_GENERATION_PROMPT.md`](../BATCH_GENERATION_PROMPT.md)) lets each session stop cleanly mid-target and hand off to a continuation session on the same branch.
+**Why 250 and not more.** The 80-subdomain taxonomy's natural carrying capacity at the §15.6 quality bar (every entry needs 3+ verified primary sources) is 230–280. Historical precedent for canonical research-problem lists (Hilbert: 23, Smale: 18, Clay: 7, NLP-progress: ~80) shows quality, not count, earns trust. Papers-with-Code's failure at ~10K is the cautionary tale. Editorial sustainability for a 1–3 person board: 250 × 1–2 hr/quarter re-rating = ~500–1000 hr/year, feasible; ~10× that is not. See full audit in [`docs/BATCH_GENERATION_PROMPT.md`](../BATCH_GENERATION_PROMPT.md) §"20-session shard manifest".
 
-| Per-burst landing | Chunk 1 (burst 1) | Chunk 2 (burst 2) | Chunk 3 (burst 3) | Chunk 4 (burst 4)             |
-| ----------------- | ----------------- | ----------------- | ----------------- | ----------------------------- |
-| New problems      | ~300              | ~300              | ~300              | ~80–100                       |
-| Cumulative        | ~300              | ~600              | ~900              | **~1000**                     |
-| Sessions launched | 20                | 20                | 20                | 5–6 (high-density slots only) |
+**Burst shape:**
+
+| Burst            | Sessions       | New problems landed | Cumulative | Notes                                                                                                                     |
+| ---------------- | -------------- | ------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------- |
+| 1 (main)         | 20 in parallel | ~228                | ~228       | 16 slots ≤ 15 slugs complete in one shot; 4 high-density slots (01, 07, 11, 20) land 15 each and checkpoint the remainder |
+| 2 (continuation) | 4 sessions     | ~22                 | **250**    | Resumes the 4 deferred slots on the same parent branches via Step 6.5                                                     |
 
 ## Pre-flight (once, before opening any session)
 
@@ -97,26 +98,26 @@ Each continuation session also takes ~60–90 minutes. With worktrees, run all 2
 
 | #   | File                                                               | Mode          | New | Update slugs                                                                                                   |
 | --- | ------------------------------------------------------------------ | ------------- | --- | -------------------------------------------------------------------------------------------------------------- |
-| 01  | [`slot-01-dl-lm-frontier.md`](./slot-01-dl-lm-frontier.md)         | `BATCH-MIXED` | 80  | hallucination-reduction, long-horizon-agent-reliability, long-context-rag, compute-optimal-test-time-reasoning |
-| 02  | [`slot-02-dl-generative.md`](./slot-02-dl-generative.md)           | `BATCH-NEW`   | 60  | —                                                                                                              |
-| 03  | [`slot-03-dl-architecture.md`](./slot-03-dl-architecture.md)       | `BATCH-MIXED` | 50  | compute-optimal-test-time-reasoning                                                                            |
-| 04  | [`slot-04-dl-theory-robust.md`](./slot-04-dl-theory-robust.md)     | `BATCH-NEW`   | 50  | —                                                                                                              |
-| 05  | [`slot-05-rl-frontier.md`](./slot-05-rl-frontier.md)               | `BATCH-MIXED` | 50  | multi-agent-llm-coordination                                                                                   |
-| 06  | [`slot-06-rl-offline-inverse.md`](./slot-06-rl-offline-inverse.md) | `BATCH-NEW`   | 40  | —                                                                                                              |
-| 07  | [`slot-07-safety-alignment.md`](./slot-07-safety-alignment.md)     | `BATCH-MIXED` | 60  | scalable-oversight, mechanistic-interpretability                                                               |
-| 08  | [`slot-08-safety-fairness.md`](./slot-08-safety-fairness.md)       | `BATCH-NEW`   | 50  | —                                                                                                              |
-| 09  | [`slot-09-applied-bio-health.md`](./slot-09-applied-bio-health.md) | `BATCH-MIXED` | 50  | genome-foundation-models                                                                                       |
-| 10  | [`slot-10-applied-physical.md`](./slot-10-applied-physical.md)     | `BATCH-MIXED` | 50  | operator-learning-foundation-models                                                                            |
-| 11  | [`slot-11-applied-perception.md`](./slot-11-applied-perception.md) | `BATCH-NEW`   | 60  | —                                                                                                              |
-| 12  | [`slot-12-applied-social-mix.md`](./slot-12-applied-social-mix.md) | `BATCH-NEW`   | 30  | —                                                                                                              |
-| 13  | [`slot-13-genml-data-eval.md`](./slot-13-genml-data-eval.md)       | `BATCH-MIXED` | 50  | benchmark-integrity                                                                                            |
-| 14  | [`slot-14-genml-causal-rep.md`](./slot-14-genml-causal-rep.md)     | `BATCH-NEW`   | 40  | —                                                                                                              |
-| 15  | [`slot-15-genml-online-trans.md`](./slot-15-genml-online-trans.md) | `BATCH-NEW`   | 50  | —                                                                                                              |
-| 16  | [`slot-16-genml-systems.md`](./slot-16-genml-systems.md)           | `BATCH-NEW`   | 40  | —                                                                                                              |
-| 17  | [`slot-17-opt-classical.md`](./slot-17-opt-classical.md)           | `BATCH-NEW`   | 40  | —                                                                                                              |
-| 18  | [`slot-18-opt-applied.md`](./slot-18-opt-applied.md)               | `BATCH-NEW`   | 40  | —                                                                                                              |
-| 19  | [`slot-19-prob-methods.md`](./slot-19-prob-methods.md)             | `BATCH-NEW`   | 50  | —                                                                                                              |
-| 20  | [`slot-20-theory.md`](./slot-20-theory.md)                         | `BATCH-NEW`   | 60  | —                                                                                                              |
+| 01  | [`slot-01-dl-lm-frontier.md`](./slot-01-dl-lm-frontier.md)         | `BATCH-MIXED` | 22  | hallucination-reduction, long-horizon-agent-reliability, long-context-rag, compute-optimal-test-time-reasoning |
+| 02  | [`slot-02-dl-generative.md`](./slot-02-dl-generative.md)           | `BATCH-NEW`   | 14  | —                                                                                                              |
+| 03  | [`slot-03-dl-architecture.md`](./slot-03-dl-architecture.md)       | `BATCH-MIXED` | 13  | compute-optimal-test-time-reasoning                                                                            |
+| 04  | [`slot-04-dl-theory-robust.md`](./slot-04-dl-theory-robust.md)     | `BATCH-NEW`   | 10  | —                                                                                                              |
+| 05  | [`slot-05-rl-frontier.md`](./slot-05-rl-frontier.md)               | `BATCH-MIXED` | 13  | multi-agent-llm-coordination                                                                                   |
+| 06  | [`slot-06-rl-offline-inverse.md`](./slot-06-rl-offline-inverse.md) | `BATCH-NEW`   | 10  | —                                                                                                              |
+| 07  | [`slot-07-safety-alignment.md`](./slot-07-safety-alignment.md)     | `BATCH-MIXED` | 18  | scalable-oversight, mechanistic-interpretability                                                               |
+| 08  | [`slot-08-safety-fairness.md`](./slot-08-safety-fairness.md)       | `BATCH-NEW`   | 12  | —                                                                                                              |
+| 09  | [`slot-09-applied-bio-health.md`](./slot-09-applied-bio-health.md) | `BATCH-MIXED` | 12  | genome-foundation-models                                                                                       |
+| 10  | [`slot-10-applied-physical.md`](./slot-10-applied-physical.md)     | `BATCH-MIXED` | 12  | operator-learning-foundation-models                                                                            |
+| 11  | [`slot-11-applied-perception.md`](./slot-11-applied-perception.md) | `BATCH-NEW`   | 16  | —                                                                                                              |
+| 12  | [`slot-12-applied-social-mix.md`](./slot-12-applied-social-mix.md) | `BATCH-NEW`   | 8   | —                                                                                                              |
+| 13  | [`slot-13-genml-data-eval.md`](./slot-13-genml-data-eval.md)       | `BATCH-MIXED` | 12  | benchmark-integrity                                                                                            |
+| 14  | [`slot-14-genml-causal-rep.md`](./slot-14-genml-causal-rep.md)     | `BATCH-NEW`   | 10  | —                                                                                                              |
+| 15  | [`slot-15-genml-online-trans.md`](./slot-15-genml-online-trans.md) | `BATCH-NEW`   | 12  | —                                                                                                              |
+| 16  | [`slot-16-genml-systems.md`](./slot-16-genml-systems.md)           | `BATCH-NEW`   | 10  | —                                                                                                              |
+| 17  | [`slot-17-opt-classical.md`](./slot-17-opt-classical.md)           | `BATCH-NEW`   | 9   | —                                                                                                              |
+| 18  | [`slot-18-opt-applied.md`](./slot-18-opt-applied.md)               | `BATCH-NEW`   | 8   | —                                                                                                              |
+| 19  | [`slot-19-prob-methods.md`](./slot-19-prob-methods.md)             | `BATCH-NEW`   | 13  | —                                                                                                              |
+| 20  | [`slot-20-theory.md`](./slot-20-theory.md)                         | `BATCH-NEW`   | 16  | —                                                                                                              |
 
 ## What every session does (one-line summary)
 

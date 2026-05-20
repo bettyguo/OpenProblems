@@ -36,7 +36,7 @@ const slots = [
     mode: "BATCH-MIXED",
     territory:
       "deep-learning/large-language-models,deep-learning/attention-mechanisms,deep-learning/foundation-models",
-    newCount: 80,
+    newCount: 22,
     updates:
       "hallucination-reduction,long-horizon-agent-reliability,long-context-rag,compute-optimal-test-time-reasoning",
     suffix: "a1c87f",
@@ -47,7 +47,7 @@ const slots = [
     mode: "BATCH-NEW",
     territory:
       "deep-learning/generative-models,deep-learning/self-supervised-learning,deep-learning/representation-learning",
-    newCount: 60,
+    newCount: 14,
     updates: "",
     suffix: "b2d493",
   },
@@ -57,7 +57,7 @@ const slots = [
     mode: "BATCH-MIXED",
     territory:
       "deep-learning/algorithms,deep-learning/graph-neural-networks,deep-learning/sequential-models",
-    newCount: 50,
+    newCount: 13,
     updates: "compute-optimal-test-time-reasoning",
     suffix: "c3e547",
   },
@@ -66,7 +66,7 @@ const slots = [
     label: "dl-theory-robust",
     mode: "BATCH-NEW",
     territory: "deep-learning/theory,deep-learning/robustness,deep-learning/dl-other",
-    newCount: 50,
+    newCount: 10,
     updates: "",
     suffix: "d4f6a8",
   },
@@ -76,7 +76,7 @@ const slots = [
     mode: "BATCH-MIXED",
     territory:
       "reinforcement-learning/deep-rl,reinforcement-learning/multi-agent,reinforcement-learning/policy-search",
-    newCount: 50,
+    newCount: 13,
     updates: "multi-agent-llm-coordination",
     suffix: "e5072b",
   },
@@ -86,7 +86,7 @@ const slots = [
     mode: "BATCH-NEW",
     territory:
       "reinforcement-learning/batch-offline,reinforcement-learning/inverse,reinforcement-learning/online,reinforcement-learning/planning,reinforcement-learning/rl-other",
-    newCount: 40,
+    newCount: 10,
     updates: "",
     suffix: "f6183c",
   },
@@ -96,7 +96,7 @@ const slots = [
     mode: "BATCH-MIXED",
     territory:
       "social-aspects/alignment,social-aspects/safety,social-aspects/accountability-transparency-interpretability",
-    newCount: 60,
+    newCount: 18,
     updates: "scalable-oversight,mechanistic-interpretability",
     suffix: "071a4d",
   },
@@ -106,7 +106,7 @@ const slots = [
     mode: "BATCH-NEW",
     territory:
       "social-aspects/fairness,social-aspects/privacy,social-aspects/robustness,social-aspects/security,social-aspects/social-other",
-    newCount: 50,
+    newCount: 12,
     updates: "",
     suffix: "182b5e",
   },
@@ -115,7 +115,7 @@ const slots = [
     label: "applied-bio-health",
     mode: "BATCH-MIXED",
     territory: "applications/health-medicine,applications/neuroscience",
-    newCount: 50,
+    newCount: 12,
     updates: "genome-foundation-models",
     suffix: "293c6f",
   },
@@ -124,7 +124,7 @@ const slots = [
     label: "applied-physical",
     mode: "BATCH-MIXED",
     territory: "applications/chem-phys-earth,applications/energy,applications/time-series",
-    newCount: 50,
+    newCount: 12,
     updates: "operator-learning-foundation-models",
     suffix: "3a4d70",
   },
@@ -133,7 +133,7 @@ const slots = [
     label: "applied-perception",
     mode: "BATCH-NEW",
     territory: "applications/computer-vision,applications/language-speech,applications/robotics",
-    newCount: 60,
+    newCount: 16,
     updates: "",
     suffix: "4b5e81",
   },
@@ -142,7 +142,7 @@ const slots = [
     label: "applied-social-mix",
     mode: "BATCH-NEW",
     territory: "applications/social-sciences,applications/applications-other",
-    newCount: 30,
+    newCount: 8,
     updates: "",
     suffix: "5c6f92",
   },
@@ -151,7 +151,7 @@ const slots = [
     label: "genml-data-eval",
     mode: "BATCH-MIXED",
     territory: "general-ml/data,general-ml/evaluation,general-ml/methodology",
-    newCount: 50,
+    newCount: 12,
     updates: "benchmark-integrity",
     suffix: "6d70a3",
   },
@@ -160,7 +160,7 @@ const slots = [
     label: "genml-causal-rep",
     mode: "BATCH-NEW",
     territory: "general-ml/causality,general-ml/representation-learning,general-ml/clustering",
-    newCount: 40,
+    newCount: 10,
     updates: "",
     suffix: "7e81b4",
   },
@@ -170,7 +170,7 @@ const slots = [
     mode: "BATCH-NEW",
     territory:
       "general-ml/online-active-bandits,general-ml/transfer-multitask-meta,general-ml/unsup-semisup,general-ml/supervised-learning",
-    newCount: 50,
+    newCount: 12,
     updates: "",
     suffix: "8f92c5",
   },
@@ -180,7 +180,7 @@ const slots = [
     mode: "BATCH-NEW",
     territory:
       "general-ml/hardware-software,general-ml/scalable-algorithms,general-ml/sequential-network-time-series,general-ml/kernel-methods,general-ml/general-ml-other",
-    newCount: 40,
+    newCount: 10,
     updates: "",
     suffix: "90a3d6",
   },
@@ -189,7 +189,7 @@ const slots = [
     label: "opt-classical",
     mode: "BATCH-NEW",
     territory: "optimization/convex,optimization/non-convex,optimization/stochastic",
-    newCount: 40,
+    newCount: 9,
     updates: "",
     suffix: "a1b4e7",
   },
@@ -199,7 +199,7 @@ const slots = [
     mode: "BATCH-NEW",
     territory:
       "optimization/discrete-combinatorial,optimization/large-scale-parallel-distributed,optimization/zero-order-black-box,optimization/optimization-other",
-    newCount: 40,
+    newCount: 8,
     updates: "",
     suffix: "b2c5f8",
   },
@@ -209,7 +209,7 @@ const slots = [
     mode: "BATCH-NEW",
     territory:
       "probabilistic-methods/bayesian,probabilistic-methods/variational-inference,probabilistic-methods/monte-carlo-sampling,probabilistic-methods/gaussian-processes,probabilistic-methods/graphical-models,probabilistic-methods/spectral-methods,probabilistic-methods/structure-learning,probabilistic-methods/probabilistic-other",
-    newCount: 50,
+    newCount: 13,
     updates: "",
     suffix: "c3d609",
   },
@@ -219,7 +219,7 @@ const slots = [
     mode: "BATCH-NEW",
     territory:
       "theory/dl-theory,theory/learning-theory,theory/rl-planning-theory,theory/optimization-theory,theory/game-theory,theory/probabilistic-theory,theory/online-bandits,theory/active-interactive,theory/domain-adaptation-transfer,theory/theory-other",
-    newCount: 60,
+    newCount: 16,
     updates: "",
     suffix: "d4e71a",
   },
@@ -311,7 +311,7 @@ const totalUpdates = slots.reduce(
   0,
 );
 
-const readme = `# Batch-prompts — 20 paste-ready slots, 1000-problem campaign
+const readme = `# Batch-prompts — 20 paste-ready slots, 250-problem campaign
 
 This directory contains **20 self-contained prompt files** ready to be pasted into 20 concurrent Claude Code sessions. Each file is one batch-curation run targeting a disjoint **territory** (a set of taxonomy subdomains) so the 20 sessions never collide on a slug.
 
@@ -322,21 +322,22 @@ $env:RUN_ID_PREFIX = (Get-Date -AsUTC).ToString("yyyy-MM-ddTHH-mm")
 node scripts/generate-batch-prompts.mjs
 \`\`\`
 
-## Campaign target
+## Campaign target — 250 problems, the project's North Star
 
 | Total slots | New problems target | Existing slugs updated | Bursts to complete | Total wall-clock |
 | ----------- | ------------------- | ----------------------- | ------------------ | ---------------- |
-| 20          | **${totalNew}**     | **${totalUpdates}**     | 3–4                | 6–18 hours over 1–3 calendar days |
+| 20          | **${totalNew}**     | **${totalUpdates}**     | ~1.2 (one main + one short continuation) | 2–4 hours with worktrees |
 
-Today the repo has 10 problems / 30 papers. After the full campaign, expect ~${10 + totalNew} problems with at least 3 verified primary sources each and a refreshed rating on every existing slug.
+Today the repo has 10 problems / 30 papers. After the campaign, expect ~${10 + totalNew} problems with ≥ 3 verified primary sources each and a refreshed rating on every existing slug.
 
-**Why multiple bursts?** Each session realistically authors ~15 quality slugs before context degrades (~50–80K context per slug × 15 = ~1M-ish). High-density slots target 50–80 problems, so they need 3–4 sequential sessions to complete. The Step 2.5 chunk-discipline + Step 6.5 resume-checkpoint protocol (see [\`docs/BATCH_GENERATION_PROMPT.md\`](../BATCH_GENERATION_PROMPT.md)) lets each session stop cleanly mid-target and hand off to a continuation session on the same branch.
+**Why 250 and not more.** The 80-subdomain taxonomy's natural carrying capacity at the §15.6 quality bar (every entry needs 3+ verified primary sources) is 230–280. Historical precedent for canonical research-problem lists (Hilbert: 23, Smale: 18, Clay: 7, NLP-progress: ~80) shows quality, not count, earns trust. Papers-with-Code's failure at ~10K is the cautionary tale. Editorial sustainability for a 1–3 person board: 250 × 1–2 hr/quarter re-rating = ~500–1000 hr/year, feasible; ~10× that is not. See full audit in [\`docs/BATCH_GENERATION_PROMPT.md\`](../BATCH_GENERATION_PROMPT.md) §"20-session shard manifest".
 
-| Per-burst landing | Chunk 1 (burst 1) | Chunk 2 (burst 2) | Chunk 3 (burst 3) | Chunk 4 (burst 4) |
-| ----------------- | ----------------- | ----------------- | ----------------- | ----------------- |
-| New problems      | ~300              | ~300              | ~300              | ~80–100           |
-| Cumulative        | ~300              | ~600              | ~900              | **~1000**         |
-| Sessions launched | 20                | 20                | 20                | 5–6 (high-density slots only) |
+**Burst shape:**
+
+| Burst | Sessions | New problems landed | Cumulative | Notes |
+| ----- | -------- | ------------------- | ---------- | ----- |
+| 1 (main) | 20 in parallel | ~228 | ~228 | 16 slots ≤ 15 slugs complete in one shot; 4 high-density slots (01, 07, 11, 20) land 15 each and checkpoint the remainder |
+| 2 (continuation) | 4 sessions | ~22 | **250** | Resumes the 4 deferred slots on the same parent branches via Step 6.5 |
 
 ## Pre-flight (once, before opening any session)
 
